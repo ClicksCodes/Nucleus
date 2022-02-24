@@ -1,0 +1,33 @@
+{
+  "dependencies": {
+    "@discordjs/builders": "^0.12.0",
+    "discord.js": "^13.6.0",
+    "jshaiku": "file:../../WebstormProjects/haiku",
+    "typescript": "^4.5.5"
+  },
+  "name": "nucleus",
+  "version": "0.0.1",
+  "description": "Nucleus: The core Clicks Minute Per bot",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node --experimental-json-modules dist/index.js",
+    "dev": "tsc && node --experimental-json-modules dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ClicksMinutePer/Nucleus.git"
+  },
+  "author": "Clicks Minute Per",
+  "contributors": [
+    "Minion3665",
+    "PineappleFan"
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/ClicksMinutePer/Nucleus/issues"
+  },
+  "homepage": "https://github.com/ClicksMinutePer/Nucleus#readme",
+  "private": true,
+  "type": "module"
+}
