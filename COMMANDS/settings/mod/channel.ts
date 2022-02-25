@@ -4,15 +4,15 @@ import { WrappedCheck } from "jshaiku";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("examplesubcommand")
-    .setDescription("An example subcommand")
+    .setName("channel")
+    .setDescription("Sets the channel for staff messages to go to")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Hello, world!");
+    interaction.reply("Command incomplete [settings/mod/channel]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    return interaction.user.id !== "123456789";
+    return true;
 }
 
 export { command };
