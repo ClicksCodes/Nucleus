@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node --experimental-json-modules dist/index.js",
-    "dev": "tsc && node --experimental-json-modules dist/index.js"
+    "dev": "rm -rf dist && tsc && node --experimental-json-modules dist/index.js"
   },
   "repository": {
     "type": "git",

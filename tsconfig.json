@@ -4,11 +4,11 @@
         "target": "es2020",
         "sourceMap": true,
         "esModuleInterop": true,
-        "moduleResolution": "Node",
+        "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true,
         "resolveJsonModule": true,
-        "outDir": "./dist"
+        "moduleResolution": "node",
     },
-    "include": [
-        "src/**/*"
-, "old/commands", "COMMANDS/mod/lock", "COMMANDS/role", "COMMANDS/settings"    ]
+    "include": ["src/**/*"]
 }
