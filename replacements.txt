@@ -1,0 +1,35 @@
+m!info - Info has moved to /help
+m!stats - Stats has moved to /nucleus help
+m!settings - Settings has changed, type /settings to see the full list
+m!user - User is now /user info
+m!avatar - Avatar is now /user avatar
+m!roleall - Roleall has moved to /roll all
+m!suggest - Suggest has been moved to /nucleus suggest
+m!ping - Ping has moved to /nucleus ping
+m!server - Server has been moved to /server info
+m!tag - Tag has changed to /tag
+m!role - Role is now /role
+m!viewas - Viewas has moved to /viewas
+m!verify - Verify has moved to /verify, please contact the server owners if the information message has not been updated
+m!setverify - Setverify has moved to /settings verify role
+m!mail - Mail has moved to /ticket create, please contact the server owners if the information message has not been updated
+m!prefix - Nucleus' prefix has changed to /
+m!setprefix - The prefix is now required to be / due to Discord's new rules on bots
+m!warn - Warn has moved to /mod warn
+m!clear - Clear has moved to /mod clear
+m!kick - Kick has moved to /mod kick
+m!softban - Softban has moved to /mod softban
+m!ban - Ban has moved to /mod ban
+m!unban - Unban has moved to /mod unban
+m!purge - Purge has moved to /mod purge
+m!punish - Punish options can now be viewed by typing /mod
+m!setlog - Setlog has moved to /settings log channel
+m!ignore - Ignore has moved to /settings log ignore
+m!ignored - Ignored has moved to /settings log ignored
+m!stafflog - stafflog has moved to /settings mod channel
+m!auto - Auto has been moved to /settings automation
+m!modmail - Modmail has been moved to /settings tickets
+m!slowmode - Slowmode has moved to /mod slowmode
+m!lock - Lock has moved to /mod lock action:add
+m!unlock - Unlock has moved to /mod lock action:remove
+m!reset - Reset can be found under /settings all

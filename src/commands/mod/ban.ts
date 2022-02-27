@@ -1,7 +1,6 @@
-import Discord, { CommandInteraction, GuildMember } from "discord.js";
+import { CommandInteraction, GuildMember } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import getEmojiByName from "../../utils/getEmojiByName.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -20,7 +19,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction) => {
     // TODO:[Modals] Replace this with a modal
     if (await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.BAN")
+        .setEmoji("PUNISH.BAN.RED")
         .setTitle("Ban")
         .setDescription(keyValueList({
             "user": `<@!${(interaction.options.getMember("user") as GuildMember).id}> (${(interaction.options.getMember("user") as GuildMember).user.username})`,
@@ -38,7 +37,7 @@ const callback = async (interaction: CommandInteraction) => {
             if (interaction.options.getString("notify") != "no") {
                 await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
-                        .setEmoji("MEMBER.BAN")
+                        .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Banned")
                         .setDescription(`You have been banned in ${interaction.guild.name}` +
                                     (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
@@ -51,18 +50,18 @@ const callback = async (interaction: CommandInteraction) => {
         try {
             (interaction.options.getMember("user") as GuildMember).ban({
                 days: Number(interaction.options.getInteger("delete") ?? 0),
-                reason: interaction.options.getString("reason")
+                reason: interaction.options.getString("reason") ?? "No reason provided"
             })
             let failed = (dmd == false && interaction.options.getString("notify") != "no")
             await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji(`PUNISH.${failed ? "SOFT" : ""}BAN`) // TODO: Add green ban icon for success
+                .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
                 .setTitle(`Ban`)
-                .setDescription("The member was banned" + (failed ? ", but the user could not be messaged" : ""))
+                .setDescription("The member was banned" + (failed ? ", but could not be notified" : ""))
                 .setStatus(failed ? "Warning" : "Success")
             ], components: []})
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji("MEMBER.BAN")
+                .setEmoji("PUNISH.BAN.RED")
                 .setTitle(`Ban`)
                 .setDescription("Something went wrong and the user was not banned")
                 .setStatus("Danger")
@@ -70,7 +69,7 @@ const callback = async (interaction: CommandInteraction) => {
         }
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
-            .setEmoji("MEMBER.UNBAN")
+            .setEmoji("PUNISH.BAN.GREEN")
             .setTitle(`Ban`)
             .setDescription("No changes were made")
             .setStatus("Success")

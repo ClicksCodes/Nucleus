@@ -1,5 +1,6 @@
 import Discord, { CommandInteraction, MessageActionRow, Message } from "discord.js";
 import EmojiEmbed from "./generateEmojiEmbed.js"
+import getEmojiByName from "./getEmojiByName.js";
 
 class confirmationMessage {
     interaction: CommandInteraction;
@@ -22,8 +23,8 @@ class confirmationMessage {
     setDescription(description: string) { this.description = description; return this }
     setColor(color: string) { this.color = color; return this }
 
-    async send() {
-        let m = await this.interaction.reply({
+    async send(editOnly?: boolean) {
+        let object = {
             embeds: [
                 new EmojiEmbed()
                     .setEmoji(this.emoji)
@@ -36,16 +37,24 @@ class confirmationMessage {
                     new Discord.MessageButton()
                         .setCustomId("yes")
                         .setLabel("Yes")
-                        .setStyle("SUCCESS"),
+                        .setStyle("SUCCESS")
+                        .setEmoji(getEmojiByName("CONTROL.TICK", "id")),
                     new Discord.MessageButton()
                         .setCustomId("no")
-                        .setLabel("Cancel") // TODO: 
+                        .setLabel("Cancel")
                         .setStyle("DANGER")
+                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                 ])
             ],
             ephemeral: true,
             fetchReply: true
-        })
+        }
+        let m;
+        if ( editOnly ) {
+            m = await this.interaction.editReply(object);
+        } else {
+            m = await this.interaction.reply(object)
+        }
         let component;
         try {
             component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 2.5 * 60 * 1000});

@@ -2,6 +2,8 @@
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
     "discord.js": "^13.6.0",
+    "humanize": "^0.0.9",
+    "humanize-duration": "^3.27.1",
     "jshaiku": "file:../haiku",
     "typescript": "^4.5.5"
   },

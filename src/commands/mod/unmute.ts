@@ -4,11 +4,11 @@ import { WrappedCheck } from "jshaiku";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("slowmode")
-    .setDescription("Manages slowmode in a channel")
+    .setName("unmute")
+    .setDescription("Unmutes a member")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [mod/slowmode]");
+    interaction.reply("Command incomplete [mod/unmute]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

@@ -15,6 +15,4 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     return true;
 }
 
-export { command };
-export { callback };
-export { check };
+export { command, callback, check };
