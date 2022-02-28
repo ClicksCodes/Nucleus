@@ -31,9 +31,10 @@ const callback = async (interaction: CommandInteraction) => {
 //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()) {
         let dmd = false
+        let dm;
         try {
             if (interaction.options.getString("notify") != "no") {
-                await (interaction.options.getMember("user") as GuildMember).send({
+                dm = await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.KICK.RED")
                         .setTitle("Kicked")
@@ -47,13 +48,6 @@ const callback = async (interaction: CommandInteraction) => {
         } catch {}
         try {
             (interaction.options.getMember("user") as GuildMember).kick(interaction.options.getString("reason") ?? "No reason provided.")
-            let failed = (dmd == false && interaction.options.getString("notify") != "no")
-            await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji(`PUNISH.KICK.${failed ? "YELLOW" : "GREEN"}`)
-                .setTitle(`Kick`)
-                .setDescription("The member was kicked" + (failed ? ", but could not be notified" : ""))
-                .setStatus(failed ? "Warning" : "Success")
-            ], components: []})
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.KICK.RED")
@@ -61,7 +55,16 @@ const callback = async (interaction: CommandInteraction) => {
                 .setDescription("Something went wrong and the user was not kicked")
                 .setStatus("Danger")
             ], components: []})
+            if (dmd) await dm.delete()
+            return
         }
+        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        await interaction.editReply({embeds: [new EmojiEmbed()
+            .setEmoji(`PUNISH.KICK.${failed ? "YELLOW" : "GREEN"}`)
+            .setTitle(`Kick`)
+            .setDescription("The member was kicked" + (failed ? ", but could not be notified" : ""))
+            .setStatus(failed ? "Warning" : "Success")
+        ], components: []})
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.KICK.GREEN")
@@ -73,8 +76,15 @@ const callback = async (interaction: CommandInteraction) => {
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+    let member = (interaction.member as GuildMember)
+    let me = (interaction.guild.me as GuildMember)
+    let apply = (interaction.options.getMember("user") as GuildMember)
+    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    let memberPos = member.roles ? member.roles.highest.position : 0
+    let mePos = me.roles ? me.roles.highest.position : 0
+    let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Check if Nucleus can kick the member
-    if (! (interaction.guild.me.roles.highest.position > (interaction.member as GuildMember).roles.highest.position)) throw "I do not have a role higher than that member"
+    if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to kick
     if (! interaction.guild.me.permissions.has("KICK_MEMBERS")) throw "I do not have the `kick_members` permission";
     // Do not allow kicking Nucleus
@@ -84,7 +94,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if the user has kick_members permission
     if (! (interaction.member as GuildMember).permissions.has("KICK_MEMBERS")) throw "You do not have the `kick_members` permission";
     // Check if the user is below on the role list
-    if (! ((interaction.member as GuildMember).roles.highest.position > (interaction.options.getMember("user") as GuildMember).roles.highest.position)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow kick
     return true
 }

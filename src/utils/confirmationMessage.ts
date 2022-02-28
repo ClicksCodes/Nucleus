@@ -61,6 +61,7 @@ class confirmationMessage {
         } catch (e) {
             return false;  // TODO: Check the type of the error; change the error message here
         }
+        component.deferUpdate();
 
         return component.customId === "yes"
     }

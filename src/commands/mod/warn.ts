@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, MessageActionRow } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -43,15 +43,6 @@ const callback = async (interaction: CommandInteraction) => {
                 })
                 dmd = true
             }
-        } catch {}
-        try {
-            let failed = (dmd == false && interaction.options.getString("notify") != "no") // TODO: some way of dealing with not DMing users
-            await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji(`PUNISH.WARN.${failed ? "YELLOW" : "GREEN"}`)
-                .setTitle(`Warn`)
-                .setDescription(failed ? "The user cannot be messaged and was not warned" : "The user was warned")
-                .setStatus(failed ? "Warning" : "Success")
-            ], components: []})
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.WARN.RED")
@@ -59,6 +50,73 @@ const callback = async (interaction: CommandInteraction) => {
                 .setDescription("Something went wrong and the user was not warned")
                 .setStatus("Danger")
             ], components: []})
+        }
+        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        if (!failed) {
+            await interaction.editReply({embeds: [new EmojiEmbed()
+                .setEmoji(`PUNISH.WARN.GREEN`)
+                .setTitle(`Warn`)
+                .setDescription("The user was warned")
+                .setStatus("Success")
+            ], components: []})
+        } else {
+            let m = await interaction.editReply({
+                embeds: [new EmojiEmbed()
+                    .setEmoji(`PUNISH.WARN.RED`)
+                    .setTitle(`Warn`)
+                    .setDescription("The user's DMs are not open\n\nWhat would you like to do?")
+                    .setStatus("Danger")
+                ], components: [
+                    new MessageActionRow().addComponents([
+                        new Discord.MessageButton()
+                            .setCustomId("log")
+                            .setLabel("Ignore and log")
+                            .setStyle("SECONDARY"),
+                        new Discord.MessageButton()
+                            .setCustomId("here")
+                            .setLabel("Warn here")
+                            .setStyle("SECONDARY")
+                            .setDisabled((interaction.options.getMember("user") as GuildMember).permissionsIn(interaction.channel as Discord.TextChannel).has("VIEW_CHANNEL") === false),
+                    ])
+                ],
+            })
+            let component;
+            try {
+                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+            } catch (e) {
+                return await interaction.editReply({embeds: [new EmojiEmbed()
+                    .setEmoji(`PUNISH.WARN.GREEN`)
+                    .setTitle(`Warn`)
+                    .setDescription("No changes were made")
+                    .setStatus("Success")
+                ], components: []})
+            }
+            if ( component.customId == "here" ) {
+                await interaction.channel.send({
+                    embeds: [new EmojiEmbed()
+                        .setEmoji(`PUNISH.WARN.RED`)
+                        .setTitle(`Warn`)
+                        .setDescription(`You have been warned` +
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
+                        .setStatus("Danger")
+                    ],
+                    content: `<@!${(interaction.options.getMember("user") as GuildMember).id}>`,
+                    allowedMentions: {users: [(interaction.options.getMember("user") as GuildMember).id]}
+                })
+                return await interaction.editReply({embeds: [new EmojiEmbed()
+                    .setEmoji(`PUNISH.WARN.GREEN`)
+                    .setTitle(`Warn`)
+                    .setDescription("The user was warned")
+                    .setStatus("Success")
+                ], components: []})
+            } else {
+                await interaction.editReply({embeds: [new EmojiEmbed()
+                    .setEmoji(`PUNISH.WARN.GREEN`)
+                    .setTitle(`Warn`)
+                    .setDescription("The warn was logged")
+                    .setStatus("Success")
+                ], components: []})
+            }
         }
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
@@ -71,6 +129,14 @@ const callback = async (interaction: CommandInteraction) => {
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+    return true
+    let member = (interaction.member as GuildMember)
+    let me = (interaction.guild.me as GuildMember)
+    let apply = (interaction.options.getMember("user") as GuildMember)
+    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    let memberPos = member.roles ? member.roles.highest.position : 0
+    let mePos = me.roles ? me.roles.highest.position : 0
+    let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Do not allow warning bots
     if ((interaction.member as GuildMember).user.bot) throw "I cannot warn bots"
     // Allow the owner to warn anyone
@@ -78,7 +144,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if the user has moderate_members permission
     if (! (interaction.member as GuildMember).permissions.has("MODERATE_MEMBERS")) throw "You do not have the `moderate_members` permission";
     // Check if the user is below on the role list
-    if (! ((interaction.member as GuildMember).roles.highest.position > (interaction.options.getMember("user") as GuildMember).roles.highest.position)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow warn
     return true
 }

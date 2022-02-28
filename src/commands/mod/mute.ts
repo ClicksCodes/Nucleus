@@ -17,7 +17,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default 0").setMinValue(0).setMaxValue(59).setRequired(false))
     .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default 0").setMinValue(0).setMaxValue(59).setRequired(false))
     .addStringOption(option => option.setName("reason").setDescription("The reason for the mute").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("The user to notify they have been muted").setRequired(false))
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are kicked | Default yes").setRequired(false)
+        .addChoices([["Yes", "yes"], ["No", "no"]]))
     // TODO: notify the user when the mute is lifted
 
 const callback = async (interaction: CommandInteraction) => {
@@ -112,13 +113,14 @@ const callback = async (interaction: CommandInteraction) => {
                 .setStatus("Success")
         ], ephemeral: true, fetchReply: true})
     }
+    // TODO:[Modals] Replace this with a modal
     if (await new confirmationMessage(interaction)
         .setEmoji("PUNISH.MUTE.RED")
         .setTitle("Mute")
         .setDescription(keyValueList({
             "user": `<@!${user.id}> (${user.user.username})`,
             "time": `${humanizeDuration(muteTime * 1000, {round: true})}`,
-            "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
+            "reason": `\n> ${reason ? reason : "*No reason provided*"}`
         })
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
         + `Are you sure you want to mute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
@@ -127,9 +129,10 @@ const callback = async (interaction: CommandInteraction) => {
 //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send(true)) {
         let dmd = false
+        let dm;
         try {
             if (interaction.options.getString("notify") != "no") {
-                await (interaction.options.getMember("user") as GuildMember).send({
+                dm = await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.MUTE.RED")
                         .setTitle("Muted")
@@ -144,13 +147,6 @@ const callback = async (interaction: CommandInteraction) => {
         } catch {}
         try {
             (interaction.options.getMember("user") as GuildMember).timeout(muteTime * 1000, interaction.options.getString("reason") || "No reason provided")
-            let failed = (dmd == false && interaction.options.getString("notify") != "no")
-            await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
-                .setTitle(`Mute`)
-                .setDescription("The member was muted" + (failed ? ", but could not be notified" : ""))
-                .setStatus(failed ? "Warning" : "Success")
-            ], components: []})
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")
@@ -158,7 +154,16 @@ const callback = async (interaction: CommandInteraction) => {
                 .setDescription("Something went wrong and the user was not kicked")
                 .setStatus("Danger")
             ], components: []})
+            if (dmd) await dm.delete()
+            return
         }
+        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        await interaction.editReply({embeds: [new EmojiEmbed()
+            .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
+            .setTitle(`Mute`)
+            .setDescription("The member was muted" + (failed ? ", but could not be notified" : ""))
+            .setStatus(failed ? "Warning" : "Success")
+        ], components: []})
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.MUTE.GREEN")
@@ -170,8 +175,15 @@ const callback = async (interaction: CommandInteraction) => {
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+    let member = (interaction.member as GuildMember)
+    let me = (interaction.guild.me as GuildMember)
+    let apply = (interaction.options.getMember("user") as GuildMember)
+    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    let memberPos = member.roles ? member.roles.highest.position : 0
+    let mePos = me.roles ? me.roles.highest.position : 0
+    let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Check if Nucleus can mute the member
-    if (! (interaction.guild.me.roles.highest.position > (interaction.member as GuildMember).roles.highest.position)) throw "I do not have a role higher than that member"
+    if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to mute
     if (! interaction.guild.me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the `moderate_members` permission";
     // Do not allow the user to have admin or be the owner
@@ -183,7 +195,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if the user has moderate_members permission
     if (! (interaction.member as GuildMember).permissions.has("MODERATE_MEMBERS")) throw "You do not have the `moderate_members` permission";
     // Check if the user is below on the role list
-    if (! ((interaction.member as GuildMember).roles.highest.position > (interaction.options.getMember("user") as GuildMember).roles.highest.position)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow mute
     return true
 }

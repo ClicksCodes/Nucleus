@@ -21,6 +21,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addStringOption(option => option.setName("reason").setDescription("The reason for the purge").setRequired(false))
 
 const callback = async (interaction: CommandInteraction) => {
+    let user = interaction.options.getMember("user") as GuildMember ?? null
     let channel = (interaction.options.getChannel("channel") as GuildChannel) ?? interaction.channel
     let thischannel
     if ((interaction.options.getChannel("channel") as GuildChannel) == null) {
@@ -55,7 +56,7 @@ const callback = async (interaction: CommandInteraction) => {
             ephemeral: true,
             fetchReply: true
         })
-        let deleted = []
+        let deleted = [] as Discord.Message[]
         while (true) {
             let m = await interaction.editReply({
                 embeds: [
@@ -111,7 +112,15 @@ const callback = async (interaction: CommandInteraction) => {
             if (component.customId === "done") break;
             let amount;
             try { amount = parseInt(component.customId); } catch { break; }
-            await (channel as TextChannel).bulkDelete(amount, true); // TODO: Add to deleted list | TODO: Support for users
+            let messages;
+            (interaction.channel as TextChannel).messages.fetch({limit: amount}).then(async (ms) => {
+                if (user) {
+                    ms = ms.filter(m => m.author.id === user.id)
+                }
+                messages = await (channel as TextChannel).bulkDelete(ms, true);
+            })
+            deleted = deleted.concat(messages.map(m => m)) // TODO: .values doesnt work so using .map
+            // TODO: Support for users
         }
         if (deleted.length === 0) return await interaction.editReply({
             embeds: [
@@ -123,16 +132,53 @@ const callback = async (interaction: CommandInteraction) => {
             ],
             components: []
         })
-        return await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("CHANNEL.PURGE.GREEN")
-                    .setTitle("Purge")
-                    .setDescription(`Deleted ${deleted.length} messages`)
-                    .setStatus("Success")
-            ],
-            components: []
-        })
+        let attachmentObject;
+        try {
+            let out = ""
+            deleted.reverse().forEach(message => {
+                out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(message.createdTimestamp).toISOString()}]\n`
+                let lines = message.content.split("\n")
+                lines.forEach(line => {out += `> ${line}\n`})
+                out += `\n\n`
+            })
+            attachmentObject = {
+                attachment: Buffer.from(out),
+                name: `purge-${channel.id}-${Date.now()}.txt`,
+                description: "Purge log"
+            }
+        } catch {}
+        let m = await interaction.editReply({embeds: [new EmojiEmbed()
+            .setEmoji(`CHANNEL.PURGE.GREEN`)
+            .setTitle(`Purge`)
+            .setDescription("Messages cleared")
+            .setStatus("Success")
+        ], components: [new Discord.MessageActionRow().addComponents([
+            new Discord.MessageButton()
+                .setCustomId("download")
+                .setLabel("Download transcript")
+                .setStyle("SUCCESS")
+                .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
+        ])]})
+        let component;
+        try {
+            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+        } catch {}
+        if (component && component.customId === "download") {
+            interaction.editReply({embeds: [new EmojiEmbed()
+                .setEmoji("CHANNEL.PURGE.GREEN")
+                .setTitle(`Purge`)
+                .setDescription("Uploaded")
+                .setStatus("Success")
+            ], components: [], files: [attachmentObject]})
+        } else {
+            interaction.editReply({embeds: [new EmojiEmbed()
+                .setEmoji("CHANNEL.PURGE.GREEN")
+                .setTitle(`Purge`)
+                .setDescription("Messages cleared")
+                .setStatus("Success")
+            ], components: []})
+        }
+        return
     } else {
         if (await new confirmationMessage(interaction)
             .setEmoji("CHANNEL.PURGE.RED")
@@ -146,27 +192,67 @@ const callback = async (interaction: CommandInteraction) => {
     //        pluralize("day", interaction.options.getInteger("amount"))
     //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
         .send()) {
+            let messages;
             try {
-                let messages = await (channel as TextChannel).bulkDelete(interaction.options.getInteger("amount"), true) // TODO: Support for users
-                let out = ""
-                messages.reverse().forEach(message => {
-                    out += `${message.author.username}#${message.author.discriminator} (${message.author.id})\n`
-                    let lines = message.content.split("\n")
-                    lines.forEach(line => {out += `> ${line}\n`}) // TODO: Humanize timestamp
-                    out += `\n\n`
-                }) // TODO: Upload as file
-                await interaction.editReply({embeds: [new EmojiEmbed()
-                    .setEmoji(`CHANNEL.PURGE.GREEN`)
-                    .setTitle(`Purge`)
-                    .setDescription("Messages cleared")
-                    .setStatus("Success")
-                ], components: []})
-            } catch {
+                (interaction.channel as TextChannel).messages.fetch({limit: interaction.options.getInteger("amount")}).then(async (ms) => {
+                    if (user) {
+                        ms = ms.filter(m => m.author.id === user.id)
+                    }
+                    messages = await (channel as TextChannel).bulkDelete(ms, true);
+                }) // TODO: fix for purge amount by user, not just checking x
+            } catch(e) {
+                console.log(e)
                 await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle(`Purge`)
                     .setDescription("Something went wrong and no messages were deleted")
                     .setStatus("Danger")
+                ], components: []})
+            }
+            let attachmentObject;
+            try {
+                let out = ""
+                messages.reverse().forEach(message => {
+                    out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(message.createdTimestamp).toISOString()}]\n`
+                    let lines = message.content.split("\n")
+                    lines.forEach(line => {out += `> ${line}\n`})
+                    out += `\n\n`
+                })
+                attachmentObject = {
+                    attachment: Buffer.from(out),
+                    name: `purge-${channel.id}-${Date.now()}.txt`,
+                    description: `Purge log`
+                }
+            } catch {}
+            let m = await interaction.editReply({embeds: [new EmojiEmbed()
+                .setEmoji(`CHANNEL.PURGE.GREEN`)
+                .setTitle(`Purge`)
+                .setDescription("Messages cleared")
+                .setStatus("Success")
+            ], components: [new Discord.MessageActionRow().addComponents([
+                new Discord.MessageButton()
+                    .setCustomId("download")
+                    .setLabel("Download transcript")
+                    .setStyle("SUCCESS")
+                    .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
+            ])]})
+            let component;
+            try {
+                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+            } catch {}
+            if (component && component.customId === "download") {
+                interaction.editReply({embeds: [new EmojiEmbed()
+                    .setEmoji("CHANNEL.PURGE.GREEN")
+                    .setTitle(`Purge`)
+                    .setDescription("Uploaded")
+                    .setStatus("Success")
+                ], components: [], files: [attachmentObject]})
+            } else {
+                interaction.editReply({embeds: [new EmojiEmbed()
+                    .setEmoji("CHANNEL.PURGE.GREEN")
+                    .setTitle(`Purge`)
+                    .setDescription("Messages cleared")
+                    .setStatus("Success")
                 ], components: []})
             }
         } else {
