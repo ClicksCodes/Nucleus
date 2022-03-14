@@ -41,7 +41,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Banned")
                         .setDescription(`You have been banned in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
                         .setStatus("Danger")
                     ]
                 })

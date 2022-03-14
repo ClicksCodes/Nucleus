@@ -39,7 +39,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setEmoji("PUNISH.KICK.RED")
                         .setTitle("Kicked")
                         .setDescription(`You have been kicked in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
                         .setStatus("Danger")
                     ]
                 })

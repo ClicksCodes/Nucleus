@@ -40,7 +40,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Softbanned")
                         .setDescription(`You have been softbanned from ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
                         .setStatus("Danger")
                     ]
                 })

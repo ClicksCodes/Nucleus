@@ -5,7 +5,9 @@
     "humanize": "^0.0.9",
     "humanize-duration": "^3.27.1",
     "jshaiku": "file:../haiku",
-    "typescript": "^4.5.5"
+    "json-diff": "^0.7.1",
+    "typescript": "^4.5.5",
+    "unscan": "^1.1.2"
   },
   "name": "nucleus",
   "version": "0.0.1",

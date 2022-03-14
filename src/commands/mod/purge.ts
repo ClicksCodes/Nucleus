@@ -15,7 +15,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("The amount of messages to delete")
         .setRequired(false)
         .setMinValue(1)
-        .setMaxValue(50))
+        .setMaxValue(100))
     .addChannelOption(option => option.setName("channel").setDescription("The channel to purge messages from").setRequired(false))
     .addUserOption(option => option.setName("user").setDescription("The user to purge messages from").setRequired(false))
     .addStringOption(option => option.setName("reason").setDescription("The reason for the purge").setRequired(false))

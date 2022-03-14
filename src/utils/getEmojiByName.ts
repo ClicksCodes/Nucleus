@@ -13,7 +13,7 @@ function getEmojiByName(name: string, format?: string): string {
     if (id === undefined) {
         return `<a:a:946346549271732234>`
     } else if (id.toString().startsWith("a")) {
-        return `<a:a:${id.toString().slice(0, -1)}>`
+        return `<a:a:${id.toString().slice(1, id.toString().length)}>`
     }
     return `<:a:${id}>`;
 }

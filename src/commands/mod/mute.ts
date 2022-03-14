@@ -137,7 +137,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setEmoji("PUNISH.MUTE.RED")
                         .setTitle("Muted")
                         .setDescription(`You have been muted in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided.\n\n" +
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : ".\n\n" +
                                     `You will be unmuted at: <t:${Math.round((new Date).getTime() / 1000) + muteTime}:D> at <t:${Math.round((new Date).getTime() / 1000) + muteTime}:T> (<t:${Math.round((new Date).getTime() / 1000) + muteTime}:R>)`))
                         .setStatus("Danger")
                     ]

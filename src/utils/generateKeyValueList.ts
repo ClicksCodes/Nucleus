@@ -1,6 +1,11 @@
-function capitalize(s)
-{
-    return s[0].toUpperCase() + s.slice(1);
+const forceCaps = [
+    "ID",
+    "NSFW"
+]
+
+export function capitalize(s: string) {
+    s = s.replace(/([A-Z])/g, ' $1');
+    return forceCaps.includes(s.toUpperCase()) ? s.toUpperCase() : s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 
 function keyValueList(data) {

@@ -16,6 +16,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     )
 
 const callback = async (interaction: CommandInteraction) => {
+    // @ts-ignore
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = interaction.client.logger
     // TODO:[Modals] Replace this with a modal
     if (await new confirmationMessage(interaction)
         .setEmoji("PUNISH.WARN.RED")
@@ -24,7 +26,8 @@ const callback = async (interaction: CommandInteraction) => {
             "user": `<@!${(interaction.options.getMember("user") as GuildMember).id}> (${(interaction.options.getMember("user") as GuildMember).user.username})`,
             "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
         })
-        + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`)
+        + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+        + `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
 //        pluralize("day", interaction.options.getInteger("delete"))
 //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
@@ -37,7 +40,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setEmoji("PUNISH.WARN.RED")
                         .setTitle("Warned")
                         .setDescription(`You have been warned in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
                         .setStatus("Danger")
                     ]
                 })
@@ -51,6 +54,25 @@ const callback = async (interaction: CommandInteraction) => {
                 .setStatus("Danger")
             ], components: []})
         }
+        let data = {
+            meta:{
+                type: 'memberWarn',
+                displayName: 'Member warned',
+                calculateType: 'guildMemberPunish',
+                color: NucleusColors.yellow,
+                emoji: 'PUNISH.WARN.YELLOW',
+                timestamp: new Date().getTime()
+            },
+            list: {
+                user: renderUser((interaction.options.getMember("user") as GuildMember).user.id, (interaction.options.getMember("user") as GuildMember).user),
+                warnedBy: renderUser(interaction.member.user.id, interaction.member.user),
+                reason: (interaction.options.getString("reason") ? `\n> ${interaction.options.getString("reason")}` : "No reason provided")
+            },
+            hidden: {
+                guild: interaction.guild.id
+            }
+        }
+        log(data, interaction.client);
         let failed = (dmd == false && interaction.options.getString("notify") != "no")
         if (!failed) {
             await interaction.editReply({embeds: [new EmojiEmbed()
@@ -97,7 +119,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setEmoji(`PUNISH.WARN.RED`)
                         .setTitle(`Warn`)
                         .setDescription(`You have been warned` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : " with no reason provided."))
+                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
                         .setStatus("Danger")
                     ],
                     content: `<@!${(interaction.options.getMember("user") as GuildMember).id}>`,
@@ -129,7 +151,6 @@ const callback = async (interaction: CommandInteraction) => {
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    return true
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)

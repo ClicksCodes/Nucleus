@@ -1,13 +1,15 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
+import { testLink, testMalware, testNSFW } from '../utils/scanners.js';
 
 const command = new SlashCommandBuilder()
     .setName("privacy")
-    .setDescription("Shows info about Nucleus' privacy options")
+    .setDescription("we changed the fucking charger again!")
+    .addStringOption(option => option.setName("link").setDescription("fuck you").setRequired(false))
 
-const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [privacy]");
+const callback = async (interaction: CommandInteraction) => {
+    console.log(await testLink(interaction.options.getString("link")))
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
