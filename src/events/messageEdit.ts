@@ -2,11 +2,11 @@ export const event = 'messageUpdate'
 
 export async function callback(client, oldMessage, newMessage) {
     if (newMessage.author.id == client.user.id) return;
-    if (!newMessage.content || !oldMessage.content) return;
 	const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = newMessage.channel.client.logger
     newMessage.reference = newMessage.reference || {}
-    let newContent = newMessage.cleanContent
-    let oldContent = oldMessage.cleanContent
+    let newContent = newMessage.cleanContent.replaceAll("`", "‘")
+    let oldContent = oldMessage.cleanContent.replaceAll("`", "‘")
+    if (newContent == oldContent) return;
     if (newContent.length > 256) newContent = newContent.substring(0, 253) + '...'
     if (oldContent.length > 256) oldContent = oldContent.substring(0, 253) + '...'
     let data = {
@@ -19,7 +19,8 @@ export async function callback(client, oldMessage, newMessage) {
             timestamp: newMessage.editedTimestamp
         },
         separate: {
-            start: `**Before:**\n\`\`\`\n${oldContent}\n\`\`\`\n**After:**\n\`\`\`\n${newContent}\n\`\`\``,
+            start: (oldContent ? `**Before:**\n\`\`\`\n${oldContent}\n\`\`\`\n` : '**Before:** *Message had no content*\n') +
+                   (newContent ? `**After:**\n\`\`\`\n${newContent}\n\`\`\`` : '**After:** *Message had no content*'),
             end: `[[Jump to message]](${newMessage.url})`
         },
         list: {

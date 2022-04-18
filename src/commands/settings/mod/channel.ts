@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Sets the channel for staff messages to go to")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/mod/channel]");
+    interaction.reply("This command is not yet finished [settings/mod/channel]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

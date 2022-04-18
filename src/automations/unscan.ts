@@ -1,10 +1,12 @@
 import * as scan from '../utils/scanners.js'
+import Tesseract from 'tesseract.js';
 
 export async function LinkCheck(message): Promise<boolean> {
     let links = message.content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) ?? []
     let detections = []
     const promises = links.map(async element => {
         try {
+            if (element.match(/https?:\/\/[a-zA-Z]+\.?discord(app)?\.(com|net)\/?/)) return // Also matches discord.net, not enough of a bug
             element = await scan.testLink(element)
         } catch {}
         detections.push({tags: element.tags || [], safe: element.safe})
@@ -27,9 +29,9 @@ export async function LinkCheck(message): Promise<boolean> {
 
 export async function NSFWCheck(element): Promise<boolean> {
     try {
+        let test = (await scan.testNSFW(element))
         //@ts-ignore
-        let test = (await scan.testNSFW(element)).nsfw
-        return test
+        return test.nsfw
     } catch {
         return false
     }
@@ -64,4 +66,8 @@ export function TestString(string, soft, strict): string {
         }
     }
     return "none"
+}
+
+export async function TestImage(element): Promise<string> {
+    return "";
 }

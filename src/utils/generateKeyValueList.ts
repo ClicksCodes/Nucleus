@@ -5,7 +5,14 @@ const forceCaps = [
 
 export function capitalize(s: string) {
     s = s.replace(/([A-Z])/g, ' $1');
-    return forceCaps.includes(s.toUpperCase()) ? s.toUpperCase() : s[0].toUpperCase() + s.slice(1).toLowerCase();
+    return forceCaps.includes(s.toUpperCase()) ? s.toUpperCase() : s[0]
+        .toUpperCase() + s.slice(1)
+        .toLowerCase()
+        .replace("discord", "Discord");
+}
+
+export function toCapitals(s: string) {
+    return s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 
 function keyValueList(data) {

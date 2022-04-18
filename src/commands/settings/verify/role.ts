@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Sets the role given after verifying")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/verify/role]");
+    interaction.reply("This command is not yet finished [settings/verify/role]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

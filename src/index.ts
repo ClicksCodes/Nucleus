@@ -11,5 +11,6 @@ await client.registerEventsIn("./events");
 
 client.logger = new Logger()
 client.verify = {}
+client.roleMenu = {}
 
 await client.login();

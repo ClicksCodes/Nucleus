@@ -1,4 +1,4 @@
-import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString } from '../automations/unscan.js'
+import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from '../automations/unscan.js'
 import readConfig from '../utils/readConfig.js'
 import { Message } from 'discord.js'
 

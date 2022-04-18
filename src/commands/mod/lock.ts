@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Manages a lock on a channel")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [mod/lock]");
+    interaction.reply("This command is not yet finished [mod/lock]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Sets what events should be logged")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/log/events]");
+    interaction.reply("This command is not yet finished [settings/log/events]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

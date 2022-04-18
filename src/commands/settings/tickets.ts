@@ -14,7 +14,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addRoleOption(option => option.setName("supportping").setDescription("The role pinged when a ticket is created").setRequired(false))
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/tickets]");
+    interaction.reply("This command is not yet finished [settings/tickets]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

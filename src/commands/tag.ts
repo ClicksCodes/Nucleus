@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setDescription("Get and manage the servers tags")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [tag]");
+    interaction.reply("This command is not yet finished [tag]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Shows all automation options")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/automation]");
+    interaction.reply("This command is not yet finished [settings/automation]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

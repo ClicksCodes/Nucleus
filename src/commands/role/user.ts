@@ -5,10 +5,10 @@ import { WrappedCheck } from "jshaiku";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
     .setName("user")
-    .setDescription("Gives or removes a role form someone")
+    .setDescription("Gives or removes a role from someone")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [role/user]");
+    interaction.reply("This command is not yet finished [role/user]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

@@ -1,10 +1,12 @@
 import humanizeDuration from 'humanize-duration';
+import { purgeByUser } from '../automations/tickets/delete.js';
 import { callback as statsChannelRemove } from '../automations/statsChannelRemove.js';
 
 export const event = 'guildMemberRemove'
 
 export async function callback(_, member) {
     try { await statsChannelRemove(_, member); } catch {}
+    try { purgeByUser(member.id, member.guild); } catch {} // TODO: add this to ban as well
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
         let data = {

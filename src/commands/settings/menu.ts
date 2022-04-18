@@ -35,13 +35,13 @@ const callback = async (interaction: CommandInteraction) => {
     }
 
     let toLogDropdown = new MessageSelectMenu()
-        .setCustomId("tolog")
+        .setCustomId("log")
         .setMaxValues(22)
         .addOptions()
 
     let embed = new MessageEmbed()
 
-    interaction.reply("Command incomplete [settings/all]");
+    interaction.reply("This command is not yet finished [settings/all]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

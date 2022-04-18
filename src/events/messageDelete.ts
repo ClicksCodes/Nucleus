@@ -16,7 +16,7 @@ export async function callback(client, message) {
             timestamp: new Date().getTime()
         },
         separate: {
-            start: `**Message:**\n\`\`\`${content}\`\`\``
+            start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
         },
         list: {
             id: entry(message.id, `\`${message.id}\``),

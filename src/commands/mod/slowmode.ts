@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Manages slowmode in a channel")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [mod/slowmode]");
+    interaction.reply("This command is not yet finished [mod/slowmode]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

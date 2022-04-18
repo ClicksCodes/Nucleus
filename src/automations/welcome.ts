@@ -17,7 +17,6 @@ export async function callback(_, member) {
         }
     }
 
-
     if (!config.welcome.verificationRequired.message && config.welcome.channel) {
         let string = config.welcome.message
         if (string) {
@@ -32,7 +31,7 @@ export async function callback(_, member) {
             } else {
                 let channel = await member.client.channels.fetch(config.welcome.channel)
                 if (channel.guild.id !== member.guild.id) return
-                if (!channel) return // TODO: Notify mods
+                if (!channel) return
                 try {
                     await channel.send(string)
                 } catch (err) {

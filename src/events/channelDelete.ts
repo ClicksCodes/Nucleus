@@ -1,3 +1,5 @@
+import getEmojiByName from "../utils/getEmojiByName.js";
+
 export const event = 'channelDelete'
 
 export async function callback(client, channel) {
@@ -35,6 +37,21 @@ export async function callback(client, channel) {
 			displayName = "Channel"
 		}
 	}
+	let list = {
+		id: entry(channel.id, `\`${channel.id}\``),
+		name: entry(channel.id, `${channel.name}`),
+		topic: null,
+		type: entry(channel.type, readableType),
+		category: entry(channel.parent ? channel.parent.id : null, channel.parent ? channel.parent.name : "Uncategorised"),
+		nsfw: null,
+		created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp)),
+		deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+		deletedBy: entry(audit.executor.id, renderUser(audit.executor))
+	}
+	if (channel.topic != null ?? false) list.topic = entry(channel.topic, `\`\`\`\n${channel.topic.replace('`', "'")}\n\`\`\``);
+	else delete list.topic;
+	if (channel.nsfw !== null ?? false) list.nsfw = entry(channel.nsfw, channel.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`);
+	else delete list.nsfw;
 
 	let data = {
 		meta:{
@@ -45,15 +62,7 @@ export async function callback(client, channel) {
 			emoji: emoji,
 			timestamp: audit.createdTimestamp
 		},
-		list: { // TODO: Add stuff like nsfw, theres loads missing here
-			id: entry(channel.id, `\`${channel.id}\``),
-			name: entry(channel.id, `${channel.name}`),
-			type: entry(channel.type, readableType),
-			category: entry(channel.parent ? channel.parent.id : null, channel.parent ? channel.parent.name : "Uncategorised"),
-			created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp)),
-			deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-			deletedBy: entry(audit.executor.id, renderUser(audit.executor))
-		},
+		list: list,
 		hidden: {
 			guild: channel.guild.id
 		}

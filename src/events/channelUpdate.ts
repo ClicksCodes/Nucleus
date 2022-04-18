@@ -20,7 +20,7 @@ export async function callback(client, oc, nc) {
 	let changes = {
 		id: entry(nc.id, `\`${nc.id}\``),
 		channel: entry(nc.id, renderChannel(nc)),
-		edited: entry(nc.createdTimestamp, renderDelta(nc.createdTimestamp)),
+		edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
 		editedBy: entry(audit.executor.id, renderUser((await nc.guild.members.fetch(audit.executor.id)).user)),
 	}
 	if (oc.name != nc.name) changes["name"] = entry([oc.name, nc.name], `${oc.name} -> ${nc.name}`);
@@ -114,7 +114,7 @@ export async function callback(client, oc, nc) {
 	}
 	let t = oc.type.split("_")[1];
 	if (oc.type != nc.type) changes["type"] = entry([oc.type, nc.type], `${t[0] + t.splice(1).toLowerCase()} -> ${readableType}`);
-
+	if (!(Object.values(changes).length - 4)) return
 	let data = {
 		meta:{
 			type: 'channelUpdate',

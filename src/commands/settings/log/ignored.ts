@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Gets the ignored users, channels and roles")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/log/ignored]");
+    interaction.reply("This command is not yet finished [settings/log/ignored]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

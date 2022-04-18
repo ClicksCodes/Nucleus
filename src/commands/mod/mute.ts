@@ -1,11 +1,13 @@
-import Discord, { CommandInteraction, GuildMember, MessageActionRow } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import humanizeDuration from "humanize-duration";
+import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
+import readConfig from "../../utils/readConfig.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -17,11 +19,13 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default 0").setMinValue(0).setMaxValue(59).setRequired(false))
     .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default 0").setMinValue(0).setMaxValue(59).setRequired(false))
     .addStringOption(option => option.setName("reason").setDescription("The reason for the mute").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are kicked | Default yes").setRequired(false)
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are muted | Default yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]]))
     // TODO: notify the user when the mute is lifted
 
 const callback = async (interaction: CommandInteraction) => {
+    // @ts-ignore
+    const { log, NucleusColors, renderUser, entry } = interaction.client.logger
     const user = interaction.options.getMember("user") as GuildMember
     const reason = interaction.options.getString("reason")
     const time = {
@@ -33,7 +37,7 @@ const callback = async (interaction: CommandInteraction) => {
     let muteTime = (time.days * 24 * 60 * 60) + (time.hours * 60 * 60) + (time.minutes * 60) + time.seconds
     if (muteTime == 0) {
         let m = await interaction.reply({embeds: [
-            new EmojiEmbed()
+            new generateEmojiEmbed()
                 .setEmoji("PUNISH.MUTE.GREEN")
                 .setTitle("Mute")
                 .setDescription("How long should the user be muted")
@@ -88,7 +92,7 @@ const callback = async (interaction: CommandInteraction) => {
             component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
         } catch { return }
         component.deferUpdate();
-        if (component.customId == "cancel") return interaction.editReply({embeds: [new EmojiEmbed()
+        if (component.customId == "cancel") return interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji("PUNISH.MUTE.RED")
             .setTitle("Mute")
             .setDescription("Mute cancelled")
@@ -106,7 +110,7 @@ const callback = async (interaction: CommandInteraction) => {
         }
     } else {
         await interaction.reply({embeds: [
-            new EmojiEmbed()
+            new generateEmojiEmbed()
                 .setEmoji("PUNISH.MUTE.GREEN")
                 .setTitle("Mute")
                 .setDescription("Loading...")
@@ -114,7 +118,7 @@ const callback = async (interaction: CommandInteraction) => {
         ], ephemeral: true, fetchReply: true})
     }
     // TODO:[Modals] Replace this with a modal
-    if (await new confirmationMessage(interaction)
+    let confirmation = await new confirmationMessage(interaction)
         .setEmoji("PUNISH.MUTE.RED")
         .setTitle("Mute")
         .setDescription(keyValueList({
@@ -127,20 +131,27 @@ const callback = async (interaction: CommandInteraction) => {
         .setColor("Danger")
 //        pluralize("day", interaction.options.getInteger("delete"))
 //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
-    .send(true)) {
+    .send(true)
+    if (confirmation.success) {
         let dmd = false
         let dm;
+        let config = await readConfig(interaction.guild.id);
         try {
             if (interaction.options.getString("notify") != "no") {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [new EmojiEmbed()
+                    embeds: [new generateEmojiEmbed()
                         .setEmoji("PUNISH.MUTE.RED")
                         .setTitle("Muted")
                         .setDescription(`You have been muted in ${interaction.guild.name}` +
                                     (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : ".\n\n" +
                                     `You will be unmuted at: <t:${Math.round((new Date).getTime() / 1000) + muteTime}:D> at <t:${Math.round((new Date).getTime() / 1000) + muteTime}:T> (<t:${Math.round((new Date).getTime() / 1000) + muteTime}:R>)`))
                         .setStatus("Danger")
-                    ]
+                    ],
+                    components: [new MessageActionRow().addComponents(config.moderation.mute.text ? [new MessageButton()
+                        .setStyle("LINK")
+                        .setLabel(config.moderation.mute.text)
+                        .setURL(config.moderation.mute.link)
+                    ] : [])]
                 })
                 dmd = true
             }
@@ -148,24 +159,44 @@ const callback = async (interaction: CommandInteraction) => {
         try {
             (interaction.options.getMember("user") as GuildMember).timeout(muteTime * 1000, interaction.options.getString("reason") || "No reason provided")
         } catch {
-            await interaction.editReply({embeds: [new EmojiEmbed()
+            await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")
                 .setTitle(`Mute`)
-                .setDescription("Something went wrong and the user was not kicked")
+                .setDescription("Something went wrong and the user was not mute")
                 .setStatus("Danger")
             ], components: []})
             if (dmd) await dm.delete()
             return
         }
         let failed = (dmd == false && interaction.options.getString("notify") != "no")
-        await interaction.editReply({embeds: [new EmojiEmbed()
+        await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Mute`)
             .setDescription("The member was muted" + (failed ? ", but could not be notified" : ""))
             .setStatus(failed ? "Warning" : "Success")
         ], components: []})
+        let data = {
+            meta:{
+                type: 'memberMute',
+                displayName: 'Member Muted',
+                calculateType: 'guildMemberPunish',
+                color: NucleusColors.yellow,
+                emoji: 'PUNISH.WARN.YELLOW',
+                timestamp: new Date().getTime()
+            },
+            list: {
+                user: entry((interaction.options.getMember("user") as GuildMember).user.id, renderUser((interaction.options.getMember("user") as GuildMember).user)),
+                mutedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+                time: entry(muteTime, `${humanizeDuration(muteTime * 1000, {round: true})}`),
+                reason: (interaction.options.getString("reason") ? `\n> ${interaction.options.getString("reason")}` : "No reason provided")
+            },
+            hidden: {
+                guild: interaction.guild.id
+            }
+        }
+        log(data, interaction.client);
     } else {
-        await interaction.editReply({embeds: [new EmojiEmbed()
+        await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji("PUNISH.MUTE.GREEN")
             .setTitle(`Mute`)
             .setDescription("No changes were made")

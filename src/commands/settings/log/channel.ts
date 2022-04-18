@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Sets the log channel")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/log/channel]");
+    interaction.reply("This command is not yet finished [settings/log/channel]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

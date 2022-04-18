@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Sets which events mods should be notified about")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [settings/mod/events]");
+    interaction.reply("This command is not yet finished [settings/mod/events]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

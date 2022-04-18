@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Gives or removes a role from everyone")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [role/all]");
+    interaction.reply("This command is not yet finished [role/all]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

@@ -1,4 +1,4 @@
-import { CommandInteraction } from "discord.js";
+import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import { testLink, testMalware, testNSFW } from '../utils/scanners.js';

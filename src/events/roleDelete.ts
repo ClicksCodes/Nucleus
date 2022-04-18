@@ -3,7 +3,8 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 export const event = 'roleDelete'
 
 export async function callback(client, role) {
-	const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = role.client.logger
+	const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = role.client.logger
+    if (role.managed) return;
     let auditLog = await getAuditLog(role.guild, 'ROLE_DELETE');
     let audit = auditLog.entries.filter(entry => entry.target.id == role.id).first();
     if (audit.executor.id == client.user.id) return;

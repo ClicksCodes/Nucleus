@@ -10,7 +10,8 @@ const wait = promisify(setTimeout);
 
 
 export class Logger {
-	renderUser(user: Discord.User) {
+	renderUser(user: Discord.User | string) {
+		if (typeof user == 'string') return `${user} [<@${user}>]`;
 		return `${user.username} [<@${user.id}>]`;
 	}
 	renderTime(t: number) {
@@ -44,7 +45,6 @@ export class Logger {
 		green: 0x68D49E,
 
 	}
-
 
 	async getAuditLog(guild: Discord.Guild, event) {
 		await wait(250)

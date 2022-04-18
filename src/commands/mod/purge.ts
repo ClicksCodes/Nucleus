@@ -2,9 +2,10 @@ import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel } f
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
+import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -16,23 +17,16 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setRequired(false)
         .setMinValue(1)
         .setMaxValue(100))
-    .addChannelOption(option => option.setName("channel").setDescription("The channel to purge messages from").setRequired(false))
     .addUserOption(option => option.setName("user").setDescription("The user to purge messages from").setRequired(false))
     .addStringOption(option => option.setName("reason").setDescription("The reason for the purge").setRequired(false))
 
 const callback = async (interaction: CommandInteraction) => {
     let user = interaction.options.getMember("user") as GuildMember ?? null
-    let channel = (interaction.options.getChannel("channel") as GuildChannel) ?? interaction.channel
-    let thischannel
-    if ((interaction.options.getChannel("channel") as GuildChannel) == null) {
-        thischannel = true
-    } else {
-        thischannel = (interaction.options.getChannel("channel") as GuildChannel).id == interaction.channel.id
-    }
+    let channel = (interaction.channel as GuildChannel)
     if (!(["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(channel.type.toString()))) {
         return await interaction.reply({
             embeds: [
-                new EmojiEmbed()
+                new generateEmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle("Purge")
                     .setDescription("You cannot purge this channel")
@@ -46,7 +40,7 @@ const callback = async (interaction: CommandInteraction) => {
     if ( !interaction.options.getInteger("amount") ) {
         await interaction.reply({
             embeds: [
-                new EmojiEmbed()
+                new generateEmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle("Purge")
                     .setDescription("Select how many messages to delete")
@@ -60,7 +54,7 @@ const callback = async (interaction: CommandInteraction) => {
         while (true) {
             let m = await interaction.editReply({
                 embeds: [
-                    new EmojiEmbed()
+                    new generateEmojiEmbed()
                         .setEmoji("CHANNEL.PURGE.RED")
                         .setTitle("Purge")
                         .setDescription("Select how many messages to delete. You can continue clicking until all messages are cleared.")
@@ -119,12 +113,11 @@ const callback = async (interaction: CommandInteraction) => {
                 }
                 messages = await (channel as TextChannel).bulkDelete(ms, true);
             })
-            deleted = deleted.concat(messages.map(m => m)) // TODO: .values doesnt work so using .map
-            // TODO: Support for users
+            deleted = deleted.concat(messages.map(m => m))
         }
         if (deleted.length === 0) return await interaction.editReply({
             embeds: [
-                new EmojiEmbed()
+                new generateEmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle("Purge")
                     .setDescription("No messages were deleted")
@@ -147,7 +140,7 @@ const callback = async (interaction: CommandInteraction) => {
                 description: "Purge log"
             }
         } catch {}
-        let m = await interaction.editReply({embeds: [new EmojiEmbed()
+        let m = await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji(`CHANNEL.PURGE.GREEN`)
             .setTitle(`Purge`)
             .setDescription("Messages cleared")
@@ -164,14 +157,14 @@ const callback = async (interaction: CommandInteraction) => {
             component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
         } catch {}
         if (component && component.customId === "download") {
-            interaction.editReply({embeds: [new EmojiEmbed()
+            interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
                 .setTitle(`Purge`)
                 .setDescription("Uploaded")
                 .setStatus("Success")
             ], components: [], files: [attachmentObject]})
         } else {
-            interaction.editReply({embeds: [new EmojiEmbed()
+            interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
                 .setTitle(`Purge`)
                 .setDescription("Messages cleared")
@@ -180,29 +173,31 @@ const callback = async (interaction: CommandInteraction) => {
         }
         return
     } else {
-        if (await new confirmationMessage(interaction)
+        let confirmation = await new confirmationMessage(interaction)
             .setEmoji("CHANNEL.PURGE.RED")
             .setTitle("Purge")
             .setDescription(keyValueList({
-                "channel": `<#${channel.id}> (${(channel as GuildChannel).name})` + (thischannel ? " [This channel]" : ""),
+                "channel": `<#${channel.id}> (${(channel as GuildChannel).name})` + ("[This channel]"),
                 "amount": interaction.options.getInteger("amount").toString(),
                 "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
             }))
             .setColor("Danger")
     //        pluralize("day", interaction.options.getInteger("amount"))
     //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
-        .send()) {
+        .send()
+        if (confirmation.success) {
             let messages;
             try {
-                (interaction.channel as TextChannel).messages.fetch({limit: interaction.options.getInteger("amount")}).then(async (ms) => {
-                    if (user) {
-                        ms = ms.filter(m => m.author.id === user.id)
-                    }
-                    messages = await (channel as TextChannel).bulkDelete(ms, true);
-                }) // TODO: fix for purge amount by user, not just checking x
+                if (!user) {
+                    let toDelete = await (interaction.channel as TextChannel).messages.fetch({limit: interaction.options.getInteger("amount")})
+                    messages = await (channel as TextChannel).bulkDelete(toDelete, true);
+                } else {
+                    let toDelete = (await (await (interaction.channel as TextChannel).messages.fetch({limit: 100}))
+                        .filter(m => m.author.id === user.id)).first(interaction.options.getInteger("amount"))
+                    messages = await (channel as TextChannel).bulkDelete(toDelete, true);
+                }
             } catch(e) {
-                console.log(e)
-                await interaction.editReply({embeds: [new EmojiEmbed()
+                await interaction.editReply({embeds: [new generateEmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle(`Purge`)
                     .setDescription("Something went wrong and no messages were deleted")
@@ -224,7 +219,7 @@ const callback = async (interaction: CommandInteraction) => {
                     description: `Purge log`
                 }
             } catch {}
-            let m = await interaction.editReply({embeds: [new EmojiEmbed()
+            let m = await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji(`CHANNEL.PURGE.GREEN`)
                 .setTitle(`Purge`)
                 .setDescription("Messages cleared")
@@ -241,14 +236,14 @@ const callback = async (interaction: CommandInteraction) => {
                 component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
             } catch {}
             if (component && component.customId === "download") {
-                interaction.editReply({embeds: [new EmojiEmbed()
+                interaction.editReply({embeds: [new generateEmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.GREEN")
                     .setTitle(`Purge`)
-                    .setDescription("Uploaded")
+                    .setDescription("Transcript uploaded above")
                     .setStatus("Success")
                 ], components: [], files: [attachmentObject]})
             } else {
-                interaction.editReply({embeds: [new EmojiEmbed()
+                interaction.editReply({embeds: [new generateEmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.GREEN")
                     .setTitle(`Purge`)
                     .setDescription("Messages cleared")
@@ -256,7 +251,7 @@ const callback = async (interaction: CommandInteraction) => {
                 ], components: []})
             }
         } else {
-            await interaction.editReply({embeds: [new EmojiEmbed()
+            await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
                 .setTitle(`Purge`)
                 .setDescription("No changes were made")

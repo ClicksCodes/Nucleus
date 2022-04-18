@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Unbans a user")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply("Command incomplete [mod/unban]");
+    interaction.reply("This command is not yet finished [mod/unban]");
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
