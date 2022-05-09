@@ -6,5 +6,7 @@ import guide from "../automations/guide.js";
 export const event = 'guildCreate';
 
 export async function callback(client, guild) {
-    guide(guild)
+    try{
+        guide(guild)
+    } catch {}
 }

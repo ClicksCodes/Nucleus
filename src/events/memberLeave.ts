@@ -4,31 +4,67 @@ import { callback as statsChannelRemove } from '../automations/statsChannelRemov
 
 export const event = 'guildMemberRemove'
 
-export async function callback(_, member) {
-    try { await statsChannelRemove(_, member); } catch {}
-    try { purgeByUser(member.id, member.guild); } catch {} // TODO: add this to ban as well
+export async function callback(client, member) {
+    try { await statsChannelRemove(client, member); } catch {}
+    try { purgeByUser(member.id, member.guild); } catch {}
     try {
-        const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
-        let data = {
-            meta: {
-                type: 'memberLeave',
-                displayName: 'Member Left',
-                calculateType: 'guildMemberUpdate',
-                color: NucleusColors.red,
-                emoji: "MEMBER" + (member.user.bot ? ".BOT" : "") + ".LEAVE",
-                timestamp: new Date().getTime()
-            },
-            list: {
-                id: entry(member.id, `\`${member.id}\``),
-                name: entry(member.id, renderUser(member.user)),
-                joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
-                left: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                timeInServer: entry(new Date().getTime() - member.joinedAt, humanizeDuration(new Date().getTime() - member.joinedAt, { round: true })),
-                accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
-                serverMemberCount: member.guild.memberCount,
-            },
-            hidden: {
-                guild: member.guild.id
+        const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
+        let auditLog = await getAuditLog(member.guild, 'MEMBER_KICK');
+        let audit = auditLog.entries.filter(entry => entry.target.id == member.id).first();
+        let type = "kick"
+        if (audit) {
+            if (audit.createdAt - 100 < new Date().getTime()) {
+                type = "leave"
+            } else if (audit.executor.id == client.user.id) return
+        }
+        let data
+        if (type == "kick") {
+            data = {
+                meta: {
+                    type: 'memberKick',
+                    displayName: 'Member Kicked',
+                    calculateType: 'guildMemberPunish',
+                    color: NucleusColors.red,
+                    emoji: "PUNISH.KICK.RED",
+                    timestamp: new Date().getTime()
+                },
+                list: {
+                    id: entry(member.id, `\`${member.id}\``),
+                    name: entry(member.id, renderUser(member.user)),
+                    joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
+                    kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    kickedBy: entry(audit.executor.id, renderUser(audit.executor)),
+                    reason: entry(audit.reason, audit.reason ? `\n> ${audit.reason}` : "*No reason provided.*"),
+                    timeInServer: entry(new Date().getTime() - member.joinedAt, humanizeDuration(new Date().getTime() - member.joinedAt, { round: true })),
+                    accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+                    serverMemberCount: member.guild.memberCount,
+                },
+                hidden: {
+                    guild: member.guild.id
+                }
+            }
+        } else {
+            data = {
+                meta: {
+                    type: 'memberLeave',
+                    displayName: 'Member Left',
+                    calculateType: 'guildMemberUpdate',
+                    color: NucleusColors.red,
+                    emoji: "MEMBER." + (member.bot ? "BOT." : "") + "LEAVE",
+                    timestamp: new Date().getTime()
+                },
+                list: {
+                    id: entry(member.id, `\`${member.id}\``),
+                    name: entry(member.id, renderUser(member.user)),
+                    joined: entry(member.joinedTimestamp, renderDelta(member.joinedAt)),
+                    left: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    timeInServer: entry(new Date().getTime() - member.joinedTimestamp, humanizeDuration(new Date().getTime() - member.joinedAt, { round: true })),
+                    accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+                    serverMemberCount: member.guild.memberCount,
+                },
+                hidden: {
+                    guild: member.guild.id
+                }
             }
         }
         log(data, member.client);

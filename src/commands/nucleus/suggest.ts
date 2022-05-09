@@ -11,9 +11,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addStringOption(option => option.setName("suggestion").setDescription("The suggestion to send").setRequired(true))
 
 const callback = async (interaction: CommandInteraction) => {
-	// @ts-ignore
+    // @ts-ignore
     const { renderUser } = interaction.client.logger
-	let suggestion = interaction.options.getString("suggestion");
+    let suggestion = interaction.options.getString("suggestion");
     let confirmation = await new confirmationMessage(interaction)
         .setEmoji("ICONS.OPP.ADD")
         .setTitle("Suggest")
@@ -23,14 +23,14 @@ const callback = async (interaction: CommandInteraction) => {
     .send()
     if (confirmation.success) {
         await (interaction.client.channels.cache.get('955161206459600976') as Discord.TextChannel).send({
-			embeds: [
-				new generateEmojiEmbed()
-					.setTitle(`Suggestion`)
-					.setDescription(`**From:** ${renderUser(interaction.member.user)}\n**Suggestion:**\n> ${suggestion}`)
-					.setStatus("Danger")
-					.setEmoji("NUCLEUS.LOGO")
-			]
-		})
+            embeds: [
+                new generateEmojiEmbed()
+                    .setTitle(`Suggestion`)
+                    .setDescription(`**From:** ${renderUser(interaction.member.user)}\n**Suggestion:**\n> ${suggestion}`)
+                    .setStatus("Danger")
+                    .setEmoji("NUCLEUS.LOGO")
+            ]
+        })
         await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji("ICONS.ADD")
             .setTitle(`Suggest`)

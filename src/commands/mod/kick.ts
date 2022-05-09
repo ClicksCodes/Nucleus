@@ -1,4 +1,5 @@
 import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
+import humanizeDuration from 'humanize-duration';
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -56,6 +57,35 @@ const callback = async (interaction: CommandInteraction) => {
         } catch {}
         try {
             (interaction.options.getMember("user") as GuildMember).kick(interaction.options.getString("reason") ?? "No reason provided.")
+            let member = (interaction.options.getMember("user") as GuildMember)
+            let reason = interaction.options.getString("reason") ?? null
+            // @ts-ignore
+            const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
+            let data = {
+                meta: {
+                    type: 'memberKick',
+                    displayName: 'Member Kicked',
+                    calculateType: 'guildMemberPunish',
+                    color: NucleusColors.red,
+                    emoji: "PUNISH.KICK.RED",
+                    timestamp: new Date().getTime()
+                },
+                list: {
+                    id: entry(member.id, `\`${member.id}\``),
+                    name: entry(member.id, renderUser(member.user)),
+                    joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
+                    kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                    reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
+                    timeInServer: entry(new Date().getTime() - member.joinedTimestamp, humanizeDuration(new Date().getTime() - member.joinedTimestamp, { round: true })),
+                    accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+                    serverMemberCount: member.guild.memberCount,
+                },
+                hidden: {
+                    guild: member.guild.id
+                }
+            }
+            log(data, member.client);
         } catch {
             await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("PUNISH.KICK.RED")

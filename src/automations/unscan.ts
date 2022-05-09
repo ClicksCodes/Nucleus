@@ -40,11 +40,11 @@ export async function NSFWCheck(element): Promise<boolean> {
 export async function SizeCheck(element): Promise<boolean> {
     if (element.height == undefined || element.width == undefined) return true
     if (element.height < 20 || element.width < 20) return false
-	return true
+    return true
 }
 
 export async function MalwareCheck(element): Promise<boolean> {
-	try {
+    try {
         //@ts-ignore
         return (await scan.testMalware(element)).safe
     } catch {

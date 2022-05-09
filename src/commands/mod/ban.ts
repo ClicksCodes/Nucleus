@@ -4,7 +4,8 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import readConfig from '../../utils/readConfig.js'
+import readConfig from '../../utils/readConfig.js';
+import addPlurals from "../../utils/plurals.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -27,7 +28,7 @@ const callback = async (interaction: CommandInteraction) => {
             "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
         })
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
-        + `${interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0} day${interaction.options.getInteger("delete") === 1 || interaction.options.getInteger("delete") === null ? "s" : ""} of messages will be deleted\n\n` // TODO:[s addition]
+        + `${addPlurals(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
         + `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
 //        pluralize("day", interaction.options.getInteger("delete"))
@@ -57,10 +58,37 @@ const callback = async (interaction: CommandInteraction) => {
             }
         } catch {}
         try {
-            (interaction.options.getMember("user") as GuildMember).ban({
+            let member = (interaction.options.getMember("user") as GuildMember)
+            let reason = interaction.options.getString("reason") ?? "No reason provided"
+            member.ban({
                 days: Number(interaction.options.getInteger("delete") ?? 0),
-                reason: interaction.options.getString("reason") ?? "No reason provided"
+                reason: reason
             })
+            // @ts-ignore
+            const { log, NucleusColors, entry, renderUser, renderDelta } = interaction.user.client.logger
+            let data = {
+                meta: {
+                    type: 'memberBan',
+                    displayName: 'Member Banned',
+                    calculateType: 'guildMemberPunish',
+                    color: NucleusColors.red,
+                    emoji: "PUNISH.BAN.RED",
+                    timestamp: new Date().getTime()
+                },
+                list: {
+                    id: entry(member.user.id, `\`${member.user.id}\``),
+                    name: entry(member.user.id, renderUser(member.user)),
+                    banned: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                    reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
+                    accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+                    serverMemberCount: interaction.guild.memberCount,
+                },
+                hidden: {
+                    guild: interaction.guild.id
+                }
+            }
+            log(data, member.user.client);
         } catch {
             await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("PUNISH.BAN.RED")

@@ -58,7 +58,7 @@ export async function callback(interaction) {
                 new MessageButton()
                     .setLabel("Online")
                     .setStyle("LINK")
-                    .setURL(`https://clicksminuteper.net/nuclues/rolemenu?code=${code}`),
+                    .setURL(`https://clicks.codes/nuclues/rolemenu?code=${code}`),
                 new MessageButton()
                     .setLabel("Manual")
                     .setStyle("PRIMARY")

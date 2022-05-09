@@ -65,7 +65,7 @@ class confirmationMessage {
                         .setLabel(this.customButtonTitle)
                         .setStyle("SECONDARY")
                         .setDisabled(this.customButtonDisabled)
-                        .setEmoji(getEmojiByName("CONTROL.RIGHT", "id")) // TODO: add an emoji
+                        .setEmoji(getEmojiByName("CONTROL.TICKET", "id"))
                     ] : []))
                 ],
                 ephemeral: true,
@@ -81,7 +81,7 @@ class confirmationMessage {
             try {
                 component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 2.5 * 60 * 1000});
             } catch (e) {
-                return {success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse};  // TODO: Check the type of the error; change the error message here
+                return {success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse};
             }
             if (component.customId === "yes") {
                 component.deferUpdate();

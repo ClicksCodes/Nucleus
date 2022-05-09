@@ -28,7 +28,7 @@ export default async function(interaction) {
         .setEmoji("NUCLEUS.LOADING")
     ]});
     try {
-        let status = await fetch(`https://clicksminuteper.net`).then(res => res.status);
+        let status = await fetch(`https://clicks.codes`).then(res => res.status);
         if (status != 200) {
             return await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setTitle("Verify")
@@ -45,9 +45,9 @@ export default async function(interaction) {
             .setEmoji("CONTROL.BLOCKCROSS")
         ], components: [new Discord.MessageActionRow().addComponents([
             new Discord.MessageButton()
-                .setLabel("Open webpage")
+                .setLabel("Check webpage")
                 .setStyle("LINK")
-                .setURL("https://clicksminuteper.net/"),
+                .setURL("https://clicks.codes/"),
             new Discord.MessageButton()
                 .setLabel("Support")
                 .setStyle("LINK")
@@ -111,10 +111,12 @@ export default async function(interaction) {
     verify[code] = {
         uID: interaction.member.user.id,
         gID: interaction.guild.id,
+        rID: config.verify.role,
         rName: (await interaction.guild.roles.fetch(config.verify.role)).name,
         mCount: interaction.guild.memberCount,
         gName: interaction.guild.name,
-        guildIcon: interaction.guild.iconURL({format: "png"})
+        gIcon: interaction.guild.iconURL({format: "png"}),
+        interaction: interaction
     }
     await interaction.editReply({embeds: [new generateEmojiEmbed()
         .setTitle("Verify")
@@ -124,6 +126,7 @@ export default async function(interaction) {
     ], components: [new Discord.MessageActionRow().addComponents([new Discord.MessageButton()
         .setLabel("Verify")
         .setStyle("LINK")
-        .setURL(`https://clicksminuteper.net/nucleus/verify?code=${code}`)
+        // .setURL(`https://clicks.codes/nucleus/verify?code=${code}`)
+        .setURL(`https://insulation-coin-hoping-nevertheless.trycloudflare.com/nucleus/verify?code=${code}`)
     ])]});
 }

@@ -3,7 +3,7 @@ import readConfig from '../utils/readConfig.js'
 import convertCurlyBracketString from '../utils/convertCurlyBracketString.js'
 
 export async function callback(_, member) {
-	if (member.bot) return
+    if (member.bot) return
     let config = await readConfig(member.guild.id);
     if (!config.welcome.enabled) return
 

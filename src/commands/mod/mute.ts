@@ -21,7 +21,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addStringOption(option => option.setName("reason").setDescription("The reason for the mute").setRequired(false))
     .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are muted | Default yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]]))
-    // TODO: notify the user when the mute is lifted
 
 const callback = async (interaction: CommandInteraction) => {
     // @ts-ignore
@@ -34,6 +33,10 @@ const callback = async (interaction: CommandInteraction) => {
         minutes: interaction.options.getInteger("minutes") || 0,
         seconds: interaction.options.getInteger("seconds") || 0
     }
+    let config = await readConfig(interaction.guild.id)
+    let serverSettingsDescription = (config.moderation.mute.timeout ? "given a timeout" : "")
+    if (config.moderation.mute.role) serverSettingsDescription += (serverSettingsDescription ? " and " : "") + `given the <@&${config.moderation.mute.role}> role`
+
     let muteTime = (time.days * 24 * 60 * 60) + (time.hours * 60 * 60) + (time.minutes * 60) + time.seconds
     if (muteTime == 0) {
         let m = await interaction.reply({embeds: [
@@ -126,6 +129,7 @@ const callback = async (interaction: CommandInteraction) => {
             "time": `${humanizeDuration(muteTime * 1000, {round: true})}`,
             "reason": `\n> ${reason ? reason : "*No reason provided*"}`
         })
+        + `The user will be ` + serverSettingsDescription + "\n"
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
         + `Are you sure you want to mute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
@@ -157,7 +161,12 @@ const callback = async (interaction: CommandInteraction) => {
             }
         } catch {}
         try {
-            (interaction.options.getMember("user") as GuildMember).timeout(muteTime * 1000, interaction.options.getString("reason") || "No reason provided")
+            if (config.moderation.mute.timeout) {
+                (interaction.options.getMember("user") as GuildMember).timeout(muteTime * 1000, interaction.options.getString("reason") || "No reason provided")
+            }
+            if (config.moderation.mute.role) {
+                (interaction.options.getMember("user") as GuildMember).roles.add(config.moderation.mute.role)
+            }
         } catch {
             await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")

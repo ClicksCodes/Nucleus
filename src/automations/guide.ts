@@ -3,8 +3,8 @@ import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export default async (guild, interaction?) => {
-	let c = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
-	c = c ? c : guild.channels.cache.find(ch => ch.type === "GUILD_TEXT" && ch.permissionsFor(guild.roles.everyone).has("SEND_MESSAGES") && ch.permissionsFor(guild.me).has("EMBED_LINKS"));
+    let c = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
+    c = c ? c : guild.channels.cache.find(ch => ch.type === "GUILD_TEXT" && ch.permissionsFor(guild.roles.everyone).has("SEND_MESSAGES") && ch.permissionsFor(guild.me).has("EMBED_LINKS"));
     let pages = [
         new generateEmojiEmbed()
             .setTitle("Welcome to Nucleus")
@@ -73,7 +73,7 @@ export default async (guild, interaction?) => {
             .setEmoji("NUCLEUS.LOGO")
             .setStatus("Danger")
     ]
-	let m;
+    let m;
     if (interaction) {
         m = await interaction.reply({embeds: [
             new generateEmojiEmbed()
@@ -90,7 +90,7 @@ export default async (guild, interaction?) => {
                 .setStatus("Danger")
                 .setEmoji("NUCLEUS.LOADING")
         ], fetchReply: true });
-	}
+    }
     let page = 0;
 
     let f = async (component) => {

@@ -107,13 +107,15 @@ const callback = async (interaction: CommandInteraction) => {
             let amount;
             try { amount = parseInt(component.customId); } catch { break; }
             let messages;
-            (interaction.channel as TextChannel).messages.fetch({limit: amount}).then(async (ms) => {
+            await (interaction.channel as TextChannel).messages.fetch({limit: amount}).then(async (ms) => {
                 if (user) {
                     ms = ms.filter(m => m.author.id === user.id)
                 }
                 messages = await (channel as TextChannel).bulkDelete(ms, true);
             })
-            deleted = deleted.concat(messages.map(m => m))
+            if (messages) {
+                deleted = deleted.concat(messages.map(m => m))
+            }
         }
         if (deleted.length === 0) return await interaction.editReply({
             embeds: [
@@ -127,6 +129,28 @@ const callback = async (interaction: CommandInteraction) => {
         })
         let attachmentObject;
         try {
+            // @ts-ignore
+            const { log, NucleusColors, entry, renderUser, renderChannel } = interaction.user.client.logger
+            let data = {
+                meta: {
+                    type: 'channelPurge',
+                    displayName: 'Channel Purged',
+                    calculateType: 'messageDelete',
+                    color: NucleusColors.red,
+                    emoji: "PUNISH.BAN.RED",
+                    timestamp: new Date().getTime()
+                },
+                list: {
+                    id: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                    purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                    channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
+                    messagesCleared: entry(deleted.length, deleted.length),
+                },
+                hidden: {
+                    guild: interaction.guild.id
+                }
+            }
+            log(data, interaction.user.client);
             let out = ""
             deleted.reverse().forEach(message => {
                 out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(message.createdTimestamp).toISOString()}]\n`
@@ -177,7 +201,7 @@ const callback = async (interaction: CommandInteraction) => {
             .setEmoji("CHANNEL.PURGE.RED")
             .setTitle("Purge")
             .setDescription(keyValueList({
-                "channel": `<#${channel.id}> (${(channel as GuildChannel).name})` + ("[This channel]"),
+                "channel": `<#${channel.id}>`,
                 "amount": interaction.options.getInteger("amount").toString(),
                 "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
             }))
@@ -206,6 +230,28 @@ const callback = async (interaction: CommandInteraction) => {
             }
             let attachmentObject;
             try {
+                // @ts-ignore
+                const { log, NucleusColors, entry, renderUser, renderChannel } = interaction.user.client.logger
+                let data = {
+                    meta: {
+                        type: 'channelPurge',
+                        displayName: 'Channel Purged',
+                        calculateType: 'messageDelete',
+                        color: NucleusColors.red,
+                        emoji: "PUNISH.BAN.RED",
+                        timestamp: new Date().getTime()
+                    },
+                    list: {
+                        id: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                        purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                        channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
+                        messagesCleared: entry(messages.size, messages.size),
+                    },
+                    hidden: {
+                        guild: interaction.guild.id
+                    }
+                }
+                log(data, interaction.user.client);
                 let out = ""
                 messages.reverse().forEach(message => {
                     out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(message.createdTimestamp).toISOString()}]\n`

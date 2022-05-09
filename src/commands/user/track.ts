@@ -5,6 +5,7 @@ import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
 import readConfig from "../../utils/readConfig.js";
+import addPlural from "../../utils/plurals.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -45,7 +46,7 @@ const callback = async (interaction: CommandInteraction) => {
                 default: index == track,
                 label: option.name,
                 value: index.toString(),
-                description: option.track.length == 0 ? "No" : option.track.length + " role" + (option.track.length == 1 ? "" : "s"), // TODO[s addition]
+                description: option.track.length == 0 ? "No" : addPlural(option.track.length, "role"),
                 emoji: interaction.client.emojis.resolve(getEmojiByName("TRACKS.SINGLE." + (hasRoleInTrack ? "ACTIVE" : "INACTIVE"), "id"))
             })
         })).setCustomId("select").setMaxValues(1)

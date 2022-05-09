@@ -59,8 +59,8 @@ const toHexArray = (permissionsHex, array?) => {
 }
 
 export {
-	toHexInteger,
-	toHexArray,
+    toHexInteger,
+    toHexArray,
     tickets,
     logs
 }

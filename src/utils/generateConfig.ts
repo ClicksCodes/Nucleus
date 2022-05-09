@@ -48,43 +48,43 @@ function writeLogConfig(guild, logs) {
             messageType: "embed",
         },
         filters: {
-			images: {
-				NSFW: true,
-				size: true
-			},
-			malware: true,
-			wordFilter: {
-				enabled: true,
-				words: {
-					strict: [],
-					loose: []
-				},
-				allowed: {
-					users: [],
-					roles: [],
-					channels: []
-				}
-			},
-			invite: {
-				enabled: true,
-				allowed: {
-					users: [],
-					channels: [],
-					roles: []
-				}
-			},
-			pings: {
-				mass: 5,
-				everyone: true,
-				roles: true,
-				allowed: {
-					roles: [],
-					rolesToMention: [],
-					users: [],
-					channels: []
-				}
-			}
-		},
+            images: {
+                NSFW: true,
+                size: true
+            },
+            malware: true,
+            wordFilter: {
+                enabled: true,
+                words: {
+                    strict: [],
+                    loose: []
+                },
+                allowed: {
+                    users: [],
+                    roles: [],
+                    channels: []
+                }
+            },
+            invite: {
+                enabled: true,
+                allowed: {
+                    users: [],
+                    channels: [],
+                    roles: []
+                }
+            },
+            pings: {
+                mass: 5,
+                everyone: true,
+                roles: true,
+                allowed: {
+                    roles: [],
+                    rolesToMention: [],
+                    users: [],
+                    channels: []
+                }
+            }
+        },
         tags: {}
     }));
 }

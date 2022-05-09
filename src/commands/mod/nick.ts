@@ -45,8 +45,8 @@ const callback = async (interaction: CommandInteraction) => {
                     embeds: [new generateEmojiEmbed()
                         .setEmoji("PUNISH.NICKNAME.RED")
                         .setTitle("Nickname changed")
-                        .setDescription(`Your nickname was ${interaction.options.getString("name") ? "changed" : "cleared"} in ${interaction.guild.name}` +
-                                    (interaction.options.getString("name") ? ` it is now: ${interaction.options.getString("name")}` : ".") + "\n\n" +
+                        .setDescription(`Your nickname was ${interaction.options.getString("name") ? "changed" : "cleared"} in ${interaction.guild.name}.` +
+                                    (interaction.options.getString("name") ? ` it is now: ${interaction.options.getString("name")}` : "") + "\n\n" +
                                     (confirmation.buttonClicked ? `You can appeal this in this ticket: <#${confirmation.response}>` : ``))
                         .setStatus("Danger")
                     ]
@@ -55,7 +55,33 @@ const callback = async (interaction: CommandInteraction) => {
             }
         } catch {}
         try {
-            (interaction.options.getMember("user") as GuildMember).setNickname(interaction.options.getString("name") ?? null, "Nucleus Nickname command")
+            let member = (interaction.options.getMember("user") as GuildMember)
+            let before = member.nickname
+            let nickname = interaction.options.getString("name")
+            member.setNickname(nickname ?? null, "Nucleus Nickname command")
+            // @ts-ignore
+            const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = interaction.client.logger
+            let data = {
+                meta: {
+                    type: 'memberUpdate',
+                    displayName: 'Member Updated',
+                    calculateType: 'guildMemberUpdate',
+                    color: NucleusColors.yellow,
+                    emoji: "PUNISH.NICKNAME.YELLOW",
+                    timestamp: new Date().getTime()
+                },
+                list: {
+                    id: entry(member.id, `\`${member.id}\``),
+                    before: entry(before, before ? before : '*None*'),
+                    after: entry(nickname, nickname ? nickname : '*None*'),
+                    updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    updatedBy: entry(interaction.user.id, renderUser(interaction.user))
+                },
+                hidden: {
+                    guild: interaction.guild.id
+                }
+            }
+            log(data, interaction.client);
         } catch {
             await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("PUNISH.NICKNAME.RED")
@@ -99,6 +125,8 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     if ((interaction.member as GuildMember).id == interaction.guild.ownerId) return true
     // Check if the user has manage_nicknames permission
     if (! (interaction.member as GuildMember).permissions.has("MANAGE_NICKNAMES")) throw "You do not have the `manage_nicknames` permission";
+    // Allow changing your own nickname
+    if (member == apply) return true
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow change

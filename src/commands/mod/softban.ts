@@ -4,7 +4,8 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import readConfig from '../../utils/readConfig.js'
+import readConfig from '../../utils/readConfig.js';
+import addPlurals from '../../utils/plurals.js';
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -27,7 +28,7 @@ const callback = async (interaction: CommandInteraction) => {
             "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
         })
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
-        + `${interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0} day${interaction.options.getInteger("delete") === 1 || interaction.options.getInteger("delete") === null ? "s" : ""} of messages will be deleted\n\n` // TODO:[s addition]
+        + `${addPlurals(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
         + `Are you sure you want to softban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
 //        pluralize("day", interaction.options.getInteger("delete"))

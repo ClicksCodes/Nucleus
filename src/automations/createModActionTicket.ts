@@ -1,6 +1,7 @@
-import Discord from 'discord.js';
+import Discord, { MessageActionRow, MessageButton } from 'discord.js';
 import readConfig from '../utils/readConfig.js'
-import generateEmojiEmbed from '../utils/generateEmojiEmbed.js'
+import generateEmojiEmbed from '../utils/generateEmojiEmbed.js';
+import getEmojiByName from "../utils/getEmojiByName.js";
 
 export async function create(guild: Discord.Guild, member: Discord.User, client) {
     let config = await readConfig(guild.id);
@@ -52,7 +53,12 @@ export async function create(guild: Discord.Guild, member: Discord.User, client)
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN")
-        ]})
+        ], components: [new MessageActionRow().addComponents([new MessageButton()
+            .setLabel("Close")
+            .setStyle("DANGER")
+            .setCustomId("closeticket")
+            .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
+        ])]})
         let data = {
             meta:{
                 type: 'ticketCreate',

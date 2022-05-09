@@ -85,13 +85,13 @@ export default async function readConfig(guild: string): Promise<any> {
         moderation: {
             mute: {
                 timeout: true,
-                role: null, // TODO: actually give it
+                role: "934941369137524816", // TODO: Remove this role after the time
                 text: null,
                 link: null
             },
             kick: {
                 text: "Appeal here",
-                link: "https://clicksminuteper.net"
+                link: "https://clicks.codes"
             },
             ban: {
                 text: null,
