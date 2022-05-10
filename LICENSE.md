@@ -10,7 +10,7 @@ You **may**:
 However, you **must**:
 - Make your project open source
 - List all changes you made
-- Mention the code is originally by CLicks, and include a link to our [website](https://clicks.codes) or [GitHub](https://github.com/clicksminuteper)
+- Mention the code is originally by Clicks, and include a link to our [website](https://clicks.codes) or [GitHub](https://github.com/clicksminuteper)
 - Release your project with the same license [GNU Affero General Public License V3.0](https://choosealicense.com/licenses/agpl-3.0/)
 
 ## The legal bit
