@@ -57,9 +57,9 @@ const runServer = (client: HaikuClient) => {
     app.get('/verify/:code', jsonParser, function (req, res) {
         const code = req.params.code;
         if (client.verify[code]) {
-            let data = structuredClone(client.verify[code])
-            delete data.interaction;
-            return res.status(200).send(data);
+            // let data = structuredClone(client.verify[code])
+            // delete data.interaction;
+            // return res.status(200).send(data);
         }
         return res.status(404).send();
     })

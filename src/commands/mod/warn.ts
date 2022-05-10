@@ -166,11 +166,11 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Do not allow warning bots
-    if ((interaction.member as GuildMember).user.bot) throw "I cannot warn bots"
+    if (member.user.bot) throw "I cannot warn bots"
     // Allow the owner to warn anyone
-    if ((interaction.member as GuildMember).id == interaction.guild.ownerId) return true
+    if (member.id == interaction.guild.ownerId) return true
     // Check if the user has moderate_members permission
-    if (! (interaction.member as GuildMember).permissions.has("MODERATE_MEMBERS")) throw "You do not have the `moderate_members` permission";
+    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the `moderate_members` permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow warn

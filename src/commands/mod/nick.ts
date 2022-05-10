@@ -122,9 +122,9 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus has permission to change the nickname
     if (! interaction.guild.me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the `manage_nicknames` permission";
     // Allow the owner to change anyone's nickname
-    if ((interaction.member as GuildMember).id == interaction.guild.ownerId) return true
+    if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_nicknames permission
-    if (! (interaction.member as GuildMember).permissions.has("MANAGE_NICKNAMES")) throw "You do not have the `manage_nicknames` permission";
+    if (! member.permissions.has("MANAGE_NICKNAMES")) throw "You do not have the `manage_nicknames` permission";
     // Allow changing your own nickname
     if (member == apply) return true
     // Check if the user is below on the role list
