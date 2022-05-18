@@ -4,6 +4,7 @@ import { WrappedCheck } from "jshaiku";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
+import createPageIndicator from "../../utils/createPageIndicator.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -120,7 +121,7 @@ const callback = async (interaction: CommandInteraction) => {
                     "id": `\`${member.id}\``,
                     "roles": `${member.roles.cache.size - 1}`,
                 }) + "\n" +
-                (s.length > 0 ? s : "*None*")
+                (s.length > 0 ? s : "*None*") + "\n"
             )
             .setThumbnail(await member.user.displayAvatarURL({dynamic: true})),
         new generateEmojiEmbed()
@@ -139,8 +140,10 @@ const callback = async (interaction: CommandInteraction) => {
     m = await interaction.reply({embeds: [new generateEmojiEmbed().setTitle("Loading").setEmoji("NUCLEUS.LOADING").setStatus("Danger")], fetchReply: true, ephemeral: true});
     let page = 0
     while (true) {
+        let em = new Discord.MessageEmbed(embeds[page])
+        em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
         await interaction.editReply({
-            embeds: [embeds[page].setFooter({text: `Page ${page + 1} of ${embeds.length}`})],
+            embeds: [em],
             components: [new MessageActionRow().addComponents([
                 new MessageButton()
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))

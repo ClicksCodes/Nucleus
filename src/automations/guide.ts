@@ -1,6 +1,7 @@
 import Discord, { MessageActionRow, MessageButton } from "discord.js";
 import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
+import createPageIndicator from "../utils/createPageIndicator.js";
 
 export default async (guild, interaction?) => {
     let c = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
@@ -39,7 +40,7 @@ export default async (guild, interaction?) => {
                 `**${getEmojiByName("PUNISH.KICK.RED")} Kick:** The user is removed from the server.\n` +
                 `**${getEmojiByName("PUNISH.SOFTBAN")} Softban:** Kicks the user, deleting their messages from every channel.\n` +
                 `**${getEmojiByName("PUNISH.BAN.RED")} Ban:** The user is removed from the server, and they are unable to rejoin.\n` +
-                `**${getEmojiByName("PUNISH.BAN.GREEN")} Unban:** The user is able to rejoin the server.\n`
+                `**${getEmojiByName("PUNISH.BAN.GREEN")} Unban:** The user is able to rejoin the server.`
             )
             .setEmoji("NUCLEUS.LOGO")
             .setStatus("Danger"),
@@ -99,8 +100,10 @@ export default async (guild, interaction?) => {
 
     while (true) {
         if (interaction) {
+            let em = new Discord.MessageEmbed(pages[page])
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             await interaction.editReply({
-                embeds: [pages[page].setFooter({text: `Page ${page + 1}/${pages.length}`})],
+                embeds: [em],
                 components: [new MessageActionRow().addComponents([
                     new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
                     new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1),
@@ -130,7 +133,13 @@ export default async (guild, interaction?) => {
             if (page < pages.length - 1) page++;
         } else if (i.component.customId == "close") {
             if (interaction) {
-                interaction.delete();
+                let em = new Discord.MessageEmbed(pages[page])
+                em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
+                interaction.editReply({embeds: [em], components: [new MessageActionRow().addComponents([
+                    new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
+                    new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),
+                    new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER").setDisabled(true)
+                ])], fetchReply: true});
             } else {
                 m.delete();
             }
@@ -141,8 +150,10 @@ export default async (guild, interaction?) => {
         }
     }
     if (interaction) {
+        let em = new Discord.MessageEmbed(pages[page])
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
         await interaction.editReply({
-            embeds: [pages[page].setFooter({text: `Page ${page + 1}/${pages.length} | Message timed out`})],
+            embeds: [em],
             components: [new MessageActionRow().addComponents([
                 new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
                 new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),
@@ -150,8 +161,10 @@ export default async (guild, interaction?) => {
             ])]
         });
     } else {
+        let em = new Discord.MessageEmbed(pages[page])
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
         await m.edit({
-            embeds: [pages[page].setFooter({text: `Page ${page + 1}/${pages.length} | Message timed out`})],
+            embeds: [em],
             components: [new MessageActionRow().addComponents([
                 new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
                 new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),

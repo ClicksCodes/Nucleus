@@ -1,5 +1,5 @@
 import * as scan from '../utils/scanners.js'
-import Tesseract from 'tesseract.js';
+import process from 'tesseract.js'
 
 export async function LinkCheck(message): Promise<boolean> {
     let links = message.content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) ?? []

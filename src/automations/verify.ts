@@ -3,12 +3,18 @@ import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
 import readConfig from "../utils/readConfig.js";
 import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "../automations/unscan.js";
+import createPageIndicator from "../utils/createPageIndicator.js";
+
+function step(i) {
+    return "\n\n" + createPageIndicator(5, i);
+}
 
 export default async function(interaction) {
     // @ts-ignore
     let verify = interaction.client.verify
     await interaction.reply({embeds: [new generateEmojiEmbed()
         .setTitle("Loading")
+        .setDescription(step(-1))
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
     ], ephemeral: true, fetchReply: true});
@@ -16,23 +22,23 @@ export default async function(interaction) {
     if ((interaction.member as GuildMember).roles.cache.has(config.verify.role)) {
         return await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setTitle("Verify")
-            .setDescription(`You already have the <@&${config.verify.role}> role`)
+            .setDescription(`You already have the <@&${config.verify.role}> role` + step(0))
             .setStatus("Danger")
             .setEmoji("CONTROL.BLOCKCROSS")
         ]});
     }
     await interaction.editReply({embeds: [new generateEmojiEmbed()
         .setTitle("Verify")
-        .setDescription(`Checking our servers are up`)
+        .setDescription(`Checking our servers are up` + step(0))
         .setStatus("Warning")
         .setEmoji("NUCLEUS.LOADING")
     ]});
     try {
-        let status = await fetch(`https://clicks.codes`).then(res => res.status);
+        let status = await fetch(`https://clicks.codes/`).then(res => res.status);
         if (status != 200) {
             return await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setTitle("Verify")
-                .setDescription(`Our servers appear to be down, please try again later`)
+                .setDescription(`Our servers appear to be down, please try again later` + step(0))
                 .setStatus("Danger")
                 .setEmoji("CONTROL.BLOCKCROSS")
             ]});
@@ -40,7 +46,7 @@ export default async function(interaction) {
     } catch {
         return await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setTitle("Verify")
-            .setDescription(`Our servers appear to be down, please try again later`)
+            .setDescription(`Our servers appear to be down, please try again later` + step(0))
             .setStatus("Danger")
             .setEmoji("CONTROL.BLOCKCROSS")
         ], components: [new Discord.MessageActionRow().addComponents([
@@ -57,14 +63,14 @@ export default async function(interaction) {
     if (config.filters.images.NSFW) {
         await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setTitle("Verify")
-            .setDescription(`Checking your avatar is safe for work`)
+            .setDescription(`Checking your avatar is safe for work` + step(1))
             .setStatus("Warning")
             .setEmoji("NUCLEUS.LOADING")
         ]});
         if (await NSFWCheck((interaction.member as GuildMember).user.avatarURL({format: "png"}))) {
             return await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setTitle("Verify")
-                .setDescription(`Your avatar was detected as NSFW, which we do not allow in this server.\nPlease contact one of our staff members if you believe this is a mistake`)
+                .setDescription(`Your avatar was detected as NSFW, which we do not allow in this server.\nPlease contact one of our staff members if you believe this is a mistake` + step(1))
                 .setStatus("Danger")
                 .setEmoji("CONTROL.BLOCKCROSS")
             ]});
@@ -73,14 +79,14 @@ export default async function(interaction) {
     if (config.filters.wordFilter) {
         await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setTitle("Verify")
-            .setDescription(`Checking your name is allowed`)
+            .setDescription(`Checking your name is allowed` + step(2))
             .setStatus("Warning")
             .setEmoji("NUCLEUS.LOADING")
         ]});
         if (TestString((interaction.member as Discord.GuildMember).displayName, config.filters.wordFilter.words.loose, config.filters.wordFilter.words.strict) != "none") {
             return await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setTitle("Verify")
-                .setDescription(`Your name contained a word we do not allow in this server.\nPlease contact one of our staff members if you believe this is a mistake`)
+                .setDescription(`Your name contained a word we do not allow in this server.\nPlease contact one of our staff members if you believe this is a mistake` + step(2))
                 .setStatus("Danger")
                 .setEmoji("CONTROL.BLOCKCROSS")
             ]});
@@ -88,7 +94,7 @@ export default async function(interaction) {
     }
     await interaction.editReply({embeds: [new generateEmojiEmbed()
         .setTitle("Verify")
-        .setDescription(`One moment...`)
+        .setDescription(`One moment...` + step(3))
         .setStatus("Warning")
         .setEmoji("NUCLEUS.LOADING")
     ]});
@@ -120,7 +126,7 @@ export default async function(interaction) {
     }
     await interaction.editReply({embeds: [new generateEmojiEmbed()
         .setTitle("Verify")
-        .setDescription(`Looking good!\nClick the button below to get verified`)
+        .setDescription(`Looking good!\nClick the button below to get verified` + step(4))
         .setStatus("Success")
         .setEmoji("MEMBER.JOIN")
     ], components: [new Discord.MessageActionRow().addComponents([new Discord.MessageButton()
