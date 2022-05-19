@@ -124,7 +124,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus can kick the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to kick
-    if (! interaction.guild.me.permissions.has("KICK_MEMBERS")) throw "I do not have the `kick_members` permission";
+    if (! me.permissions.has("KICK_MEMBERS")) throw "I do not have the `kick_members` permission";
     // Do not allow kicking Nucleus
     if (member.id == interaction.guild.me.id) throw "I cannot kick myself"
     // Allow the owner to kick anyone

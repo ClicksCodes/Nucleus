@@ -309,12 +309,13 @@ const callback = async (interaction: CommandInteraction) => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
+    let me = (interaction.guild.me as GuildMember)
     // Allow the owner to purge
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_messages permission
     if (! member.permissions.has("MANAGE_MESSAGES")) throw "You do not have the `manage_messages` permission";
     // Check if nucleus has the manage_messages permission
-    if (! interaction.guild.me.permissions.has("MANAGE_MESSAGES")) throw "I do not have the `manage_messages` permission";
+    if (! me.permissions.has("MANAGE_MESSAGES")) throw "I do not have the `manage_messages` permission";
     // Allow warn
     return true
 }

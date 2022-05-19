@@ -98,11 +98,11 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus can ban the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to ban
-    if (! interaction.guild.me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
+    if (!me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
     // Do not allow softbanning Nucleus
-    if (member.id == interaction.guild.me.id) throw "I cannot softban myself"
+    if (member.id == me.id) throw "I cannot softban myself"
     // Allow the owner to ban anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id == ownerId) return true
     // Check if the user has ban_members permission
     if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the `ban_members` permission";
     // Check if the user is below on the role list

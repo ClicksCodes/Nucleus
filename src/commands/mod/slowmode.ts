@@ -59,7 +59,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     // Check if Nucleus can edit the channel
-    if (! interaction.guild.me.permission.has("MANAGE_CHANNELS")) throw "I do not have permission to edit this channel"
+    if (! me.permission.has("MANAGE_CHANNELS")) throw "I do not have permission to edit this channel"
     // Allow the owner to set any channel
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_channels permission

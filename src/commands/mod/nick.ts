@@ -120,7 +120,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus can change the nickname
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to change the nickname
-    if (! interaction.guild.me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the `manage_nicknames` permission";
+    if (! me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the `manage_nicknames` permission";
     // Allow the owner to change anyone's nickname
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_nicknames permission

@@ -127,7 +127,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus can ban the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to ban
-    if (! interaction.guild.me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
+    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
     // Do not allow banning Nucleus
     if (member.id == interaction.guild.me.id) throw "I cannot ban myself"
     // Allow the owner to ban anyone
