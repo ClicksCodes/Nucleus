@@ -160,6 +160,7 @@ const callback = async (interaction: CommandInteraction) => {
     let m
     m = await interaction.reply({embeds: [new generateEmojiEmbed().setTitle("Loading").setEmoji("NUCLEUS.LOADING").setStatus("Danger")], fetchReply: true, ephemeral: true});
     let page = 0
+    let breakReason = ""
     while (true) {
         let em = new Discord.MessageEmbed(embeds[page].embed)
         em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
@@ -209,7 +210,7 @@ const callback = async (interaction: CommandInteraction) => {
         let i
         try {
             i = await m.awaitMessageComponent({time: 600000});
-        } catch { break }
+        } catch { breakReason = "Message timed out"; break }
         i.deferUpdate()
         if (i.component.customId == "left") {
             if (page > 0) page--;
@@ -220,15 +221,19 @@ const callback = async (interaction: CommandInteraction) => {
         } else if (i.component.customId == "select") {
             selectPaneOpen = !selectPaneOpen;
         } else if (i.component.customId == "close") {
+            breakReason = "Message closed";
             break;
         } else if (i.component.customId == "page") {
             page = parseInt(i.values[0]);
             selectPaneOpen = false;
         } else {
+            breakReason = "Message closed";
             break;
         }
     }
-    await interaction.editReply({embeds: [m.embeds[0]], components: [new MessageActionRow().addComponents([
+    let em = new Discord.MessageEmbed(embeds[page].embed)
+    em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page) + " | " + breakReason);
+    await interaction.editReply({embeds: [em], components: [new MessageActionRow().addComponents([
         new MessageButton()
             .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
             .setStyle("SECONDARY")
@@ -247,7 +252,7 @@ const callback = async (interaction: CommandInteraction) => {
         new MessageButton()
             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
             .setCustomId("close")
-            .setStyle("PRIMARY")
+            .setStyle("DANGER")
             .setDisabled(true)
     ])]})
 }

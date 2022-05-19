@@ -31,6 +31,7 @@ class confirmationMessage {
     setEmoji(emoji: string) { this.emoji = emoji; return this }
     setDescription(description: string) { this.description = description; return this }
     setColor(color: string) { this.color = color; return this }
+    setInverted(inverted: boolean) { this.inverted = inverted; return this }
     addCustomCallback(title: string, disabled: boolean, callback: () => any, callbackClicked: string) {
         this.customButtonTitle = title;
         this.customButtonDisabled = disabled;

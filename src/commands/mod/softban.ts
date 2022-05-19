@@ -102,7 +102,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Do not allow softbanning Nucleus
     if (member.id == me.id) throw "I cannot softban myself"
     // Allow the owner to ban anyone
-    if (member.id == ownerId) return true
+    if (member.id == interaction.guild.ownerId) return true
     // Check if the user has ban_members permission
     if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the `ban_members` permission";
     // Check if the user is below on the role list
