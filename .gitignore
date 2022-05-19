@@ -5,7 +5,6 @@ src/config/
 .vscode/
 yarn-error.log
 yarn.lock
-tsconfig.json
 src/utils/temp/*.png
 src/utils/temp/*.webp
 src/utils/temp/*.jpeg
