@@ -9,10 +9,10 @@ export default async function (interaction) {
 
     let config = await readConfig(interaction.guild.id);
     let channel = (interaction.channel as Discord.TextChannel)
-    if (config.tickets.category != channel.parent.id) {
+    if (!channel.parent || config.tickets.category != channel.parent.id) {
         return interaction.reply({embeds: [new generateEmojiEmbed()
             .setTitle("Close Ticket")
-            .setDescription("This ticket is not in your tickets category, so cannot be deleted.")
+            .setDescription("This ticket is not in your tickets category, so cannot be deleted. You cannot run close in a thread.") // TODO bridge to cross later!
             .setStatus("Danger")
             .setEmoji("CONTROL.BLOCKCROSS")
         ], ephemeral: true});
@@ -56,7 +56,26 @@ export default async function (interaction) {
             .setEmoji("GUILD.TICKET.ARCHIVED")
         ]});
         setTimeout(async () =>{
-            channel.permissionsFor(await interaction.guild.members.fetch(channel.topic.split(" ")[0])).remove("VIEW_CHANNEL");
+            let overwrites = [
+                {
+                    id: channel.topic.split(" ")[0],
+                    deny: ["VIEW_CHANNEL"],
+                    type: "member"
+                },
+                {
+                    id: interaction.guild.id,
+                    deny: ["VIEW_CHANNEL"],
+                    type: "role"
+                }
+            ] as Discord.OverwriteResolvable[];
+            if (config.tickets.supportRole != null) {
+                overwrites.push({
+                    id: interaction.guild.roles.cache.get(config.tickets.supportRole),
+                    allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
+                    type: "role"
+                })
+            }
+            channel.edit({permissionOverwrites: overwrites})
             channel.setTopic(`${channel.topic.split(" ")[0]} Archived`);
             let data = {
                 meta:{
@@ -98,6 +117,7 @@ async function purgeByUser(member, guild) {
     let config = await readConfig(guild.id);
     if (!config.tickets.category) return;
     let tickets = guild.channels.cache.get(config.tickets.category);
+    if (!tickets) return;
     let ticketChannels = tickets.children;
     let deleted = 0
     ticketChannels.forEach(element => {

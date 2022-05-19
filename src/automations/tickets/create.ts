@@ -118,6 +118,11 @@ export default async function (interaction) {
         allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
         type: "member"
     }] as Discord.OverwriteResolvable[];
+    overwrites.push({
+        id: interaction.guild.roles.everyone,
+        deny: ["VIEW_CHANNEL"],
+        type: "role"
+    })
     if (config.tickets.supportRole != null) {
         overwrites.push({
             id: interaction.guild.roles.cache.get(config.tickets.supportRole),
