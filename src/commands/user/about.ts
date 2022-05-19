@@ -1,5 +1,5 @@
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -11,6 +11,19 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("about")
     .setDescription("Shows info about a user")
     .addUserOption(option => option.setName("user").setDescription("The user to get info about | Default: Yourself"))
+
+
+class Embed {
+    embed: Discord.MessageEmbed;
+    title: string;
+    description: string = "";
+    pageId: number = 0;
+    setEmbed(embed: Discord.MessageEmbed) { this.embed = embed; return this; }
+    setTitle(title: string) { this.title = title; return this; }
+    setDescription(description: string) { this.description = description; return this; }
+    setPageId(pageId: number) { this.pageId = pageId; return this; }
+}
+
 
 const callback = async (interaction: CommandInteraction) => {
     // @ts-ignore
@@ -88,68 +101,100 @@ const callback = async (interaction: CommandInteraction) => {
         perms += `${getEmojiByName("CONTROL." + (hasPerm ? "TICK" : "CROSS"))} ${permsArray[perm]}\n`
     })
 
+    let selectPaneOpen = false;
+
     let embeds = [
-        new generateEmojiEmbed()
-            .setTitle("User Info: General")
-            .setStatus("Success")
-            .setEmoji("MEMBER.JOIN")
-            .setDescription(
-                flags.map(flag => {
-                    if (nameReplacements[flag]) {
-                        return getEmojiByName(`BADGES.${flag}`) + " " + nameReplacements[flag];
-                    }
-                }).join("\n") + "\n\n" +
-                generateKeyValueList({
-                    "member": renderUser(member.user),
-                    "nickname": member.nickname || "*None set*",
-                    "id": `\`${member.id}\``,
-                    "joined the server": renderDelta(member.joinedTimestamp),
-                    "joined discord": renderDelta(member.user.createdTimestamp),
-                    "boost status": member.premiumSince ? `Started boosting ${renderDelta(member.premiumSinceTimestamp)}` : "*Not boosting*",
-                    "join position": `${joinPos + 1}`
-                })
-            )
-            .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
-            .setImage((await member.user.fetch()).bannerURL({format: "gif"})),
-        new generateEmojiEmbed()
-            .setTitle("User Info: Roles")
-            .setStatus("Success")
-            .setEmoji("GUILD.ROLES.CREATE")
-            .setDescription(
-                generateKeyValueList({
-                    "member": renderUser(member.user),
-                    "id": `\`${member.id}\``,
-                    "roles": `${member.roles.cache.size - 1}`,
-                }) + "\n" +
-                (s.length > 0 ? s : "*None*") + "\n"
-            )
-            .setThumbnail(await member.user.displayAvatarURL({dynamic: true})),
-        new generateEmojiEmbed()
-            .setTitle("User Info: Key Permissions")
-            .setStatus("Success")
-            .setEmoji("GUILD.ROLES.CREATE")
-            .setDescription(
-                generateKeyValueList({
-                    "member": renderUser(member.user),
-                    "id": `\`${member.id}\``,
-                }) + "\n" + perms
-            )
-            .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+        new Embed()
+            .setEmbed(new generateEmojiEmbed()
+                .setTitle("User Info: General")
+                .setStatus("Success")
+                .setEmoji("MEMBER.JOIN")
+                .setDescription(
+                    flags.map(flag => {
+                        if (nameReplacements[flag]) {
+                            return getEmojiByName(`BADGES.${flag}`) + " " + nameReplacements[flag];
+                        }
+                    }).join("\n") + "\n\n" +
+                    generateKeyValueList({
+                        "member": renderUser(member.user),
+                        "nickname": member.nickname || "*None set*",
+                        "id": `\`${member.id}\``,
+                        "joined the server": renderDelta(member.joinedTimestamp),
+                        "joined discord": renderDelta(member.user.createdTimestamp),
+                        "boost status": member.premiumSince ? `Started boosting ${renderDelta(member.premiumSinceTimestamp)}` : "*Not boosting*",
+                        "join position": `${joinPos + 1}`
+                    })
+                )
+                .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+                .setImage((await member.user.fetch()).bannerURL({format: "gif"}))
+            ).setTitle("General").setDescription("General information about the user").setPageId(0),
+        new Embed()
+            .setEmbed(new generateEmojiEmbed()
+                .setTitle("User Info: Roles")
+                .setStatus("Success")
+                .setEmoji("GUILD.ROLES.CREATE")
+                .setDescription(
+                    generateKeyValueList({
+                        "member": renderUser(member.user),
+                        "id": `\`${member.id}\``,
+                        "roles": `${member.roles.cache.size - 1}`,
+                    }) + "\n" +
+                    (s.length > 0 ? s : "*None*") + "\n"
+                )
+                .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+            ).setTitle("Roles").setDescription("Roles the user has").setPageId(1),
+        new Embed()
+            .setEmbed(new generateEmojiEmbed()
+                .setTitle("User Info: Key Permissions")
+                .setStatus("Success")
+                .setEmoji("GUILD.ROLES.CREATE")
+                .setDescription(
+                    generateKeyValueList({
+                        "member": renderUser(member.user),
+                        "id": `\`${member.id}\``,
+                    }) + "\n" + perms
+                )
+                .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+            ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2),
     ]
     let m
     m = await interaction.reply({embeds: [new generateEmojiEmbed().setTitle("Loading").setEmoji("NUCLEUS.LOADING").setStatus("Danger")], fetchReply: true, ephemeral: true});
     let page = 0
     while (true) {
-        let em = new Discord.MessageEmbed(embeds[page])
+        let em = new Discord.MessageEmbed(embeds[page].embed)
         em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
+        let selectPane = []
+
+        if (selectPaneOpen) {
+            let options = [];
+            embeds.forEach(embed => {
+                options.push(new SelectMenuOption({
+                    label: embed.title,
+                    value: embed.pageId.toString(),
+                    description: embed.description || "",
+                }))
+            })
+            selectPane = [new MessageActionRow().addComponents([
+                new Discord.MessageSelectMenu()
+                    .addOptions(options)
+                    .setCustomId("page")
+                    .setMaxValues(1)
+                    .setPlaceholder("Choose a page...")
+            ])]
+        }
         await interaction.editReply({
             embeds: [em],
-            components: [new MessageActionRow().addComponents([
+            components: selectPane.concat([new MessageActionRow().addComponents([
                 new MessageButton()
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                     .setStyle("SECONDARY")
                     .setCustomId("left")
                     .setDisabled(page === 0),
+                new MessageButton()
+                    .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
+                    .setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY")
+                    .setCustomId("select")
+                    .setDisabled(false),
                 new MessageButton()
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                     .setCustomId("right")
@@ -159,19 +204,26 @@ const callback = async (interaction: CommandInteraction) => {
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     .setCustomId("close")
                     .setStyle("DANGER")
-            ])]
+            ])])
         })
         let i
         try {
-            i = await m.awaitMessageComponent({componentType: "BUTTON", time: 600000});
+            i = await m.awaitMessageComponent({time: 600000});
         } catch { break }
         i.deferUpdate()
         if (i.component.customId == "left") {
             if (page > 0) page--;
+            selectPaneOpen = false;
         } else if (i.component.customId == "right") {
             if (page < embeds.length - 1) page++;
+            selectPaneOpen = false;
+        } else if (i.component.customId == "select") {
+            selectPaneOpen = !selectPaneOpen;
         } else if (i.component.customId == "close") {
             break;
+        } else if (i.component.customId == "page") {
+            page = parseInt(i.values[0]);
+            selectPaneOpen = false;
         } else {
             break;
         }
@@ -181,6 +233,11 @@ const callback = async (interaction: CommandInteraction) => {
             .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
             .setStyle("SECONDARY")
             .setCustomId("left")
+            .setDisabled(true),
+        new MessageButton()
+            .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
+            .setStyle("SECONDARY")
+            .setCustomId("select")
             .setDisabled(true),
         new MessageButton()
             .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
