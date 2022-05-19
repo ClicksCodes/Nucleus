@@ -88,6 +88,7 @@ const callback = async (interaction: CommandInteraction) => { // TODO: User sear
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
+    let me = (interaction.guild.me as GuildMember)
     // Check if Nucleus can unban members
     if (! interaction.guild.me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
     // Allow the owner to unban anyone

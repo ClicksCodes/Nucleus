@@ -20,6 +20,7 @@ const callback = async (interaction: CommandInteraction) => {
         .setDescription(`**Suggestion:**\n> ${suggestion}\n`
         + `Your username and ID will also be sent with your suggestion.\n\nAre you sure you want to send this suggestion?`)
         .setColor("Danger")
+        .setInverted(true)
     .send()
     if (confirmation.success) {
         await (interaction.client.channels.cache.get('955161206459600976') as Discord.TextChannel).send({

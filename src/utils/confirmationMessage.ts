@@ -14,6 +14,7 @@ class confirmationMessage {
     customCallbackString: string = "";
     customCallbackClicked: boolean = false;
     customCallbackResponse: any = null;
+    inverted: boolean;
 
     constructor(interaction: CommandInteraction) {
         this.interaction = interaction;
@@ -22,6 +23,7 @@ class confirmationMessage {
         this.emoji = "";
         this.description = "";
         this.color = "";
+        this.inverted = false
         this.customCallback = () => {}
     }
 
@@ -52,13 +54,13 @@ class confirmationMessage {
                     new MessageActionRow().addComponents([
                         new Discord.MessageButton()
                             .setCustomId("yes")
-                            .setLabel("Yes")
-                            .setStyle("SUCCESS")
+                            .setLabel("Confirm")
+                            .setStyle(this.inverted ? "SUCCESS" : "DANGER")
                             .setEmoji(getEmojiByName("CONTROL.TICK", "id")),
                         new Discord.MessageButton()
                             .setCustomId("no")
                             .setLabel("Cancel")
-                            .setStyle("DANGER")
+                            .setStyle(this.inverted ? "DANGER" : "SUCCESS")
                             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     ].concat(this.customButtonTitle ? [new Discord.MessageButton()
                         .setCustomId("custom")
@@ -81,14 +83,14 @@ class confirmationMessage {
             try {
                 component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 2.5 * 60 * 1000});
             } catch (e) {
-                return {success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse};
+                return { success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse };
             }
             if (component.customId === "yes") {
                 component.deferUpdate();
-                return {success: true, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse};
+                return { success: true, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse };
             } else if (component.customId === "no") {
                 component.deferUpdate();
-                return {success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse};
+                return { success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse };
             } else if (component.customId === "custom") {
                 component.deferUpdate();
                 this.customCallbackResponse = this.customCallback();

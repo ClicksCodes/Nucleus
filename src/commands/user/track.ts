@@ -162,10 +162,11 @@ const callback = async (interaction: CommandInteraction) => {
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+    let member = (interaction.member as GuildMember)
     // Allow the owner to promote anyone
-    if ((interaction.member as GuildMember).id == interaction.guild.ownerId) return true
+    if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_roles permission
-    if (! (interaction.member as GuildMember).permissions.has("MANAGE_ROLES")) throw "You do not have the `manage_roles` permission";
+    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the `manage_roles` permission";
     // Allow track
     return true // TODO: allow if the member has manage perms
 }

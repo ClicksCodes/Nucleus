@@ -227,7 +227,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus has permission to mute
     if (! interaction.guild.me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the `moderate_members` permission";
     // Do not allow the user to have admin or be the owner
-    if (apply.permissions.has("ADMINISTRATOR") || apply.id == interaction.guild.ownerId) throw "You cannot mute an admin or the owner"
+    if ((interaction.options.getMember("user") as GuildMember).permissions.has("ADMINISTRATOR") || (interaction.options.getMember("user") as GuildMember).id == interaction.guild.ownerId) throw "You cannot mute an admin or the owner"
     // Do not allow muting Nucleus
     if (member.id == interaction.guild.me.id) throw "I cannot mute myself"
     // Allow the owner to mute anyone
