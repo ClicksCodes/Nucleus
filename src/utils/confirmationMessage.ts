@@ -14,6 +14,8 @@ class confirmationMessage {
     customCallbackString: string = "";
     customCallbackClicked: boolean = false;
     customCallbackResponse: any = null;
+    customBoolean: () => any;
+    customBooleanClicked: boolean = null;
     inverted: boolean;
 
     constructor(interaction: CommandInteraction) {
@@ -23,8 +25,9 @@ class confirmationMessage {
         this.emoji = "";
         this.description = "";
         this.color = "";
-        this.inverted = false
-        this.customCallback = () => {}
+        this.inverted = false;
+        this.customCallback = () => {};
+        this.customBoolean = () => {};
     }
 
     setTitle(title: string) { this.title = title; return this }
@@ -33,12 +36,23 @@ class confirmationMessage {
     setColor(color: string) { this.color = color; return this }
     setInverted(inverted: boolean) { this.inverted = inverted; return this }
     addCustomCallback(title: string, disabled: boolean, callback: () => any, callbackClicked: string) {
+        if (this.customButtonTitle) return this
         this.customButtonTitle = title;
         this.customButtonDisabled = disabled;
         this.customCallback = callback;
         this.customCallbackString = callbackClicked;
         return this;
     }
+    addCustomBoolean(title: string, disabled: boolean, callback: () => any, callbackClicked: string) {
+        if (this.customButtonTitle) return this
+        this.customButtonTitle = title;
+        this.customButtonDisabled = disabled;
+        this.customBoolean = callback;
+        this.customCallbackString = callbackClicked;
+        this.customBooleanClicked = false;
+        return this;
+    }
+
 
     async send(editOnly?: boolean) {
         while (true) {
@@ -49,7 +63,7 @@ class confirmationMessage {
                         .setTitle(this.title)
                         .setDescription(this.description)
                         .setStatus(this.color)
-                        .setFooter({text: this.customCallbackClicked ? this.customCallbackString : ""})
+                        .setFooter({text: (this.customBooleanClicked ?? this.customCallbackClicked) ? this.customCallbackString : ""})
                 ],
                 components: [
                     new MessageActionRow().addComponents([
@@ -66,7 +80,10 @@ class confirmationMessage {
                     ].concat(this.customButtonTitle ? [new Discord.MessageButton()
                         .setCustomId("custom")
                         .setLabel(this.customButtonTitle)
-                        .setStyle("PRIMARY")
+                        .setStyle(this.customBooleanClicked !== null ?
+                            ( this.customBooleanClicked ? "SUCCESS" : "PRIMARY" ) :
+                            "PRIMARY"
+                        )
                         .setDisabled(this.customButtonDisabled)
                         .setEmoji(getEmojiByName("CONTROL.TICKET", "id"))
                     ] : []))
@@ -84,19 +101,36 @@ class confirmationMessage {
             try {
                 component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 2.5 * 60 * 1000});
             } catch (e) {
-                return { success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse };
+                return {
+                    success: false,
+                    buttonClicked: this.customBooleanClicked ?? this.customCallbackClicked,
+                    response: this.customCallbackResponse
+                };
             }
             if (component.customId === "yes") {
                 component.deferUpdate();
-                return { success: true, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse };
+                if (this.customBooleanClicked === true) this.customCallbackResponse = await this.customBoolean();
+                return {
+                    success: true,
+                    buttonClicked: this.customBooleanClicked ?? this.customCallbackClicked,
+                    response: this.customCallbackResponse
+                };
             } else if (component.customId === "no") {
                 component.deferUpdate();
-                return { success: false, buttonClicked: this.customCallbackClicked, response: this.customCallbackResponse };
+                return {
+                    success: false,
+                    buttonClicked: this.customBooleanClicked ?? this.customCallbackClicked,
+                    response: this.customCallbackResponse
+                };
             } else if (component.customId === "custom") {
                 component.deferUpdate();
-                this.customCallbackResponse = this.customCallback();
-                this.customCallbackClicked = true;
-                this.customButtonDisabled = true;
+                if (this.customBooleanClicked !== null) {
+                    this.customBooleanClicked = !this.customBooleanClicked;
+                } else {
+                    this.customCallbackResponse = await this.customCallback();
+                    this.customCallbackClicked = true;
+                    this.customButtonDisabled = true;
+                }
                 editOnly = true;
             }
         }

@@ -1,13 +1,10 @@
-import { HaikuClient } from 'jshaiku';
-import { Intents } from 'discord.js';
+
 import config from './config/main.json' assert {type: 'json'};
 import { Logger } from './utils/log.js';
 import runServer from './api/index.js';
 import Memory from './utils/memory.js';
-
-const client = new HaikuClient({
-    intents: new Intents(32767).bitfield,  // This is a way of specifying all intents w/o having to type them out
-}, config);
+import Database from './utils/database.js';
+import client from './utils/client.js';
 
 await client.registerCommandsIn("./commands");
 await client.registerEventsIn("./events");
@@ -19,5 +16,7 @@ client.logger = new Logger()
 client.verify = {}
 client.roleMenu = {}
 client.memory = new Memory()
+client.database = await new Database(config.mongoUrl).connect()
+
 
 await client.login();

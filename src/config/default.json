@@ -1,0 +1,108 @@
+{
+    "id": "default",
+    "version": 1,
+    "singleEventNotifications": {
+        "statsChannelDeleted": false
+    },
+    "filters": {
+        "images": {
+            "NSFW": false,
+            "size": false
+        },
+        "malware": false,
+        "wordFilter": {
+            "enabled": false,
+            "words": {
+                "strict": [],
+                "loose": []
+            },
+            "allowed": {
+                "users": [],
+                "roles": [],
+                "channels": []
+            }
+        },
+        "invite": {
+            "enabled": false,
+            "allowed": {
+                "users": [],
+                "channels": [],
+                "roles": []
+            }
+        },
+        "pings": {
+            "mass": 5,
+            "everyone": true,
+            "roles": true,
+            "allowed": {
+                "roles": [],
+                "rolesToMention": [],
+                "users": [],
+                "channels": []
+            }
+        }
+    },
+    "welcome": {
+        "enabled": false,
+        "verificationRequired": {
+            "message": null,
+            "role": null
+        },
+        "welcomeRole": null,
+        "channel": null,
+        "message": null
+    },
+    "stats": [],
+    "logging": {
+        "logs": {
+            "enabled": true,
+            "channel": null,
+            "toLog": "3fffff"
+        },
+        "staff": {
+            "channel": null
+        }
+    },
+    "verify": {
+        "enabled": false,
+        "role": null
+    },
+    "tickets": {
+        "enabled": false,
+        "category": null,
+        "types": "3f",
+        "customTypes": null,
+        "supportRole": null,
+        "maxTickets": 5
+    },
+    "moderation": {
+        "mute": {
+            "timeout": true,
+            "role": null,
+            "text": null,
+            "link": null
+        },
+        "kick": {
+            "text": null,
+            "link": null
+        },
+        "ban": {
+            "text": null,
+            "link": null
+        },
+        "softban": {
+            "text": null,
+            "link": null
+        },
+        "warn": {
+            "text": null,
+            "link": null
+        },
+        "role": {
+            "role": null
+        }
+    },
+    "tracks": [],
+    "roleMenu": [],
+    "tags": {}
+}

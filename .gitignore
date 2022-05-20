@@ -9,3 +9,6 @@ src/utils/temp/*.png
 src/utils/temp/*.webp
 src/utils/temp/*.jpeg
 src/utils/temp/*.jpg
+
+ClicksMigratingProblems/oldData/
+ClicksMigratingProblems/oldData copy/

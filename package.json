@@ -8,6 +8,7 @@
     "humanize-duration": "^3.27.1",
     "jshaiku": "file:../haiku",
     "json-diff": "^0.7.1",
+    "mongodb": "^4.7.0",
     "node-tesseract": "^0.2.7",
     "structured-clone": "^0.2.2",
     "tesseract.js": "^2.1.5",

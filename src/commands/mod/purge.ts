@@ -5,7 +5,6 @@ import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder

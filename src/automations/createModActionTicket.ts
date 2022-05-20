@@ -3,7 +3,7 @@ import readConfig from '../utils/readConfig.js'
 import generateEmojiEmbed from '../utils/generateEmojiEmbed.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-export async function create(guild: Discord.Guild, member: Discord.User, client) {
+export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, client) {
     let config = await readConfig(guild.id);
     // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
@@ -70,6 +70,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, client)
             },
             list: {
                 ticketFor: entry(member.id, renderUser(member)),
+                createdBy: entry(createdBy.id, renderUser(createdBy)),
                 created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 ticketChannel: entry(c.id, renderChannel(c)),
             },

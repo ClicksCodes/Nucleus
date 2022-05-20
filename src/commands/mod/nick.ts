@@ -29,10 +29,10 @@ const callback = async (interaction: CommandInteraction) => {
         + `The user **will${interaction.options.getString("notify") == "yes" ? '' : ' not'}** be notified\n\n`
         + `Are you sure you want to ${interaction.options.getString("name") ? "change" : "clear"} <@!${(interaction.options.getMember("user") as GuildMember).id}>'s nickname?`)
         .setColor("Danger")
-        .addCustomCallback(
+        .addCustomBoolean(
             "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            () => { create(interaction.guild, interaction.options.getUser("user"), interaction.client)},
-            "An appeal ticket was created")
+            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.client),
+            "An appeal ticket will be created when Confirm is clicked")
 //        pluralize("day", interaction.options.getInteger("delete"))
 //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
@@ -96,7 +96,7 @@ const callback = async (interaction: CommandInteraction) => {
         await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji(`PUNISH.NICKNAME.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Nickname`)
-            .setDescription("The members nickname was changed" + (failed ? ", but was not notified" : ""))
+            .setDescription("The members nickname was changed" + (failed ? ", but was not notified" : "") + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
             .setStatus(failed ? "Warning" : "Success")
         ], components: []})
     } else {

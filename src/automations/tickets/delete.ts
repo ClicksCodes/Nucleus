@@ -11,7 +11,7 @@ export default async function (interaction) {
     let channel = (interaction.channel as Discord.TextChannel)
     if (!channel.parent || config.tickets.category != channel.parent.id) {
         return interaction.reply({embeds: [new generateEmojiEmbed()
-            .setTitle("Close Ticket")
+            .setTitle("Deleting Ticket...")
             .setDescription("This ticket is not in your tickets category, so cannot be deleted. You cannot run close in a thread.") // TODO bridge to cross later!
             .setStatus("Danger")
             .setEmoji("CONTROL.BLOCKCROSS")
@@ -19,96 +19,92 @@ export default async function (interaction) {
     }
     let status = channel.topic.split(" ")[1];
     if (status == "Archived") {
-        interaction.reply({embeds: [new generateEmojiEmbed()
-            .setTitle("Close Ticket")
-            .setDescription("This ticket will be deleted in 3 seconds.")
+        await interaction.reply({embeds: [new generateEmojiEmbed()
+            .setTitle("Delete Ticket")
+            .setDescription("Your ticket is being deleted...")
             .setStatus("Danger")
             .setEmoji("GUILD.TICKET.CLOSE")
         ]});
-        setTimeout(async () => {
-            let data = {
-                meta:{
-                    type: 'ticketClosed',
-                    displayName: 'Ticket Closed',
-                    calculateType: true,
-                    color: NucleusColors.red,
-                    emoji: 'GUILD.TICKET.CLOSE',
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    ticketFor: entry(channel.topic.split(" ")[0], renderUser((await interaction.guild.members.fetch(channel.topic.split(" ")[0])).user)),
-                    closedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
-                    closed: entry(new Date().getTime(), renderDelta(new Date().getTime()))
-                },
-                hidden: {
-                    guild: interaction.guild.id
-                }
+        let data = {
+            meta:{
+                type: 'ticketDeleted',
+                displayName: 'Ticket Deleted',
+                calculateType: true,
+                color: NucleusColors.red,
+                emoji: 'GUILD.TICKET.CLOSE',
+                timestamp: new Date().getTime()
+            },
+            list: {
+                ticketFor: entry(channel.topic.split(" ")[0], renderUser((await interaction.guild.members.fetch(channel.topic.split(" ")[0])).user)),
+                deletedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+                closed: entry(new Date().getTime(), renderDelta(new Date().getTime()))
+            },
+            hidden: {
+                guild: interaction.guild.id
             }
-            log(data, interaction.client);
-            interaction.channel.delete();
-        }, 3000);
+        }
+        log(data, interaction.client);
+        interaction.channel.delete();
         return;
     } else if (status == "Active") {
-        interaction.reply({embeds: [new generateEmojiEmbed()
+        await interaction.reply({embeds: [new generateEmojiEmbed()
             .setTitle("Close Ticket")
-            .setDescription("This ticket will be archived in 3 seconds.")
+            .setDescription("Your ticket is being closed...")
             .setStatus("Warning")
             .setEmoji("GUILD.TICKET.ARCHIVED")
         ]});
-        setTimeout(async () =>{
-            let overwrites = [
-                {
-                    id: channel.topic.split(" ")[0],
-                    deny: ["VIEW_CHANNEL"],
-                    type: "member"
-                },
-                {
-                    id: interaction.guild.id,
-                    deny: ["VIEW_CHANNEL"],
-                    type: "role"
-                }
-            ] as Discord.OverwriteResolvable[];
-            if (config.tickets.supportRole != null) {
-                overwrites.push({
-                    id: interaction.guild.roles.cache.get(config.tickets.supportRole),
-                    allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
-                    type: "role"
-                })
+        let overwrites = [
+            {
+                id: channel.topic.split(" ")[0],
+                deny: ["VIEW_CHANNEL"],
+                type: "member"
+            },
+            {
+                id: interaction.guild.id,
+                deny: ["VIEW_CHANNEL"],
+                type: "role"
             }
-            channel.edit({permissionOverwrites: overwrites})
-            channel.setTopic(`${channel.topic.split(" ")[0]} Archived`);
-            let data = {
-                meta:{
-                    type: 'ticketArchive',
-                    displayName: 'Ticket Archived',
-                    calculateType: true,
-                    color: NucleusColors.yellow,
-                    emoji: 'GUILD.TICKET.ARCHIVED',
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    ticketFor: entry(channel.topic.split(" ")[0], renderUser((await interaction.guild.members.fetch(channel.topic.split(" ")[0])).user)),
-                    archivedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
-                    archived: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                    ticketChannel: entry(channel.id, renderChannel(channel)),
-                },
-                hidden: {
-                    guild: interaction.guild.id
-                }
+        ] as Discord.OverwriteResolvable[];
+        if (config.tickets.supportRole != null) {
+            overwrites.push({
+                id: interaction.guild.roles.cache.get(config.tickets.supportRole),
+                allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
+                type: "role"
+            })
+        }
+        channel.edit({permissionOverwrites: overwrites})
+        channel.setTopic(`${channel.topic.split(" ")[0]} Archived`);
+        let data = {
+            meta:{
+                type: 'ticketClosed',
+                displayName: 'Ticket Closed',
+                calculateType: true,
+                color: NucleusColors.yellow,
+                emoji: 'GUILD.TICKET.ARCHIVED',
+                timestamp: new Date().getTime()
+            },
+            list: {
+                ticketFor: entry(channel.topic.split(" ")[0], renderUser((await interaction.guild.members.fetch(channel.topic.split(" ")[0])).user)),
+                closedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+                closed: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                ticketChannel: entry(channel.id, renderChannel(channel)),
+            },
+            hidden: {
+                guild: interaction.guild.id
             }
-            log(data, interaction.client);
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
-                .setTitle("Close Ticket")
-                .setDescription("This ticket has been archived.\nType `/ticket close` to delete it.")
-                .setStatus("Warning")
-                .setEmoji("GUILD.TICKET.ARCHIVED") // TODO:[Premium] Add a transcript option  ||\----/|| <- the bridge we will cross when we come to it
-            ], components: [new MessageActionRow().addComponents([new MessageButton()
-                .setLabel("Close")
-                .setStyle("DANGER")
-                .setCustomId("closeticket")
-                .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-            ])]});
-        }, 3000);
+        }
+        log(data, interaction.client);
+        await interaction.editReply({embeds: [new generateEmojiEmbed()
+            .setTitle("Close Ticket")
+            .setDescription("This ticket has been closed.\nType `/ticket close` again to delete it.")
+            .setStatus("Warning")
+            .setEmoji("GUILD.TICKET.ARCHIVED") // TODO:[Premium] Add a transcript option  ||\----/|| <- the bridge we will cross when we come to it
+        ], components: [new MessageActionRow().addComponents([new MessageButton()
+            .setLabel("Delete")
+            .setStyle("DANGER")
+            .setCustomId("closeticket")
+            .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
+        ])]});
         return;
     }
 }

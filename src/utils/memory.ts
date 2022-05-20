@@ -14,7 +14,7 @@ class Memory {
                 logging: guildData.logging,
                 tickets: guildData.tickets,
             }; // TODO: REMOVE GUILD FROM MEMORY WHEN THESE UPDATE
-        }
+        } // TODO: Add a "lastAccessed" prop, delete after 15 minutes
         return this.memory[guild];
     }
 }
