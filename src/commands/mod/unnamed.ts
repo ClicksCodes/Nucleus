@@ -129,10 +129,10 @@ const callback = async (interaction: CommandInteraction) => {
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
         + `Are you sure you want to mute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`) // TODO
         .setColor("Danger")
-        .addCustomCallback(
+        .addCustomBoolean(
             "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            () => { create(interaction.guild, interaction.options.getUser("user"), interaction.client)},
-            "An appeal ticket was created")
+            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.client),
+            "An appeal ticket will be created when Confirm is clicked")
 //        pluralize("day", interaction.options.getInteger("delete"))
 //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
