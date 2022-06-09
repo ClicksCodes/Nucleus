@@ -47,7 +47,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setTitle("Nickname changed")
                         .setDescription(`Your nickname was ${interaction.options.getString("name") ? "changed" : "cleared"} in ${interaction.guild.name}.` +
                                     (interaction.options.getString("name") ? ` it is now: ${interaction.options.getString("name")}` : "") + "\n\n" +
-                                    (confirmation.buttonClicked ? `You can appeal this in this ticket: <#${confirmation.response}>` : ``))
+                                    (confirmation.buttonClicked ? `You can appeal this here: <#${confirmation.response}>` : ``))
                         .setStatus("Danger")
                     ]
                 })

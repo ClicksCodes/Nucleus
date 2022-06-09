@@ -47,7 +47,7 @@ const callback = async (interaction: CommandInteraction) => {
                         .setTitle("Warned")
                         .setDescription(`You have been warned in ${interaction.guild.name}` +
                                     (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : ".") + "\n\n" +
-                                    (confirmation.buttonClicked ? `You can appeal this in this ticket: <#${confirmation.response}>` : ``))
+                                    (confirmation.buttonClicked ? `You can appeal this here ticket: <#${confirmation.response}>` : ``))
                         .setStatus("Danger")
                     ]
                 })
