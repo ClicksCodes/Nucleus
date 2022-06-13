@@ -57,14 +57,18 @@
         "logs": {
             "enabled": true,
             "channel": null,
-            "toLog": "3fffff"
+            "toLog": "3fffff",
+            "ignore": {
+                "users": [],
+                "roles": [],
+                "channels": []
+            }
         },
         "staff": {
             "channel": null
         }
     },
     "verify": {
-        "enabled": false,
         "role": null
     },
     "tickets": {
@@ -72,6 +76,7 @@
         "category": null,
         "types": "3f",
         "customTypes": null,
+        "useCustom": false,
         "supportRole": null,
         "maxTickets": 5
     },

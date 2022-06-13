@@ -1,6 +1,6 @@
 import Discord, { MessageActionRow, MessageButton } from "discord.js";
 import { tickets, toHexArray } from "../../utils/calculate.js";
-import readConfig from "../../utils/readConfig.js";
+import client from "../../utils/client.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
@@ -13,7 +13,7 @@ export default async function (interaction) {
     // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = interaction.client.logger
 
-    let config = await readConfig(interaction.guild.id);
+    let config = await client.database.read(interaction.guild.id);
     if (!config.tickets.enabled || !config.tickets.category) {
         return await interaction.reply({embeds: [new generateEmojiEmbed()
             .setTitle("Tickets are disabled")
@@ -63,8 +63,8 @@ export default async function (interaction) {
                     .setEmoji(getEmojiByName(("TICKETS." + type.toString().toUpperCase()), "id"));
             }
         });
-        for (let i = 0; i < formattedTicketTypes.length; i += 4) {
-            splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 4)));
+        for (let i = 0; i < formattedTicketTypes.length; i += 5) {
+            splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
         let m = await interaction.reply({embeds: [new generateEmojiEmbed()
             .setTitle("Create Ticket")
@@ -97,8 +97,8 @@ export default async function (interaction) {
                     .setDisabled(true)
             }
         });
-        for (let i = 0; i < formattedTicketTypes.length; i += 4) {
-            splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 4)));
+        for (let i = 0; i < formattedTicketTypes.length; i += 5) {
+            splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
         component.update({embeds: [new generateEmojiEmbed()
             .setTitle("Create Ticket")

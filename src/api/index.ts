@@ -2,6 +2,8 @@ import { HaikuClient } from 'jshaiku';
 import express from 'express';
 import bodyParser from 'body-parser';
 import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
+import structuredClone from '@ungap/structured-clone';
+
 
 const jsonParser = bodyParser.json();
 const app = express();
@@ -9,7 +11,7 @@ const port = 10000;
 
 const runServer = (client: HaikuClient) => {
     app.get('/', (req, res) => {
-        res.send(client.ws.ping);
+        res.status(200).send(client.ws.ping);
     });
 
     app.post('/verify/:code', jsonParser, async function (req, res) {
@@ -32,9 +34,9 @@ const runServer = (client: HaikuClient) => {
                     .setEmoji("MEMBER.JOIN")
                 ], components: []});
             }
-            res.status(200).send();
+            res.sendStatus(200);
         } else {
-            res.status(403).send();
+            res.sendStatus(403);
         }
     });
 
@@ -51,17 +53,17 @@ const runServer = (client: HaikuClient) => {
                 ]});
             }
         } catch {}
-        res.status(200).send();
+        res.sendStatus(200);
     })
 
     app.get('/verify/:code', jsonParser, function (req, res) {
         const code = req.params.code;
         if (client.verify[code]) {
-            // let data = structuredClone(client.verify[code])
-            // delete data.interaction;
-            // return res.status(200).send(data);
+            let data = structuredClone(client.verify[code])
+            delete data.interaction;
+            return res.status(200).send(data);
         }
-        return res.status(404).send();
+        return res.sendStatus(404);
     })
 
     app.listen(port);

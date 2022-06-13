@@ -96,7 +96,20 @@ export default async (guild, interaction?) => {
                 )
                 .setEmoji("NUCLEUS.LOGO")
                 .setStatus("Danger")
-            ).setTitle("Tickets").setDescription("Ticket system").setPageId(5)
+            ).setTitle("Tickets").setDescription("Ticket system").setPageId(5),
+        new Embed()
+            .setEmbed(new generateEmojiEmbed()
+                .setTitle("Tags")
+                .setDescription(
+                    "Add a tag system to your server with the `/tag` and `/tags` commands.\n" +
+                    "To create a tag, type `/tags create <tag name> <tag content>`.\n" +
+                    "Tag names and content can be edited with `/tags edit`.\n" +
+                    "To delete a tag, type `/tags delete <tag name>`.\n" +
+                    "To view all tags, type `/tags list`.\n"
+                )
+                .setEmoji("NUCLEUS.LOGO")
+                .setStatus("Danger")
+            ).setTitle("Tags").setDescription("Tag system").setPageId(6)
     ]
     let m;
     if (interaction) {
@@ -144,30 +157,25 @@ export default async (guild, interaction?) => {
                     .setPlaceholder("Choose a page...")
             ])]
         }
+        let components = selectPane.concat([new MessageActionRow().addComponents([
+            new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
+            new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(false),
+            new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1),
+            new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER")
+        ])])
         if (interaction) {
             let em = new Discord.MessageEmbed(pages[page].embed)
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             await interaction.editReply({
                 embeds: [em],
-                components: selectPane.concat([new MessageActionRow().addComponents([
-                    new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
-                    new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(false),
-                    new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1),
-                    new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER")
-                ])]),
-                fetchReply: true
+                components: components
             });
         } else {
             let em = new Discord.MessageEmbed(pages[page].embed)
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             await m.edit({
                 embeds: [em],
-                components: selectPane.concat([new MessageActionRow().addComponents([
-                    new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
-                    new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(false),
-                    new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1),
-                    new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER")
-                ])]),
+                components: components,
                 fetchReply: true
             });
         }

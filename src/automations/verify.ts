@@ -1,9 +1,9 @@
-import Discord, { CommandInteraction, GuildMember } from "discord.js";
+import Discord, { GuildMember } from "discord.js";
 import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
-import readConfig from "../utils/readConfig.js";
 import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "../automations/unscan.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
+import client from "../utils/client.js";
 
 function step(i) {
     return "\n\n" + createPageIndicator(5, i);
@@ -18,7 +18,13 @@ export default async function(interaction) {
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
     ], ephemeral: true, fetchReply: true});
-    let config = await readConfig(interaction.guild.id);
+    let config = await client.database.read(interaction.guild.id);
+    if ((!config.verify.enabled ) || (!config.verify.role)) return interaction.editReply({embeds: [new generateEmojiEmbed()
+        .setTitle("Verify")
+        .setDescription(`Verify is not enabled on this server`)
+        .setStatus("Danger")
+        .setEmoji("CONTROL.BLOCKCROSS")
+    ], ephemeral: true, fetchReply: true});
     if ((interaction.member as GuildMember).roles.cache.has(config.verify.role)) {
         return await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setTitle("Verify")
@@ -34,7 +40,7 @@ export default async function(interaction) {
         .setEmoji("NUCLEUS.LOADING")
     ]});
     try {
-        let status = await fetch(`https://clicks.codes/`).then(res => res.status);
+        let status = await fetch(client.config.baseUrl).then(res => res.status);
         if (status != 200) {
             return await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setTitle("Verify")
@@ -53,7 +59,7 @@ export default async function(interaction) {
             new Discord.MessageButton()
                 .setLabel("Check webpage")
                 .setStyle("LINK")
-                .setURL("https://clicks.codes/"),
+                .setURL(client.config.baseUrl),
             new Discord.MessageButton()
                 .setLabel("Support")
                 .setStyle("LINK")
@@ -132,7 +138,6 @@ export default async function(interaction) {
     ], components: [new Discord.MessageActionRow().addComponents([new Discord.MessageButton()
         .setLabel("Verify")
         .setStyle("LINK")
-        // .setURL(`https://clicks.codes/nucleus/verify?code=${code}`)
-        .setURL(`https://insulation-coin-hoping-nevertheless.trycloudflare.com/nucleus/verify?code=${code}`)
+        .setURL(`${client.config.baseUrl}/nucleus/verify?code=${code}`)
     ])]});
 }

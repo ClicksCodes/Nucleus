@@ -1,10 +1,9 @@
-import log from '../utils/log.js'
-import readConfig from '../utils/readConfig.js'
+import client from '../utils/client.js';
 import convertCurlyBracketString from '../utils/convertCurlyBracketString.js'
 import singleNotify from '../utils/singleNotify.js';
 
-export async function callback(interaction, member) {
-    let config = await readConfig(member.guild.id);
+export async function callback(_, member) {
+    let config = await client.database.read(member.guild.id);
 
     config.stats.forEach(async element => {
         if (element.enabled) {
@@ -14,10 +13,10 @@ export async function callback(interaction, member) {
 
             let channel = await member.client.channels.fetch(element.channel)
             if (channel.guild.id !== member.guild.id) return
-            if (!channel) return await singleNotify(interaction.client,
+            if (!channel) return singleNotify(
                 "statsChannelDeleted",
                 member.guild.id,
-                "The stats channel has been deleted. Please set a new channel to use this feature.",
+                "One or more of your stats channels have been deleted. Please open the settings menu to change this.",
                 "Critical"
             )
             try {

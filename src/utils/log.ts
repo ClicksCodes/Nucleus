@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as Discord from 'discord.js';
 import getEmojiByName from './getEmojiByName.js';
-import readConfig from './readConfig.js';
 import { toHexArray } from './calculate.js';
 import { promisify } from 'util';
 import generateKeyValueList from './generateKeyValueList.js';
+import client from './client.js';
 
 const wait = promisify(setTimeout);
 
@@ -52,8 +52,8 @@ export class Logger {
         return auditLog;
     }
 
-    async log(log: any, client): Promise<void> {
-        let config = await readConfig(log.hidden.guild);
+    async log(log: any): Promise<void> {
+        let config = await client.database.read(log.hidden.guild);
         if (!config.logging.logs.enabled) return;
         if (!(log.meta.calculateType == true)) {
             if(!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) return console.log('Not logging this type of event');

@@ -29,8 +29,6 @@ const callback = async (interaction: CommandInteraction) => {
         })
         + `Are you sure you want to set the slowmode in this channel?`)
         .setColor("Danger")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
     if (confirmation.success) {
         try {
@@ -39,7 +37,7 @@ const callback = async (interaction: CommandInteraction) => {
             await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("CHANNEL.SLOWMODE.RED")
                 .setTitle(`Slowmode`)
-                .setDescription("An error occurred while setting the slowmode")
+                .setDescription("Something went wrong while setting the slowmode")
                 .setStatus("Danger")
             ], components: []})
         }

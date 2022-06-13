@@ -1,10 +1,10 @@
 import Discord, { MessageActionRow, MessageButton } from 'discord.js';
-import readConfig from '../utils/readConfig.js'
 import generateEmojiEmbed from '../utils/generateEmojiEmbed.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
+import client from "../utils/client.js";
 
-export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, client) {
-    let config = await readConfig(guild.id);
+export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string) {
+    let config = await client.database.read(guild.id);
     // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
     let overwrites = [{
@@ -12,6 +12,11 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
         allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
         type: "member"
     }] as Discord.OverwriteResolvable[];
+    overwrites.push({
+        id: guild.roles.everyone,
+        deny: ["VIEW_CHANNEL"],
+        type: "role"
+    })
     if (config.tickets.supportRole != null) {
         overwrites.push({
             id: guild.roles.cache.get(config.tickets.supportRole),
@@ -47,7 +52,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by a Moderator\n` +
-                `**Support type:** Appeal submission\n` +
+                `**Support type:** Appeal submission\n` + (reason != null ? `**Reason:**\n> ${reason}\n` : "") +
                 `**Ticket ID:** \`${c.id}\`\n` +
                 `Type \`/ticket close\` to archive this ticket.`,
             )
@@ -84,6 +89,6 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
 }
 
 export async function areTicketsEnabled(guild: string) {
-    let config = await readConfig(guild);
+    let config = await client.database.read(guild);
     return config.tickets.enabled;
 }

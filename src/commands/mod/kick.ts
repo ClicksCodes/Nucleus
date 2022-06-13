@@ -5,7 +5,7 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import readConfig from '../../utils/readConfig.js'
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -29,13 +29,11 @@ const callback = async (interaction: CommandInteraction) => {
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
         + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
     if (confirmation.success) {
         let dmd = false
         let dm;
-        let config = await readConfig(interaction.guild.id);
+        let config = await client.database.read(interaction.guild.id);
         try {
             if (interaction.options.getString("notify") != "no") {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({

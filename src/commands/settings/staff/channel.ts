@@ -1,3 +1,4 @@
+import { ChannelType } from 'discord-api-types';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import generateEmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
@@ -8,9 +9,11 @@ import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("role")
-    .setDescription("Sets or shows the role given to users after using /verify")
-    .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying"))
+    .setName("channel")
+    .setDescription("Sets or shows the staff notifications channel")
+    .addChannelOption(option => option.setName("channel").setDescription("The channel to set the staff notifications channel to").addChannelTypes([
+        ChannelType.GuildNews, ChannelType.GuildText
+    ]))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
@@ -19,70 +22,72 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
     ], ephemeral: true, fetchReply: true});
-    if (interaction.options.getRole("role")) {
-        let role
+    if (interaction.options.getChannel("channel")) {
+        let channel
         try {
-            role = interaction.options.getRole("role")
+            channel = interaction.options.getChannel("channel")
         } catch {
             return await interaction.editReply({embeds: [new generateEmojiEmbed()
-                .setEmoji("GUILD.ROLES.DELETE")
-                .setTitle("Verify Role")
-                .setDescription("The role you provided is not a valid role")
+                .setEmoji("CHANNEL.TEXT.DELETE")
+                .setTitle("Staff Notifications Channel")
+                .setDescription("The channel you provided is not a valid channel")
                 .setStatus("Danger")
             ]})
         }
-        role = role as Discord.Role
-        if (role.guild.id != interaction.guild.id) {
+        channel = channel as Discord.TextChannel
+        if (channel.guild.id != interaction.guild.id) {
             return interaction.editReply({embeds: [new generateEmojiEmbed()
-                .setTitle("Verify Role")
-                .setDescription(`You must choose a role in this server`)
+                .setTitle("Staff Notifications Channel")
+                .setDescription(`You must choose a channel in this server`)
                 .setStatus("Danger")
-                .setEmoji("GUILD.ROLES.DELETE")
+                .setEmoji("CHANNEL.TEXT.DELETE")
             ]});
         }
         let confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.EDIT")
-            .setTitle("Verify Role")
-            .setDescription(`Are you sure you want to set the verify role to <@&${role.id}>?`)
+            .setEmoji("CHANNEL.TEXT.EDIT")
+            .setTitle("Staff Notifications Channel")
+            .setDescription(
+                `This will be the channel all notifications, updates, user reports etc. will be sent to.\n\n` +
+                `Are you sure you want to set the staff notifications channel to <#${channel.id}>?`
+            )
             .setColor("Warning")
             .setInverted(true)
         .send(true)
         if (confirmation.success) {
             try {
-                await client.database.write(interaction.guild.id, {"verify.role": role.id, "verify.enabled": true});
+                await client.database.write(interaction.guild.id, {"logging.staff.channel": channel.id})
             } catch (e) {
-                console.log(e)
                 return interaction.editReply({embeds: [new generateEmojiEmbed()
-                    .setTitle("Verify Role")
-                    .setDescription(`Something went wrong while setting the verify role`)
+                    .setTitle("Staff Notifications Channel")
+                    .setDescription(`Something went wrong and the staff notifications channel could not be set`)
                     .setStatus("Danger")
-                    .setEmoji("GUILD.ROLES.DELETE")
+                    .setEmoji("CHANNEL.TEXT.DELETE")
                 ], components: []});
             }
         } else {
             return interaction.editReply({embeds: [new generateEmojiEmbed()
-                .setTitle("Verify Role")
+                .setTitle("Staff Notifications Channel")
                 .setDescription(`No changes were made`)
                 .setStatus("Success")
-                .setEmoji("GUILD.ROLES.CREATE")
+                .setEmoji("CHANNEL.TEXT.CREATE")
             ], components: []});
         }
     }
     let clicks = 0;
     let data = await client.database.read(interaction.guild.id);
-    let role = data.verify.role;
+    let channel = data.logging.staff.channel;
     while (true) {
         await interaction.editReply({embeds: [new generateEmojiEmbed()
-            .setTitle("Verify Role")
-            .setDescription(role ? `Your verify role is currently set to <@&${role}>` : `You have not set a verify role`)
+            .setTitle("Staff Notifications channel")
+            .setDescription(channel ? `Your staff notifications channel is currently set to <#${channel}>` : "This server does not have a staff notifications channel")
             .setStatus("Success")
-            .setEmoji("GUILD.ROLES.CREATE")
+            .setEmoji("CHANNEL.TEXT.CREATE")
         ], components: [new MessageActionRow().addComponents([new MessageButton()
             .setCustomId("clear")
-            .setLabel(clicks ? "Click again to confirm" : "Reset role")
+            .setLabel(clicks ? "Click again to confirm" : "Reset channel")
             .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
             .setStyle("DANGER")
-            .setDisabled(!role)
+            .setDisabled(!channel)
         ])]});
         let i;
         try {
@@ -93,18 +98,18 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             clicks += 1;
             if (clicks == 2) {
                 clicks = 0;
-                await client.database.write(interaction.guild.id, {}, ["verify.role", "verify.enabled"])
-                role = undefined;
+                await client.database.write(interaction.guild.id, {}, ["logging.staff.channel"])
+                channel = undefined;
             }
         } else {
             break
         }
     }
     await interaction.editReply({embeds: [new generateEmojiEmbed()
-        .setTitle("Verify Role")
-        .setDescription(role ? `Your verify role is currently set to <@&${role}}>` : `You have not set a verify role`)
+        .setTitle("Staff Notifications channel")
+        .setDescription(channel ? `Your staff notifications channel is currently set to <#${channel}>` : "This server does not have a staff notifications channel")
         .setStatus("Success")
-        .setEmoji("GUILD.ROLE.CREATE")
+        .setEmoji("CHANNEL.TEXT.CREATE")
         .setFooter({text: "Message closed"})
     ], components: [new MessageActionRow().addComponents([new MessageButton()
         .setCustomId("clear")

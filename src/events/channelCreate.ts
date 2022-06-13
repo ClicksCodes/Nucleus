@@ -1,5 +1,3 @@
-import { Interaction } from "discord.js";
-
 export const event = 'channelCreate'
 
 export async function callback(client, channel) {

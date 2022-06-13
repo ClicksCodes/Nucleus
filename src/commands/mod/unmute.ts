@@ -27,8 +27,6 @@ const callback = async (interaction: CommandInteraction) => {
         + `The user **will${interaction.options.getString("notify") === "yes" ? '' : ' not'}** be notified\n\n`
         + `Are you sure you want to unmute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
     if (confirmation.success) {
         let dmd = false

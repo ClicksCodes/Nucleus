@@ -19,7 +19,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addUserOption(option => option.setName("user").setDescription("The user to purge messages from").setRequired(false))
     .addStringOption(option => option.setName("reason").setDescription("The reason for the purge").setRequired(false))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     let user = interaction.options.getMember("user") as GuildMember ?? null
     let channel = (interaction.channel as GuildChannel)
     if (!(["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(channel.type.toString()))) {
@@ -205,8 +205,6 @@ const callback = async (interaction: CommandInteraction) => {
                 "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
             }))
             .setColor("Danger")
-    //        pluralize("day", interaction.options.getInteger("amount"))
-    //        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
         .send()
         if (confirmation.success) {
             let messages;

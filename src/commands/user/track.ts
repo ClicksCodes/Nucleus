@@ -3,9 +3,8 @@ import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/buil
 import { WrappedCheck } from "jshaiku";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import generateKeyValueList from "../../utils/generateKeyValueList.js";
-import readConfig from "../../utils/readConfig.js";
 import addPlural from "../../utils/plurals.js";
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -24,10 +23,10 @@ const generateFromTrack = (position: number, active: any, size: number, disabled
 
 const callback = async (interaction: CommandInteraction) => {
     // @ts-ignore
-    const { renderUser } = interaction.client.logger
+    const { renderUser } = interaction.client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
     const guild = interaction.guild;
-    let config = await readConfig(guild.id);
+    let config = await client.database.read(guild.id);
     await interaction.reply({embeds: [new generateEmojiEmbed()
         .setEmoji("NUCLEUS.LOADING")
         .setTitle("Loading")
@@ -161,14 +160,19 @@ const callback = async (interaction: CommandInteraction) => {
     }
 }
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     // Allow the owner to promote anyone
     if (member.id == interaction.guild.ownerId) return true
+    // Check if the user can manage any of the tracks
+    // @ts-ignore
+    let tracks = (await interaction.client.database.get(interaction.guild.id)).tracks
+    let managed = false
+    tracks.forEach(element => { if (element.track.manageableBy.some(role => member.roles.cache.has(role))) managed = true });
     // Check if the user has manage_roles permission
-    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the `manage_roles` permission";
+    if (!managed && ! member.permissions.has("MANAGE_ROLES")) throw "You do not have the `manage_roles` permission";
     // Allow track
-    return true // TODO: allow if the member has manage perms
+    return true;
 }
 
 export { command };

@@ -1,18 +1,20 @@
 import Discord, { MessageButton, MessageActionRow } from "discord.js";
+import client from "../../utils/client.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import readConfig from "../../utils/readConfig.js";
 
 export default async function (interaction) {
     // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = interaction.client.logger
 
-    let config = await readConfig(interaction.guild.id);
+    let config = await client.database.read(interaction.guild.id);
+    let thread = false; let threadChannel
+    if (interaction.channel instanceof Discord.ThreadChannel) thread = true; threadChannel = interaction.channel as Discord.ThreadChannel
     let channel = (interaction.channel as Discord.TextChannel)
-    if (!channel.parent || config.tickets.category != channel.parent.id) {
+    if (!channel.parent || config.tickets.category != channel.parent.id || (thread ? (threadChannel.parent.parent.id != config.tickets.category) : false)) {
         return interaction.reply({embeds: [new generateEmojiEmbed()
             .setTitle("Deleting Ticket...")
-            .setDescription("This ticket is not in your tickets category, so cannot be deleted. You cannot run close in a thread.") // TODO bridge to cross later!
+            .setDescription("This ticket is not in your tickets category, so cannot be deleted. You cannot run close in a thread.")
             .setStatus("Danger")
             .setEmoji("CONTROL.BLOCKCROSS")
         ], ephemeral: true});
@@ -110,7 +112,7 @@ export default async function (interaction) {
 }
 
 async function purgeByUser(member, guild) {
-    let config = await readConfig(guild.id);
+    let config = await client.database.read(guild.id);
     if (!config.tickets.category) return;
     let tickets = guild.channels.cache.get(config.tickets.category);
     if (!tickets) return;

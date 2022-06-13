@@ -4,7 +4,6 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import readConfig from '../../utils/readConfig.js';
 import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -31,10 +30,8 @@ const callback = async (interaction: CommandInteraction) => {
         .setColor("Danger")
         .addCustomBoolean(
             "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.client),
+            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.options.getString("reason")),
             "An appeal ticket will be created when Confirm is clicked")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
     if (confirmation.success) {
         let dmd = false

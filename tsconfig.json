@@ -9,6 +9,7 @@
         "declarationMap": true,
         "resolveJsonModule": true,
         "moduleResolution": "node",
+        "skipLibCheck": true
     },
     "include": ["src/**/*"],
     "exclude": []

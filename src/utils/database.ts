@@ -1,8 +1,10 @@
 import { Collection, Db, MongoClient } from 'mongodb';
+import structuredClone from '@ungap/structured-clone';
 
 
 export const Entry = data => {
     data = data ?? {};
+    data.getKey = key => data[key]
     return {
         get(target, prop, receiver) {
             let dataToReturn = data[prop]
@@ -38,11 +40,42 @@ export default class Database {
 
     async read(guild: string) {
         let entry = await this.guilds.findOne({ id: guild });
-        return new Proxy(this.defaultData, Entry(entry)) as unknown as GuildConfig
+        return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig
     }
 
-    async write(guild: string, config: GuildConfig) {
-        await this.guilds.updateOne({ id: guild }, { $set: config }, { upsert: true });
+    async write(guild: string, set: object = {}, unset: string[] = []) {
+        let uo = {}
+        for (let key of unset) {
+            uo[key] = "";
+        }
+        await this.guilds.updateOne({ id: guild }, {
+            $unset: uo,
+            $set: set
+        }, { upsert: true });
+    }
+
+    async append(guild: string, key: string, value: any) {
+        if (Array.isArray(value)) {
+            await this.guilds.updateOne({ id: guild }, {
+                $addToSet: { [key]: { $each: value } }
+            }, { upsert: true });
+        } else {
+            await this.guilds.updateOne({ id: guild }, {
+                $addToSet: { [key]: value }
+            }, { upsert: true });
+        }
+    }
+
+    async remove(guild: string, key: string, value: any) {
+        if (Array.isArray(value)) {
+            await this.guilds.updateOne({ id: guild }, {
+                $pullAll: { [key]: value }
+            }, { upsert: true });
+        } else {
+            await this.guilds.updateOne({ id: guild }, {
+                $pullAll: { [key]: [value] }
+            }, { upsert: true });
+        }
     }
 }
 
@@ -94,64 +127,65 @@ export interface GuildConfig {
         enabled: boolean,
         verificationRequired: {
             message: boolean,
-            role: string
+            role: string | null
         },
-        welcomeRole: string,
-        channel: string,
-        message: string
+        welcomeRole: string | null,
+        channel: string | null,
+        message: string | null,
     }
     stats: {
         enabled: boolean,
-        channel: string,
-        text: string
+        channel: string | null,
+        text: string | null,
     }[]
     logging: {
         logs: {
             enabled: boolean,
-            channel: string,
-            toLog: string
+            channel: string | null,
+            toLog: string | null,
         },
         staff: {
-            channel: string
+            channel: string | null,
         }
     }
     verify: {
         enabled: boolean,
-        role: string
+        role: string | null,
     }
     tickets: {
         enabled: boolean,
-        category: string,
-        types: string,
+        category: string | null,
+        types: string | null,
         customTypes: string[],
-        supportRole: string,
+        useCustom: boolean,
+        supportRole: string | null,
         maxTickets: number
     }
     moderation: {
         mute: {
             timeout: boolean,
-            role: string,
-            text: string,
-            link: string
+            role: string | null,
+            text: string | null,
+            link: string | null
         },
         kick: {
-            text: string,
-            link: string
+            text: string | null,
+            link: string | null
         },
         ban: {
-            text: string,
-            link: string
+            text: string | null,
+            link: string | null
         },
         softban: {
-            text: string,
-            link: string
+            text: string | null,
+            link: string | null
         },
         warn: {
-            text: string,
-            link: string
+            text: string | null,
+            link: string | null
         },
         role: {
-            role: string
+            role: string | null,
         }
     }
     tracks: {

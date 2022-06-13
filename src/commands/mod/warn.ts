@@ -16,7 +16,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addChoices([["Yes", "yes"], ["No", "no"]])
     )
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     // @ts-ignore
     const { log, NucleusColors, renderUser, entry } = interaction.client.logger
     // TODO:[Modals] Replace this with a modal
@@ -32,10 +32,8 @@ const callback = async (interaction: CommandInteraction) => {
         .setColor("Danger")
         .addCustomBoolean(
             "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.client),
+            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.options.getString("reason")),
             "An appeal ticket will be created when Confirm is clicked")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
     if (confirmation.success) {
         let dmd = false

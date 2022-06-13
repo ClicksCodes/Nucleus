@@ -1,10 +1,10 @@
 import log from '../utils/log.js'
-import readConfig from '../utils/readConfig.js'
 import convertCurlyBracketString from '../utils/convertCurlyBracketString.js'
+import client from '../utils/client.js';
 
 export async function callback(_, member) {
     if (member.bot) return
-    let config = await readConfig(member.guild.id);
+    let config = await client.database.read(member.guild.id);
     if (!config.welcome.enabled) return
 
     if (!config.welcome.verificationRequired.role) {

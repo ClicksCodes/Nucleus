@@ -1,13 +1,13 @@
 const logs = [
     "channelUpdate",
-    "channelPinsUpdate",
+    "channelPinsUpdate", // TODO
     "emojiUpdate",
-    "stickerUpdate",
+    "stickerUpdate", // TODO
     "guildUpdate",
     "guildMemberUpdate",
     "guildMemberPunish",
-    "guildEventUpdate",
-    "guildEventMemberUpdate",
+    "guildEventUpdate", // TODO
+    "guildEventMemberUpdate", // TODO
     "guildRoleUpdate",
     "guildInviteUpdate",
     "messageUpdate",
@@ -16,11 +16,11 @@ const logs = [
     "messageReactionUpdate",
     "messagePing",
     "messageMassPing",
-    "messageAnnounce",
+    "messageAnnounce", // TODO
     "stageUpdate",
     "threadUpdate",
-    "voiceStateUpdate",
-    "webhookUpdate"
+    "voiceStateUpdate", // TODO
+    "webhookUpdate" // TODO
 ]
 
 const tickets = [

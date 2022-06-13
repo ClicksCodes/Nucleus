@@ -4,8 +4,8 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import readConfig from '../../utils/readConfig.js';
-import addPlurals from '../../utils/plurals.js';
+import client from "../../utils/client.js";
+import addPlural from "../../utils/plurals.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -28,15 +28,13 @@ const callback = async (interaction: CommandInteraction) => {
             "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
         })
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
-        + `${addPlurals(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
+        + `${addPlural(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
         + `Are you sure you want to softban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send()
     if (confirmation.success) {
         let dmd = false;
-        let config = await readConfig(interaction.guild.id);
+        let config = await client.database.read(interaction.guild.id);
         try {
             if (interaction.options.getString("notify") != "no") {
                 await (interaction.options.getMember("user") as GuildMember).send({

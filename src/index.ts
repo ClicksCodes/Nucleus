@@ -18,5 +18,4 @@ client.roleMenu = {}
 client.memory = new Memory()
 client.database = await new Database(config.mongoUrl).connect()
 
-
 await client.login();

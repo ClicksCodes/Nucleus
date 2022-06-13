@@ -60,7 +60,6 @@ const callback = async (interaction: CommandInteraction) => {
             .setCustomId("category")
             .setMinValues(0)
             .setMaxValues(1)
-            // .setMaxValues(Object.keys(types).length)
             .setOptions(Object.keys(types).map(type => {return {label: toCapitals(type), value: type}}))
         ])]});
     }

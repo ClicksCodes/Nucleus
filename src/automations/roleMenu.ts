@@ -1,18 +1,18 @@
 import { Message, MessageButton } from "discord.js";
-import readConfig from '../utils/readConfig.js'
 import generateEmojiEmbed from '../utils/generateEmojiEmbed.js'
 import { MessageActionRow, MessageSelectMenu } from 'discord.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
+import client from "../utils/client.js";
 
 export async function callback(interaction) {
-    let config = await readConfig(interaction.guild.id);
-    if (!config.roleMenu.enabled) await interaction.reply({embeds: [new generateEmojiEmbed()
+    let config = await client.database.read(interaction.guild.id);
+    if (!config.roleMenu.enabled) return await interaction.reply({embeds: [new generateEmojiEmbed()
         .setTitle("Roles")
         .setDescription("Self roles are currently disabled. Please contact a staff member or try again later.")
         .setStatus("Danger")
         .setEmoji("CONTROL.BLOCKCROSS")
     ], ephemeral: true})
-    if (config.roleMenu.options.length === 0) await interaction.reply({embeds: [new generateEmojiEmbed()
+    if (config.roleMenu.options.length === 0) return await interaction.reply({embeds: [new generateEmojiEmbed()
         .setTitle("Roles")
         .setDescription("There are no roles available. Please contact a staff member or try again later.")
         .setStatus("Danger")
@@ -136,7 +136,7 @@ export async function callback(interaction) {
             .setDescription("Something went wrong and your roles were not added. Please contact a staff member or try again later.")
             .setStatus("Danger")
             .setEmoji("GUILD.RED")
-        ]})
+        ], components: []})
     }
     await interaction.editReply({embeds: [new generateEmojiEmbed()
         .setTitle("Roles")

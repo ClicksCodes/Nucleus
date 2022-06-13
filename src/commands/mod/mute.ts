@@ -6,7 +6,7 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import humanizeDuration from "humanize-duration";
-import readConfig from "../../utils/readConfig.js";
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -21,7 +21,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are muted | Default yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]]))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     // @ts-ignore
     const { log, NucleusColors, renderUser, entry } = interaction.client.logger
     const user = interaction.options.getMember("user") as GuildMember
@@ -32,7 +32,7 @@ const callback = async (interaction: CommandInteraction) => {
         minutes: interaction.options.getInteger("minutes") || 0,
         seconds: interaction.options.getInteger("seconds") || 0
     }
-    let config = await readConfig(interaction.guild.id)
+    let config = await client.database.read(interaction.guild.id)
     let serverSettingsDescription = (config.moderation.mute.timeout ? "given a timeout" : "")
     if (config.moderation.mute.role) serverSettingsDescription += (serverSettingsDescription ? " and " : "") + `given the <@&${config.moderation.mute.role}> role`
 
@@ -132,13 +132,11 @@ const callback = async (interaction: CommandInteraction) => {
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
         + `Are you sure you want to mute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
         .setColor("Danger")
-//        pluralize("day", interaction.options.getInteger("delete"))
-//        const pluralize = (word: string, count: number) => { return count === 1 ? word : word + "s" }
     .send(true)
     if (confirmation.success) {
         let dmd = false
         let dm;
-        let config = await readConfig(interaction.guild.id);
+        let config = await client.database.read(interaction.guild.id);
         try {
             if (interaction.options.getString("notify") != "no") {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
