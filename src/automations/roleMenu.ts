@@ -67,7 +67,7 @@ export async function callback(interaction) {
         })
     }
     let component;
-    try { component = await (m as Message).awaitMessageComponent({time: 2.5 * 60 * 1000});
+    try { component = await (m as Message).awaitMessageComponent({time: 300000});
     } catch (e) { return }
     component.deferUpdate()
     let rolesToAdd = []
@@ -107,7 +107,7 @@ export async function callback(interaction) {
         });
         let component;
         try {
-            component = await (m as Message).awaitMessageComponent({time: 2.5 * 60 * 1000});
+            component = await (m as Message).awaitMessageComponent({time: 300000});
         } catch (e) {
             return
         }

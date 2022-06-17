@@ -91,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         ])]});
         let i;
         try {
-            i = await m.awaitMessageComponent({time: 600000});
+            i = await m.awaitMessageComponent({time: 300000});
         } catch(e) { break }
         i.deferUpdate()
         if (i.component.customId == "clear") {

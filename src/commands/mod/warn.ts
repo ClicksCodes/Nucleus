@@ -109,7 +109,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             })
             let component;
             try {
-                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch (e) {
                 return await interaction.editReply({embeds: [new generateEmojiEmbed()
                     .setEmoji(`PUNISH.WARN.GREEN`)

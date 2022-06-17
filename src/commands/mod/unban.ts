@@ -11,7 +11,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Unbans a user")
     .addStringOption(option => option.setName("user").setDescription("The user to unban (Username or ID)").setRequired(true))
 
-const callback = async (interaction: CommandInteraction) => { // TODO: User search UI
+const callback = async (interaction: CommandInteraction) => {
     let bans = await interaction.guild.bans.fetch()
     let user = interaction.options.getString("user")
     let resolved = bans.find(ban => ban.user.id == user)

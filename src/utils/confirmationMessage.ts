@@ -99,7 +99,7 @@ class confirmationMessage {
             }
             let component;
             try {
-                component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 2.5 * 60 * 1000});
+                component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 300000});
             } catch (e) {
                 return {
                     success: false,

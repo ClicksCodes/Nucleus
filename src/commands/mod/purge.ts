@@ -99,7 +99,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             })
             let component;
             try {
-                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch (e) { break; }
             component.deferUpdate();
             if (component.customId === "done") break;
@@ -177,7 +177,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         ])]})
         let component;
         try {
-            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
         } catch {}
         if (component && component.customId === "download") {
             interaction.editReply({embeds: [new generateEmojiEmbed()
@@ -276,7 +276,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ])]})
             let component;
             try {
-                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch {}
             if (component && component.customId === "download") {
                 interaction.editReply({embeds: [new generateEmojiEmbed()

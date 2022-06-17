@@ -74,7 +74,7 @@ export default async function (interaction) {
         ], ephemeral: true, fetchReply: true, components: splitFormattedTicketTypes});
         let component;
         try {
-            component = await (m as Discord.Message).awaitMessageComponent({time: 2.5 * 60 * 1000});
+            component = await (m as Discord.Message).awaitMessageComponent({time: 300000});
         } catch (e) {
             return;
         }

@@ -125,7 +125,7 @@ const callback = async (interaction: CommandInteraction) => {
         ])})
         let component;
         try {
-            component = await (m as Message).awaitMessageComponent({time: 2.5 * 60 * 1000});
+            component = await (m as Message).awaitMessageComponent({time: 300000});
         } catch (e) {
             return
         }
@@ -178,3 +178,4 @@ const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck
 export { command };
 export { callback };
 export { check };
+

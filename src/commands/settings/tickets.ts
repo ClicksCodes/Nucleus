@@ -200,7 +200,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 600000 });
+            i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) { break }
         i.deferUpdate()
         if (i.component.customId == "clearCategory") {
@@ -237,7 +237,7 @@ async function manageTypes(interaction, data, m) {
     while (true) {
         if (data.useCustom) {
             let customTypes = data.customTypes;
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [new generateEmojiEmbed()
                     .setTitle("Tickets > Types")
                     .setDescription(
@@ -298,7 +298,7 @@ async function manageTypes(interaction, data, m) {
                     .setMinValues(1)
                     .setPlaceholder("Select types to use")
             ])
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [new generateEmojiEmbed()
                     .setTitle("Tickets > Types")
                     .setDescription(
@@ -326,7 +326,7 @@ async function manageTypes(interaction, data, m) {
         }
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 600000 });
+            i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) { break }
         if (i.component.customId == "types") {
             i.deferUpdate()

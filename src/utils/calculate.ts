@@ -6,8 +6,6 @@ const logs = [
     "guildUpdate",
     "guildMemberUpdate",
     "guildMemberPunish",
-    "guildEventUpdate", // TODO
-    "guildEventMemberUpdate", // TODO
     "guildRoleUpdate",
     "guildInviteUpdate",
     "messageUpdate",
@@ -17,10 +15,12 @@ const logs = [
     "messagePing",
     "messageMassPing",
     "messageAnnounce", // TODO
-    "stageUpdate",
     "threadUpdate",
-    "voiceStateUpdate", // TODO
-    "webhookUpdate" // TODO
+    "webhookUpdate", // TODO
+    "guildMemberVerify", // TODO
+    "autoModeratorDeleted", // TODO
+    "nucleusSettingsUpdated", // TODO
+    ""
 ]
 
 const tickets = [

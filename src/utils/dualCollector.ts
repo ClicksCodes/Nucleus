@@ -7,9 +7,9 @@ export default async function (m, interactionFilter, messageFilter) {
     try {
         out = await new Promise((resolve, reject) => {
             let mes, int;
-            mes = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 600000})
+            mes = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 300000})
                 .on("collect", (m) => { resolve(m); })
-            int = m.channel.createMessageCollector({filter: (m) => messageFilter(m), time: 600000})
+            int = m.channel.createMessageCollector({filter: (m) => messageFilter(m), time: 300000})
                 .then("collect", (m) => { try {m.delete();} catch {}; resolve(m); })
             mes.on("end", () => { int.stop(); })
             int.on("end", () => { mes.stop(); })
@@ -27,12 +27,12 @@ export async function modalInteractionCollector(m, modalFilter, interactionFilte
     try {
         out = await new Promise((resolve, reject) => {
             let mod, int;
-            int = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 600000})
+            int = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 300000})
                 .on("collect", (m) => { resolve(m); })
             mod = new Discord.InteractionCollector(
                 client, {
                     filter: (m) => modalFilter(m),
-                    time: 600000
+                    time: 300000
                 })
                 .on("collect", async (m) => {
                     int.stop();

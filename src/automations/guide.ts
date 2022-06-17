@@ -181,7 +181,7 @@ export default async (guild, interaction?) => {
         }
         let i
         try {
-            i = await m.awaitMessageComponent({filter: interaction ? () => { return true } : f, time: 600000});
+            i = await m.awaitMessageComponent({filter: interaction ? () => { return true } : f, time: 300000});
         } catch(e) { break }
         i.deferUpdate()
         if (i.component.customId == "left") {

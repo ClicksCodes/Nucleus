@@ -91,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         ], ephemeral: true, fetchReply: true})
         let component;
         try {
-            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 2.5 * 60 * 1000});
+            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
         } catch { return }
         component.deferUpdate();
         if (component.customId == "cancel") return interaction.editReply({embeds: [new generateEmojiEmbed()
