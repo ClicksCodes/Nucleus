@@ -4,6 +4,7 @@ import { WrappedCheck } from "jshaiku";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList, { toCapitals } from "../../utils/generateKeyValueList.js";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("about")
@@ -11,8 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
 
 const callback = async (interaction: CommandInteraction) => {
     let guild = interaction.guild as Guild;
-    // @ts-ignore
-    const { renderUser, renderDelta } = interaction.client.logger
+    const { renderUser, renderDelta } = client.logger
     interaction.reply({embeds: [new generateEmojiEmbed()
         .setTitle("Server Info")
         .setStatus("Success")

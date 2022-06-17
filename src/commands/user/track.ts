@@ -22,8 +22,7 @@ const generateFromTrack = (position: number, active: any, size: number, disabled
 }
 
 const callback = async (interaction: CommandInteraction) => {
-    // @ts-ignore
-    const { renderUser } = interaction.client.logger;
+    const { renderUser } = client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
     const guild = interaction.guild;
     let config = await client.database.read(guild.id);
@@ -46,7 +45,7 @@ const callback = async (interaction: CommandInteraction) => {
                 label: option.name,
                 value: index.toString(),
                 description: option.track.length == 0 ? "No" : addPlural(option.track.length, "role"),
-                emoji: interaction.client.emojis.resolve(getEmojiByName("TRACKS.SINGLE." + (hasRoleInTrack ? "ACTIVE" : "INACTIVE"), "id"))
+                emoji: client.emojis.resolve(getEmojiByName("TRACKS.SINGLE." + (hasRoleInTrack ? "ACTIVE" : "INACTIVE"), "id"))
             })
         })).setCustomId("select").setMaxValues(1)
         let allowed = []
@@ -166,7 +165,7 @@ const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user can manage any of the tracks
     // @ts-ignore
-    let tracks = (await interaction.client.database.get(interaction.guild.id)).tracks
+    let tracks = (await client.database.get(interaction.guild.id)).tracks
     let managed = false
     tracks.forEach(element => { if (element.track.manageableBy.some(role => member.roles.cache.has(role))) managed = true });
     // Check if the user has manage_roles permission

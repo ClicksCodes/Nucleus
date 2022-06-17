@@ -2,6 +2,7 @@ import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js"
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -17,7 +18,7 @@ const callback = (interaction: CommandInteraction) => {
     ], components: [new MessageActionRow().addComponents([new MessageButton()
         .setLabel("Invite")
         .setStyle("LINK")
-        .setURL(`https://discord.com/api/oauth2/authorize?client_id=${interaction.client.user.id}&permissions=295157886134&scope=bot%20applications.commands`)
+        .setURL(`https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=295157886134&scope=bot%20applications.commands`)
     ])], ephemeral: true});
 }
 

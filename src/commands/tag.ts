@@ -2,6 +2,7 @@ import { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import { callback as statsChannelAdd } from '../automations/statsChannelAdd.js';
+import client from "../utils/client.js"
 
 const command = new SlashCommandBuilder()
     .setName("tag")

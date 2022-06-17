@@ -57,7 +57,7 @@ const callback = async (interaction: CommandInteraction) => {
             let nickname = interaction.options.getString("name")
             member.setNickname(nickname ?? null, "Nucleus Nickname command")
             // @ts-ignore
-            const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = interaction.client.logger
+            const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger
             let data = {
                 meta: {
                     type: 'memberUpdate',
@@ -78,7 +78,7 @@ const callback = async (interaction: CommandInteraction) => {
                     guild: interaction.guild.id
                 }
             }
-            log(data, interaction.client);
+            log(data, client);
         } catch {
             await interaction.editReply({embeds: [new generateEmojiEmbed()
                 .setEmoji("PUNISH.NICKNAME.RED")

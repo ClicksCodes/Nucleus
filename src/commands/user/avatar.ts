@@ -4,6 +4,7 @@ import { WrappedCheck } from "jshaiku";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
+import client from "../../client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -12,8 +13,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addUserOption(option => option.setName("user").setDescription("The user to get the avatar of | Default: Yourself"))
 
 const callback = async (interaction: CommandInteraction) => {
-    // @ts-ignore
-    const { renderUser } = interaction.client.logger
+    const { renderUser } = client.logger
     let member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
     await interaction.reply({embeds: [new generateEmojiEmbed()
         .setTitle("User Info")

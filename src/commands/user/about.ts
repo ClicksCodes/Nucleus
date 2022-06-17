@@ -5,6 +5,7 @@ import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -26,8 +27,7 @@ class Embed {
 
 
 const callback = async (interaction: CommandInteraction) => {
-    // @ts-ignore
-    const { renderUser, renderDelta } = interaction.client.logger
+    const { renderUser, renderDelta } = client.logger
     let member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
     let flags: string[] = [];
     if ([
@@ -36,7 +36,7 @@ const callback = async (interaction: CommandInteraction) => {
         "261900651230003201", // Coded
         "511655498676699136", // Zan
     ].includes(member.user.id)) { flags.push("NUCLEUSDEVELOPER") }
-    if ((await interaction.client.guilds.cache.get("684492926528651336")?.members.fetch())?.filter(m => m.roles.cache.has("760896837866749972"))?.map(m => m.id).includes(member.user.id)) { flags.push("CLICKSDEVELOPER") }
+    if ((await client.guilds.cache.get("684492926528651336")?.members.fetch())?.filter(m => m.roles.cache.has("760896837866749972"))?.map(m => m.id).includes(member.user.id)) { flags.push("CLICKSDEVELOPER") }
     member.user.flags.toArray().map(flag => {
         flags.push(flag.toString())
     })
