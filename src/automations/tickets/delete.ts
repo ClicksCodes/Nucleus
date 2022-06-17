@@ -5,7 +5,7 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 
 export default async function (interaction) {
     // @ts-ignore
-    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = interaction.client.logger
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
 
     let config = await client.database.read(interaction.guild.id);
     let thread = false; let threadChannel
@@ -45,7 +45,7 @@ export default async function (interaction) {
                 guild: interaction.guild.id
             }
         }
-        log(data, interaction.client);
+        log(data, client);
         interaction.channel.delete();
         return;
     } else if (status == "Active") {
@@ -95,7 +95,7 @@ export default async function (interaction) {
                 guild: interaction.guild.id
             }
         }
-        log(data, interaction.client);
+        log(data, client);
         await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setTitle("Close Ticket")
             .setDescription("This ticket has been closed.\nType `/ticket close` again to delete it.")

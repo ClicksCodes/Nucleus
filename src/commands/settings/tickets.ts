@@ -286,7 +286,7 @@ async function manageTypes(interaction, data, m) {
                 options.push(new SelectMenuOption({
                     label: capitalize(type),
                     value: type,
-                    emoji: interaction.client.emojis.cache.get(getEmojiByName(`TICKETS.${type.toUpperCase()}`, "id")),
+                    emoji: client.emojis.cache.get(getEmojiByName(`TICKETS.${type.toUpperCase()}`, "id")),
                     default: inUse.includes(type)
                 }))
             })

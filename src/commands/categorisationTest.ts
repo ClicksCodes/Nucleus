@@ -10,8 +10,7 @@ const command = new SlashCommandBuilder()
     .setDescription("Categorises your servers channels")
 
 const callback = async (interaction: CommandInteraction) => {
-    // @ts-ignore
-    const { renderChannel } = interaction.client.logger
+    const { renderChannel } = client.logger
 
     let channels = interaction.guild.channels.cache.filter(c => c.type !== "GUILD_CATEGORY");
     let categorised = {}

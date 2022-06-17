@@ -10,8 +10,7 @@ function capitalize(s: string) {
 }
 
 export default async function (interaction) {
-    // @ts-ignore
-    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = interaction.client.logger
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
 
     let config = await client.database.read(interaction.guild.id);
     if (!config.tickets.enabled || !config.tickets.category) {
@@ -196,7 +195,7 @@ export default async function (interaction) {
                 guild: interaction.guild.id
             }
         }
-        log(data, interaction.client);
+        log(data, client);
     } catch (e) { console.log(e)}
     await interaction.editReply({embeds: [new generateEmojiEmbed()
         .setTitle("Create Ticket")

@@ -10,8 +10,7 @@ function step(i) {
 }
 
 export default async function(interaction) {
-    // @ts-ignore
-    let verify = interaction.client.verify
+    let verify = client.verify
     await interaction.reply({embeds: [new generateEmojiEmbed()
         .setTitle("Loading")
         .setDescription(step(-1))

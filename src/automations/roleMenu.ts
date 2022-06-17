@@ -34,7 +34,7 @@ export async function callback(interaction) {
             itt += 1
             code = ""
             for (let i = 0; i < length; i++) { code += chars.charAt(Math.floor(Math.random() * chars.length)); }
-            if (code in interaction.client.roleMenu) continue;
+            if (code in client.roleMenu) continue;
             if (itt > 1000) {
                 itt = 0
                 length += 1
@@ -42,7 +42,7 @@ export async function callback(interaction) {
             }
             break;
         }
-        interaction.client.roleMenu[code] = {
+        client.roleMenu[code] = {
             guild: interaction.guild.id,
             guildIcon: interaction.guild.iconURL({format: "png"}),
             user: interaction.member.user.id,

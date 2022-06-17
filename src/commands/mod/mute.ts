@@ -22,8 +22,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addChoices([["Yes", "yes"], ["No", "no"]]))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    // @ts-ignore
-    const { log, NucleusColors, renderUser, entry } = interaction.client.logger
+    const { log, NucleusColors, renderUser, entry } = client.logger
     const user = interaction.options.getMember("user") as GuildMember
     const reason = interaction.options.getString("reason")
     const time = {
@@ -200,7 +199,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 guild: interaction.guild.id
             }
         }
-        log(data, interaction.client);
+        log(data, client);
     } else {
         await interaction.editReply({embeds: [new generateEmojiEmbed()
             .setEmoji("PUNISH.MUTE.GREEN")

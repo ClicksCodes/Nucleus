@@ -17,8 +17,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     )
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    // @ts-ignore
-    const { log, NucleusColors, renderUser, entry } = interaction.client.logger
+    const { log, NucleusColors, renderUser, entry } = client.logger
     // TODO:[Modals] Replace this with a modal
     let confirmation = await new confirmationMessage(interaction)
         .setEmoji("PUNISH.WARN.RED")
@@ -77,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 guild: interaction.guild.id
             }
         }
-        log(data, interaction.client);
+        log(data, client);
         let failed = (dmd == false && interaction.options.getString("notify") != "no")
         if (!failed) {
             await interaction.editReply({embeds: [new generateEmojiEmbed()

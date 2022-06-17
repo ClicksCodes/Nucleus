@@ -2,6 +2,7 @@ import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import { WrappedCheck } from "jshaiku";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -23,8 +24,8 @@ const callback = async (interaction: CommandInteraction) => {
         .setTitle("Ping")
         .setDescription(
             `**Ping:** \`${ping}ms\`\n` +
-            `**To Discord:** \`${interaction.client.ws.ping}ms\`\n` +
-            `**From Expected:** \`±${Math.abs((ping / 2) - interaction.client.ws.ping)}ms\``
+            `**To Discord:** \`${client.ws.ping}ms\`\n` +
+            `**From Expected:** \`±${Math.abs((ping / 2) - client.ws.ping)}ms\``
         )
         .setEmoji("CHANNEL.SLOWMODE.OFF")
         .setStatus("Danger")

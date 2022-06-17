@@ -3,6 +3,7 @@ import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -12,7 +13,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction) => {
     // @ts-ignore
-    const { renderUser } = interaction.client.logger
+    const { renderUser } = client.logger
     let suggestion = interaction.options.getString("suggestion");
     let confirmation = await new confirmationMessage(interaction)
         .setEmoji("ICONS.OPP.ADD")
@@ -23,7 +24,7 @@ const callback = async (interaction: CommandInteraction) => {
         .setInverted(true)
     .send()
     if (confirmation.success) {
-        await (interaction.client.channels.cache.get('955161206459600976') as Discord.TextChannel).send({
+        await (client.channels.cache.get('955161206459600976') as Discord.TextChannel).send({
             embeds: [
                 new generateEmojiEmbed()
                     .setTitle(`Suggestion`)
