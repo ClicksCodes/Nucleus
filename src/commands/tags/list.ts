@@ -1,8 +1,7 @@
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
-import keyValueList from "../../utils/generateKeyValueList.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import { SelectMenuOption } from '@discordjs/builders';
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -25,10 +24,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("list")
         .setDescription("Lists all tags in the server")
 
-const callback = async (interaction: CommandInteraction) => {
-    let data = await client.database.read(interaction.guild.id);
+const callback = async (interaction: CommandInteraction): Promise<any> => {
+    let data = await client.database.guilds.read(interaction.guild.id);
     let tags = data.getKey("tags");
-    console.log(tags)
     let strings = []
     if (data === {}) strings = ["*No tags exist*"]
     else {
@@ -39,7 +37,6 @@ const callback = async (interaction: CommandInteraction) => {
                 strings.push(string.slice(0, -1))
                 string = ""
             }
-            console.log(string)
             string += proposed
         }
         strings.push(string.slice(0, -1))
@@ -48,7 +45,7 @@ const callback = async (interaction: CommandInteraction) => {
     let pages = []
     for (let string of strings) {
         pages.push(new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Tags")
                 .setDescription(string)
                 .setEmoji("PUNISH.NICKNAME.GREEN")
@@ -58,7 +55,7 @@ const callback = async (interaction: CommandInteraction) => {
     let m;
     m = await interaction.reply({
         embeds: [
-            new generateEmojiEmbed()
+            new EmojiEmbed()
                 .setTitle("Welcome")
                 .setDescription(`One moment...`)
                 .setStatus("Danger")
@@ -128,7 +125,7 @@ const callback = async (interaction: CommandInteraction) => {
             return;
         }
     }
-    let em = new Discord.MessageEmbed(pages[page])
+    let em = new Discord.MessageEmbed(pages[page].embed)
     em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
     await interaction.editReply({
         embeds: [em],

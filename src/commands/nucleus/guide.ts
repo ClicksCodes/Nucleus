@@ -2,7 +2,7 @@ import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "di
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import guide from "../../automations/guide.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>

@@ -9,7 +9,6 @@ const command = new SlashCommandBuilder()
     .setDescription("Get and manage the servers tags")
 
 const callback = (interaction: CommandInteraction) => {
-    // try { statsChannelAdd(interaction.client, interaction.member); } catch {} // TODO: REMOVE THIS FOR PRODUCTION
     interaction.reply("This command is not yet finished [tag]");
 }
 

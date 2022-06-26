@@ -1,5 +1,5 @@
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import Discord, { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextInputComponent } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -22,7 +22,7 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
     m = await interaction.reply({
-        embeds: [new generateEmojiEmbed()
+        embeds: [new EmojiEmbed()
             .setTitle("Loading")
             .setStatus("Danger")
             .setEmoji("NUCLEUS.LOADING")
@@ -42,7 +42,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 channel = interaction.guild.channels.cache.get(options.category.id)
             } catch {
                 return await interaction.editReply({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setEmoji("CHANNEL.TEXT.DELETE")
                         .setTitle("Tickets > Category")
                         .setDescription("The channel you provided is not a valid category")
@@ -52,7 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             channel = channel as Discord.CategoryChannel
             if (channel.guild.id != interaction.guild.id) return interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Category")
                     .setDescription(`You must choose a category in this server`)
                     .setStatus("Danger")
@@ -62,7 +62,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
         if (options.maxtickets) {
             if (options.maxtickets < 1) return interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Max Tickets")
                     .setDescription(`You must choose a number greater than 0`)
                     .setStatus("Danger")
@@ -76,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 role = interaction.guild.roles.cache.get(options.supportping.id)
             } catch {
                 return await interaction.editReply({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setEmoji("GUILD.ROLE.DELETE")
                         .setTitle("Tickets > Support Ping")
                         .setDescription("The role you provided is not a valid role")
@@ -86,7 +86,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             role = role as Discord.Role
             if (role.guild.id != interaction.guild.id) return interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Support Ping")
                     .setDescription(`You must choose a role in this server`)
                     .setStatus("Danger")
@@ -116,10 +116,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             if (options.maxtickets) toUpdate["tickets.maxTickets"] = options.maxtickets
             if (options.supportping) toUpdate["tickets.supportRole"] = options.supportping.id
             try {
-                await client.database.write(interaction.guild.id, toUpdate)
+                await client.database.guilds.write(interaction.guild.id, toUpdate)
             } catch (e) {
                 return interaction.editReply({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setTitle("Tickets")
                         .setDescription(`Something went wrong and the staff notifications channel could not be set`)
                         .setStatus("Danger")
@@ -129,7 +129,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
         } else {
             return interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets")
                     .setDescription(`No changes were made`)
                     .setStatus("Success")
@@ -138,7 +138,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             });
         }
     }
-    let data = await client.database.read(interaction.guild.id);
+    let data = await client.database.guilds.read(interaction.guild.id);
     data.tickets.customTypes = data.tickets.customTypes.filter((v, i, a) => a.indexOf(v) === i)
     let lastClicked = "";
     let embed;
@@ -152,7 +152,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         customTypes: data.tickets.customTypes
     }
     while (true) {
-        embed = new generateEmojiEmbed()
+        embed = new EmojiEmbed()
             .setTitle("Tickets")
             .setDescription(
                 `${data.enabled ? "" : getEmojiByName("TICKETS.REPORT")} **Enabled:** ${data.enabled ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`}\n` +
@@ -206,23 +206,23 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         if (i.component.customId == "clearCategory") {
             if (lastClicked == "cat") {
                 lastClicked = "";
-                await client.database.write(interaction.guild.id, {}, ["tickets.category"])
+                await client.database.guilds.write(interaction.guild.id, {}, ["tickets.category"])
                 data.category = undefined;
             } else lastClicked = "cat";
         } else if (i.component.customId == "clearMaxTickets") {
             if (lastClicked == "max") {
                 lastClicked = "";
-                await client.database.write(interaction.guild.id, {}, ["tickets.maxTickets"])
+                await client.database.guilds.write(interaction.guild.id, {}, ["tickets.maxTickets"])
                 data.maxTickets = 5;
             } else lastClicked = "max";
         } else if (i.component.customId == "clearSupportPing") {
             if (lastClicked == "sup") {
                 lastClicked = "";
-                await client.database.write(interaction.guild.id, {}, ["tickets.supportRole"])
+                await client.database.guilds.write(interaction.guild.id, {}, ["tickets.supportRole"])
                 data.supportRole = undefined;
             } else lastClicked = "sup";
         } else if (i.component.customId == "enabled") {
-            await client.database.write(interaction.guild.id, { "tickets.enabled": !data.enabled })
+            await client.database.guilds.write(interaction.guild.id, { "tickets.enabled": !data.enabled })
             data.enabled = !data.enabled;
         } else if (i.component.customId == "manageTypes") {
             data = await manageTypes(interaction, data, m);
@@ -238,7 +238,7 @@ async function manageTypes(interaction, data, m) {
         if (data.useCustom) {
             let customTypes = data.customTypes;
             await interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Types")
                     .setDescription(
                         "**Custom types enabled**\n\n" +
@@ -299,7 +299,7 @@ async function manageTypes(interaction, data, m) {
                     .setPlaceholder("Select types to use")
             ])
             await interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Types")
                     .setDescription(
                         "**Default types enabled**\n\n" +
@@ -331,7 +331,7 @@ async function manageTypes(interaction, data, m) {
         if (i.component.customId == "types") {
             i.deferUpdate()
             let types = toHexInteger(i.values, ticketTypes);
-            await client.database.write(interaction.guild.id, { "tickets.types": types })
+            await client.database.guilds.write(interaction.guild.id, { "tickets.types": types })
             data.types = types;
         } else if (i.component.customId == "removeTypes") {
             i.deferUpdate()
@@ -340,7 +340,7 @@ async function manageTypes(interaction, data, m) {
             if (customTypes) {
                 customTypes = customTypes.filter((t) => !types.includes(t));
                 customTypes = customTypes.length > 0 ? customTypes : null;
-                await client.database.write(interaction.guild.id, { "tickets.customTypes": customTypes })
+                await client.database.guilds.write(interaction.guild.id, { "tickets.customTypes": customTypes })
                 data.customTypes = customTypes;
             }
         } else if (i.component.customId == "addType") {
@@ -357,7 +357,7 @@ async function manageTypes(interaction, data, m) {
                 )
             ))
             await interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Types")
                     .setDescription("Modal opened. If you can't see it, click back and try again.")
                     .setStatus("Success")
@@ -369,15 +369,16 @@ async function manageTypes(interaction, data, m) {
                     .setCustomId("back")
                 ])]
             });
-            let out
+            let out;
             try {
                 out = await modalInteractionCollector(m, (m) => m.channel.id == interaction.channel.id, (m) => m.customId == "addType")
             } catch (e) { continue }
             if (out.fields) {
                 let toAdd = out.fields.getTextInputValue("type");
                 if (!toAdd) { continue }
+                toAdd = toAdd.substring(0, 80)
                 try {
-                    await client.database.append(interaction.guild.id, "tickets.customTypes", toAdd)
+                    await client.database.guilds.append(interaction.guild.id, "tickets.customTypes", toAdd)
                 } catch { continue }
                 data.customTypes = data.customTypes || [];
                 if (!data.customTypes.includes(toAdd)) {
@@ -386,11 +387,11 @@ async function manageTypes(interaction, data, m) {
             } else { continue }
         } else if (i.component.customId == "switchToDefault") {
             i.deferUpdate()
-            await client.database.write(interaction.guild.id, { "tickets.useCustom": false }, [])
+            await client.database.guilds.write(interaction.guild.id, { "tickets.useCustom": false }, [])
             data.useCustom = false;
         } else if (i.component.customId == "switchToCustom") {
             i.deferUpdate()
-            await client.database.write(interaction.guild.id, { "tickets.useCustom": true }, [])
+            await client.database.guilds.write(interaction.guild.id, { "tickets.useCustom": true }, [])
             data.useCustom = true;
         } else {
             i.deferUpdate()

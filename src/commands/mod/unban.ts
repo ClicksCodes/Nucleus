@@ -1,9 +1,10 @@
 import { CommandInteraction, GuildMember, User } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -11,14 +12,14 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Unbans a user")
     .addStringOption(option => option.setName("user").setDescription("The user to unban (Username or ID)").setRequired(true))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     let bans = await interaction.guild.bans.fetch()
     let user = interaction.options.getString("user")
     let resolved = bans.find(ban => ban.user.id == user)
     if (!resolved) resolved = bans.find(ban => ban.user.username.toLowerCase() == user.toLowerCase())
     if (!resolved) resolved = bans.find(ban => ban.user.tag.toLowerCase() == user.toLowerCase())
     if (!resolved) {
-        return interaction.reply({embeds: [new generateEmojiEmbed()
+        return interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Unban")
             .setDescription(`Could not find any user called \`${user}\``)
             .setEmoji("PUNISH.UNBAN.RED")
@@ -39,8 +40,9 @@ const callback = async (interaction: CommandInteraction) => {
         try {
             await interaction.guild.members.unban(resolved.user as User, "Unban");
             let member = (resolved.user as User)
+            try { await client.database.history.create("unban", interaction.guild.id, member, interaction.user) } catch {}
             // @ts-ignore
-            const { log, NucleusColors, entry, renderUser, renderDelta } = interaction.user.client.logger
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
             let data = {
                 meta: {
                     type: 'memberUnban',
@@ -61,23 +63,23 @@ const callback = async (interaction: CommandInteraction) => {
                     guild: interaction.guild.id
                 }
             }
-            log(data, member.client);
+            log(data);
         } catch {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
+            await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.UNBAN.RED")
                 .setTitle(`Unban`)
                 .setDescription("Something went wrong and the user was not unbanned")
                 .setStatus("Danger")
             ], components: []})
         }
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.UNBAN.GREEN`)
             .setTitle(`Unban`)
             .setDescription("The member was unbanned")
             .setStatus("Success")
         ], components: []})
     } else {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.UNBAN.GREEN")
             .setTitle(`Unban`)
             .setDescription("No changes were made")
@@ -90,11 +92,11 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     // Check if Nucleus can unban members
-    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
+    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the Ban members permission";
     // Allow the owner to unban anyone
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has ban_members permission
-    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the `ban_members` permission";
+    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the Ban members permission";
     // Allow unban
     return true
 }

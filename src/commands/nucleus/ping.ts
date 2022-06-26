@@ -1,6 +1,6 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js"
 
@@ -9,18 +9,18 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("ping")
     .setDescription("Gets the bot's ping time")
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     // WEBSOCKET | Nucleus -> Discord
     // EDITING   | Nucleus -> discord -> nucleus | edit time / 2
     let initial = new Date().getTime();
-    await interaction.reply({embeds: [new generateEmojiEmbed()
+    await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Ping")
         .setDescription(`Checking ping times...`)
         .setEmoji("NUCLEUS.LOADING")
         .setStatus("Danger")
     ], ephemeral: true});
     let ping = new Date().getTime() - initial;
-    interaction.editReply({embeds: [new generateEmojiEmbed()
+    interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Ping")
         .setDescription(
             `**Ping:** \`${ping}ms\`\n` +

@@ -1,6 +1,6 @@
 import { ChannelType } from 'discord-api-types';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
-import generateEmojiEmbed from "../../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -17,7 +17,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    m = await interaction.reply({embeds: [new generateEmojiEmbed()
+    m = await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Loading")
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
@@ -27,7 +27,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         try {
             channel = interaction.options.getChannel("channel")
         } catch {
-            return await interaction.editReply({embeds: [new generateEmojiEmbed()
+            return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("CHANNEL.TEXT.DELETE")
                 .setTitle("Staff Notifications Channel")
                 .setDescription("The channel you provided is not a valid channel")
@@ -36,7 +36,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
         channel = channel as Discord.TextChannel
         if (channel.guild.id != interaction.guild.id) {
-            return interaction.editReply({embeds: [new generateEmojiEmbed()
+            return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Staff Notifications Channel")
                 .setDescription(`You must choose a channel in this server`)
                 .setStatus("Danger")
@@ -55,9 +55,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .send(true)
         if (confirmation.success) {
             try {
-                await client.database.write(interaction.guild.id, {"logging.staff.channel": channel.id})
+                await client.database.guilds.write(interaction.guild.id, {"logging.staff.channel": channel.id})
             } catch (e) {
-                return interaction.editReply({embeds: [new generateEmojiEmbed()
+                return interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Staff Notifications Channel")
                     .setDescription(`Something went wrong and the staff notifications channel could not be set`)
                     .setStatus("Danger")
@@ -65,7 +65,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 ], components: []});
             }
         } else {
-            return interaction.editReply({embeds: [new generateEmojiEmbed()
+            return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Staff Notifications Channel")
                 .setDescription(`No changes were made`)
                 .setStatus("Success")
@@ -74,10 +74,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
     }
     let clicks = 0;
-    let data = await client.database.read(interaction.guild.id);
+    let data = await client.database.guilds.read(interaction.guild.id);
     let channel = data.logging.staff.channel;
     while (true) {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Staff Notifications channel")
             .setDescription(channel ? `Your staff notifications channel is currently set to <#${channel}>` : "This server does not have a staff notifications channel")
             .setStatus("Success")
@@ -98,14 +98,14 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             clicks += 1;
             if (clicks == 2) {
                 clicks = 0;
-                await client.database.write(interaction.guild.id, {}, ["logging.staff.channel"])
+                await client.database.guilds.write(interaction.guild.id, {}, ["logging.staff.channel"])
                 channel = undefined;
             }
         } else {
             break
         }
     }
-    await interaction.editReply({embeds: [new generateEmojiEmbed()
+    await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Staff Notifications channel")
         .setDescription(channel ? `Your staff notifications channel is currently set to <#${channel}>` : "This server does not have a staff notifications channel")
         .setStatus("Success")

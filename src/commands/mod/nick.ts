@@ -2,9 +2,10 @@ import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -16,13 +17,14 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addChoices([["Yes", "yes"], ["No", "no"]])
     )
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
+    const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
     let confirmation = await new confirmationMessage(interaction)
         .setEmoji("PUNISH.NICKNAME.RED")
         .setTitle("Nickname")
         .setDescription(keyValueList({
-            "user": `<@!${(interaction.options.getMember("user") as GuildMember).id}> (${(interaction.options.getMember("user") as GuildMember).user.username})`,
+            "user": renderUser(interaction.options.getUser("user")),
             "new nickname": `${interaction.options.getString("name") ? interaction.options.getString("name") : "*No nickname*"}`
         })
         + `The user **will${interaction.options.getString("notify") == "yes" ? '' : ' not'}** be notified\n\n`
@@ -39,7 +41,7 @@ const callback = async (interaction: CommandInteraction) => {
         try {
             if (interaction.options.getString("notify") == "yes") {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.NICKNAME.RED")
                         .setTitle("Nickname changed")
                         .setDescription(`Your nickname was ${interaction.options.getString("name") ? "changed" : "cleared"} in ${interaction.guild.name}.` +
@@ -56,6 +58,9 @@ const callback = async (interaction: CommandInteraction) => {
             let before = member.nickname
             let nickname = interaction.options.getString("name")
             member.setNickname(nickname ?? null, "Nucleus Nickname command")
+            try { await client.database.history.create(
+                "nickname", interaction.guild.id, member.user, interaction.user,
+                null, before, nickname) } catch {}
             // @ts-ignore
             const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger
             let data = {
@@ -78,9 +83,9 @@ const callback = async (interaction: CommandInteraction) => {
                     guild: interaction.guild.id
                 }
             }
-            log(data, client);
+            log(data);
         } catch {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
+            await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.NICKNAME.RED")
                 .setTitle(`Nickname`)
                 .setDescription("Something went wrong and the users nickname could not be changed.")
@@ -90,14 +95,14 @@ const callback = async (interaction: CommandInteraction) => {
             return
         }
         let failed = (dmd == false && interaction.options.getString("notify") == "yes")
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.NICKNAME.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Nickname`)
             .setDescription("The members nickname was changed" + (failed ? ", but was not notified" : "") + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
             .setStatus(failed ? "Warning" : "Success")
         ], components: []})
     } else {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.NICKNAME.GREEN")
             .setTitle(`Nickname`)
             .setDescription("No changes were made")
@@ -117,11 +122,11 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus can change the nickname
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to change the nickname
-    if (! me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the `manage_nicknames` permission";
+    if (! me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the Manage nicknames permission";
     // Allow the owner to change anyone's nickname
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_nicknames permission
-    if (! member.permissions.has("MANAGE_NICKNAMES")) throw "You do not have the `manage_nicknames` permission";
+    if (! member.permissions.has("MANAGE_NICKNAMES")) throw "You do not have the Manage nicknames permission";
     // Allow changing your own nickname
     if (member == apply) return true
     // Check if the user is below on the role list

@@ -27,6 +27,6 @@ export async function callback(client, invite) {
                 guild: invite.guild.id
             }
         }
-        log(data, invite.client);
+        log(data);
     } catch {}
 }

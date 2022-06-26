@@ -1,5 +1,5 @@
 import { MessageActionRow, MessageButton } from "discord.js";
-import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import guide from "../automations/guide.js";
 

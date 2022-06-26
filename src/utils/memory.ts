@@ -16,7 +16,7 @@ class Memory {
 
     async readGuildInfo(guild: string): Promise<object> {
         if (!this.memory[guild]) {
-            let guildData = await client.database.read(guild);
+            let guildData = await client.database.guilds.read(guild);
             this.memory[guild] = {
                 lastUpdated: Date.now(),
                 filters: guildData.filters,

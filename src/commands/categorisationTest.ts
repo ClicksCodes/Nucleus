@@ -1,21 +1,22 @@
 import { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
-import { SelectMenuComponent, SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import generateKeyValueList, { toCapitals } from "../utils/generateKeyValueList.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
+import client from "../utils/client.js"
 
 const command = new SlashCommandBuilder()
     .setName("categorise")
     .setDescription("Categorises your servers channels")
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderChannel } = client.logger
 
     let channels = interaction.guild.channels.cache.filter(c => c.type !== "GUILD_CATEGORY");
     let categorised = {}
 
-    await interaction.reply({embeds: [new generateEmojiEmbed()
+    await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Loading...")
         .setEmoji("NUCLEUS.LOADING")
         .setStatus("Success")
@@ -40,7 +41,7 @@ const callback = async (interaction: CommandInteraction) => {
             }
         }
 
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Categorise")
             .setDescription(generateKeyValueList({
                 channel: renderChannel(c),

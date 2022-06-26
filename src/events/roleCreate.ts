@@ -26,6 +26,6 @@ export async function callback(client, role) {
                 guild: role.guild.id
             }
         }
-        log(data, client);
+        log(data);
     } catch {}
 }

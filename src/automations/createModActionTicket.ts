@@ -1,10 +1,10 @@
 import Discord, { MessageActionRow, MessageButton } from 'discord.js';
-import generateEmojiEmbed from '../utils/generateEmojiEmbed.js';
+import EmojiEmbed from '../utils/generateEmojiEmbed.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 
 export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string) {
-    let config = await client.database.read(guild.id);
+    let config = await client.database.guilds.read(guild.id);
     // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
     let overwrites = [{
@@ -48,7 +48,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
                 }
             }
         )
-        await c.send({ embeds: [new generateEmojiEmbed()
+        await c.send({ embeds: [new EmojiEmbed()
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by a Moderator\n` +
@@ -83,12 +83,12 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
                 guild: guild.id
             }
         }
-        log(data, client);
+        log(data);
     } catch (e) { console.log(e); return null }
     return c.id
 }
 
 export async function areTicketsEnabled(guild: string) {
-    let config = await client.database.read(guild);
+    let config = await client.database.guilds.read(guild);
     return config.tickets.enabled;
 }

@@ -1,10 +1,10 @@
 import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
-import client from "../../client.js"
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -12,10 +12,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Shows the avatar of a user")
     .addUserOption(option => option.setName("user").setDescription("The user to get the avatar of | Default: Yourself"))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger
     let member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
-    await interaction.reply({embeds: [new generateEmojiEmbed()
+    await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("User Info")
         .setStatus("Success")
         .setEmoji("MEMBER.JOIN")

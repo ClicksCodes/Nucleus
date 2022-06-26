@@ -1,18 +1,18 @@
 import Discord, { MessageButton, MessageActionRow } from "discord.js";
 import client from "../../utils/client.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
 export default async function (interaction) {
     // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
 
-    let config = await client.database.read(interaction.guild.id);
+    let config = await client.database.guilds.read(interaction.guild.id);
     let thread = false; let threadChannel
     if (interaction.channel instanceof Discord.ThreadChannel) thread = true; threadChannel = interaction.channel as Discord.ThreadChannel
     let channel = (interaction.channel as Discord.TextChannel)
     if (!channel.parent || config.tickets.category != channel.parent.id || (thread ? (threadChannel.parent.parent.id != config.tickets.category) : false)) {
-        return interaction.reply({embeds: [new generateEmojiEmbed()
+        return interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Deleting Ticket...")
             .setDescription("This ticket is not in your tickets category, so cannot be deleted. You cannot run close in a thread.")
             .setStatus("Danger")
@@ -21,7 +21,7 @@ export default async function (interaction) {
     }
     let status = channel.topic.split(" ")[1];
     if (status == "Archived") {
-        await interaction.reply({embeds: [new generateEmojiEmbed()
+        await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Delete Ticket")
             .setDescription("Your ticket is being deleted...")
             .setStatus("Danger")
@@ -45,11 +45,11 @@ export default async function (interaction) {
                 guild: interaction.guild.id
             }
         }
-        log(data, client);
+        log(data);
         interaction.channel.delete();
         return;
     } else if (status == "Active") {
-        await interaction.reply({embeds: [new generateEmojiEmbed()
+        await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Close Ticket")
             .setDescription("Your ticket is being closed...")
             .setStatus("Warning")
@@ -95,8 +95,8 @@ export default async function (interaction) {
                 guild: interaction.guild.id
             }
         }
-        log(data, client);
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        log(data);
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Close Ticket")
             .setDescription("This ticket has been closed.\nType `/ticket close` again to delete it.")
             .setStatus("Warning")
@@ -112,7 +112,7 @@ export default async function (interaction) {
 }
 
 async function purgeByUser(member, guild) {
-    let config = await client.database.read(guild.id);
+    let config = await client.database.guilds.read(guild.id);
     if (!config.tickets.category) return;
     let tickets = guild.channels.cache.get(config.tickets.category);
     if (!tickets) return;
@@ -147,7 +147,7 @@ async function purgeByUser(member, guild) {
                     guild: guild.id
                 }
             }
-            log(data, member.client);
+            log(data);
         } catch {}
     }
 }

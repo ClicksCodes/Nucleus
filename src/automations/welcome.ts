@@ -4,7 +4,7 @@ import client from '../utils/client.js';
 
 export async function callback(_, member) {
     if (member.bot) return
-    let config = await client.database.read(member.guild.id);
+    let config = await client.database.guilds.read(member.guild.id);
     if (!config.welcome.enabled) return
 
     if (!config.welcome.verificationRequired.role) {

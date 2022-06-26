@@ -1,7 +1,7 @@
 import { ChannelType } from 'discord-api-types';
 import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import generateEmojiEmbed from "../../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from '../../../utils/confirmationMessage.js';
 import keyValueList from '../../../utils/generateKeyValueList.js';
@@ -24,7 +24,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     let channel = interaction.options.getChannel("addchannel")
     let user = interaction.options.getUser("adduser")
     let role = interaction.options.getRole("addrole")
-    await interaction.reply({embeds: [new generateEmojiEmbed()
+    await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Loading")
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
@@ -34,7 +34,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             try {
                 channel = interaction.guild.channels.cache.get(channel.id)
             } catch {
-                return await interaction.editReply({embeds: [new generateEmojiEmbed()
+                return await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("CHANNEL.TEXT.DELETE")
                     .setTitle("Logs > Ignore")
                     .setDescription("The channel you provided is not a valid channel")
@@ -43,7 +43,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             channel = channel as Discord.TextChannel
             if (channel.guild.id != interaction.guild.id) {
-                return interaction.editReply({embeds: [new generateEmojiEmbed()
+                return interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Logs > Ignore")
                     .setDescription(`You must choose a channel in this server`)
                     .setStatus("Danger")
@@ -55,7 +55,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             try {
                 user = interaction.guild.members.cache.get(user.id).user
             } catch {
-                return await interaction.editReply({embeds: [new generateEmojiEmbed()
+                return await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("USER.DELETE")
                     .setTitle("Logs > Ignore")
                     .setDescription("The user you provided is not a valid user")
@@ -68,7 +68,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             try {
                 role = interaction.guild.roles.cache.get(role.id)
             } catch {
-                return await interaction.editReply({embeds: [new generateEmojiEmbed()
+                return await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("ROLE.DELETE")
                     .setTitle("Logs > Ignore")
                     .setDescription("The role you provided is not a valid role")
@@ -77,7 +77,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             role = role as Discord.Role
             if (role.guild.id != interaction.guild.id) {
-                return interaction.editReply({embeds: [new generateEmojiEmbed()
+                return interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Logs > Ignore")
                     .setDescription(`You must choose a role in this server`)
                     .setStatus("Danger")
@@ -97,12 +97,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             .setColor("Warning")
         .send(true)
         if (confirmation.success) {
-            let data = client.database.read(interaction.guild.id)
+            let data = client.database.guilds.read(interaction.guild.id)
             if (channel) data.logging.logs.ignore.channels.concat([channel.id])
             if (user) data.logging.logs.ignore.users.concat([user.id])
             if (role) data.logging.logs.ignore.roles.concat([role.id])
             if (interaction.options.getString("action") == "add") {
-                await client.database.append(interaction.guild.id, data)
+                await client.database.guilds.append(interaction.guild.id, data)
             }
         }
     }

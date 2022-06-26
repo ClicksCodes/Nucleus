@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -11,7 +11,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = (interaction: CommandInteraction) => {
     interaction.reply({
-        embeds: [new generateEmojiEmbed()
+        embeds: [new EmojiEmbed()
             .setTitle("Stats")
             .setDescription(
                 `**Servers:** ${client.guilds.cache.size}\n` +

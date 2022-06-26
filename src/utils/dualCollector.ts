@@ -1,6 +1,6 @@
 import Discord from 'discord.js';
 import client from './client.js';
-import generateEmojiEmbed from "./generateEmojiEmbed.js";
+import EmojiEmbed from "./generateEmojiEmbed.js";
 
 export default async function (m, interactionFilter, messageFilter) {
     let out;

@@ -41,7 +41,7 @@ export async function callback(client, or, nr) {
             hidden: {
                 guild: nr.guild.id
             }
-        }
-        log(data, client);
+        } // TODO: show perms changed
+        log(data);
     } catch {}
 }

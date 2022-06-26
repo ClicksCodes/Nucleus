@@ -2,9 +2,10 @@ import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel } f
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -25,7 +26,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     if (!(["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(channel.type.toString()))) {
         return await interaction.reply({
             embeds: [
-                new generateEmojiEmbed()
+                new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle("Purge")
                     .setDescription("You cannot purge this channel")
@@ -39,7 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     if ( !interaction.options.getInteger("amount") ) {
         await interaction.reply({
             embeds: [
-                new generateEmojiEmbed()
+                new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle("Purge")
                     .setDescription("Select how many messages to delete")
@@ -53,7 +54,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         while (true) {
             let m = await interaction.editReply({
                 embeds: [
-                    new generateEmojiEmbed()
+                    new EmojiEmbed()
                         .setEmoji("CHANNEL.PURGE.RED")
                         .setTitle("Purge")
                         .setDescription("Select how many messages to delete. You can continue clicking until all messages are cleared.")
@@ -118,7 +119,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
         if (deleted.length === 0) return await interaction.editReply({
             embeds: [
-                new generateEmojiEmbed()
+                new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle("Purge")
                     .setDescription("No messages were deleted")
@@ -126,10 +127,13 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ],
             components: []
         })
+        if (user) {
+            try { await client.database.history.create("purge", interaction.guild.id, user, interaction.options.getString("reason"), null, null, deleted.length) } catch {}
+        }
         let attachmentObject;
         try {
             // @ts-ignore
-            const { log, NucleusColors, entry, renderUser, renderChannel } = interaction.user.client.logger
+            const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger
             let data = {
                 meta: {
                     type: 'channelPurge',
@@ -149,7 +153,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     guild: interaction.guild.id
                 }
             }
-            log(data, interaction.user.client);
+            log(data);
             let out = ""
             deleted.reverse().forEach(message => {
                 out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(message.createdTimestamp).toISOString()}]\n`
@@ -163,7 +167,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 description: "Purge log"
             }
         } catch {}
-        let m = await interaction.editReply({embeds: [new generateEmojiEmbed()
+        let m = await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`CHANNEL.PURGE.GREEN`)
             .setTitle(`Purge`)
             .setDescription("Messages cleared")
@@ -180,14 +184,14 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
         } catch {}
         if (component && component.customId === "download") {
-            interaction.editReply({embeds: [new generateEmojiEmbed()
+            interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
                 .setTitle(`Purge`)
                 .setDescription("Uploaded")
                 .setStatus("Success")
             ], components: [], files: [attachmentObject]})
         } else {
-            interaction.editReply({embeds: [new generateEmojiEmbed()
+            interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
                 .setTitle(`Purge`)
                 .setDescription("Messages cleared")
@@ -218,17 +222,20 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     messages = await (channel as TextChannel).bulkDelete(toDelete, true);
                 }
             } catch(e) {
-                await interaction.editReply({embeds: [new generateEmojiEmbed()
+                await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.RED")
                     .setTitle(`Purge`)
                     .setDescription("Something went wrong and no messages were deleted")
                     .setStatus("Danger")
                 ], components: []})
             }
+            if (user) {
+                try { await client.database.history.create("purge", interaction.guild.id, user, interaction.options.getString("reason"), null, null, messages.size) } catch {}
+            }
             let attachmentObject;
             try {
                 // @ts-ignore
-                const { log, NucleusColors, entry, renderUser, renderChannel } = interaction.user.client.logger
+                const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger
                 let data = {
                     meta: {
                         type: 'channelPurge',
@@ -248,7 +255,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         guild: interaction.guild.id
                     }
                 }
-                log(data, interaction.user.client);
+                log(data);
                 let out = ""
                 messages.reverse().forEach(message => {
                     out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(message.createdTimestamp).toISOString()}]\n`
@@ -262,7 +269,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     description: `Purge log`
                 }
             } catch {}
-            let m = await interaction.editReply({embeds: [new generateEmojiEmbed()
+            let m = await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji(`CHANNEL.PURGE.GREEN`)
                 .setTitle(`Purge`)
                 .setDescription("Messages cleared")
@@ -279,14 +286,14 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch {}
             if (component && component.customId === "download") {
-                interaction.editReply({embeds: [new generateEmojiEmbed()
+                interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.GREEN")
                     .setTitle(`Purge`)
                     .setDescription("Transcript uploaded above")
                     .setStatus("Success")
                 ], components: [], files: [attachmentObject]})
             } else {
-                interaction.editReply({embeds: [new generateEmojiEmbed()
+                interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.GREEN")
                     .setTitle(`Purge`)
                     .setDescription("Messages cleared")
@@ -294,7 +301,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 ], components: []})
             }
         } else {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
+            await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
                 .setTitle(`Purge`)
                 .setDescription("No changes were made")
@@ -310,9 +317,9 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Allow the owner to purge
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_messages permission
-    if (! member.permissions.has("MANAGE_MESSAGES")) throw "You do not have the `manage_messages` permission";
+    if (! member.permissions.has("MANAGE_MESSAGES")) throw "You do not have the Manage messages permission";
     // Check if nucleus has the manage_messages permission
-    if (! me.permissions.has("MANAGE_MESSAGES")) throw "I do not have the `manage_messages` permission";
+    if (! me.permissions.has("MANAGE_MESSAGES")) throw "I do not have the Manage messages permission";
     // Allow warn
     return true
 }

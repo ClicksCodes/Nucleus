@@ -130,6 +130,6 @@ export async function callback(client, oc, nc) {
                 guild: nc.guild.id
             }
         }
-        log(data, client);
+        log(data);
     } catch {}
 }

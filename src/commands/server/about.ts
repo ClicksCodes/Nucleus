@@ -1,7 +1,7 @@
 import Discord, { CommandInteraction, Guild, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList, { toCapitals } from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js"
@@ -10,10 +10,10 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("about")
     .setDescription("Shows info about the server")
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     let guild = interaction.guild as Guild;
     const { renderUser, renderDelta } = client.logger
-    interaction.reply({embeds: [new generateEmojiEmbed()
+    interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Server Info")
         .setStatus("Success")
         .setEmoji("GUILD.GREEN")

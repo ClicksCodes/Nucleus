@@ -7,7 +7,7 @@ const command = new SlashCommandBuilder()
     .setName("verify")
     .setDescription("Get verified in the server")
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     verify(interaction);
 }
 

@@ -4,7 +4,8 @@ import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -18,11 +19,11 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         ["1 hour", "3600"], ["2 hours", "7200"], ["6 hours", "21600"]
     ]))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     let time = parseInt(interaction.options.getString("time") ?? "0");
     if (time === 0 && (interaction.channel as TextChannel).rateLimitPerUser === 0) { time = 10 }
     let confirmation = await new confirmationMessage(interaction)
-        .setEmoji("CHANNEL.SLOWMODE.RED")
+        .setEmoji("CHANNEL.SLOWMODE.OFF")
         .setTitle("Slowmode")
         .setDescription(keyValueList({
             "time": time ? humanizeDuration(time * 1000, { round: true }) : "No delay",
@@ -34,22 +35,22 @@ const callback = async (interaction: CommandInteraction) => {
         try {
             (interaction.channel as TextChannel).setRateLimitPerUser(time)
         } catch (e) {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
-                .setEmoji("CHANNEL.SLOWMODE.RED")
+            await interaction.editReply({embeds: [new EmojiEmbed()
+                .setEmoji("CHANNEL.SLOWMODE.OFF")
                 .setTitle(`Slowmode`)
                 .setDescription("Something went wrong while setting the slowmode")
                 .setStatus("Danger")
             ], components: []})
         }
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
-            .setEmoji(`CHANNEL.SLOWMODE.GREEN`)
+        await interaction.editReply({embeds: [new EmojiEmbed()
+            .setEmoji(`CHANNEL.SLOWMODE.ON`)
             .setTitle(`Slowmode`)
             .setDescription("The channel slowmode was set successfully")
             .setStatus("Success")
         ], components: []})
     } else {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
-            .setEmoji("CHANNEL.SLOWMODE.GREEN")
+        await interaction.editReply({embeds: [new EmojiEmbed()
+            .setEmoji("CHANNEL.SLOWMODE.ON")
             .setTitle(`Slowmode`)
             .setDescription("No changes were made")
             .setStatus("Success")
@@ -60,9 +61,9 @@ const callback = async (interaction: CommandInteraction) => {
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     // Check if Nucleus can set the slowmode
-    if (! interaction.guild.me.permissions.has("MANAGE_CHANNELS")) throw "I do not have the `manage_channels` permission";
+    if (! interaction.guild.me.permissions.has("MANAGE_CHANNELS")) throw "I do not have the Manage channels permission";
     // Check if the user has manage_channel permission
-    if (! member.permissions.has("MANAGE_CHANNELS")) throw "You do not have the `manage_channels` permission";
+    if (! member.permissions.has("MANAGE_CHANNELS")) throw "You do not have the Manage channels permission";
     // Allow slowmode
     return true
 }

@@ -11,7 +11,7 @@ export async function callback(client, ban) {
         let auditLog = await getAuditLog(ban.guild, 'MEMBER_BAN_ADD')
         let audit = auditLog.entries.filter(entry => entry.target.id == ban.user.id).first();
         if (audit.executor.id == client.user.id) return
-        console.log(ban.reason)
+        try { await client.database.history.create("ban", ban.guild.id, ban.user, audit.executor, audit.reason) } catch {}
         let data = {
             meta: {
                 type: 'memberBan',
@@ -34,6 +34,6 @@ export async function callback(client, ban) {
                 guild: ban.guild.id
             }
         }
-        log(data, ban.user.client);
+        log(data);
     } catch {}
 }

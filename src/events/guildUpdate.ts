@@ -53,6 +53,6 @@ export async function callback(client, before, after) {
                 guild: after.id
             }
         }
-        log(data, after.client);
+        log(data);
     } catch (e) {}
 }

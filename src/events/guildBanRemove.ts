@@ -12,6 +12,7 @@ export async function callback(client, ban) {
         let auditLog = await getAuditLog(ban.guild, 'MEMBER_BAN_REMOVE')
         let audit = auditLog.entries.filter(entry => entry.target.id == ban.user.id).first();
         if (audit.executor.id == client.user.id) return
+        try { await client.database.history.create("unban", ban.guild.id, ban.user, audit.executor, audit.reason) } catch {}
         let data = {
             meta: {
                 type: 'memberUnban',
@@ -32,6 +33,6 @@ export async function callback(client, ban) {
                 guild: ban.guild.id
             }
         }
-        log(data, ban.user.client);
+        log(data);
     } catch (e) {console.log(e)}
 }

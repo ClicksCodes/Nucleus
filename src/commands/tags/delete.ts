@@ -1,7 +1,7 @@
 import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
@@ -14,8 +14,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let name = interaction.options.getString("name");
-    let data = await client.database.read(interaction.guild.id);
-    if (!data.tags[name]) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    let data = await client.database.guilds.read(interaction.guild.id);
+    if (!data.tags[name]) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tags")
         .setDescription("That tag does not exist")
         .setStatus("Danger")
@@ -32,25 +32,25 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setColor("Warning")
         .setInverted(true)
     .send()
-    if (!confirmation) return await interaction.editReply({embeds: [new generateEmojiEmbed()
+    if (!confirmation) return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tag Delete")
         .setDescription("No changes were made")
         .setStatus("Success")
         .setEmoji("PUNISH.NICKNAME.GREEN")
     ]});
     try {
-        data = await client.database.read(interaction.guild.id);
+        data = await client.database.guilds.read(interaction.guild.id);
         delete data.tags[name];
-        await client.database.write(interaction.guild.id, {tags: data});
+        await client.database.guilds.write(interaction.guild.id, {tags: data});
     } catch (e) {
-        return await interaction.editReply({embeds: [new generateEmojiEmbed()
+        return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Tag Delete")
             .setDescription("Something went wrong and the tag was not deleted")
             .setStatus("Danger")
             .setEmoji("PUNISH.NICKNAME.RED")
         ], components: []});
     }
-    return await interaction.editReply({embeds: [new generateEmojiEmbed()
+    return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tag Delete")
         .setDescription("Tag deleted")
         .setStatus("Success")

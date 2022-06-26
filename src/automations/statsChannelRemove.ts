@@ -3,7 +3,7 @@ import convertCurlyBracketString from '../utils/convertCurlyBracketString.js'
 import singleNotify from '../utils/singleNotify.js';
 
 export async function callback(_, member) {
-    let config = await client.database.read(member.guild.id);
+    let config = await client.database.guilds.read(member.guild.id);
 
     config.stats.forEach(async element => {
         if (element.enabled) {

@@ -1,7 +1,7 @@
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
@@ -26,7 +26,7 @@ class Embed {
 }
 
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser, renderDelta } = client.logger
     let member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
     let flags: string[] = [];
@@ -105,7 +105,7 @@ const callback = async (interaction: CommandInteraction) => {
 
     let embeds = [
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("User Info: General")
                 .setStatus("Success")
                 .setEmoji("MEMBER.JOIN")
@@ -129,7 +129,7 @@ const callback = async (interaction: CommandInteraction) => {
                 .setImage((await member.user.fetch()).bannerURL({format: "gif"}))
             ).setTitle("General").setDescription("General information about the user").setPageId(0),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("User Info: Roles")
                 .setStatus("Success")
                 .setEmoji("GUILD.ROLES.CREATE")
@@ -144,7 +144,7 @@ const callback = async (interaction: CommandInteraction) => {
                 .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
             ).setTitle("Roles").setDescription("Roles the user has").setPageId(1),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("User Info: Key Permissions")
                 .setStatus("Success")
                 .setEmoji("GUILD.ROLES.CREATE")
@@ -158,7 +158,7 @@ const callback = async (interaction: CommandInteraction) => {
             ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2),
     ]
     let m
-    m = await interaction.reply({embeds: [new generateEmojiEmbed().setTitle("Loading").setEmoji("NUCLEUS.LOADING").setStatus("Danger")], fetchReply: true, ephemeral: true});
+    m = await interaction.reply({embeds: [new EmojiEmbed().setTitle("Loading").setEmoji("NUCLEUS.LOADING").setStatus("Danger")], fetchReply: true, ephemeral: true});
     let page = 0
     let breakReason = ""
     while (true) {

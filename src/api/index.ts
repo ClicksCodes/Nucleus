@@ -1,7 +1,7 @@
 import { HaikuClient } from 'jshaiku';
 import express from 'express';
 import bodyParser from 'body-parser';
-import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import structuredClone from '@ungap/structured-clone';
 
 
@@ -27,7 +27,7 @@ const runServer = (client: HaikuClient) => {
 
             let interaction = client.verify[code].interaction;
             if (interaction) {
-                interaction.editReply({embeds: [new generateEmojiEmbed()
+                interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Verify")
                     .setDescription(`Verification complete`)
                     .setStatus("Success")
@@ -45,7 +45,7 @@ const runServer = (client: HaikuClient) => {
         try {
             let interaction = client.verify[code].interaction;
             if (interaction) {
-                interaction.editReply({embeds: [new generateEmojiEmbed()
+                interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Verify")
                     .setDescription(`Verify was opened in another tab or window, please complete the CAPTCHA there to continue`)
                     .setStatus("Success")

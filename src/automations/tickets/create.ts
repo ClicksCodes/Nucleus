@@ -1,7 +1,7 @@
 import Discord, { MessageActionRow, MessageButton } from "discord.js";
 import { tickets, toHexArray } from "../../utils/calculate.js";
 import client from "../../utils/client.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
 function capitalize(s: string) {
@@ -12,9 +12,9 @@ function capitalize(s: string) {
 export default async function (interaction) {
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
 
-    let config = await client.database.read(interaction.guild.id);
+    let config = await client.database.guilds.read(interaction.guild.id);
     if (!config.tickets.enabled || !config.tickets.category) {
-        return await interaction.reply({embeds: [new generateEmojiEmbed()
+        return await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Tickets are disabled")
             .setDescription("Please enable tickets in the configuration to use this command.")
             .setStatus("Danger")
@@ -32,7 +32,7 @@ export default async function (interaction) {
         }
     });
     if (count >= config.tickets.maxTickets) {
-        return await interaction.reply({embeds: [new generateEmojiEmbed()
+        return await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setDescription(`You have reached the maximum amount of tickets (${config.tickets.maxTickets}). Please close one of your active tickets before creating a new one.`)
             .setStatus("Danger")
@@ -41,7 +41,7 @@ export default async function (interaction) {
     }
     let ticketTypes;
     let custom = false
-    if (config.tickets.customTypes) { ticketTypes = config.tickets.customTypes; custom = true }
+    if (config.tickets.customTypes && config.tickets.useCustom) { ticketTypes = config.tickets.customTypes; custom = true }
     else if (config.tickets.types) ticketTypes = toHexArray(config.tickets.types, tickets);
     else ticketTypes = [];
     let chosenType;
@@ -65,7 +65,7 @@ export default async function (interaction) {
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
             splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
-        let m = await interaction.reply({embeds: [new generateEmojiEmbed()
+        let m = await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setDescription("Select a ticket type")
             .setStatus("Success")
@@ -99,7 +99,7 @@ export default async function (interaction) {
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
             splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
-        component.update({embeds: [new generateEmojiEmbed()
+        component.update({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setDescription("Select a ticket type")
             .setStatus("Success")
@@ -107,7 +107,7 @@ export default async function (interaction) {
         ], components: splitFormattedTicketTypes});
     } else {
         chosenType = null
-        await interaction.reply({embeds: [new generateEmojiEmbed()
+        await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setEmoji("GUILD.TICKET.OPEN")
         ], ephemeral: true, components: splitFormattedTicketTypes})
@@ -141,7 +141,7 @@ export default async function (interaction) {
             reason: "Creating ticket"
         })
     } catch (e) {
-        return await interaction.editReply({embeds: [new generateEmojiEmbed()
+        return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setDescription("Failed to create ticket")
             .setStatus("Danger")
@@ -161,7 +161,7 @@ export default async function (interaction) {
         let content = interaction.options ? interaction.options.getString("message") || "" : "";
         if (content) content = `**Message:**\n> ${content}\n`;
         let emoji = custom ? "" : getEmojiByName("TICKETS." + chosenType.toUpperCase());
-        await c.send({ embeds: [new generateEmojiEmbed()
+        await c.send({ embeds: [new EmojiEmbed()
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by <@${interaction.member.user.id}>\n` +
@@ -195,9 +195,9 @@ export default async function (interaction) {
                 guild: interaction.guild.id
             }
         }
-        log(data, client);
+        log(data);
     } catch (e) { console.log(e)}
-    await interaction.editReply({embeds: [new generateEmojiEmbed()
+    await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Create Ticket")
         .setDescription(`Ticket created. You can view it here: <#${c.id}>`)
         .setStatus("Success")

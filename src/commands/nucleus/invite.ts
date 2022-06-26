@@ -1,7 +1,7 @@
 import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -10,7 +10,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Invites Nucleus to your server")
 
 const callback = (interaction: CommandInteraction) => {
-    interaction.reply({embeds: [new generateEmojiEmbed()
+    interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Invite")
         .setDescription("You can invite Nucleus to your server by clicking the button below")
         .setEmoji("NUCLEUS.LOGO")

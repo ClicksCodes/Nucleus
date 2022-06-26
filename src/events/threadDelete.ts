@@ -31,6 +31,6 @@ export async function callback(client, thread) {
             guild: thread.guild.id
         }
     }
-    log(data, thread.client);
+    log(data);
     } catch {}
 }

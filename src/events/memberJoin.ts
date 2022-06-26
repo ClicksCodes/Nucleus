@@ -1,6 +1,8 @@
 import { callback as statsChannelAdd } from '../automations/statsChannelAdd.js';
 import { callback as welcome } from '../automations/welcome.js';
 import log from '../utils/log.js';
+import client from '../utils/client.js';
+
 export const event = 'guildMemberAdd'
 
 export async function callback(_, member) {
@@ -8,6 +10,7 @@ export async function callback(_, member) {
     try { statsChannelAdd(_, member); } catch {}
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
+        try { await client.database.history.create("join", member.guild.id, member.user, null, null) } catch {}
         let data = {
             meta: {
                 type: 'memberJoin',
@@ -28,6 +31,6 @@ export async function callback(_, member) {
                 guild: member.guild.id
             }
         }
-        log(data, member.client);
+        log(data);
     } catch {}
 }

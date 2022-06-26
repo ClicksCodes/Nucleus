@@ -53,7 +53,7 @@ export class Logger {
     }
 
     async log(log: any): Promise<void> {
-        let config = await client.database.read(log.hidden.guild);
+        let config = await client.database.guilds.read(log.hidden.guild);
         if (!config.logging.logs.enabled) return;
         if (!(log.meta.calculateType == true)) {
             if(!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) return console.log('Not logging this type of event');

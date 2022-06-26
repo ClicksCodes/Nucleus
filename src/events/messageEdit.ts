@@ -41,6 +41,6 @@ export async function callback(client, oldMessage, newMessage) {
                 guild: newMessage.channel.guild.id
             }
         }
-        log(data, client);
+        log(data);
     } catch {}
 }

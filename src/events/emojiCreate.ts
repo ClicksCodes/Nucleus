@@ -25,6 +25,6 @@ export async function callback(client, emoji) {
                 guild: emoji.guild.id
             }
         }
-        log(data, client);
+        log(data);
     } catch {}
 }

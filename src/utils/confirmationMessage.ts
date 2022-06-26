@@ -1,5 +1,5 @@
 import Discord, { CommandInteraction, MessageActionRow, Message } from "discord.js";
-import generateEmojiEmbed from "./generateEmojiEmbed.js"
+import EmojiEmbed from "./generateEmojiEmbed.js"
 import getEmojiByName from "./getEmojiByName.js";
 
 class confirmationMessage {
@@ -58,7 +58,7 @@ class confirmationMessage {
         while (true) {
             let object = {
                 embeds: [
-                    new generateEmojiEmbed()
+                    new EmojiEmbed()
                         .setEmoji(this.emoji)
                         .setTitle(this.title)
                         .setDescription(this.description)

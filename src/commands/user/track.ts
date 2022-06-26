@@ -1,7 +1,7 @@
 import Discord, { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import addPlural from "../../utils/plurals.js";
 import client from "../../utils/client.js";
@@ -21,12 +21,12 @@ const generateFromTrack = (position: number, active: any, size: number, disabled
     return "TRACKS.VERTICAL.MIDDLE." + disabled + active
 }
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
     const guild = interaction.guild;
-    let config = await client.database.read(guild.id);
-    await interaction.reply({embeds: [new generateEmojiEmbed()
+    let config = await client.database.guilds.read(guild.id);
+    await interaction.reply({embeds: [new EmojiEmbed()
         .setEmoji("NUCLEUS.LOADING")
         .setTitle("Loading")
         .setStatus("Danger")
@@ -35,9 +35,11 @@ const callback = async (interaction: CommandInteraction) => {
     let generated;
     const roles = await guild.roles.fetch()
     let memberRoles = await member.roles
+    let managed
     while (true) {
         let data = config.tracks[track]
-        let managed = data.manageableBy.some(element => {return memberRoles.cache.has(element)})
+        if (data.manageableBy !== undefined) managed = data.manageableBy.some(element => {return memberRoles.cache.has(element)})
+        else managed = false
         let dropdown = new Discord.MessageSelectMenu().addOptions(config.tracks.map((option, index) => {
             let hasRoleInTrack = option.track.some(element => {return memberRoles.cache.has(element)})
             return new SelectMenuOption({
@@ -94,7 +96,7 @@ const callback = async (interaction: CommandInteraction) => {
         } else {
             currentRoleIndex = selected.length == 0 ? -1 : data.track.indexOf(selected[0].toString())
         }
-        let m = await interaction.editReply({embeds: [new generateEmojiEmbed()
+        let m = await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("TRACKS.ICON")
             .setTitle("Tracks")
             .setDescription(`${generated}`)
@@ -160,16 +162,19 @@ const callback = async (interaction: CommandInteraction) => {
 }
 
 const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+    let tracks = (await client.database.guilds.read(interaction.guild.id)).tracks
+    if (!tracks) throw "This server does not have any tracks"
     let member = (interaction.member as GuildMember)
     // Allow the owner to promote anyone
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user can manage any of the tracks
-    // @ts-ignore
-    let tracks = (await client.database.get(interaction.guild.id)).tracks
     let managed = false
-    tracks.forEach(element => { if (element.track.manageableBy.some(role => member.roles.cache.has(role))) managed = true });
+    tracks.forEach(element => {
+        if (!element.track.manageableBy) return
+        if (element.track.manageableBy.some(role => member.roles.cache.has(role))) managed = true
+    });
     // Check if the user has manage_roles permission
-    if (!managed && ! member.permissions.has("MANAGE_ROLES")) throw "You do not have the `manage_roles` permission";
+    if (!managed && ! member.permissions.has("MANAGE_ROLES")) throw "You do not have the Manage roles permission";
     // Allow track
     return true;
 }

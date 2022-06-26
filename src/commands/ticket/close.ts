@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("close")
     .setDescription("Closes a ticket")
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     await close(interaction);
 }
 

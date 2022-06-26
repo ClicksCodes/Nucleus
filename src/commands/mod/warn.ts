@@ -2,9 +2,10 @@ import Discord, { CommandInteraction, GuildMember, MessageActionRow } from "disc
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
+import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -23,7 +24,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setEmoji("PUNISH.WARN.RED")
         .setTitle("Warn")
         .setDescription(keyValueList({
-            "user": `<@!${(interaction.options.getMember("user") as GuildMember).id}> (${(interaction.options.getMember("user") as GuildMember).user.username})`,
+            "user": renderUser(interaction.options.getUser("user")),
             "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
         })
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
@@ -39,7 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         try {
             if (interaction.options.getString("notify") != "no") {
                 await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.WARN.RED")
                         .setTitle("Warned")
                         .setDescription(`You have been warned in ${interaction.guild.name}` +
@@ -51,7 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 dmd = true
             }
         } catch {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
+            await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.WARN.RED")
                 .setTitle(`Warn`)
                 .setDescription("Something went wrong and the user was not warned")
@@ -76,10 +77,15 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 guild: interaction.guild.id
             }
         }
-        log(data, client);
+        try { await client.database.history.create(
+            "warn", interaction.guild.id,
+            (interaction.options.getMember("user") as GuildMember).user,
+            interaction.user, interaction.options.getString("reason")
+        )} catch {}
+        log(data);
         let failed = (dmd == false && interaction.options.getString("notify") != "no")
         if (!failed) {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
+            await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji(`PUNISH.WARN.GREEN`)
                 .setTitle(`Warn`)
                 .setDescription("The user was warned" + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
@@ -87,7 +93,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ], components: []})
         } else {
             let m = await interaction.editReply({
-                embeds: [new generateEmojiEmbed()
+                embeds: [new EmojiEmbed()
                     .setEmoji(`PUNISH.WARN.RED`)
                     .setTitle(`Warn`)
                     .setDescription("The user's DMs are not open\n\nWhat would you like to do?")
@@ -110,7 +116,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             try {
                 component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch (e) {
-                return await interaction.editReply({embeds: [new generateEmojiEmbed()
+                return await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji(`PUNISH.WARN.GREEN`)
                     .setTitle(`Warn`)
                     .setDescription("No changes were made")
@@ -119,7 +125,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             if ( component.customId == "here" ) {
                 await interaction.channel.send({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setEmoji(`PUNISH.WARN.RED`)
                         .setTitle(`Warn`)
                         .setDescription(`You have been warned` +
@@ -129,14 +135,14 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     content: `<@!${(interaction.options.getMember("user") as GuildMember).id}>`,
                     allowedMentions: {users: [(interaction.options.getMember("user") as GuildMember).id]}
                 })
-                return await interaction.editReply({embeds: [new generateEmojiEmbed()
+                return await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji(`PUNISH.WARN.GREEN`)
                     .setTitle(`Warn`)
                     .setDescription("The user was warned" + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
                     .setStatus("Success")
                 ], components: []})
             } else {
-                await interaction.editReply({embeds: [new generateEmojiEmbed()
+                await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji(`PUNISH.WARN.GREEN`)
                     .setTitle(`Warn`)
                     .setDescription("The warn was logged")
@@ -145,7 +151,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
         }
     } else {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.WARN.GREEN")
             .setTitle(`Warn`)
             .setDescription("No changes were made")
@@ -167,7 +173,7 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Allow the owner to warn anyone
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has moderate_members permission
-    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the `moderate_members` permission";
+    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the Moderate members permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow warn

@@ -10,6 +10,9 @@ export async function callback(client, before, after) {
             let auditLog = await getAuditLog(after.guild, 'MEMBER_UPDATE');
             let audit = auditLog.entries.filter(entry => entry.target.id == after.id).first();
             if (audit.executor.id == client.user.id) return;
+            try { await client.database.history.create(
+                "nickname", after.guild.id, after.user, audit.executor,
+                null, before.nickname || before.user.username, after.nickname || after.user.username) } catch {}
             let data = {
                 meta: {
                     type: 'memberUpdate',
@@ -30,7 +33,7 @@ export async function callback(client, before, after) {
                     guild: after.guild.id
                 }
             }
-            log(data, after.client);
+            log(data);
         }
     } catch (e) { console.log(e) }
 }

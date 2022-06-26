@@ -1,5 +1,5 @@
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
-import generateEmojiEmbed from "../../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -14,7 +14,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    m = await interaction.reply({embeds: [new generateEmojiEmbed()
+    m = await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Loading")
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
@@ -24,7 +24,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         try {
             role = interaction.options.getRole("role")
         } catch {
-            return await interaction.editReply({embeds: [new generateEmojiEmbed()
+            return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("GUILD.ROLES.DELETE")
                 .setTitle("Verify Role")
                 .setDescription("The role you provided is not a valid role")
@@ -33,7 +33,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
         role = role as Discord.Role
         if (role.guild.id != interaction.guild.id) {
-            return interaction.editReply({embeds: [new generateEmojiEmbed()
+            return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify Role")
                 .setDescription(`You must choose a role in this server`)
                 .setStatus("Danger")
@@ -49,10 +49,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .send(true)
         if (confirmation.success) {
             try {
-                await client.database.write(interaction.guild.id, {"verify.role": role.id, "verify.enabled": true});
+                await client.database.guilds.write(interaction.guild.id, {"verify.role": role.id, "verify.enabled": true});
             } catch (e) {
                 console.log(e)
-                return interaction.editReply({embeds: [new generateEmojiEmbed()
+                return interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Verify Role")
                     .setDescription(`Something went wrong while setting the verify role`)
                     .setStatus("Danger")
@@ -60,7 +60,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 ], components: []});
             }
         } else {
-            return interaction.editReply({embeds: [new generateEmojiEmbed()
+            return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify Role")
                 .setDescription(`No changes were made`)
                 .setStatus("Success")
@@ -69,10 +69,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
     }
     let clicks = 0;
-    let data = await client.database.read(interaction.guild.id);
+    let data = await client.database.guilds.read(interaction.guild.id);
     let role = data.verify.role;
     while (true) {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Verify Role")
             .setDescription(role ? `Your verify role is currently set to <@&${role}>` : `You have not set a verify role`)
             .setStatus("Success")
@@ -93,14 +93,14 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             clicks += 1;
             if (clicks == 2) {
                 clicks = 0;
-                await client.database.write(interaction.guild.id, {}, ["verify.role", "verify.enabled"])
+                await client.database.guilds.write(interaction.guild.id, {}, ["verify.role", "verify.enabled"])
                 role = undefined;
             }
         } else {
             break
         }
     }
-    await interaction.editReply({embeds: [new generateEmojiEmbed()
+    await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Verify Role")
         .setDescription(role ? `Your verify role is currently set to <@&${role}}>` : `You have not set a verify role`)
         .setStatus("Success")

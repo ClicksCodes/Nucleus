@@ -19,6 +19,7 @@ export async function callback(client, member) {
         }
         let data
         if (type == "kick") {
+            try { await client.database.history.create("kick", member.guild.id, member.user, audit.executor, audit.reason) } catch {}
             data = {
                 meta: {
                     type: 'memberKick',
@@ -44,6 +45,7 @@ export async function callback(client, member) {
                 }
             }
         } else {
+            try { await client.database.history.create("leave", member.guild.id, member.user, null, null) } catch {}
             data = {
                 meta: {
                     type: 'memberLeave',
@@ -67,6 +69,6 @@ export async function callback(client, member) {
                 }
             }
         }
-        log(data, member.client);
+        log(data);
     } catch {}
 }

@@ -1,7 +1,7 @@
 import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
@@ -18,32 +18,32 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     let name = interaction.options.getString("name");
     let value = interaction.options.getString("value") || "";
     let newname = interaction.options.getString("newname") || "";
-    if (!newname && !value) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    if (!newname && !value) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Edit")
         .setDescription("You must specify a value or a new name")
         .setStatus("Danger")
         .setEmoji("PUNISH.NICKNAME.RED")
     ], ephemeral: true});
-    if (newname.length > 100) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    if (newname.length > 100) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Edit")
         .setDescription("Tag names cannot be longer than 100 characters")
         .setStatus("Danger")
         .setEmoji("PUNISH.NICKNAME.RED")
     ], ephemeral: true});
-    if (value.length > 2000) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    if (value.length > 2000) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Edit")
         .setDescription("Tag values cannot be longer than 2000 characters")
         .setStatus("Danger")
         .setEmoji("PUNISH.NICKNAME.RED")
     ], ephemeral: true});
-    let data = await client.database.read(interaction.guild.id);
-    if (!data.tags[name]) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    let data = await client.database.guilds.read(interaction.guild.id);
+    if (!data.tags[name]) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Edit")
         .setDescription("That tag does not exist")
         .setStatus("Danger")
         .setEmoji("PUNISH.NICKNAME.RED")
     ], ephemeral: true});
-    if (newname && newname !== name && data.tags[newname]) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    if (newname && newname !== name && data.tags[newname]) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Edit")
         .setDescription("A tag with that name already exists")
         .setStatus("Danger")
@@ -60,7 +60,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setColor("Warning")
         .setInverted(true)
     .send()
-    if (!confirmation) return await interaction.editReply({embeds: [new generateEmojiEmbed()
+    if (!confirmation) return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tag Edit")
         .setDescription("No changes were made")
         .setStatus("Success")
@@ -74,16 +74,16 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             toUnset.push(`tags.${name}`);
             toSet[`tags.${newname}`] = data.tags[name];
         }
-        await client.database.write(interaction.guild.id, toSet, toUnset);
+        await client.database.guilds.write(interaction.guild.id, toSet, toUnset);
     } catch (e) {
-        return await interaction.editReply({embeds: [new generateEmojiEmbed()
+        return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Tag Edit")
             .setDescription("Something went wrong and the tag was not edited")
             .setStatus("Danger")
             .setEmoji("PUNISH.NICKNAME.RED")
         ], components: []});
     }
-    return await interaction.editReply({embeds: [new generateEmojiEmbed()
+    return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tags")
         .setDescription("Tag edited successfully")
         .setStatus("Success")

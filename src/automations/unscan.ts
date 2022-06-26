@@ -1,5 +1,4 @@
 import * as scan from '../utils/scanners.js'
-import process from 'tesseract.js'
 
 export async function LinkCheck(message): Promise<boolean> {
     let links = message.content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) ?? []
@@ -7,11 +6,15 @@ export async function LinkCheck(message): Promise<boolean> {
     const promises = links.map(async element => {
         try {
             if (element.match(/https?:\/\/[a-zA-Z]+\.?discord(app)?\.(com|net)\/?/)) return // Also matches discord.net, not enough of a bug
+            console.log(1.1)
             element = await scan.testLink(element)
+            console.log(1.2)
         } catch {}
         detections.push({tags: element.tags || [], safe: element.safe})
     });
+    console.log(1)
     await Promise.all(promises);
+    console.log(2)
     let types = [
         "PHISHING",  "DATING",            "TRACKERS",    "ADVERTISEMENTS", "FACEBOOK",
         "AMP",       "FACEBOOK TRACKERS", "IP GRABBERS", "PORN",
@@ -21,9 +24,10 @@ export async function LinkCheck(message): Promise<boolean> {
     let detectionsTypes = detections.map(element => {
         let type = types.find(type => element.tags.includes(type))
         if (type) return type
-        if (!element.safe) return "UNSAFE"
+        // if (!element.safe) return "UNSAFE"
         return undefined
     }).filter(element => element !== undefined)
+    console.log(detectionsTypes)
     return detectionsTypes.length > 0
 }
 

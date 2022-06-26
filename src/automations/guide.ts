@@ -1,6 +1,6 @@
 import { SelectMenuOption } from '@discordjs/builders';
 import Discord, { MessageActionRow, MessageButton } from "discord.js";
-import generateEmojiEmbed from "../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
 
@@ -20,7 +20,7 @@ export default async (guild, interaction?) => {
     c = c ? c : guild.channels.cache.find(ch => ch.type === "GUILD_TEXT" && ch.permissionsFor(guild.roles.everyone).has("SEND_MESSAGES") && ch.permissionsFor(guild.me).has("EMBED_LINKS"));
     let pages = [
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Welcome to Nucleus")
                 .setDescription(
                     "Thanks for adding Nucleus to your server\n\n" +
@@ -31,7 +31,7 @@ export default async (guild, interaction?) => {
                 .setStatus("Danger")
             ).setTitle("Welcome").setDescription("About Nucleus").setPageId(0),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Logging")
                 .setDescription(
                     "Nucleus can log server events and keep you informed with what content is being posted to your server.\n" +
@@ -45,7 +45,7 @@ export default async (guild, interaction?) => {
                 .setStatus("Danger")
             ).setTitle("Logging").setDescription("Logging, staff warning logs etc.").setPageId(1),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Moderation")
                 .setDescription(
                     "Nucleus has a number of commands that can be used to moderate your server.\n" +
@@ -63,7 +63,7 @@ export default async (guild, interaction?) => {
             .setStatus("Danger")
             ).setTitle("Moderation").setDescription("Basic moderation commands").setPageId(2),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Verify")
                 .setDescription(
                     "Nucleus has a verification system that allows users to prove they aren't bots.\n" +
@@ -75,7 +75,7 @@ export default async (guild, interaction?) => {
                 .setStatus("Danger")
             ).setTitle("Verify").setDescription("Captcha verification system").setPageId(3),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Content Scanning")
                 .setDescription(
                     "Nucleus has a content scanning system that automatically scans links and images sent by users.\n" +
@@ -86,7 +86,7 @@ export default async (guild, interaction?) => {
                 .setStatus("Danger")
             ).setTitle("Content Scanning").setDescription("Content (NSFW, malware, scams) scanning").setPageId(4),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Tickets")
                 .setDescription(
                     "Nucleus has a ticket system that allows users to create tickets and have a support team respond to them.\n" +
@@ -98,7 +98,7 @@ export default async (guild, interaction?) => {
                 .setStatus("Danger")
             ).setTitle("Tickets").setDescription("Ticket system").setPageId(5),
         new Embed()
-            .setEmbed(new generateEmojiEmbed()
+            .setEmbed(new EmojiEmbed()
                 .setTitle("Tags")
                 .setDescription(
                     "Add a tag system to your server with the `/tag` and `/tags` commands.\n" +
@@ -114,7 +114,7 @@ export default async (guild, interaction?) => {
     let m;
     if (interaction) {
         m = await interaction.reply({embeds: [
-            new generateEmojiEmbed()
+            new EmojiEmbed()
                 .setTitle("Welcome")
                 .setDescription(`One moment...`)
                 .setStatus("Danger")
@@ -122,7 +122,7 @@ export default async (guild, interaction?) => {
         ], fetchReply: true, ephemeral: true});
     } else {
         m = await c.send({embeds: [
-            new generateEmojiEmbed()
+            new EmojiEmbed()
                 .setTitle("Welcome")
                 .setDescription(`One moment...`)
                 .setStatus("Danger")

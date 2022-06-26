@@ -8,7 +8,7 @@ const command = new SlashCommandBuilder()
     .setDescription("we changed the fucking charger again!")
     .addStringOption(option => option.setName("link").setDescription("fuck you").setRequired(false))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     console.log(await testLink(interaction.options.getString("link")))
 }
 

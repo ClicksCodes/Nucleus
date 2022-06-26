@@ -2,7 +2,7 @@ import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import generateEmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
@@ -18,13 +18,14 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     )
     .addIntegerOption(option => option.setName("delete").setDescription("The days of messages to delete | Default 0").setMinValue(0).setMaxValue(7).setRequired(false))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
+    const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
     let confirmation = await new confirmationMessage(interaction)
         .setEmoji("PUNISH.BAN.RED")
         .setTitle("Ban")
         .setDescription(keyValueList({
-            "user": `<@!${(interaction.options.getMember("user") as GuildMember).id}> (${(interaction.options.getMember("user") as GuildMember).user.username})`,
+            "user": renderUser(interaction.options.getUser("user")),
             "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
         })
         + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
@@ -35,11 +36,11 @@ const callback = async (interaction: CommandInteraction) => {
     if (confirmation.success) {
         let dmd = false
         let dm;
-        let config = await client.database.read(interaction.guild.id);
+        let config = await client.database.guilds.read(interaction.guild.id);
         try {
             if (interaction.options.getString("notify") != "no") {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [new generateEmojiEmbed()
+                    embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Banned")
                         .setDescription(`You have been banned in ${interaction.guild.name}` +
@@ -57,13 +58,13 @@ const callback = async (interaction: CommandInteraction) => {
         } catch {}
         try {
             let member = (interaction.options.getMember("user") as GuildMember)
-            let reason = interaction.options.getString("reason") ?? "No reason provided"
+            let reason = interaction.options.getString("reason")
             member.ban({
                 days: Number(interaction.options.getInteger("delete") ?? 0),
-                reason: reason
+                reason: reason ?? "No reason provided"
             })
-            // @ts-ignore
-            const { log, NucleusColors, entry, renderUser, renderDelta } = interaction.user.client.logger
+            try { await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason) } catch {}
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
             let data = {
                 meta: {
                     type: 'memberBan',
@@ -86,9 +87,9 @@ const callback = async (interaction: CommandInteraction) => {
                     guild: interaction.guild.id
                 }
             }
-            log(data, member.user.client);
+            log(data);
         } catch {
-            await interaction.editReply({embeds: [new generateEmojiEmbed()
+            await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.BAN.RED")
                 .setTitle(`Ban`)
                 .setDescription("Something went wrong and the user was not banned")
@@ -98,14 +99,14 @@ const callback = async (interaction: CommandInteraction) => {
             return
         }
         let failed = (dmd == false && interaction.options.getString("notify") != "no")
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Ban`)
             .setDescription("The member was banned" + (failed ? ", but could not be notified" : ""))
             .setStatus(failed ? "Warning" : "Success")
         ], components: []})
     } else {
-        await interaction.editReply({embeds: [new generateEmojiEmbed()
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.BAN.GREEN")
             .setTitle(`Ban`)
             .setDescription("No changes were made")
@@ -125,13 +126,13 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     // Check if Nucleus can ban the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to ban
-    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the `ban_members` permission";
+    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the Ban members permission";
     // Do not allow banning Nucleus
     if (member.id == interaction.guild.me.id) throw "I cannot ban myself"
     // Allow the owner to ban anyone
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has ban_members permission
-    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the `ban_members` permission";
+    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the Ban members permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow ban

@@ -1,24 +1,24 @@
 import { Message, MessageButton } from "discord.js";
-import generateEmojiEmbed from '../utils/generateEmojiEmbed.js'
+import EmojiEmbed from '../utils/generateEmojiEmbed.js'
 import { MessageActionRow, MessageSelectMenu } from 'discord.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 
 export async function callback(interaction) {
-    let config = await client.database.read(interaction.guild.id);
-    if (!config.roleMenu.enabled) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    let config = await client.database.guilds.read(interaction.guild.id);
+    if (!config.roleMenu.enabled) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Roles")
         .setDescription("Self roles are currently disabled. Please contact a staff member or try again later.")
         .setStatus("Danger")
         .setEmoji("CONTROL.BLOCKCROSS")
     ], ephemeral: true})
-    if (config.roleMenu.options.length === 0) return await interaction.reply({embeds: [new generateEmojiEmbed()
+    if (config.roleMenu.options.length === 0) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Roles")
         .setDescription("There are no roles available. Please contact a staff member or try again later.")
         .setStatus("Danger")
         .setEmoji("CONTROL.BLOCKCROSS")
     ], ephemeral: true})
-    await interaction.reply({embeds: [new generateEmojiEmbed()
+    await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Roles")
         .setDescription("Loading...")
         .setStatus("Success")
@@ -49,7 +49,7 @@ export async function callback(interaction) {
             interaction: interaction
         };
         m = await interaction.editReply({
-            embeds: [new generateEmojiEmbed()
+            embeds: [new EmojiEmbed()
                 .setTitle("Roles")
                 .setDescription("Select how to choose your roles")
                 .setStatus("Success")
@@ -75,7 +75,7 @@ export async function callback(interaction) {
         let object = config.roleMenu.options[i];
         let m = await interaction.editReply({
             embeds: [
-                new generateEmojiEmbed()
+                new EmojiEmbed()
                     .setTitle("Roles")
                     .setEmoji("GUILD.GREEN")
                     .setDescription(`**${object.name}**` + (object.description ? `\n${object.description}` : ``) +
@@ -115,7 +115,7 @@ export async function callback(interaction) {
         if (component.customId == "rolemenu") {
             rolesToAdd = rolesToAdd.concat(component.values)
         } else if (component.customId == "cancel") {
-            return await interaction.editReply({embeds: [new generateEmojiEmbed()
+            return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Roles")
                 .setDescription("Cancelled. No changes were made.")
                 .setStatus("Danger")
@@ -131,14 +131,14 @@ export async function callback(interaction) {
         await interaction.member.roles.remove(rolesToRemove)
         await interaction.member.roles.add(rolesToAdd)
     } catch (e) {
-        return await interaction.reply({embeds: [new generateEmojiEmbed()
+        return await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Roles")
             .setDescription("Something went wrong and your roles were not added. Please contact a staff member or try again later.")
             .setStatus("Danger")
             .setEmoji("GUILD.RED")
         ], components: []})
     }
-    await interaction.editReply({embeds: [new generateEmojiEmbed()
+    await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Roles")
         .setDescription("Roles have been added. You may close this message.")
         .setStatus("Success")

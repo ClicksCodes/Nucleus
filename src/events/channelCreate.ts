@@ -66,6 +66,6 @@ export async function callback(client, channel) {
                 guild: channel.guild.id
             }
         }
-        log(data, channel.client);
+        log(data);
     } catch {}
 }
