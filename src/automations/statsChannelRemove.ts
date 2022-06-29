@@ -10,9 +10,10 @@ export async function callback(_, member) {
             let string = element.text
             if (!string) return
             string = await convertCurlyBracketString(string, member.id, member.displayName, member.guild.name, member.guild.members)
-
-            let channel = await member.client.channels.fetch(element.channel)
-            if (channel.guild.id !== member.guild.id) return
+            let channel;
+            try {
+                channel = await member.client.channels.fetch(element.channel)
+            } catch { channel = null }
             if (!channel) return singleNotify(
                 "statsChannelDeleted",
                 member.guild.id,

@@ -11,11 +11,12 @@ export async function callback(client, member) {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
         let auditLog = await getAuditLog(member.guild, 'MEMBER_KICK');
         let audit = auditLog.entries.filter(entry => entry.target.id == member.id).first();
-        let type = "kick"
+        let type = "leave"
         if (audit) {
-            if (audit.createdAt - 100 < new Date().getTime()) {
-                type = "leave"
-            } else if (audit.executor.id == client.user.id) return
+            if (audit.executor.id === client.user.id) return
+            if (audit.createdAt - 100 >= new Date().getTime()) {
+                type = "kick"
+            }
         }
         let data
         if (type == "kick") {
@@ -70,5 +71,5 @@ export async function callback(client, member) {
             }
         }
         log(data);
-    } catch {}
+    } catch (e) { console.log(e) }
 }
