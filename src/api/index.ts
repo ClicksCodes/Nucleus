@@ -3,6 +3,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import structuredClone from '@ungap/structured-clone';
+import client from '../utils/client.js';
 
 
 const jsonParser = bodyParser.json();
@@ -17,6 +18,7 @@ const runServer = (client: HaikuClient) => {
     app.post('/verify/:code', jsonParser, async function (req, res) {
         const code = req.params.code;
         const secret = req.body.secret;
+        const { log, NucleusColors, entry, renderUser } = client.logger
         if (secret === client.config.verifySecret) {
             let guild = await client.guilds.fetch(client.verify[code].gID);
             if (!guild) { return res.status(404) }
@@ -34,6 +36,26 @@ const runServer = (client: HaikuClient) => {
                     .setEmoji("MEMBER.JOIN")
                 ], components: []});
             }
+            try {
+                let data = {
+                    meta:{
+                        type: 'memberVerify',
+                        displayName: 'Member Verified',
+                        calculateType: 'guildMemberVerify',
+                        color: NucleusColors.green,
+                        emoji: "CONTROL.BLOCKTICK",
+                        timestamp: new Date().getTime()
+                    },
+                    list: {
+                        id: entry(member.id, `\`${member.id}\``),
+                        member: entry(member.id, renderUser(member))
+                    },
+                    hidden: {
+                        guild: guild.id
+                    }
+                }
+                log(data);
+            } catch {}
             res.sendStatus(200);
         } else {
             res.sendStatus(403);

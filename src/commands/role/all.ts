@@ -38,17 +38,14 @@ const filterList = {
         },
         joined: {
             render: "joined",
-            before: (date) => ( new Filter((data) => `Joined server before <t:${Math.round(date.getTime() / 1000)}:F>`, {date: date, type: Date, render: "before"}, (member) => {
+            before: (date) => ( new Filter((data) => `Joined server before <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "before"}, (member) => {
                 return member.joinedTimestamp < date.getTime()
-            })),
-            after: (date) => ( new Filter((data) => `Joined server after <t:${Math.round(date.getTime() / 1000)}:F>`, {date: date, type: Date, render: "after"}, (member) => {
-                return member.joinedTimestamp > date.getTime()
-            }).flip())
+            }))
         },
         nickname: {
             render: "Nickname",
             set: () => ( new Filter((data) => `Member has a nickname set"`, {render: "set"}, (member) => { return member.nickname !== null})),
-            include: (name) => ( new Filter((data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
+            includes: (name) => ( new Filter((data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
                 return member.displayName.includes(name)})),
             startsWith: (name) => ( new Filter((data) => `Nickname starts with "${name}"`, {nickname: name, type: String, render: "starts with"}, (member) => {
                 return member.displayName.startsWith(name)})),
@@ -62,10 +59,7 @@ const filterList = {
             render: "created",
             before: (date) => ( new Filter((data) => `Account created before <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "before"}, (member) => {
                 return member.user.createdTimestamp < date.getTime()
-            })),
-            after: (date) => ( new Filter((data) => `Account created after <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "after"}, (member) => {
-                return member.user.createdTimestamp < date.getTime()
-            }).flip())
+            }))
         },
         is: {
             render: "is",
@@ -73,7 +67,7 @@ const filterList = {
         },
         username: {
             render: "Username",
-            include: (name) => ( new Filter((data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
+            includes: (name) => ( new Filter((data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
                 return member.user.name.includes(name)})),
             startsWith: (name) => ( new Filter((data) => `Nickname starts with "${name}"`, {nickname: name, type: String, render: "starts with"}, (member) => {
                 return member.user.name.startsWith(name)})),

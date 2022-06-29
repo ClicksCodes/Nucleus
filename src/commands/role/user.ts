@@ -76,8 +76,6 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     if (member.id == interaction.guild.ownerId) return true
     // Check if the user has manage_roles permission
     if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the Manage roles permission";
-    // Check if the role is above or equal to the user's highest role
-    if (apply.roles.highest.comparePositionTo(member.roles.highest) >= 0) throw "You cannot give a role higher than your highest role";
     // Allow role
     return true;
 }

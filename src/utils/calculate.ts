@@ -17,7 +17,7 @@ const logs = [
     "messageAnnounce", // TODO
     "threadUpdate",
     "webhookUpdate", // TODO
-    "guildMemberVerify", // TODO
+    "guildMemberVerify",
     "autoModeratorDeleted", // TODO
     "nucleusSettingsUpdated", // TODO
     ""
