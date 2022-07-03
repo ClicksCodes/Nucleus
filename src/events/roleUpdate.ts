@@ -11,7 +11,7 @@ export async function callback(client, or, nr) {
         if (audit.executor.id == client.user.id) return;
 
         let changes = {
-            id: entry(nr.id, `\`${nr.id}\``),
+            roleId: entry(nr.id, `\`${nr.id}\``),
             role: entry(nr.id, renderRole(nr)),
             edited: entry(nr.createdTimestamp, renderDelta(nr.createdTimestamp)),
             editedBy: entry(audit.executor.id, renderUser((await nr.guild.members.fetch(audit.executor.id)).user)),

@@ -12,9 +12,7 @@ export async function LinkCheck(message): Promise<boolean> {
         } catch {}
         detections.push({tags: element.tags || [], safe: element.safe})
     });
-    console.log(1)
     await Promise.all(promises);
-    console.log(2)
     let types = [
         "PHISHING",  "DATING",            "TRACKERS",    "ADVERTISEMENTS", "FACEBOOK",
         "AMP",       "FACEBOOK TRACKERS", "IP GRABBERS", "PORN",
@@ -27,7 +25,6 @@ export async function LinkCheck(message): Promise<boolean> {
         // if (!element.safe) return "UNSAFE"
         return undefined
     }).filter(element => element !== undefined)
-    console.log(detectionsTypes)
     return detectionsTypes.length > 0
 }
 
@@ -56,22 +53,22 @@ export async function MalwareCheck(element): Promise<boolean> {
     }
 }
 
-export function TestString(string, soft, strict): string {
+export function TestString(string, soft, strict): object | null {
     for(let word of strict || []) {
         if (string.toLowerCase().includes(word)) {
-            return "strict"
+            return {word: word, type: "strict"}
         }
     }
     for(let word of soft) {
         for(let word2 of string.match(/[a-z]+/gi) || []) {
             if (word2 == word) {
-                return "loose"
+                return {word: word, type: "strict"}
             }
         }
     }
-    return "none"
+    return null
 }
 
-export async function TestImage(element): Promise<string> {
-    return "";
+export async function TestImage(element): Promise<string | null> {
+    return null;
 }

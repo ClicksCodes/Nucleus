@@ -19,7 +19,7 @@ export async function callback(client, role) {
                 timestamp: audit.createdTimestamp,
             },
             list: {
-                id: entry(role.id, `\`${role.id}\``),
+                roleId: entry(role.id, `\`${role.id}\``),
                 role: entry(role.name, role.name),
                 color: entry(role.hexColor, `\`${role.hexColor}\``),
                 showInMemberList: entry(role.hoist, role.hoist ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`),

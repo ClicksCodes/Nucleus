@@ -31,7 +31,7 @@ export async function callback(client, member) {
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    id: entry(member.id, `\`${member.id}\``),
+                    memberId: entry(member.id, `\`${member.id}\``),
                     name: entry(member.id, renderUser(member.user)),
                     joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
                     kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
@@ -57,7 +57,7 @@ export async function callback(client, member) {
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    id: entry(member.id, `\`${member.id}\``),
+                    memberId: entry(member.id, `\`${member.id}\``),
                     name: entry(member.id, renderUser(member.user)),
                     joined: entry(member.joinedTimestamp, renderDelta(member.joinedAt)),
                     left: entry(new Date().getTime(), renderDelta(new Date().getTime())),

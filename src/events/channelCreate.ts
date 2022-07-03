@@ -55,7 +55,7 @@ export async function callback(client, channel) {
                 timestamp: channel.createdTimestamp
             },
             list: {
-                id: entry(channel.id, `\`${channel.id}\``),
+                channelId: entry(channel.id, `\`${channel.id}\``),
                 name: entry(channel.name, renderChannel(channel)),
                 type: entry(channel.type, readableType),
                 category: entry(channel.parent ? channel.parent.id : null, channel.parent ? channel.parent.name : "Uncategorised"),

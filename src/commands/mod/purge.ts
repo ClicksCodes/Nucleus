@@ -144,7 +144,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    id: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                    memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
                     purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
                     channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
                     messagesCleared: entry(deleted.length, deleted.length),
@@ -246,7 +246,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         timestamp: new Date().getTime()
                     },
                     list: {
-                        id: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                        memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
                         purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
                         channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
                         messagesCleared: entry(messages.size, messages.size),

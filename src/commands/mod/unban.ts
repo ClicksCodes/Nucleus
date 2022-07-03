@@ -53,7 +53,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    id: entry(member.id, `\`${member.id}\``),
+                    memberId: entry(member.id, `\`${member.id}\``),
                     name: entry(member.id, renderUser(member)),
                     unbanned: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                     unbannedBy: entry(interaction.user.id, renderUser(interaction.user)),

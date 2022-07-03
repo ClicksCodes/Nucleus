@@ -54,7 +54,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
                 `Ticket created by a Moderator\n` +
                 `**Support type:** Appeal submission\n` + (reason != null ? `**Reason:**\n> ${reason}\n` : "") +
                 `**Ticket ID:** \`${c.id}\`\n` +
-                `Type \`/ticket close\` to archive this ticket.`,
+                `Type \`/ticket close\` to close this ticket.`,
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN")

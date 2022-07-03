@@ -1,6 +1,6 @@
 # Nucleus by Clicks
 
-## TLDR:
+## In Short:
 
 You **may**:
 - Modify our code
@@ -13,7 +13,29 @@ However, you **must**:
 - Mention the code is originally by Clicks, and include a link to our [website](https://clicks.codes) or [GitHub](https://github.com/clicksminuteper)
 - Release your project with the same license [GNU Affero General Public License V3.0](https://choosealicense.com/licenses/agpl-3.0/)
 
-## The legal bit
+
+## How to:
+
+We hide the config file with our important data like the bot token. Below you can find a copy of `src/config/main.json`.
+
+```json
+{
+    "token": "your-token-here",
+    "developmentToken": "dev-token-here",
+    "managementGuildID": "your-management-guild-id-here",
+    "developmentGuildID": "your-development-guild-id-here",
+    "enableDevelopment": true,
+    "owners": [
+      "your-discord-id",
+    ],
+    "verifySecret": "if making a verify command, this is the value that checks if requests are from the website",
+    "mongoUrl": "mongodb://your-mongo-ip-and-port",
+    "baseUrl": "your website url, e.g. https://clicks.codes",
+}
+```
+
+
+## The legal bit:
 
 ```
                     GNU AFFERO GENERAL PUBLIC LICENSE

@@ -25,7 +25,7 @@ export async function callback(client, message) {
                 start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
             },
             list: {
-                id: entry(message.id, `\`${message.id}\``),
+                messageId: entry(message.id, `\`${message.id}\``),
                 sentBy: entry(message.author.id, renderUser(message.author)),
                 sentIn: entry(message.channel.id, renderChannel(message.channel)),
                 deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),

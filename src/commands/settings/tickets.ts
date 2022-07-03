@@ -404,7 +404,7 @@ async function manageTypes(interaction, data, m) {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the `manage_server` permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
     return true;
 }
 

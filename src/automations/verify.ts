@@ -88,7 +88,7 @@ export default async function(interaction) {
             .setStatus("Warning")
             .setEmoji("NUCLEUS.LOADING")
         ]});
-        if (TestString((interaction.member as Discord.GuildMember).displayName, config.filters.wordFilter.words.loose, config.filters.wordFilter.words.strict) != "none") {
+        if (TestString((interaction.member as Discord.GuildMember).displayName, config.filters.wordFilter.words.loose, config.filters.wordFilter.words.strict) !== null) {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify")
                 .setDescription(`Your name contained a word we do not allow in this server.\nPlease contact one of our staff members if you believe this is a mistake` + step(2))
@@ -124,7 +124,7 @@ export default async function(interaction) {
         gID: interaction.guild.id,
         rID: config.verify.role,
         rName: (await interaction.guild.roles.fetch(config.verify.role)).name,
-        mCount: interaction.guild.memberCount,
+        uName: interaction.member.user.username,
         gName: interaction.guild.name,
         gIcon: interaction.guild.iconURL({format: "png"}),
         interaction: interaction

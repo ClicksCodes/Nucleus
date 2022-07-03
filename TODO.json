@@ -1,0 +1,94 @@
+{
+  "filters": {
+    "images": {
+      "NSFW": false,
+      "size": false
+    },
+    "malware": false,
+    "wordFilter": {
+      "enabled": false,
+      "words": {
+        "strict": [],
+        "loose": []
+      },
+      "allowed": {
+        "users": [],
+        "roles": [],
+        "channels": []
+      }
+    },
+    "invite": {
+      "enabled": false,
+      "allowed": {
+        "users": [],
+        "channels": [],
+        "roles": []
+      }
+    },
+    "pings": {
+      "mass": 5,
+      "everyone": true,
+      "roles": true,
+      "allowed": {
+        "roles": [],
+        "rolesToMention": [],
+        "users": [],
+        "channels": []
+      }
+    }
+  },
+  "welcome": {
+    "enabled": false,
+    "welcomeRole": null,
+    "channel": null,
+    "message": null
+  },
+  "stats": [
+    {
+      "enabled": true,
+      "channel": "9849175359",
+      "text": "{count} members | {count:bots} bots | {count:humans} humans"
+    }
+  ],
+  "moderation": {
+    "mute": {
+      "timeout": true,
+      "role": null,
+      "text": null,
+      "link": null
+    },
+    "kick": {
+      "text": null,
+      "link": null
+    },
+    "ban": {
+      "text": null,
+      "link": null
+    },
+    "softban": {
+      "text": null,
+      "link": null
+    },
+    "warn": {
+      "text": null,
+      "link": null
+    },
+    "role": {
+      "role": null
+    }
+  },
+  "tracks": [
+  ],
+  "logging": {
+    "logs": {
+      "enabled": true,
+      "toLog": "3fffff"
+    }
+  },
+  "roleMenu": {
+    "enabled": true,
+    "allowWebUI": true,
+    "options": [
+    ]
+  }
+}

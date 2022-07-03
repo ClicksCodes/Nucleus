@@ -1,19 +1,19 @@
 import { ChannelType } from 'discord-api-types';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
-import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
-import confirmationMessage from "../../../utils/confirmationMessage.js";
-import getEmojiByName from "../../../utils/getEmojiByName.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import confirmationMessage from "../../utils/confirmationMessage.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import client from "../../../utils/client.js";
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("channel")
-    .setDescription("Sets or shows the staff notifications channel")
+    .setName("staff")
+    .setDescription("Settings for the staff notifications channel")
     .addChannelOption(option => option.setName("channel").setDescription("The channel to set the staff notifications channel to").addChannelTypes([
         ChannelType.GuildNews, ChannelType.GuildText
-    ]))
+    ]).setRequired(false))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
@@ -56,6 +56,28 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         if (confirmation.success) {
             try {
                 await client.database.guilds.write(interaction.guild.id, {"logging.staff.channel": channel.id})
+                const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger
+                try {
+                    let data = {
+                        meta:{
+                            type: 'logIgnoreUpdated',
+                            displayName: 'Staff Notifications Channel Updated',
+                            calculateType: 'nucleusSettingsUpdated',
+                            color: NucleusColors.yellow,
+                            emoji: "CHANNEL.TEXT.EDIT",
+                            timestamp: new Date().getTime()
+                        },
+                        list: {
+                            memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                            changedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                            channel: entry(channel.id, renderChannel(channel)),
+                        },
+                        hidden: {
+                            guild: interaction.guild.id
+                        }
+                    }
+                    log(data);
+                } catch {}
             } catch (e) {
                 return interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Staff Notifications Channel")
@@ -122,7 +144,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the `manage_server` permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
     return true;
 }
 

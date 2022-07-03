@@ -18,7 +18,6 @@ const runServer = (client: HaikuClient) => {
     app.post('/verify/:code', jsonParser, async function (req, res) {
         const code = req.params.code;
         const secret = req.body.secret;
-        const { log, NucleusColors, entry, renderUser } = client.logger
         if (secret === client.config.verifySecret) {
             let guild = await client.guilds.fetch(client.verify[code].gID);
             if (!guild) { return res.status(404) }
@@ -36,6 +35,8 @@ const runServer = (client: HaikuClient) => {
                     .setEmoji("MEMBER.JOIN")
                 ], components: []});
             }
+            delete client.verify[code];
+            const { log, NucleusColors, entry, renderUser } = client.logger
             try {
                 let data = {
                     meta:{
@@ -47,7 +48,7 @@ const runServer = (client: HaikuClient) => {
                         timestamp: new Date().getTime()
                     },
                     list: {
-                        id: entry(member.id, `\`${member.id}\``),
+                        memberId: entry(member.id, `\`${member.id}\``),
                         member: entry(member.id, renderUser(member))
                     },
                     hidden: {
@@ -62,27 +63,60 @@ const runServer = (client: HaikuClient) => {
         }
     });
 
-    app.patch('/verify/:code', (req, res) => {
-        const code = req.params.code;
-        try {
-            let interaction = client.verify[code].interaction;
-            if (interaction) {
-                interaction.editReply({embeds: [new EmojiEmbed()
-                    .setTitle("Verify")
-                    .setDescription(`Verify was opened in another tab or window, please complete the CAPTCHA there to continue`)
-                    .setStatus("Success")
-                    .setEmoji("MEMBER.JOIN")
-                ]});
-            }
-        } catch {}
-        res.sendStatus(200);
-    })
-
     app.get('/verify/:code', jsonParser, function (req, res) {
         const code = req.params.code;
         if (client.verify[code]) {
+            try {
+                let interaction = client.verify[code].interaction;
+                if (interaction) {
+                    interaction.editReply({embeds: [new EmojiEmbed()
+                        .setTitle("Verify")
+                        .setDescription(`Verify was opened in another tab or window, please complete the CAPTCHA there to continue`)
+                        .setStatus("Success")
+                        .setEmoji("MEMBER.JOIN")
+                    ]});
+                }
+            } catch {}
             let data = structuredClone(client.verify[code])
             delete data.interaction;
+            return res.status(200).send(data);
+        }
+        return res.sendStatus(404);
+    })
+
+    app.post('/rolemenu/:code', jsonParser, async function (req, res) {
+        const code = req.params.code;
+        const secret = req.body.secret;
+        const data = req.body.data;
+        if (secret === client.config.verifySecret) {
+            console.table(data)
+            let guild = await client.guilds.fetch(client.roleMenu[code].guild); // TODO: do checks here to like max roles because people are fucking annoying and will edit the source :)
+            if (!guild) { return res.status(404) }
+            let member = await guild.members.fetch(client.roleMenu[code].user);
+            if (!member) { return res.status(404) }
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(403);
+        }
+    });
+
+    app.get('/rolemenu/:code', jsonParser, function (req, res) {
+        const code = req.params.code;
+        if (client.roleMenu[code] !== undefined) {
+            try {
+                let interaction = client.roleMenu[code].interaction;
+                if (interaction) {
+                    interaction.editReply({embeds: [new EmojiEmbed()
+                        .setTitle("Roles")
+                        .setDescription(`The role menu was opened in another tab or window, please select your roles there to continue`)
+                        .setStatus("Success")
+                        .setEmoji("GUILD.GREEN")
+                    ], components: []});
+                }
+            } catch {}
+            let data = structuredClone(client.roleMenu[code])
+            delete data.interaction;
+            console.log(data)
             return res.status(200).send(data);
         }
         return res.sendStatus(404);

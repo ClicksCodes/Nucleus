@@ -163,7 +163,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             if (config.moderation.mute.role) {
                 member.roles.add(config.moderation.mute.role)
-            }
+            } // make sure this gets removed
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")

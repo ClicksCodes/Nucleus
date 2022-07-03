@@ -1,6 +1,4 @@
-import getEmojiByName from "../utils/getEmojiByName.js";
-
-export const event = 'emojiUpdate';
+export const event = 'stickerUpdate';
 
 export async function callback(client, oe, ne) {
     try {
@@ -12,17 +10,16 @@ export async function callback(client, oe, ne) {
         if (audit.executor.id == client.user.id) return;
 
         let changes = {
-            emojiId: entry(ne.id, `\`${ne.id}\``),
-            emoji: entry(ne.id, renderEmoji(ne)),
+            stickerId:entry(ne.id, `\`${ne.id}\``),
             edited: entry(ne.createdTimestamp, renderDelta(ne.createdTimestamp)),
             editedBy: entry(audit.executor.id, renderUser((await ne.guild.members.fetch(audit.executor.id)).user)),
             name: entry([oe.name, ne.name], `\`:${oe.name}:\` -> \`:${ne.name}:\``),
         }
         let data = {
             meta:{
-                type: 'emojiUpdate',
-                displayName: 'Emoji Edited',
-                calculateType: 'emojiUpdate',
+                type: 'stickerUpdate',
+                displayName: 'Sticker Edited',
+                calculateType: 'stickerUpdate',
                 color: NucleusColors.yellow,
                 emoji: "GUILD.EMOJI.EDIT",
                 timestamp: audit.createdTimestamp

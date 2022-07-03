@@ -53,6 +53,28 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         if (confirmation.success) {
             try {
                 await client.database.guilds.write(interaction.guild.id, {"logging.logs.channel": channel.id})
+                const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger
+                try {
+                    let data = {
+                        meta:{
+                            type: 'logChannelUpdate',
+                            displayName: 'Log Channel Changed',
+                            calculateType: 'nucleusSettingsUpdated',
+                            color: NucleusColors.yellow,
+                            emoji: "CHANNEL.TEXT.EDIT",
+                            timestamp: new Date().getTime()
+                        },
+                        list: {
+                            memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                            changedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                            channel: entry(channel.id, renderChannel(channel)),
+                        },
+                        hidden: {
+                            guild: channel.guild.id
+                        }
+                    }
+                    log(data);
+                } catch {}
             } catch (e) {
                 console.log(e)
                 return interaction.editReply({embeds: [new EmojiEmbed()
@@ -120,7 +142,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the `manage_server` permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
     return true;
 }
 

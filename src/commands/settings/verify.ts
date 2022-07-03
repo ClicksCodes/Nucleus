@@ -1,16 +1,16 @@
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
-import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
-import confirmationMessage from "../../../utils/confirmationMessage.js";
-import getEmojiByName from "../../../utils/getEmojiByName.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import confirmationMessage from "../../utils/confirmationMessage.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import client from "../../../utils/client.js";
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("role")
-    .setDescription("Sets or shows the role given to users after using /verify")
-    .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying"))
+    .setName("verify")
+    .setDescription("Manage the role given after typing /verify")
+    .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying").setRequired(false))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
@@ -50,6 +50,28 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         if (confirmation.success) {
             try {
                 await client.database.guilds.write(interaction.guild.id, {"verify.role": role.id, "verify.enabled": true});
+                const { log, NucleusColors, entry, renderUser, renderRole } = client.logger
+                try {
+                    let data = {
+                        meta:{
+                            type: 'verifyRoleChanged',
+                            displayName: 'Ignored Groups Changed',
+                            calculateType: 'nucleusSettingsUpdated',
+                            color: NucleusColors.green,
+                            emoji: "CONTROL.BLOCKTICK",
+                            timestamp: new Date().getTime()
+                        },
+                        list: {
+                            memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                            changedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                            role: entry(role.id, renderRole(role)),
+                        },
+                        hidden: {
+                            guild: interaction.guild.id
+                        }
+                    }
+                    log(data);
+                } catch {}
             } catch (e) {
                 console.log(e)
                 return interaction.editReply({embeds: [new EmojiEmbed()
@@ -117,7 +139,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the `manage_server` permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
     return true;
 }
 

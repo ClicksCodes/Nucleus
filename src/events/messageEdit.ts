@@ -7,7 +7,37 @@ export async function callback(client, oldMessage, newMessage) {
         newMessage.reference = newMessage.reference || {}
         let newContent = newMessage.cleanContent.replaceAll("`", "‘")
         let oldContent = oldMessage.cleanContent.replaceAll("`", "‘")
-        if (newContent == oldContent) return;
+        if (newContent == oldContent) {
+            if (!oldMessage.flags.has("CROSSPOSTED") && newMessage.flags.has("CROSSPOSTED")) {
+                let data = {
+                    meta: {
+                        type: 'messageAnnounce',
+                        displayName: 'Message Published',
+                        calculateType: 'messageAnnounce',
+                        color: NucleusColors.yellow,
+                        emoji: 'MESSAGE.CREATE',
+                        timestamp: newMessage.editedTimestamp
+                    },
+                    separate: {
+                        end: `[[Jump to message]](${newMessage.url})`
+                    },
+                    list: {
+                        messageId: entry(newMessage.id, `\`${newMessage.id}\``),
+                        sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
+                        sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel)),
+                        sent: entry(new Date(newMessage.createdTimestamp), renderDelta(new Date(newMessage.createdTimestamp))),
+                        published: entry(new Date(newMessage.editedTimestamp), renderDelta(new Date(newMessage.editedTimestamp))),
+                        mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
+                        attachments: renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size)
+                    },
+                    hidden: {
+                        guild: newMessage.channel.guild.id
+                    }
+                }
+                log(data);
+            }
+            return
+        };
         if (newContent.length > 256) newContent = newContent.substring(0, 253) + '...'
         if (oldContent.length > 256) oldContent = oldContent.substring(0, 253) + '...'
         let data = {
@@ -25,7 +55,7 @@ export async function callback(client, oldMessage, newMessage) {
                 end: `[[Jump to message]](${newMessage.url})`
             },
             list: {
-                id: entry(newMessage.id, `\`${newMessage.id}\``),
+                messageId: entry(newMessage.id, `\`${newMessage.id}\``),
                 sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
                 sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel)),
                 sent: entry(new Date(newMessage.createdTimestamp), renderDelta(new Date(newMessage.createdTimestamp))),

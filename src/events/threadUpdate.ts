@@ -8,7 +8,7 @@ export async function callback(client, before, after) {
         let audit = auditLog.entries.filter(entry => entry.target.id == after.id).first();
         if (audit.executor.id == client.user.id) return;
         let list = {
-            id: entry(after.id, `\`${after.id}\``),
+            threadId:entry(after.id, `\`${after.id}\``),
             thread: entry(after.name, renderChannel(after)),
             parentChannel: entry(after.parentId, renderChannel(after.parent)),
         }

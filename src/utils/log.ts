@@ -46,10 +46,10 @@ export class Logger {
 
     }
 
-    async getAuditLog(guild: Discord.Guild, event) {
+    async getAuditLog(guild: Discord.Guild, event): Promise<Discord.GuildAuditLogsEntry[]>{
         await wait(250)
         let auditLog = await guild.fetchAuditLogs({type: event});
-        return auditLog;
+        return auditLog as unknown as Discord.GuildAuditLogsEntry[];
     }
 
     async log(log: any): Promise<void> {

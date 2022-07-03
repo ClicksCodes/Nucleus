@@ -1,8 +1,7 @@
 const logs = [
     "channelUpdate",
-    "channelPinsUpdate", // TODO
     "emojiUpdate",
-    "stickerUpdate", // TODO
+    "stickerUpdate",
     "guildUpdate",
     "guildMemberUpdate",
     "guildMemberPunish",
@@ -14,13 +13,12 @@ const logs = [
     "messageReactionUpdate",
     "messagePing",
     "messageMassPing",
-    "messageAnnounce", // TODO
+    "messageAnnounce",
     "threadUpdate",
-    "webhookUpdate", // TODO
+    "webhookUpdate",
     "guildMemberVerify",
-    "autoModeratorDeleted", // TODO
-    "nucleusSettingsUpdated", // TODO
-    ""
+    "autoModeratorDeleted", // TODO: Not implemented
+    "nucleusSettingsUpdated"
 ]
 
 const tickets = [
@@ -51,7 +49,7 @@ const toHexArray = (permissionsHex, array?) => {
     let permissions = [];
     let int = (BigInt("0x" + permissionsHex)).toString(2).split('').reverse();
     for (let index in int) {
-        if (int[index] == "1") {
+        if (int[index] == "1" && array.length > index) {
             permissions.push(array[index]);
         }
     }

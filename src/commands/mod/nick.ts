@@ -73,7 +73,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    id: entry(member.id, `\`${member.id}\``),
+                    memberId: entry(member.id, `\`${member.id}\``),
                     before: entry(before, before ? before : '*None*'),
                     after: entry(nickname, nickname ? nickname : '*None*'),
                     updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),

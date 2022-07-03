@@ -37,8 +37,9 @@ export default async (guild, interaction?) => {
                     "Nucleus can log server events and keep you informed with what content is being posted to your server.\n" +
                     "We have 2 different types of logs, which each can be configured to send to a channel of your choice:\n" +
                     "**General Logs:** These are events like kicks and channel changes etc.\n" +
-                    "**Warning Logs:** Warnings like NSFW avatars and spam etc that may require action by a server staff member.\n\n" +
-                    "A general log channel can be set with `/settings log channel`\n" +
+                    "**Warning Logs:** Warnings like NSFW avatars and spam etc. that may require action by a server staff member. " +
+                    "These go to to a separate staff notifications channel.\n\n" +
+                    "A general log channel can be set with `/settings log`\n" +
                     "A warning log channel can be set with `/settings warnings channel`"
                 )
                 .setEmoji("NUCLEUS.LOGO")
@@ -69,7 +70,7 @@ export default async (guild, interaction?) => {
                     "Nucleus has a verification system that allows users to prove they aren't bots.\n" +
                     "This is done by running `/verify` which sends a message only the user can see, giving them a link to a CAPTCHA to verify.\n" +
                     "After the user complete's the CAPTCHA, they are given a role and can use the permissions accordingly.\n" +
-                    "You can set the role given with `/settings verify role`"
+                    "You can set the role given with `/settings verify`"
                 )
                 .setEmoji("NUCLEUS.LOGO")
                 .setStatus("Danger")
@@ -80,7 +81,7 @@ export default async (guild, interaction?) => {
                 .setDescription(
                     "Nucleus has a content scanning system that automatically scans links and images sent by users.\n" +
                     "Nucleus can detect, delete, and punish users for sending NSFW content, or links to scam or adult sites.\n" +
-                    "You can set the threshold for this in `/settings automation`"
+                    "You can set the threshold for this in `/settings automation`" // TODO
                 )
                 .setEmoji("NUCLEUS.LOGO")
                 .setStatus("Danger")
@@ -91,7 +92,7 @@ export default async (guild, interaction?) => {
                 .setDescription(
                     "Nucleus has a ticket system that allows users to create tickets and have a support team respond to them.\n" +
                     "Tickets can be created with `/ticket create` and a channel is created, pinging the user and support role.\n" +
-                    "When the ticket is resolved, anyone can run `/ticket close` to archive it.\n" +
+                    "When the ticket is resolved, anyone can run `/ticket close` (or click the button) to close it.\n" +
                     "Running `/ticket close` again will delete the ticket."
                 )
                 .setEmoji("NUCLEUS.LOGO")

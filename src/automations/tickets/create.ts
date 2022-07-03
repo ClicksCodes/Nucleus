@@ -167,7 +167,7 @@ export default async function (interaction) {
                 `Ticket created by <@${interaction.member.user.id}>\n` +
                 `**Support type:** ${chosenType != null ? (emoji) + " " + capitalize(chosenType) : "General"}\n` +
                 `**Ticket ID:** \`${c.id}\`\n${content}\n` +
-                `Type \`/ticket close\` to archive this ticket.`,
+                `Type \`/ticket close\` to close this ticket.`,
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN")

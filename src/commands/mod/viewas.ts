@@ -97,7 +97,6 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    return true // FIXME FOR RELEASE
     let member = (interaction.member as GuildMember)
     if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the Manage roles permission";
     return true

@@ -17,7 +17,7 @@ export async function callback(client, role) {
                 timestamp: role.createdTimestamp
             },
             list: {
-                id: entry(role.id, `\`${role.id}\``),
+                roleId: entry(role.id, `\`${role.id}\``),
                 role: entry(role.name, renderRole(role)),
                 createdBy: entry(audit.executor.id, renderUser(audit.executor)),
                 created: entry(role.createdTimestamp, renderDelta(role.createdTimestamp))

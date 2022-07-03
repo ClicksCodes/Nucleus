@@ -44,8 +44,11 @@ export async function callback(interaction) {
         }
         client.roleMenu[code] = {
             guild: interaction.guild.id,
+            guildName: interaction.guild.name,
             guildIcon: interaction.guild.iconURL({format: "png"}),
             user: interaction.member.user.id,
+            username: interaction.member.user.username,
+            data: config.roleMenu.options,
             interaction: interaction
         };
         m = await interaction.editReply({
@@ -58,7 +61,8 @@ export async function callback(interaction) {
                 new MessageButton()
                     .setLabel("Online")
                     .setStyle("LINK")
-                    .setURL(`https://clicks.codes/nuclues/rolemenu?code=${code}`),
+                    .setDisabled(false) // TODO check if the server is up
+                    .setURL(`${client.config.baseUrl}/nucleus/rolemenu?code=${code}`),
                 new MessageButton()
                     .setLabel("Manual")
                     .setStyle("PRIMARY")

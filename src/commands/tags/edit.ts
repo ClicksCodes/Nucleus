@@ -93,7 +93,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the `manage_messages` permission to use this command"
+    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the Manage Messages permission to use this command"
     return true;
 }
 

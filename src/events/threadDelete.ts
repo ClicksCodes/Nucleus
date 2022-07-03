@@ -17,7 +17,7 @@ export async function callback(client, thread) {
             timestamp: new Date().getTime()
         },
         list: {
-            id: entry(thread.id, `\`${thread.id}\``),
+            threadId:entry(thread.id, `\`${thread.id}\``),
             name: entry(thread.name, thread.name),
             parentChannel: entry(thread.parentId, renderChannel(thread.parent)),
             category: entry(thread.parent.parent ? thread.parent.parent.name : 'None', thread.parent.parent ? renderChannel(thread.parent.parent) : 'None'),

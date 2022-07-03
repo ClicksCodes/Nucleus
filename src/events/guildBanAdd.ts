@@ -22,7 +22,7 @@ export async function callback(client, ban) {
                 timestamp: new Date().getTime()
             },
             list: {
-                id: entry(ban.user.id, `\`${ban.user.id}\``),
+                memberId: entry(ban.user.id, `\`${ban.user.id}\``),
                 name: entry(ban.user.id, renderUser(ban.user)),
                 banned: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 bannedBy: entry(audit.executor.id, renderUser(audit.executor)),

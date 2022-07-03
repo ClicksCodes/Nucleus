@@ -23,7 +23,7 @@ export async function callback(client, before, after) {
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    id: entry(after.id, `\`${after.id}\``),
+                    memberId: entry(after.id, `\`${after.id}\``),
                     before: entry(before.nickname, before.nickname ? before.nickname : '*None*'),
                     after: entry(after.nickname, after.nickname ? after.nickname : '*None*'),
                     updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),

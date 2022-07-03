@@ -18,7 +18,7 @@ export async function callback(client, oc, nc) {
         let readableType:string;
         let displayName:string ;
         let changes = {
-            id: entry(nc.id, `\`${nc.id}\``),
+            channelId: entry(nc.id, `\`${nc.id}\``),
             channel: entry(nc.id, renderChannel(nc)),
             edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
             editedBy: entry(audit.executor.id, renderUser((await nc.guild.members.fetch(audit.executor.id)).user)),
