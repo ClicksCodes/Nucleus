@@ -13,7 +13,7 @@ export async function callback(client, or, nr) {
         let changes = {
             roleId: entry(nr.id, `\`${nr.id}\``),
             role: entry(nr.id, renderRole(nr)),
-            edited: entry(nr.createdTimestamp, renderDelta(nr.createdTimestamp)),
+            edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
             editedBy: entry(audit.executor.id, renderUser((await nr.guild.members.fetch(audit.executor.id)).user)),
         }
         let mentionable = ["", ""]
@@ -28,6 +28,8 @@ export async function callback(client, or, nr) {
         if (or.mentionable != nr.mentionable) changes["mentionable"] = entry([or.mentionable, nr.mentionable], `${mentionable[0]} -> ${mentionable[1]}`);
         if (or.hexColor != nr.hexColor) changes["color"] = entry([or.hexColor, nr.hexColor], `\`${or.hexColor}\` -> \`${nr.hexColor}\``);
 
+        if (Object.keys(changes).length == 4) return
+
         let data = {
             meta:{
                 type: 'roleUpdate',
@@ -41,7 +43,7 @@ export async function callback(client, or, nr) {
             hidden: {
                 guild: nr.guild.id
             }
-        } // TODO: show perms changed
+        } // TODO: show perms changed (webpage)
         log(data);
     } catch {}
 }

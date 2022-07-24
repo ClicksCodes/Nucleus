@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import close from "../../automations/tickets/delete.js";
+import close from "../../actions/tickets/delete.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder

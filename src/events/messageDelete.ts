@@ -3,6 +3,7 @@ export const event = 'messageDelete'
 export async function callback(client, message) {
     try {
         if (message.author.id == client.user.id) return;
+        if (client.noLog.includes(`${message.guild.id}/${message.channel.id}/${message.id}`)) return;
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = message.channel.client.logger
         let auditLog = await getAuditLog(message.guild, 'MEMBER_BAN_ADD')
         let audit = auditLog.entries.filter(entry => entry.target.id == message.author.id).first();
@@ -11,7 +12,11 @@ export async function callback(client, message) {
         }
         message.reference = message.reference || {}
         let content = message.cleanContent
+        content.replace(`\``, `\\\``)
         if (content.length > 256) content = content.substring(0, 253) + '...'
+        let attachmentJump = ""
+        let config = (await client.database.guilds.read(message.guild.id)).logging.attachments.saved[message.channel.id + message.id];
+        if (config) { attachmentJump = ` [[View attachments]](${config})` }
         let data = {
             meta: {
                 type: 'messageDelete',
@@ -30,7 +35,7 @@ export async function callback(client, message) {
                 sentIn: entry(message.channel.id, renderChannel(message.channel)),
                 deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 mentions: message.mentions.users.size,
-                attachments: message.attachments.size,
+                attachments: entry(message.attachments.size, message.attachments.size + attachmentJump),
                 repliedTo: entry(
                     message.reference.messageId || null,
                     message.reference.messageId ? `[[Jump to message]](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.reference.messageId})` : "None"
@@ -41,5 +46,5 @@ export async function callback(client, message) {
             }
         }
         log(data);
-    } catch {}
+    } catch(e) { console.log(e) }
 }

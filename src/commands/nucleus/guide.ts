@@ -3,7 +3,7 @@ import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
-import guide from "../../automations/guide.js";
+import guide from "../../reflex/guide.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder

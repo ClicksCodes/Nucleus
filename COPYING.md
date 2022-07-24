@@ -1,5 +1,13 @@
 # Nucleus by Clicks
 
+
+## Contents:
+
+- [In short](in-short)
+- [How to](how-to)
+- [The legal bit](the-legal-bit)
+
+
 ## In Short:
 
 You **may**:
@@ -31,6 +39,7 @@ We hide the config file with our important data like the bot token. Below you ca
     "verifySecret": "if making a verify command, this is the value that checks if requests are from the website",
     "mongoUrl": "mongodb://your-mongo-ip-and-port",
     "baseUrl": "your website url, e.g. https://clicks.codes",
+    "pastebinApiKey": "your-pastebin-api-key"
 }
 ```
 

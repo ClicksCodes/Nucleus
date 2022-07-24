@@ -1,6 +1,6 @@
 import humanizeDuration from 'humanize-duration';
-import { purgeByUser } from '../automations/tickets/delete.js';
-import { callback as statsChannelRemove } from '../automations/statsChannelRemove.js';
+import { purgeByUser } from '../actions/tickets/delete.js';
+import { callback as statsChannelRemove } from '../reflex/statsChannelRemove.js';
 
 export const event = 'guildMemberRemove'
 

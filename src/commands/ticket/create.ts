@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import create from "../../automations/tickets/create.js";
+import create from "../../actions/tickets/create.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder

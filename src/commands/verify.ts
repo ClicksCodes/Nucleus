@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import verify from "../automations/verify.js";
+import verify from "../reflex/verify.js";
 
 const command = new SlashCommandBuilder()
     .setName("verify")

@@ -11,14 +11,14 @@ const logs = [
     "messageDelete",
     "messageDeleteBulk",
     "messageReactionUpdate",
-    "messagePing",
     "messageMassPing",
     "messageAnnounce",
     "threadUpdate",
     "webhookUpdate",
     "guildMemberVerify",
-    "autoModeratorDeleted", // TODO: Not implemented
-    "nucleusSettingsUpdated"
+    "autoModeratorDeleted",
+    "nucleusSettingsUpdated",
+    "ticketUpdate"
 ]
 
 const tickets = [

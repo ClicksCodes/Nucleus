@@ -12,25 +12,32 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("kick")
     .setDescription("Kicks a user from the server")
     .addUserOption(option => option.setName("user").setDescription("The user to kick").setRequired(true))
-    .addStringOption(option => option.setName("reason").setDescription("The reason for the kick").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are kicked | Default yes").setRequired(false)
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are kicked | Default: Yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]])
     )
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
-    let confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.KICK.RED")
-        .setTitle("Kick")
-        .setDescription(keyValueList({
-            "user": renderUser(interaction.options.getUser("user")),
-            "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
-        })
-        + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
-        + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
-        .setColor("Danger")
-    .send()
+    let reason = null;
+    let confirmation
+    while (true) {
+        confirmation = await new confirmationMessage(interaction)
+            .setEmoji("PUNISH.KICK.RED")
+            .setTitle("Kick")
+            .setDescription(keyValueList({
+                "user": renderUser(interaction.options.getUser("user")),
+                "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
+            })
+            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+            + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
+            .setColor("Danger")
+            .addReasonButton(reason ?? "")
+        .send(reason !== null)
+        reason = reason ?? ""
+        if (confirmation.newReason === undefined) break
+        reason = confirmation.newReason
+    }
     if (confirmation.success) {
         let dmd = false
         let dm;
@@ -42,7 +49,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setEmoji("PUNISH.KICK.RED")
                         .setTitle("Kicked")
                         .setDescription(`You have been kicked in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
+                                    (reason ? ` for:\n> ${reason}` : "."))
                         .setStatus("Danger")
                     ],
                     components: [new MessageActionRow().addComponents(config.moderation.kick.text ? [new MessageButton()
@@ -55,9 +62,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
         } catch {}
         try {
-            (interaction.options.getMember("user") as GuildMember).kick(interaction.options.getString("reason") ?? "No reason provided.")
+            (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.")
             let member = (interaction.options.getMember("user") as GuildMember)
-            let reason = interaction.options.getString("reason") ?? null
             try { await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason) } catch {}
             // @ts-ignore
             const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger

@@ -72,7 +72,7 @@ export async function callback(client, channel) {
             hidden: {
                 guild: channel.guild.id
             }
-        } // TODO
+        }
         log(data);
     } catch(e) { console.log(e) }
 }

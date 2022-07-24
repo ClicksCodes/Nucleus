@@ -16,7 +16,7 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
     .addStringOption(option => option.setName("enabled").setDescription("If users should be able to create tickets").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]]))
     .addChannelOption(option => option.setName("category").setDescription("The category where tickets are created").addChannelType(ChannelType.GuildCategory).setRequired(false))
-    .addNumberOption(option => option.setName("maxticketsperuser").setDescription("The maximum amount of tickets a user can create | Default 5").setRequired(false).setMinValue(1))
+    .addNumberOption(option => option.setName("maxticketsperuser").setDescription("The maximum amount of tickets a user can create | Default: 5").setRequired(false).setMinValue(1))
     .addRoleOption(option => option.setName("supportrole").setDescription("This role will have view access to all tickets and will be pinged when a ticket is created").setRequired(false))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
@@ -139,7 +139,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
     }
     let data = await client.database.guilds.read(interaction.guild.id);
-    data.tickets.customTypes = data.tickets.customTypes.filter((v, i, a) => a.indexOf(v) === i)
+    data.tickets.customTypes = (data.tickets.customTypes || []).filter((v, i, a) => a.indexOf(v) === i)
     let lastClicked = "";
     let embed;
     data = {

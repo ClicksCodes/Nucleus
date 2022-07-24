@@ -1,6 +1,6 @@
 import { HistorySchema } from '../../utils/database';
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton, TextInputComponent } from "discord.js";
-import { SlashCommandSubcommandBuilder, SelectMenuOption } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -18,6 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const types = {
     "warn": {emoji: "PUNISH.WARN.YELLOW", text: "Warned"},
     "mute": {emoji: "PUNISH.MUTE.YELLOW", text: "Muted"},
+    "unmute": {emoji: "PUNISH.MUTE.GREEN", text: "Unmuted"},
     "join": {emoji: "MEMBER.JOIN", text: "Joined"},
     "leave": {emoji: "MEMBER.LEAVE", text: "Left"},
     "kick": {emoji: "MEMBER.KICK", text: "Kicked"},

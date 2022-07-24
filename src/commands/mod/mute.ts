@@ -7,24 +7,23 @@ import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import humanizeDuration from "humanize-duration";
 import client from "../../utils/client.js";
+import { areTicketsEnabled, create } from "../../actions/createModActionTicket.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
     .setName("mute")
-    .setDescription("Mutes a member using Discord's \"Timeout\" feature")
+    .setDescription("Mutes a member, stopping them from talking in the server")
     .addUserOption(option => option.setName("user").setDescription("The user to mute").setRequired(true))
-    .addIntegerOption(option => option.setName("days").setDescription("The number of days to mute the user for | Default 0").setMinValue(0).setMaxValue(27).setRequired(false))
-    .addIntegerOption(option => option.setName("hours").setDescription("The number of hours to mute the user for | Default 0").setMinValue(0).setMaxValue(23).setRequired(false))
-    .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default 0").setMinValue(0).setMaxValue(59).setRequired(false))
-    .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default 0").setMinValue(0).setMaxValue(59).setRequired(false))
-    .addStringOption(option => option.setName("reason").setDescription("The reason for the mute").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are muted | Default yes").setRequired(false)
+    .addIntegerOption(option => option.setName("days").setDescription("The number of days to mute the user for | Default: 0").setMinValue(0).setMaxValue(27).setRequired(false))
+    .addIntegerOption(option => option.setName("hours").setDescription("The number of hours to mute the user for | Default: 0").setMinValue(0).setMaxValue(23).setRequired(false))
+    .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
+    .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are muted | Default: yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]]))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    const { log, NucleusColors, renderUser, entry } = client.logger
+    const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger
     const user = interaction.options.getMember("user") as GuildMember
-    const reason = interaction.options.getString("reason")
     const time = {
         days: interaction.options.getInteger("days") || 0,
         hours: interaction.options.getInteger("hours") || 0,
@@ -119,31 +118,43 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         ], ephemeral: true, fetchReply: true})
     }
     // TODO:[Modals] Replace this with a modal
-    let confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.MUTE.RED")
-        .setTitle("Mute")
-        .setDescription(keyValueList({
-            "user": renderUser(user),
-            "time": `${humanizeDuration(muteTime * 1000, {round: true})}`,
-            "reason": `\n> ${reason ? reason : "*No reason provided*"}`
-        })
-        + `The user will be ` + serverSettingsDescription + "\n"
-        + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
-        + `Are you sure you want to mute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
-        .setColor("Danger")
-    .send(true)
+    let reason = null;
+    let confirmation;
+    while (true) {
+        confirmation = await new confirmationMessage(interaction)
+            .setEmoji("PUNISH.MUTE.RED")
+            .setTitle("Mute")
+            .setDescription(keyValueList({
+                "user": renderUser(user.user),
+                "time": `${humanizeDuration(muteTime * 1000, {round: true})}`,
+                "reason": reason ?  ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
+            })
+            + `The user will be ` + serverSettingsDescription + "\n"
+            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+            + `Are you sure you want to mute <@!${user.id}>?`)
+            .setColor("Danger")
+            .addCustomBoolean(
+                "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
+                async () => await create(interaction.guild, user.user, interaction.user, reason),
+                "An appeal ticket will be created when Confirm is clicked")
+            .addReasonButton(reason ?? "")
+        .send(true)
+        reason = reason ?? ""
+        if (confirmation.newReason === undefined) break
+        reason = confirmation.newReason
+    }
     if (confirmation.success) {
         let dmd = false
         let dm;
         let config = await client.database.guilds.read(interaction.guild.id);
         try {
             if (interaction.options.getString("notify") != "no") {
-                dm = await (interaction.options.getMember("user") as GuildMember).send({
+                dm = await user.send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.MUTE.RED")
                         .setTitle("Muted")
                         .setDescription(`You have been muted in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : ".\n\n" +
+                                    (reason ? ` for:\n> ${reason}` : ".\n\n" +
                                     `You will be unmuted at: <t:${Math.round((new Date).getTime() / 1000) + muteTime}:D> at <t:${Math.round((new Date).getTime() / 1000) + muteTime}:T> (<t:${Math.round((new Date).getTime() / 1000) + muteTime}:R>)`))
                         .setStatus("Danger")
                     ],
@@ -156,19 +167,36 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 dmd = true
             }
         } catch {}
-        let member = (interaction.options.getMember("user") as GuildMember)
+        let member = user
+        let errors = 0
         try {
             if (config.moderation.mute.timeout) {
-                member.timeout(muteTime * 1000, interaction.options.getString("reason") || "No reason provided")
+                await member.timeout(muteTime * 1000, reason || "No reason provided")
+                if (config.moderation.mute.role !== null) {
+                    await member.roles.add(config.moderation.mute.role)
+                    await client.database.eventScheduler.schedule("naturalUnmute", new Date().getTime() + muteTime * 1000, {
+                        guild: interaction.guild.id,
+                        user: user.id,
+                        expires: new Date().getTime() + muteTime * 1000
+                    })
+                }
             }
-            if (config.moderation.mute.role) {
-                member.roles.add(config.moderation.mute.role)
-            } // make sure this gets removed
-        } catch {
+        } catch { errors++ }
+        try {
+            if (config.moderation.mute.role !== null) {
+                await member.roles.add(config.moderation.mute.role)
+                await client.database.eventScheduler.schedule("unmuteRole", new Date().getTime() + muteTime * 1000, {
+                    guild: interaction.guild.id,
+                    user: user.id,
+                    role: config.moderation.mute.role
+                })
+            }
+        } catch (e){ console.log(e); errors++ }
+        if (errors == 2) {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")
                 .setTitle(`Mute`)
-                .setDescription("Something went wrong and the user was not mute")
+                .setDescription("Something went wrong and the user was not muted")
                 .setStatus("Danger")
             ], components: []})
             if (dmd) await dm.delete()
@@ -192,10 +220,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 timestamp: new Date().getTime()
             },
             list: {
-                user: entry(member.user.id, renderUser(member.user)),
+                memberId: entry(member.user.id, `\`${member.user.id}\``),
+                name: entry(member.user.id, renderUser(member.user)),
+                mutedUntil: entry(new Date().getTime() + muteTime * 1000, renderDelta(new Date().getTime() + muteTime * 1000)),
+                muted: entry(new Date().getTime(), renderDelta(new Date().getTime() - 1000)),
                 mutedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
-                time: entry(muteTime, `${humanizeDuration(muteTime * 1000, {round: true})}`),
-                reason: (interaction.options.getString("reason") ? `\n> ${interaction.options.getString("reason")}` : "No reason provided")
+                reason: entry(reason, reason ? reason : '*No reason provided*')
             },
             hidden: {
                 guild: interaction.guild.id

@@ -4,7 +4,7 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
+import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -12,29 +12,37 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("warn")
     .setDescription("Warns a user")
     .addUserOption(option => option.setName("user").setDescription("The user to warn").setRequired(true))
-    .addStringOption(option => option.setName("reason").setDescription("The reason for the warn").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are warned | Default yes").setRequired(false)
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are warned | Default: Yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]])
     )
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { log, NucleusColors, renderUser, entry } = client.logger
     // TODO:[Modals] Replace this with a modal
-    let confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.WARN.RED")
-        .setTitle("Warn")
-        .setDescription(keyValueList({
-            "user": renderUser(interaction.options.getUser("user")),
-            "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
-        })
-        + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
-        + `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
-        .setColor("Danger")
-        .addCustomBoolean(
-            "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.options.getString("reason")),
-            "An appeal ticket will be created when Confirm is clicked")
-    .send()
+    let reason = null;
+    let confirmation;
+    while (true) {
+        confirmation = await new confirmationMessage(interaction)
+            .setEmoji("PUNISH.WARN.RED")
+            .setTitle("Warn")
+            .setDescription(keyValueList({
+                "user": renderUser(interaction.options.getUser("user")),
+                "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
+            })
+            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+            + `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
+            .setColor("Danger")
+            .addCustomBoolean(
+                "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
+                async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason),
+                "An appeal ticket will be created when Confirm is clicked")
+                .addReasonButton(reason)
+            .addReasonButton(reason ?? "")
+        .send(reason !== null)
+        reason = reason ?? ""
+        if (confirmation.newReason === undefined) break
+        reason = confirmation.newReason
+    }
     if (confirmation.success) {
         let dmd = false
         try {
@@ -44,7 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setEmoji("PUNISH.WARN.RED")
                         .setTitle("Warned")
                         .setDescription(`You have been warned in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : ".") + "\n\n" +
+                                    (reason ? ` for:\n> ${reason}` : ".") + "\n\n" +
                                     (confirmation.buttonClicked ? `You can appeal this here ticket: <#${confirmation.response}>` : ``))
                         .setStatus("Danger")
                     ]
@@ -71,7 +79,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             list: {
                 user: entry((interaction.options.getMember("user") as GuildMember).user.id, renderUser((interaction.options.getMember("user") as GuildMember).user)),
                 warnedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
-                reason: (interaction.options.getString("reason") ? `\n> ${interaction.options.getString("reason")}` : "No reason provided")
+                reason: reason ? `\n> ${reason}` : "No reason provided"
             },
             hidden: {
                 guild: interaction.guild.id
@@ -80,7 +88,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         try { await client.database.history.create(
             "warn", interaction.guild.id,
             (interaction.options.getMember("user") as GuildMember).user,
-            interaction.user, interaction.options.getString("reason")
+            interaction.user, reason
         )} catch {}
         log(data);
         let failed = (dmd == false && interaction.options.getString("notify") != "no")
@@ -129,7 +137,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setEmoji(`PUNISH.WARN.RED`)
                         .setTitle(`Warn`)
                         .setDescription(`You have been warned` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
+                                    (reason ? ` for:\n> ${reason}` : "."))
                         .setStatus("Danger")
                     ],
                     content: `<@!${(interaction.options.getMember("user") as GuildMember).id}>`,

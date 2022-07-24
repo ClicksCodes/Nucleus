@@ -1,33 +1,27 @@
-import Discord, { CommandInteraction, MessageActionRow, Message } from "discord.js";
+import Discord, { CommandInteraction, MessageActionRow, Message, MessageButton, TextInputComponent } from "discord.js";
+import { modalInteractionCollector } from "./dualCollector.js";
 import EmojiEmbed from "./generateEmojiEmbed.js"
 import getEmojiByName from "./getEmojiByName.js";
 
 class confirmationMessage {
     interaction: CommandInteraction;
-    title: string;
-    emoji: string;
-    description: string;
-    color: string;
-    customCallback: () => any;
+    title: string = "";
+    emoji: string = "";
+    description: string = "";
+    color: string = "";
+    customCallback: () => any = () => {};
     customButtonTitle: string;
     customButtonDisabled: boolean;
     customCallbackString: string = "";
     customCallbackClicked: boolean = false;
     customCallbackResponse: any = null;
-    customBoolean: () => any;
+    customBoolean: () => any = () => {}; // allow multiple booleans
     customBooleanClicked: boolean = null;
-    inverted: boolean;
+    inverted: boolean = false;
+    reason: string | null = null;
 
     constructor(interaction: CommandInteraction) {
         this.interaction = interaction;
-
-        this.title = "";
-        this.emoji = "";
-        this.description = "";
-        this.color = "";
-        this.inverted = false;
-        this.customCallback = () => {};
-        this.customBoolean = () => {};
     }
 
     setTitle(title: string) { this.title = title; return this }
@@ -52,8 +46,10 @@ class confirmationMessage {
         this.customBooleanClicked = false;
         return this;
     }
-
-
+    addReasonButton(reason: string) {
+        this.reason = reason;
+        return this;
+    }
     async send(editOnly?: boolean) {
         while (true) {
             let object = {
@@ -86,6 +82,12 @@ class confirmationMessage {
                         )
                         .setDisabled(this.customButtonDisabled)
                         .setEmoji(getEmojiByName("CONTROL.TICKET", "id"))
+                    ] : [])
+                    .concat(this.reason !== null ? [new Discord.MessageButton()
+                        .setCustomId("reason")
+                        .setLabel(`Edit Reason`)
+                        .setStyle("PRIMARY")
+                        .setEmoji(getEmojiByName("ICONS.EDIT", "id"))
                     ] : []))
                 ],
                 ephemeral: true,
@@ -132,6 +134,39 @@ class confirmationMessage {
                     this.customButtonDisabled = true;
                 }
                 editOnly = true;
+            } else if (component.customId === "reason") {
+                await component.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Editing reason`).addComponents(
+                    // @ts-ignore
+                    new MessageActionRow().addComponents(new TextInputComponent()
+                        .setCustomId("reason")
+                        .setLabel("Reason")
+                        .setMaxLength(2000)
+                        .setRequired(false)
+                        .setStyle("PARAGRAPH")
+                        .setPlaceholder("Spammed in #general")
+                        .setValue(this.reason ? this.reason : "")
+                    )
+                ))
+                await this.interaction.editReply({
+                    embeds: [new EmojiEmbed()
+                        .setTitle(this.title)
+                        .setDescription("Modal opened. If you can't see it, click back and try again.")
+                        .setStatus(this.color)
+                        .setEmoji(this.emoji)
+                    ], components: [new MessageActionRow().addComponents([new MessageButton()
+                        .setLabel("Back")
+                        .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                        .setStyle("PRIMARY")
+                        .setCustomId("back")
+                    ])]
+                });
+                let out;
+                try {
+                    out = await modalInteractionCollector(m, (m) => m.channel.id == this.interaction.channel.id, (m) => m.customId == "reason")
+                } catch (e) { continue }
+                if (out.fields) {
+                    return {newReason: out.fields.getTextInputValue("reason") ?? ""};
+                } else { return { newReason: this.reason } }
             }
         }
     }

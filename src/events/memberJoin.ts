@@ -1,5 +1,5 @@
-import { callback as statsChannelAdd } from '../automations/statsChannelAdd.js';
-import { callback as welcome } from '../automations/welcome.js';
+import { callback as statsChannelAdd } from '../reflex/statsChannelAdd.js';
+import { callback as welcome } from '../reflex/welcome.js';
 import log from '../utils/log.js';
 import client from '../utils/client.js';
 

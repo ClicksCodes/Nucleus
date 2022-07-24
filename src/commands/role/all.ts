@@ -114,7 +114,7 @@ const callback = async (interaction: CommandInteraction) => {
                     count ++;
                     return (count == 1 ? getEmojiByName("ICONS.FILTER") : (all ? "**and** " : "**or** ")) +
                         (f.inverted ? "**not** " : "") + `${f.name}`
-                }).join("\n") + "\n\n" + `This will affect ${addPlural(affected.length.toString(), "member")}`)
+                }).join("\n") + "\n\n" + `This will affect ${addPlural(affected.length, "member")}`)
             .setEmoji("GUILD.ROLES.CREATE")
             .setStatus("Success")
         ], components: [

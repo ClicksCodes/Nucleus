@@ -90,7 +90,7 @@ const runServer = (client: HaikuClient) => {
         const data = req.body.data;
         if (secret === client.config.verifySecret) {
             console.table(data)
-            let guild = await client.guilds.fetch(client.roleMenu[code].guild); // TODO: do checks here to like max roles because people are fucking annoying and will edit the source :)
+            let guild = await client.guilds.fetch(client.roleMenu[code].guild);
             if (!guild) { return res.status(404) }
             let member = await guild.members.fetch(client.roleMenu[code].user);
             if (!member) { return res.status(404) }

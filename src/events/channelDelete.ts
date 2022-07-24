@@ -39,7 +39,7 @@ export async function callback(client, channel) {
             }
         }
         let list = {
-            channelIid: entry(channel.id, `\`${channel.id}\``),
+            channelId: entry(channel.id, `\`${channel.id}\``),
             name: entry(channel.id, `${channel.name}`),
             topic: null,
             type: entry(channel.type, readableType),

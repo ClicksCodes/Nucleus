@@ -163,7 +163,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let tracks = (await client.database.guilds.read(interaction.guild.id)).tracks
-    if (!tracks) throw "This server does not have any tracks"
+    if (tracks.length === 0) throw "This server does not have any tracks"
     let member = (interaction.member as GuildMember)
     // Allow the owner to promote anyone
     if (member.id == interaction.guild.ownerId) return true

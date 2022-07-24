@@ -7,6 +7,9 @@ export async function callback(client, oldMessage, newMessage) {
         newMessage.reference = newMessage.reference || {}
         let newContent = newMessage.cleanContent.replaceAll("`", "‘")
         let oldContent = oldMessage.cleanContent.replaceAll("`", "‘")
+        let attachmentJump = "";
+        let config = (await client.database.guilds.read(newMessage.guild.id)).logging.attachments.saved[newMessage.channel.id + newMessage.id];
+        if (config) { attachmentJump = ` [[View attachments]](${config})` }
         if (newContent == oldContent) {
             if (!oldMessage.flags.has("CROSSPOSTED") && newMessage.flags.has("CROSSPOSTED")) {
                 let data = {
@@ -28,16 +31,19 @@ export async function callback(client, oldMessage, newMessage) {
                         sent: entry(new Date(newMessage.createdTimestamp), renderDelta(new Date(newMessage.createdTimestamp))),
                         published: entry(new Date(newMessage.editedTimestamp), renderDelta(new Date(newMessage.editedTimestamp))),
                         mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
-                        attachments: renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size)
+                        attachments: entry(
+                            renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
+                            renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size) + attachmentJump
+                        )
                     },
                     hidden: {
                         guild: newMessage.channel.guild.id
                     }
                 }
-                log(data);
+                return log(data);
             }
-            return
         };
+        if (!newMessage.editedTimestamp) { return }
         if (newContent.length > 256) newContent = newContent.substring(0, 253) + '...'
         if (oldContent.length > 256) oldContent = oldContent.substring(0, 253) + '...'
         let data = {
@@ -61,7 +67,10 @@ export async function callback(client, oldMessage, newMessage) {
                 sent: entry(new Date(newMessage.createdTimestamp), renderDelta(new Date(newMessage.createdTimestamp))),
                 edited: entry(new Date(newMessage.editedTimestamp), renderDelta(new Date(newMessage.editedTimestamp))),
                 mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
-                attachments: renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
+                attachments: entry(
+                    renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
+                    renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size) + attachmentJump
+                ),
                 repliedTo: entry(
                     newMessage.reference.messageId || null,
                     newMessage.reference.messageId ? `[[Jump to message]](https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${newMessage.reference.messageId})` : "None"

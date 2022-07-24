@@ -132,26 +132,17 @@ export class ModNotes {
     }
 }
 
-export class EventSchedulerDatabase {
-    events: Collection<EventSchedulerSchema>;
-    defaultData: GuildConfig;
+export class Premium {
+    premium: Collection<PremiumSchema>;
 
     async setup() {
-        this.events = database.collection<EventSchedulerSchema>("eventScheduler");
+        this.premium = database.collection<PremiumSchema>("premium");
         return this;
     }
 
-    async create(timestamp: Date, data: object) {
-        await this.events.insertOne({ timestamp: timestamp, data: data});
-    }
-
-    async getNext() {
-        let entry = await this.events.findOne({ timestamp: { $lte: new Date() }});
-        return entry;
-    }
-
-    async remove(timestamp: Date, data: object) {
-        await this.events.deleteOne({ timestamp: timestamp, data: data});
+    async hasPremium(guild: string) {
+        let entry = await this.premium.findOne({ appliesTo: { $in: [guild] } });
+        return entry != null;
     }
 }
 
@@ -222,6 +213,10 @@ export interface GuildConfig {
         },
         staff: {
             channel: string | null,
+        },
+        attachments: {
+            channel: string | null,
+            saved: {}  // {channelID+messageID: log url (string)}
         }
     }
     verify: {
@@ -307,7 +302,9 @@ export interface ModNoteSchema {
     note: string
 }
 
-export interface EventSchedulerSchema {
-    timestamp: Date,
-    data: object
+export interface PremiumSchema {
+    user: string,
+    level: number,
+    expires: Date,
+    appliesTo: string[]
 }

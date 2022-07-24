@@ -66,6 +66,10 @@
         },
         "staff": {
             "channel": null
+        },
+        "attachments": {
+            "channel": null,
+            "saved": {}
         }
     },
     "verify": {

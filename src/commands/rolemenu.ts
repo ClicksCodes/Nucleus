@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import { callback as roleMenu } from "../automations/roleMenu.js"
+import { callback as roleMenu } from "../actions/roleMenu.js"
 
 const command = new SlashCommandBuilder()
     .setName("rolemenu")

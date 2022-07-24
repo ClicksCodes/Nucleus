@@ -1,14 +1,18 @@
 const forceCaps = [
     "ID",
-    "NSFW"
+    "NSFW",
+    "URL"
 ]
 
 export function capitalize(s: string) {
     s = s.replace(/([A-Z])/g, ' $1');
-    return forceCaps.includes(s.toUpperCase()) ? s.toUpperCase() : s[0]
-        .toUpperCase() + s.slice(1)
-        .toLowerCase()
-        .replace("discord", "Discord");
+    s = s.split(" ").map(word => {
+        return forceCaps.includes(word.toUpperCase()) ? word.toUpperCase() : word[0]
+            .toUpperCase() + word.slice(1)
+            .toLowerCase()
+            .replace("discord", "Discord")
+    }).join(" ");
+    return s
 }
 
 export function toCapitals(s: string) {

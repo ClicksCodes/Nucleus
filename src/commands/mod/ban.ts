@@ -12,27 +12,34 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("ban")
     .setDescription("Bans a user from the server")
     .addUserOption(option => option.setName("user").setDescription("The user to ban").setRequired(true))
-    .addStringOption(option => option.setName("reason").setDescription("The reason for the ban").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are banned | Default yes").setRequired(false)
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are banned | Default: Yes").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]])
     )
-    .addIntegerOption(option => option.setName("delete").setDescription("The days of messages to delete | Default 0").setMinValue(0).setMaxValue(7).setRequired(false))
+    .addIntegerOption(option => option.setName("delete").setDescription("The days of messages to delete | Default: 0").setMinValue(0).setMaxValue(7).setRequired(false))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
-    let confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.BAN.RED")
-        .setTitle("Ban")
-        .setDescription(keyValueList({
-            "user": renderUser(interaction.options.getUser("user")),
-            "reason": `\n> ${interaction.options.getString("reason") ? interaction.options.getString("reason") : "*No reason provided*"}`
-        })
-        + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
-        + `${addPlurals(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
-        + `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
-        .setColor("Danger")
-    .send()
+    let reason = null
+    let confirmation
+    while (true) {
+        confirmation = await new confirmationMessage(interaction)
+            .setEmoji("PUNISH.BAN.RED")
+            .setTitle("Ban")
+            .setDescription(keyValueList({
+                "user": renderUser(interaction.options.getUser("user")),
+                "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
+            })
+            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
+            + `${addPlurals(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
+            + `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
+            .setColor("Danger")
+            .addReasonButton(reason ?? "")
+            .send(reason !== null)
+        reason = reason ?? ""
+        if (confirmation.newReason === undefined) break
+        reason = confirmation.newReason
+    }
     if (confirmation.success) {
         let dmd = false
         let dm;
@@ -44,7 +51,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Banned")
                         .setDescription(`You have been banned in ${interaction.guild.name}` +
-                                    (interaction.options.getString("reason") ? ` for:\n> ${interaction.options.getString("reason")}` : "."))
+                                    (reason ? ` for:\n> ${reason}` : "."))
                         .setStatus("Danger")
                     ],
                     components: [new MessageActionRow().addComponents(config.moderation.ban.text ? [new MessageButton()
@@ -58,7 +65,6 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         } catch {}
         try {
             let member = (interaction.options.getMember("user") as GuildMember)
-            let reason = interaction.options.getString("reason")
             member.ban({
                 days: Number(interaction.options.getInteger("delete") ?? 0),
                 reason: reason ?? "No reason provided"

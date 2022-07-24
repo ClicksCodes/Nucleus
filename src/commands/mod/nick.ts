@@ -4,7 +4,7 @@ import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import { create, areTicketsEnabled } from "../../automations/createModActionTicket.js";
+import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js"
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -13,7 +13,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Changes a users nickname")
     .addUserOption(option => option.setName("user").setDescription("The user to change").setRequired(true))
     .addStringOption(option => option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when their nickname is changed | Default no").setRequired(false)
+    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when their nickname is changed | Default: No").setRequired(false)
         .addChoices([["Yes", "yes"], ["No", "no"]])
     )
 
@@ -32,7 +32,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setColor("Danger")
         .addCustomBoolean(
             "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, interaction.options.getString("reason")),
+            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, null),
             "An appeal ticket will be created when Confirm is clicked")
     .send()
     if (confirmation.success) {
