@@ -13,40 +13,43 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Changes a users nickname")
     .addUserOption(option => option.setName("user").setDescription("The user to change").setRequired(true))
     .addStringOption(option => option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when their nickname is changed | Default: No").setRequired(false)
-        .addChoices([["Yes", "yes"], ["No", "no"]])
-    )
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
-    let confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.NICKNAME.RED")
-        .setTitle("Nickname")
-        .setDescription(keyValueList({
-            "user": renderUser(interaction.options.getUser("user")),
-            "new nickname": `${interaction.options.getString("name") ? interaction.options.getString("name") : "*No nickname*"}`
-        })
-        + `The user **will${interaction.options.getString("notify") == "yes" ? '' : ' not'}** be notified\n\n`
-        + `Are you sure you want to ${interaction.options.getString("name") ? "change" : "clear"} <@!${(interaction.options.getMember("user") as GuildMember).id}>'s nickname?`)
-        .setColor("Danger")
-        .addCustomBoolean(
-            "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-            async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, null),
-            "An appeal ticket will be created when Confirm is clicked")
-    .send()
+    let notify = true;
+    let confirmation;
+    while (true) {
+        confirmation = await new confirmationMessage(interaction)
+            .setEmoji("PUNISH.NICKNAME.RED")
+            .setTitle("Nickname")
+            .setDescription(keyValueList({
+                "user": renderUser(interaction.options.getUser("user")),
+                "new nickname": `${interaction.options.getString("name") ? interaction.options.getString("name") : "*No nickname*"}`
+            })
+            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
+            + `Are you sure you want to ${interaction.options.getString("name") ? "change" : "clear"} <@!${(interaction.options.getMember("user") as GuildMember).id}>'s nickname?`)
+            .setColor("Danger")
+            .addCustomBoolean("notify", "Notify user", false, null, null, "ICONS.NOTIFY." + (notify ? "ON" : "OFF" ), notify)
+        .send(interaction.options.getString("name") !== null)
+        if (confirmation.cancelled) return
+        if (confirmation.success) break
+        if (confirmation.components) {
+            notify = confirmation.components.notify.active
+        }
+    }
     if (confirmation.success) {
         let dmd = false
         let dm;
         try {
-            if (interaction.options.getString("notify") == "yes") {
+            if (notify) {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.NICKNAME.RED")
                         .setTitle("Nickname changed")
                         .setDescription(`Your nickname was ${interaction.options.getString("name") ? "changed" : "cleared"} in ${interaction.guild.name}.` +
                                     (interaction.options.getString("name") ? ` it is now: ${interaction.options.getString("name")}` : "") + "\n\n" +
-                                    (confirmation.buttonClicked ? `You can appeal this here: <#${confirmation.response}>` : ``))
+                                    (confirmation.components.appeal.response ? `You can appeal this here: <#${confirmation.components.appeal.response}>` : ``))
                         .setStatus("Danger")
                     ]
                 })
@@ -61,8 +64,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             try { await client.database.history.create(
                 "nickname", interaction.guild.id, member.user, interaction.user,
                 null, before, nickname) } catch {}
-            // @ts-ignore
-            const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
             let data = {
                 meta: {
                     type: 'memberUpdate',
@@ -94,11 +96,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             if (dmd) await dm.delete()
             return
         }
-        let failed = (dmd == false && interaction.options.getString("notify") == "yes")
+        let failed = (dmd == false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.NICKNAME.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Nickname`)
-            .setDescription("The members nickname was changed" + (failed ? ", but was not notified" : "") + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
+            .setDescription("The members nickname was changed" + (failed ? ", but was not notified" : "") + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ``))
             .setStatus(failed ? "Warning" : "Success")
         ], components: []})
     } else {

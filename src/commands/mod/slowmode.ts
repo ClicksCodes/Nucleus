@@ -31,6 +31,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         + `Are you sure you want to set the slowmode in this channel?`)
         .setColor("Danger")
     .send()
+    if (confirmation.cancelled) return
     if (confirmation.success) {
         try {
             (interaction.channel as TextChannel).setRateLimitPerUser(time)

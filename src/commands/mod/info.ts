@@ -14,7 +14,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setDescription("Shows moderator information about a user")
     .addUserOption(option => option.setName("user").setDescription("The user to get information about").setRequired(true))
 
-
 const types = {
     "warn": {emoji: "PUNISH.WARN.YELLOW", text: "Warned"},
     "mute": {emoji: "PUNISH.MUTE.YELLOW", text: "Muted"},
@@ -237,8 +236,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         } catch (e) { return }
         if (i.customId === "modify") {
             await i.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Editing moderator note`).addComponents(
-                // @ts-ignore
-                new MessageActionRow().addComponents(new TextInputComponent()
+                new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                     .setCustomId("note")
                     .setLabel("Note")
                     .setMaxLength(4000)

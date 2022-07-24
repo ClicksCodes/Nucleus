@@ -12,7 +12,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addStringOption(option => option.setName("suggestion").setDescription("The suggestion to send").setRequired(true))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    // @ts-ignore
     const { renderUser } = client.logger
     let suggestion = interaction.options.getString("suggestion");
     let confirmation = await new confirmationMessage(interaction)
@@ -23,6 +22,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setColor("Danger")
         .setInverted(true)
     .send()
+    if (confirmation.cancelled) return
     if (confirmation.success) {
         await (client.channels.cache.get('955161206459600976') as Discord.TextChannel).send({
             embeds: [

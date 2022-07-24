@@ -132,7 +132,6 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
         let attachmentObject;
         try {
-            // @ts-ignore
             const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger
             let data = {
                 meta: {
@@ -210,6 +209,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }))
             .setColor("Danger")
         .send()
+        if (confirmation.cancelled) return
         if (confirmation.success) {
             let messages;
             try {
@@ -234,7 +234,6 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
             let attachmentObject;
             try {
-                // @ts-ignore
                 const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger
                 let data = {
                     meta: {

@@ -14,6 +14,7 @@ export async function callback(client, message) {
         let content = message.cleanContent
         content.replace(`\``, `\\\``)
         if (content.length > 256) content = content.substring(0, 253) + '...'
+        let attachments = message.attachments.size + (message.content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) ?? []).length
         let attachmentJump = ""
         let config = (await client.database.guilds.read(message.guild.id)).logging.attachments.saved[message.channel.id + message.id];
         if (config) { attachmentJump = ` [[View attachments]](${config})` }
@@ -35,7 +36,7 @@ export async function callback(client, message) {
                 sentIn: entry(message.channel.id, renderChannel(message.channel)),
                 deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 mentions: message.mentions.users.size,
-                attachments: entry(message.attachments.size, message.attachments.size + attachmentJump),
+                attachments: entry(attachments, attachments + attachmentJump),
                 repliedTo: entry(
                     message.reference.messageId || null,
                     message.reference.messageId ? `[[Jump to message]](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.reference.messageId})` : "None"

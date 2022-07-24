@@ -11,6 +11,9 @@ await client.registerEventsIn("./events");
 client.on("ready", () => {
     runServer(client);
 });
+process.on("unhandledRejection", (err) => {
+    console.error(err);
+});
 
 client.logger = new Logger()
 client.verify = {}

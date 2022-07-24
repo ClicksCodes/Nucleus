@@ -36,12 +36,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         + `Are you sure you want to unban <@${resolved.user.id}>?`)
         .setColor("Danger")
     .send()
+    if (confirmation.cancelled) return
     if (confirmation.success) {
         try {
             await interaction.guild.members.unban(resolved.user as User, "Unban");
             let member = (resolved.user as User)
             try { await client.database.history.create("unban", interaction.guild.id, member, interaction.user) } catch {}
-            // @ts-ignore
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
             let data = {
                 meta: {

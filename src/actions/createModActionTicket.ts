@@ -5,7 +5,6 @@ import client from "../utils/client.js";
 
 export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string) {
     let config = await client.database.guilds.read(guild.id);
-    // @ts-ignore
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
     let overwrites = [{
         id: member,

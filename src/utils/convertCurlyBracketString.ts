@@ -2,12 +2,12 @@ async function convertCurlyBracketString(str, memberID, memberName, serverName, 
     let memberCount = (await members.fetch()).size
     let bots = (await members.fetch()).filter(m => m.user.bot).size
     str = str
-        .replace("{@}", `<@${memberID}>`)
-        .replace("{server}", `${serverName}`)
-        .replace("{name}", `${memberName}`)
-        .replace("{count}", `${memberCount}`)
-        .replace("{count:bots}", `${bots}`)
-        .replace("{count:humans}", `${memberCount - bots}`);
+        .replace("{member:mention}", memberID ? `<@${memberID}>` : "{member:mention}")
+        .replace("{member:name}", memberName ? `${memberName}` : "{member:name}")
+        .replace("{serverName}", serverName ? `${serverName}` : "{serverName}")
+        .replace("{memberCount}", memberCount ? `${memberCount}` : "{memberCount}")
+        .replace("{memberCount:bots}", bots ? `${bots}` : "{memberCount:bots}")
+        .replace("{memberCount:humans}", (memberCount && bots) ? `${memberCount - bots}` : "{memberCount:humans}");
 
     return str
 }

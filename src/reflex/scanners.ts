@@ -4,14 +4,16 @@ import { writeFileSync } from 'fs'
 import generateFileName from '../utils/temp/generateFileName.js'
 import Tesseract from 'node-tesseract-ocr';
 
+interface NSFWSchema { nsfw: boolean }
+interface MalwareSchema { safe: boolean }
 
-export async function testNSFW(link: string): Promise<JSON> {
+export async function testNSFW(link: string): Promise<NSFWSchema> {
     let p = await saveAttachment(link)
     let result = await us.nsfw.file(p)
     return result
 }
 
-export async function testMalware(link: string): Promise<JSON> {
+export async function testMalware(link: string): Promise<MalwareSchema> {
     let p = await saveAttachment(link)
     let result = await us.malware.file(p)
     return result
@@ -24,7 +26,7 @@ export async function saveAttachment(link): Promise<string> {
     return fileName
 }
 
-export async function testLink(link: string): Promise<JSON> {
+export async function testLink(link: string): Promise<unknown> {
     return await us.link.scan(link)
 }
 
@@ -75,7 +77,6 @@ export async function LinkCheck(message): Promise<string[]> {
 export async function NSFWCheck(element): Promise<boolean> {
     try {
         let test = (await testNSFW(element))
-        //@ts-ignore
         return test.nsfw
     } catch {
         return false
@@ -90,8 +91,7 @@ export async function SizeCheck(element): Promise<boolean> {
 
 export async function MalwareCheck(element): Promise<boolean> {
     try {
-        //@ts-ignore
-        return (await scan.testMalware(element)).safe
+        return (await testMalware(element)).safe
     } catch {
         return true
     }

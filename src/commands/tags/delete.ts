@@ -32,6 +32,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setColor("Warning")
         .setInverted(true)
     .send()
+    if (confirmation.cancelled) return
     if (!confirmation) return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tag Delete")
         .setDescription("No changes were made")
@@ -39,9 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setEmoji("PUNISH.NICKNAME.GREEN")
     ]});
     try {
-        data = await client.database.guilds.read(interaction.guild.id);
-        delete data.tags[name];
-        await client.database.guilds.write(interaction.guild.id, {tags: data});
+        await client.database.guilds.write(interaction.guild.id, null, [`tags.${name}`]);
     } catch (e) {
         return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Tag Delete")

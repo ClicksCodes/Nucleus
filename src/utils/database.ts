@@ -63,8 +63,13 @@ export class Guilds {
         }
     }
 
-    async remove(guild: string, key: string, value: any) {
-        if (Array.isArray(value)) {
+    async remove(guild: string, key: string, value: any, innerKey?: string) {
+        if (innerKey) {
+            await this.guilds.updateOne({ id: guild }, {
+                $pull: { [key]: { [innerKey]: { $eq: value } } }
+            }, { upsert: true });
+        }
+        else if (Array.isArray(value)) {
             await this.guilds.updateOne({ id: guild }, {
                 $pullAll: { [key]: value }
             }, { upsert: true });
@@ -200,11 +205,7 @@ export interface GuildConfig {
         channel: string | null,
         message: string | null,
     }
-    stats: {
-        enabled: boolean,
-        channel: string | null,
-        text: string | null,
-    }[]
+    stats: {}
     logging: {
         logs: {
             enabled: boolean,

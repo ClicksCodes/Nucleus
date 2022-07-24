@@ -12,14 +12,12 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("kick")
     .setDescription("Kicks a user from the server")
     .addUserOption(option => option.setName("user").setDescription("The user to kick").setRequired(true))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are kicked | Default: Yes").setRequired(false)
-        .addChoices([["Yes", "yes"], ["No", "no"]])
-    )
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
     let reason = null;
+    let notify = true;
     let confirmation
     while (true) {
         confirmation = await new confirmationMessage(interaction)
@@ -29,21 +27,25 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "user": renderUser(interaction.options.getUser("user")),
                 "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
-            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
             + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
             .setColor("Danger")
             .addReasonButton(reason ?? "")
         .send(reason !== null)
         reason = reason ?? ""
-        if (confirmation.newReason === undefined) break
-        reason = confirmation.newReason
+        if (confirmation.cancelled) return
+        if (confirmation.success) break
+        if (confirmation.newReason) reason = confirmation.newReason
+        if (confirmation.components) {
+            notify = confirmation.components.notify.active
+        }
     }
     if (confirmation.success) {
         let dmd = false
         let dm;
         let config = await client.database.guilds.read(interaction.guild.id);
         try {
-            if (interaction.options.getString("notify") != "no") {
+            if (notify) {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.KICK.RED")
@@ -65,8 +67,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.")
             let member = (interaction.options.getMember("user") as GuildMember)
             try { await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason) } catch {}
-            // @ts-ignore
-            const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
             let data = {
                 meta: {
                     type: 'memberKick',
@@ -102,7 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             if (dmd) await dm.delete()
             return
         }
-        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        let failed = (dmd == false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.KICK.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Kick`)

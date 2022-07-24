@@ -109,6 +109,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             .setColor("Warning")
             .setInverted(true)
             .send(true)
+        if (confirmation.cancelled) return
         if (confirmation.success) {
             let toUpdate = {}
             if (options.enabled !== null) toUpdate["tickets.enabled"] = options.enabled
@@ -345,8 +346,7 @@ async function manageTypes(interaction, data, m) {
             }
         } else if (i.component.customId == "addType") {
             await i.showModal(new Discord.Modal().setCustomId("modal").setTitle("Enter a name for the new type").addComponents(
-                // @ts-ignore
-                new MessageActionRow().addComponents(new TextInputComponent()
+                new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                     .setCustomId("type")
                     .setLabel("Name")
                     .setMaxLength(100)

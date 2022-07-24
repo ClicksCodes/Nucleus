@@ -52,6 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setColor("Warning")
         .setInverted(true)
     .send()
+    if (confirmation.cancelled) return
     if (!confirmation) return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tag Create")
         .setDescription("No changes were made")

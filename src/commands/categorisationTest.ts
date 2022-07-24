@@ -6,7 +6,7 @@ import client from "../utils/client.js"
 import addPlural from "../utils/plurals.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-const command = new SlashCommandBuilder()
+const command = new SlashCommandBuilder() // TODO: remove for release
     .setName("categorise")
     .setDescription("Categorises your servers channels")
 
@@ -44,10 +44,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     for (let c of channels) {
         // convert channel to a channel if its a string
         let channel: any
-        console.log(c)
         if (typeof c === "string") channel = interaction.guild.channels.cache.get(channel).id
-        // @ts-ignore
-        else channel = c[0].id
+        else channel = (c[0] as unknown as GuildChannel).id
         console.log(channel)
         if (!predicted[channel]) predicted[channel] = []
         m = await interaction.editReply({embeds: [new EmojiEmbed()

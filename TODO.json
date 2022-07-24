@@ -1,4 +1,15 @@
 {
+  "logging": {
+    "logs": {
+      "enabled": true,
+      "toLog": "3fffff",
+      "ignore": {
+        "users": [],
+        "roles": [],
+        "channels": []
+      }
+    }
+  },
   "filters": {
     "images": {
       "NSFW": false,
@@ -6,9 +17,12 @@
     },
     "malware": false,
     "wordFilter": {
-      "enabled": false,
+      "enabled": true,
       "words": {
-        "strict": [],
+        "strict": [
+          "meat",
+          "noon"
+        ],
         "loose": []
       },
       "allowed": {
@@ -37,23 +51,10 @@
       }
     }
   },
-  "welcome": {
-    "enabled": false,
-    "welcomeRole": null,
-    "channel": null,
-    "message": null
-  },
-  "stats": [
-    {
-      "enabled": true,
-      "channel": "9849175359",
-      "text": "{count} members | {count:bots} bots | {count:humans} humans"
-    }
-  ],
   "moderation": {
     "mute": {
       "timeout": true,
-      "role": null,
+      "role": "934941408849186856",
       "text": null,
       "link": null
     },
@@ -70,25 +71,24 @@
       "link": null
     },
     "warn": {
-      "text": null,
-      "link": null
+      "text": "Test",
+      "link": "https://google.com"
     },
     "role": {
       "role": null
     }
   },
-  "tracks": [
-  ],
-  "logging": {
-    "logs": {
-      "enabled": true,
-      "toLog": "3fffff"
-    }
-  },
-  "roleMenu": {
-    "enabled": true,
-    "allowWebUI": true,
-    "options": [
-    ]
+  "roleMenu": [],
+  "stats": [],
+  "tracks": [],
+  "welcome": {
+    "enabled": false,
+    "verificationRequired": {
+      "message": null,
+      "role": null
+    },
+    "welcomeRole": null,
+    "channel": null,
+    "message": null
   }
 }

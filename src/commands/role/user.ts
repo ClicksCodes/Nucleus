@@ -28,10 +28,10 @@ const callback = async (interaction: CommandInteraction): Promise<any>  => {
         .setDescription(keyValueList({
             "user": renderUser(interaction.options.getUser("user")),
             "role": renderRole(interaction.options.getRole("role"))
-        })
-        + `\nAre you sure you want to ${action == "give" ? "give the role to" : "remove the role from"} ${interaction.options.getUser("user")}?`)
+        }) + `\nAre you sure you want to ${action == "give" ? "give the role to" : "remove the role from"} ${interaction.options.getUser("user")}?`)
         .setColor("Danger")
     .send()
+    if (confirmation.cancelled) return
     if (confirmation.success) {
         try {
             let member = interaction.options.getMember("user") as GuildMember

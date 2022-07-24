@@ -96,6 +96,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             + `Are you sure you want to **${interaction.options.getString("action") == "add" ? "add" : "remove"}** these to the ignore list?`)
             .setColor("Warning")
         .send(true)
+        if (confirmation.cancelled) return
         if (confirmation.success) {
             let data = client.database.guilds.read(interaction.guild.id)
             if (channel) data.logging.logs.ignore.channels.concat([channel.id])

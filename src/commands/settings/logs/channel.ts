@@ -50,6 +50,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             .setColor("Warning")
             .setInverted(true)
         .send(true)
+        if (confirmation.cancelled) return
         if (confirmation.success) {
             try {
                 await client.database.guilds.write(interaction.guild.id, {"logging.logs.channel": channel.id})

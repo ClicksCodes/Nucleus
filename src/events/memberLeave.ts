@@ -1,11 +1,10 @@
 import humanizeDuration from 'humanize-duration';
 import { purgeByUser } from '../actions/tickets/delete.js';
-import { callback as statsChannelRemove } from '../reflex/statsChannelRemove.js';
+import { callback as statsChannelRemove } from '../reflex/statsChannelUpdate.js';
 
 export const event = 'guildMemberRemove'
 
 export async function callback(client, member) {
-    try { await statsChannelRemove(client, member); } catch {}
     try { purgeByUser(member.id, member.guild); } catch {}
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
@@ -72,4 +71,5 @@ export async function callback(client, member) {
         }
         log(data);
     } catch (e) { console.log(e) }
+    try { await statsChannelRemove(client, member); } catch {}
 }

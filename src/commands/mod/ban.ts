@@ -12,16 +12,14 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("ban")
     .setDescription("Bans a user from the server")
     .addUserOption(option => option.setName("user").setDescription("The user to ban").setRequired(true))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are banned | Default: Yes").setRequired(false)
-        .addChoices([["Yes", "yes"], ["No", "no"]])
-    )
-    .addIntegerOption(option => option.setName("delete").setDescription("The days of messages to delete | Default: 0").setMinValue(0).setMaxValue(7).setRequired(false))
+    .addNumberOption(option => option.setName("delete").setDescription("The days of messages to delete | Default: 0").setMinValue(0).setMaxValue(7).setRequired(false))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { renderUser } = client.logger
     // TODO:[Modals] Replace this with a modal
     let reason = null
-    let confirmation
+    let notify = true;
+    let confirmation;
     while (true) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.BAN.RED")
@@ -30,22 +28,24 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "user": renderUser(interaction.options.getUser("user")),
                 "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
-            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n`
+            + `The user **will${notify ? '' : ' not'}** be notified\n`
             + `${addPlurals(interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0, "day")} of messages will be deleted\n\n`
             + `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
             .setColor("Danger")
             .addReasonButton(reason ?? "")
             .send(reason !== null)
         reason = reason ?? ""
-        if (confirmation.newReason === undefined) break
-        reason = confirmation.newReason
+        if (confirmation.cancelled) return
+        if (confirmation.success) break
+        if (confirmation.newReason) reason = confirmation.newReason
+        if (confirmation.components) notify = confirmation.components.notify.active
     }
     if (confirmation.success) {
         let dmd = false
         let dm;
         let config = await client.database.guilds.read(interaction.guild.id);
         try {
-            if (interaction.options.getString("notify") != "no") {
+            if (notify) {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.BAN.RED")
@@ -66,7 +66,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         try {
             let member = (interaction.options.getMember("user") as GuildMember)
             member.ban({
-                days: Number(interaction.options.getInteger("delete") ?? 0),
+                days: Number(interaction.options.getNumber("delete") ?? 0),
                 reason: reason ?? "No reason provided"
             })
             try { await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason) } catch {}
@@ -104,7 +104,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             if (dmd) await dm.delete()
             return
         }
-        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        let failed = (dmd == false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Ban`)

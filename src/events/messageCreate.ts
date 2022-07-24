@@ -1,7 +1,6 @@
 import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from '../reflex/scanners.js'
 import logAttachment from '../premium/attachmentLogs.js'
 import createLogException from '../utils/createLogException.js'
-import { capitalize } from '../utils/generateKeyValueList.js'
 import getEmojiByName from '../utils/getEmojiByName.js'
 
 export const event = 'messageCreate'
@@ -19,7 +18,7 @@ export async function callback(client, message) {
     let config = await client.memory.readGuildInfo(message.guild.id);
     const filter = getEmojiByName("ICONS.FILTER")
     let attachmentJump = ""
-    if (config.logging.attachments.saved[message.channel.id + message.id]) { attachmentJump = ` [[View attachments]](${config})` }
+    if (config.logging.attachments.saved[message.channel.id + message.id]) { attachmentJump = ` [[View attachments]](${config.logging.attachments.saved[message.channel.id + message.id]})` }
     let list = {
         messageId: entry(message.id, `\`${message.id}\``),
         sentBy: entry(message.author.id, renderUser(message.author)),
@@ -64,7 +63,7 @@ export async function callback(client, message) {
     }
 
     if (fileNames.files.length > 0) {
-        fileNames.files.forEach(async element => {
+        for (let element of fileNames.files) {
             if(!message) return;
             let url = element.url ? element.url : element.local
             if (url != undefined) {
@@ -173,7 +172,7 @@ export async function callback(client, message) {
                     }
                 }
             }
-        });
+        };
     }
     if(!message) return;
 

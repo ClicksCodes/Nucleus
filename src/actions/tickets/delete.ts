@@ -134,29 +134,27 @@ async function purgeByUser(member, guild) {
         }
     });
     if (deleted) {
-        try {
-            const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
-            let data = {
-                meta:{
-                    type: 'ticketPurge',
-                    displayName: 'Tickets Purged',
-                    calculateType: "ticketUpdate",
-                    color: NucleusColors.red,
-                    emoji: 'GUILD.TICKET.DELETE',
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    ticketFor: entry(member, renderUser(member)),
-                    deletedBy: entry(null, "Member left server"),
-                    deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                    ticketsDeleted: deleted,
-                },
-                hidden: {
-                    guild: guild.id
-                }
+        const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
+        let data = {
+            meta:{
+                type: 'ticketPurge',
+                displayName: 'Tickets Purged',
+                calculateType: "ticketUpdate",
+                color: NucleusColors.red,
+                emoji: 'GUILD.TICKET.DELETE',
+                timestamp: new Date().getTime()
+            },
+            list: {
+                ticketFor: entry(member, renderUser(member)),
+                deletedBy: entry(null, "Member left server"),
+                deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                ticketsDeleted: deleted,
+            },
+            hidden: {
+                guild: guild.id
             }
-            log(data);
-        } catch {}
+        }
+        log(data);
     }
 }
 

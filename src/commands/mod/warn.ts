@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, GuildMember, MessageActionRow } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -12,14 +12,13 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("warn")
     .setDescription("Warns a user")
     .addUserOption(option => option.setName("user").setDescription("The user to warn").setRequired(true))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are warned | Default: Yes").setRequired(false)
-        .addChoices([["Yes", "yes"], ["No", "no"]])
-    )
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { log, NucleusColors, renderUser, entry } = client.logger
     // TODO:[Modals] Replace this with a modal
     let reason = null;
+    let notify = true;
+    let createAppealTicket = false;
     let confirmation;
     while (true) {
         confirmation = await new confirmationMessage(interaction)
@@ -29,44 +28,52 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "user": renderUser(interaction.options.getUser("user")),
                 "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
-            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
             + `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
             .setColor("Danger")
             .addCustomBoolean(
-                "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
+                "appeal", "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
                 async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason),
-                "An appeal ticket will be created when Confirm is clicked")
-                .addReasonButton(reason)
+                "An appeal ticket will be created when Confirm is clicked", "CONTROL.TICKET", createAppealTicket)
+            .addCustomBoolean("notify", "Notify user", false, null, null, "ICONS.NOTIFY." + (notify ? "ON" : "OFF" ), notify)
             .addReasonButton(reason ?? "")
         .send(reason !== null)
         reason = reason ?? ""
-        if (confirmation.newReason === undefined) break
-        reason = confirmation.newReason
+        if (confirmation.cancelled) return
+        if (confirmation.success) break
+        if (confirmation.newReason) reason = confirmation.newReason
+        if (confirmation.components) {
+            notify = confirmation.components.notify.active
+            createAppealTicket = confirmation.components.appeal.active
+        }
     }
     if (confirmation.success) {
         let dmd = false
         try {
-            if (interaction.options.getString("notify") != "no") {
+            if (notify) {
+                const config = await client.database.guilds.read(interaction.guild.id)
                 await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.WARN.RED")
                         .setTitle("Warned")
                         .setDescription(`You have been warned in ${interaction.guild.name}` +
                                     (reason ? ` for:\n> ${reason}` : ".") + "\n\n" +
-                                    (confirmation.buttonClicked ? `You can appeal this here ticket: <#${confirmation.response}>` : ``))
+                                    (confirmation.components.appeal.response ? `You can appeal this here ticket: <#${confirmation.components.appeal.response}>` : ``))
                         .setStatus("Danger")
-                    ]
+                        .setFooter({
+                            text: config.moderation.warn.text ? "The button below is set by the server admins. Do not enter any passwords or other account details on the linked site." : "",
+                            iconURL: "https://cdn.discordapp.com/emojis/952295894370369587.webp?size=128&quality=lossless"
+                        })
+                    ],
+                    components: config.moderation.warn.text ? [new MessageActionRow().addComponents([new MessageButton()
+                        .setStyle("LINK")
+                        .setLabel(config.moderation.warn.text)
+                        .setURL(config.moderation.warn.link)
+                    ])] : []
                 })
                 dmd = true
             }
-        } catch {
-            await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji("PUNISH.WARN.RED")
-                .setTitle(`Warn`)
-                .setDescription("Something went wrong and the user was not warned")
-                .setStatus("Danger")
-            ], components: []})
-        }
+        } catch {}
         let data = {
             meta:{
                 type: 'memberWarn',
@@ -91,12 +98,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             interaction.user, reason
         )} catch {}
         log(data);
-        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        let failed = (dmd == false && notify)
         if (!failed) {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji(`PUNISH.WARN.GREEN`)
                 .setTitle(`Warn`)
-                .setDescription("The user was warned" + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
+                .setDescription("The user was warned" + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ``))
                 .setStatus("Success")
             ], components: []})
         } else {
@@ -118,7 +125,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setStyle("SECONDARY")
                             .setDisabled((interaction.options.getMember("user") as GuildMember).permissionsIn(interaction.channel as Discord.TextChannel).has("VIEW_CHANNEL") === false),
                     ])
-                ],
+                ]
             })
             let component;
             try {

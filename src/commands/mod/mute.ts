@@ -18,8 +18,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addIntegerOption(option => option.setName("hours").setDescription("The number of hours to mute the user for | Default: 0").setMinValue(0).setMaxValue(23).setRequired(false))
     .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
     .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
-    .addStringOption(option => option.setName("notify").setDescription("If the user should get a message when they are muted | Default: yes").setRequired(false)
-        .addChoices([["Yes", "yes"], ["No", "no"]]))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger
@@ -119,6 +117,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
     // TODO:[Modals] Replace this with a modal
     let reason = null;
+    let notify = true;
+    let createAppealTicket = false;
     let confirmation;
     while (true) {
         confirmation = await new confirmationMessage(interaction)
@@ -130,32 +130,39 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "reason": reason ?  ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
             + `The user will be ` + serverSettingsDescription + "\n"
-            + `The user **will${interaction.options.getString("notify") === "no" ? ' not' : ''}** be notified\n\n`
+            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
             + `Are you sure you want to mute <@!${user.id}>?`)
             .setColor("Danger")
             .addCustomBoolean(
-                "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
-                async () => await create(interaction.guild, user.user, interaction.user, reason),
-                "An appeal ticket will be created when Confirm is clicked")
+                "appeal", "Create appeal ticket", !(await areTicketsEnabled(interaction.guild.id)),
+                async () => await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason),
+                "An appeal ticket will be created when Confirm is clicked", "CONTROL.TICKET", createAppealTicket)
+            .addCustomBoolean("notify", "Notify user", false, null, null, "ICONS.NOTIFY." + (notify ? "ON" : "OFF" ), notify)
             .addReasonButton(reason ?? "")
         .send(true)
         reason = reason ?? ""
-        if (confirmation.newReason === undefined) break
-        reason = confirmation.newReason
+        if (confirmation.cancelled) return
+        if (confirmation.success) break
+        if (confirmation.newReason) reason = confirmation.newReason
+        if (confirmation.components) {
+            notify = confirmation.components.notify.active
+            createAppealTicket = confirmation.components.appeal.active
+        }
     }
     if (confirmation.success) {
         let dmd = false
         let dm;
         let config = await client.database.guilds.read(interaction.guild.id);
         try {
-            if (interaction.options.getString("notify") != "no") {
+            if (notify) {
                 dm = await user.send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.MUTE.RED")
                         .setTitle("Muted")
                         .setDescription(`You have been muted in ${interaction.guild.name}` +
                                     (reason ? ` for:\n> ${reason}` : ".\n\n" +
-                                    `You will be unmuted at: <t:${Math.round((new Date).getTime() / 1000) + muteTime}:D> at <t:${Math.round((new Date).getTime() / 1000) + muteTime}:T> (<t:${Math.round((new Date).getTime() / 1000) + muteTime}:R>)`))
+                                    `You will be unmuted at: <t:${Math.round((new Date).getTime() / 1000) + muteTime}:D> at <t:${Math.round((new Date).getTime() / 1000) + muteTime}:T> (<t:${Math.round((new Date).getTime() / 1000) + muteTime}:R>)`) +
+                                    (confirmation.components.appeal.response ? `You can appeal this here: <#${confirmation.components.appeal.response}>` : ``))
                         .setStatus("Danger")
                     ],
                     components: [new MessageActionRow().addComponents(config.moderation.mute.text ? [new MessageButton()
@@ -198,16 +205,16 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setTitle(`Mute`)
                 .setDescription("Something went wrong and the user was not muted")
                 .setStatus("Danger")
-            ], components: []})
+            ], components: []}) // TODO: make this clearer
             if (dmd) await dm.delete()
             return
         }
         try { await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason) } catch {}
-        let failed = (dmd == false && interaction.options.getString("notify") != "no")
+        let failed = (dmd == false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Mute`)
-            .setDescription("The member was muted" + (failed ? ", but could not be notified" : ""))
+            .setDescription("The member was muted" + (failed ? ", but could not be notified" : "") + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ``))
             .setStatus(failed ? "Warning" : "Success")
         ], components: []})
         let data = {
