@@ -4,7 +4,7 @@ import { WrappedCheck } from "jshaiku";
 
 const command = new SlashCommandBuilder()
     .setName("createtestbutton")
-    .setDescription("creates a test button")
+    .setDescription("creates a test button") // TODO: remove for release
 
 const callback = (interaction: CommandInteraction) => {
     interaction.reply({components: [new MessageActionRow().addComponents([
