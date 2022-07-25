@@ -38,7 +38,7 @@ async function interactionCreate(interaction) {
     } else if (interaction.type === "APPLICATION_COMMAND_AUTOCOMPLETE") {
         switch (`${interaction.commandName} ${interaction.options.getSubcommandGroup(false)} ${interaction.options.getSubcommand(false)}`) {
             case `tag null null`: { return interaction.respond(getAutocomplete(interaction.options.getString("tag"), (await tagAutocomplete(interaction)))) }
-            case `settings stats set`: { return interaction.respond(generateStatsChannelAutocomplete(interaction.options.getString("name"))) }
+            case `settings null stats`: { return interaction.respond(generateStatsChannelAutocomplete(interaction.options.getString("name"))) }
         }
     }
 }

@@ -1,33 +1,29 @@
 import { ChannelType } from 'discord-api-types';
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
-import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
-import confirmationMessage from "../../../utils/confirmationMessage.js";
-import getEmojiByName from "../../../utils/getEmojiByName.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import Discord, { AutocompleteInteraction, CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import confirmationMessage from "../../utils/confirmationMessage.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
+import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import client from "../../../utils/client.js";
-import convertCurlyBracketString from '../../../utils/convertCurlyBracketString.js';
-import {callback as statsChannelAddCallback} from "../../../reflex/statsChannelUpdate.js";
+import client from "../../utils/client.js";
+import convertCurlyBracketString from '../../utils/convertCurlyBracketString.js';
+import {callback as statsChannelAddCallback} from "../../reflex/statsChannelUpdate.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("set")
-    .setDescription("Adds or edits a channel which will update when members join or leave")
-    .addChannelOption(option => option.setName("channel").setDescription("The channel to modify").addChannelTypes([
-        ChannelType.GuildNews, ChannelType.GuildText
-    ]).setRequired(true))
-    .addStringOption(option => option.setName("name").setDescription("The channel name").setRequired(true).setAutocomplete(true))
+    .setName("stats")
+    .setDescription("Controls channels which update when someone joins or leaves the server")
+    .addChannelOption(option => option.setName("channel").setDescription("The channel to modify"))
+    .addStringOption(option => option.setName("name").setDescription("The new channel name | Enter any text or use the extra variables like {memberCount}").setAutocomplete(true))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    console.log(interaction.options.getString("name"))
     let m;
     m = await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Loading")
         .setStatus("Danger")
         .setEmoji("NUCLEUS.LOADING")
     ], ephemeral: true, fetchReply: true});
-    if (interaction.options.getChannel("channel")) {
-        let config = client.database.guilds.read(interaction.guild.id);
+    if (interaction.options.getString("name")) {
         let channel
         try {
             channel = interaction.options.getChannel("channel")
@@ -106,13 +102,47 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ], components: []});
         }
         await statsChannelAddCallback(client, interaction.member);
-        return interaction.editReply({embeds: [new EmojiEmbed()
+    }
+    while (true) {
+        let config = await client.database.guilds.read(interaction.guild.id);
+        let stats = config.getKey("stats")
+        let selectMenu = new MessageSelectMenu()
+            .setCustomId("remove")
+            .setMinValues(1)
+            .setMaxValues(Math.max(1, Object.keys(stats).length))
+        await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Stats Channel")
-            .setDescription(`The stats channel has been set to <#${channel.id}>`)
+            .setDescription("The following channels update when someone joins or leaves the server. You can select a channel to remove it from the list.")
             .setStatus("Success")
             .setEmoji("CHANNEL.TEXT.CREATE")
-        ], components: []});
+        ], components: [
+            new MessageActionRow().addComponents(Object.keys(stats).length ? [
+                selectMenu.setPlaceholder("Select a stats channel to remove, stopping it updating").addOptions(Object.keys(stats).map(key => ({
+                    label: interaction.guild.channels.cache.get(key).name,
+                    value: key,
+                    description: `${stats[key].name}`,
+                })))
+            ] : [selectMenu.setPlaceholder("The server has no stats channels").setDisabled(true).setOptions([
+                {label: "*Placeholder*", value: "placeholder", description: "No stats channels"}
+            ])])
+        ]})
+        let i;
+        try {
+            i = await m.awaitMessageComponent({ time: 300000 });
+        } catch (e) { break }
+        i.deferUpdate()
+        if (i.customId === "remove") {
+            let toRemove = i.values;
+            console.log(toRemove.map(k => `stats.${k}`))
+            await client.database.guilds.write(interaction.guild.id, {}, toRemove.map(k => `stats.${k}`));
+        }
     }
+    await interaction.editReply({embeds: [new EmojiEmbed()
+        .setTitle("Stats Channel")
+        .setDescription("The following channels update when someone joins or leaves the server. You can select a channel to remove it from the list.")
+        .setStatus("Danger")
+        .setEmoji("CHANNEL.TEXT.DELETE")
+    ], components: []})
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

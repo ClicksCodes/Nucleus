@@ -5,7 +5,6 @@ import client from '../utils/client.js';
 interface PropSchema { enabled: boolean, name: string }
 
 export async function callback(_, member) {
-    console.log("UPDATING STATS CHANNEL")
     let guild = await client.guilds.fetch(member.guild.id)
     let config = await client.database.guilds.read(guild.id);
     Object.entries(config.getKey("stats")).forEach(async ([channel, props]) => {

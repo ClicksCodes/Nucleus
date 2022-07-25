@@ -7,6 +7,7 @@ export const event = 'guildMemberAdd'
 
 export async function callback(_, member) {
     try { welcome(_, member); } catch {}
+    try { statsChannelAdd(_, member, ); } catch {}
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
         try { await client.database.history.create("join", member.guild.id, member.user, null, null) } catch {}
@@ -32,5 +33,4 @@ export async function callback(_, member) {
         }
         log(data);
     } catch {}
-    try { statsChannelAdd(_, member, ); } catch {}
 }

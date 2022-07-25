@@ -40,8 +40,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setEmoji("PUNISH.NICKNAME.GREEN")
     ]});
     try {
-        await client.database.guilds.write(interaction.guild.id, null, [`tags.${name}`]);
+        await client.database.guilds.write(interaction.guild.id, null, ["tags." + name]);
     } catch (e) {
+        console.log(e)
         return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Tag Delete")
             .setDescription("Something went wrong and the tag was not deleted")

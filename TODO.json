@@ -2,12 +2,7 @@
   "logging": {
     "logs": {
       "enabled": true,
-      "toLog": "3fffff",
-      "ignore": {
-        "users": [],
-        "roles": [],
-        "channels": []
-      }
+      "toLog": "3fffff"
     }
   },
   "filters": {
@@ -19,16 +14,8 @@
     "wordFilter": {
       "enabled": true,
       "words": {
-        "strict": [
-          "meat",
-          "noon"
-        ],
+        "strict": [],
         "loose": []
-      },
-      "allowed": {
-        "users": [],
-        "roles": [],
-        "channels": []
       }
     },
     "invite": {
@@ -42,51 +29,13 @@
     "pings": {
       "mass": 5,
       "everyone": true,
-      "roles": true,
-      "allowed": {
-        "roles": [],
-        "rolesToMention": [],
-        "users": [],
-        "channels": []
-      }
-    }
-  },
-  "moderation": {
-    "mute": {
-      "timeout": true,
-      "role": "934941408849186856",
-      "text": null,
-      "link": null
-    },
-    "kick": {
-      "text": null,
-      "link": null
-    },
-    "ban": {
-      "text": null,
-      "link": null
-    },
-    "softban": {
-      "text": null,
-      "link": null
-    },
-    "warn": {
-      "text": "Test",
-      "link": "https://google.com"
-    },
-    "role": {
-      "role": null
+      "roles": true
     }
   },
   "roleMenu": [],
-  "stats": [],
   "tracks": [],
   "welcome": {
     "enabled": false,
-    "verificationRequired": {
-      "message": null,
-      "role": null
-    },
     "welcomeRole": null,
     "channel": null,
     "message": null

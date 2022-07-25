@@ -43,12 +43,12 @@ export class Guilds {
     async write(guild: string, set: object = {}, unset: string[] = []) {
         let uo = {}
         for (let key of unset) {
-            uo[key] = "";
+            uo[key] = null;
         }
-        await this.guilds.updateOne({ id: guild }, {
-            $unset: uo,
-            $set: set
-        }, { upsert: true });
+        let out = {}
+        if (set) out["$set"] = set;
+        if (unset.length) out["$unset"] = uo;
+        await this.guilds.updateOne({ id: guild }, out, { upsert: true });
     }
 
     async append(guild: string, key: string, value: any) {
@@ -63,13 +63,13 @@ export class Guilds {
         }
     }
 
-    async remove(guild: string, key: string, value: any, innerKey?: string) {
+    async remove(guild: string, key: string, value: any, innerKey?: string | null) {
+        console.log(Array.isArray(value))
         if (innerKey) {
             await this.guilds.updateOne({ id: guild }, {
                 $pull: { [key]: { [innerKey]: { $eq: value } } }
             }, { upsert: true });
-        }
-        else if (Array.isArray(value)) {
+        } else if (Array.isArray(value)) {
             await this.guilds.updateOne({ id: guild }, {
                 $pullAll: { [key]: value }
             }, { upsert: true });

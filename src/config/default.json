@@ -15,11 +15,6 @@
             "words": {
                 "strict": [],
                 "loose": []
-            },
-            "allowed": {
-                "users": [],
-                "roles": [],
-                "channels": []
             }
         },
         "invite": {
@@ -33,21 +28,11 @@
         "pings": {
             "mass": 5,
             "everyone": true,
-            "roles": true,
-            "allowed": {
-                "roles": [],
-                "rolesToMention": [],
-                "users": [],
-                "channels": []
-            }
+            "roles": true
         }
     },
     "welcome": {
         "enabled": false,
-        "verificationRequired": {
-            "message": null,
-            "role": null
-        },
         "welcomeRole": null,
         "channel": null,
         "message": null
@@ -57,12 +42,7 @@
         "logs": {
             "enabled": true,
             "channel": null,
-            "toLog": "3fffff",
-            "ignore": {
-                "users": [],
-                "roles": [],
-                "channels": []
-            }
+            "toLog": "3fffff"
         },
         "staff": {
             "channel": null
@@ -107,8 +87,9 @@
             "text": null,
             "link": null
         },
-        "role": {
-            "role": null
+        "nickname": {
+            "text": null,
+            "link": null
         }
     },
     "tracks": [],
