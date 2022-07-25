@@ -20,11 +20,7 @@
     },
     "invite": {
       "enabled": false,
-      "allowed": {
-        "users": [],
-        "channels": [],
-        "roles": []
-      }
+      "channels": []
     },
     "pings": {
       "mass": 5,
