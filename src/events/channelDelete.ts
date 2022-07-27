@@ -7,8 +7,8 @@ export async function callback(client, channel) {
         const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = channel.client.logger
 
         let auditLog = await getAuditLog(channel.guild, 'CHANNEL_DELETE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == channel.id).first();
-        if (audit.executor.id == client.user.id) return;
+        let audit = auditLog.entries.filter(entry => entry.target.id === channel.id).first();
+        if (audit.executor.id === client.user.id) return;
 
         let emoji;
         let readableType;
@@ -49,7 +49,7 @@ export async function callback(client, channel) {
             deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
             deletedBy: entry(audit.executor.id, renderUser(audit.executor))
         }
-        if (channel.topic != null ?? false) list.topic = entry(channel.topic, `\`\`\`\n${channel.topic.replace('`', "'")}\n\`\`\``);
+        if (channel.topic !== null ?? false) list.topic = entry(channel.topic, `\`\`\`\n${channel.topic.replace('`', "'")}\n\`\`\``);
         else delete list.topic;
         if (channel.nsfw !== null ?? false) list.nsfw = entry(channel.nsfw, channel.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`);
         else delete list.nsfw;

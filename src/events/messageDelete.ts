@@ -2,11 +2,11 @@ export const event = 'messageDelete'
 
 export async function callback(client, message) {
     try {
-        if (message.author.id == client.user.id) return;
+        if (message.author.id === client.user.id) return;
         if (client.noLog.includes(`${message.guild.id}/${message.channel.id}/${message.id}`)) return;
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = message.channel.client.logger
         let auditLog = await getAuditLog(message.guild, 'MEMBER_BAN_ADD')
-        let audit = auditLog.entries.filter(entry => entry.target.id == message.author.id).first();
+        let audit = auditLog.entries.filter(entry => entry.target.id === message.author.id).first();
         if (audit) {
             if (audit.createdAt - 100 < new Date().getTime()) return;
         }

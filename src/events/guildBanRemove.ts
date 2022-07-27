@@ -10,8 +10,8 @@ export async function callback(client, ban) {
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = ban.user.client.logger
         let auditLog = await getAuditLog(ban.guild, 'MEMBER_BAN_REMOVE')
-        let audit = auditLog.entries.filter(entry => entry.target.id == ban.user.id).first();
-        if (audit.executor.id == client.user.id) return
+        let audit = auditLog.entries.filter(entry => entry.target.id === ban.user.id).first();
+        if (audit.executor.id === client.user.id) return
         try { await client.database.history.create("unban", ban.guild.id, ban.user, audit.executor, audit.reason) } catch {}
         let data = {
             meta: {

@@ -15,9 +15,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let bans = await interaction.guild.bans.fetch()
     let user = interaction.options.getString("user")
-    let resolved = bans.find(ban => ban.user.id == user)
-    if (!resolved) resolved = bans.find(ban => ban.user.username.toLowerCase() == user.toLowerCase())
-    if (!resolved) resolved = bans.find(ban => ban.user.tag.toLowerCase() == user.toLowerCase())
+    let resolved = bans.find(ban => ban.user.id === user)
+    if (!resolved) resolved = bans.find(ban => ban.user.username.toLowerCase() === user.toLowerCase())
+    if (!resolved) resolved = bans.find(ban => ban.user.tag.toLowerCase() === user.toLowerCase())
     if (!resolved) {
         return interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Unban")
@@ -92,11 +92,11 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     // Check if Nucleus can unban members
-    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the Ban members permission";
+    if (! me.permissions.has("BAN_MEMBERS")) throw "I do not have the *Ban Members* permission";
     // Allow the owner to unban anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has ban_members permission
-    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the Ban members permission";
+    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the *Ban Members* permission";
     // Allow unban
     return true
 }

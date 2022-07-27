@@ -8,11 +8,11 @@ export async function callback(client, oc, nc) {
         let config = await client.memory.readGuildInfo(nc.guild.id);
         const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderChannel } = client.logger
 
-        if (nc.parent && (nc.parent.id == config.tickets.category)) return
+        if (nc.parent && (nc.parent.id === config.tickets.category)) return
 
         let auditLog = await getAuditLog(nc.guild, 'CHANNEL_UPDATE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == nc.id).first();
-        if (audit.executor.id == client.user.id) return;
+        let audit = auditLog.entries.filter(entry => entry.target.id === nc.id).first();
+        if (audit.executor.id === client.user.id) return;
 
         let emoji:string;
         let readableType:string;
@@ -23,8 +23,8 @@ export async function callback(client, oc, nc) {
             edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
             editedBy: entry(audit.executor.id, renderUser((await nc.guild.members.fetch(audit.executor.id)).user)),
         }
-        if (oc.name != nc.name) changes["name"] = entry([oc.name, nc.name], `${oc.name} -> ${nc.name}`);
-        if (oc.position != nc.position) changes["position"] = entry([oc.position, nc.position], `${oc.position} -> ${nc.position}`);
+        if (oc.name !== nc.name) changes["name"] = entry([oc.name, nc.name], `${oc.name} -> ${nc.name}`);
+        if (oc.position !== nc.position) changes["position"] = entry([oc.position, nc.position], `${oc.position} -> ${nc.position}`);
 
         switch (nc.type) {
             case 'GUILD_TEXT': {
@@ -43,9 +43,9 @@ export async function callback(client, oc, nc) {
                 let nsfw = ["", ""]
                 nsfw[0] = oc.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
                 nsfw[1] = nc.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
-                if (oc.topic != nc.topic) changes["description"] = entry([oc.topic, nc.topic], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
-                if (oc.nsfw != nc.nsfw) changes["nsfw"] = entry([oc.nsfw, nc.nsfw], `${nsfw[0]} -> ${nsfw[1]}`);
-                if (oc.rateLimitPerUser != nc.rateLimitPerUser) changes["rateLimitPerUser"] = entry(
+                if (oc.topic !== nc.topic) changes["description"] = entry([oc.topic, nc.topic], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
+                if (oc.nsfw !== nc.nsfw) changes["nsfw"] = entry([oc.nsfw, nc.nsfw], `${nsfw[0]} -> ${nsfw[1]}`);
+                if (oc.rateLimitPerUser !== nc.rateLimitPerUser) changes["rateLimitPerUser"] = entry(
                     [oc.rateLimitPerUser, nc.rateLimitPerUser],
                     `${humanizeDuration(oc.rateLimitPerUser * 1000)} -> ${humanizeDuration(nc.rateLimitPerUser * 1000)}`
                 );
@@ -65,16 +65,16 @@ export async function callback(client, oc, nc) {
                     if (newTopic.length > 256) newTopic = `\`\`\`\n${newTopic.replace('`', "'").substring(0, 253) + '...'}\n\`\`\``
                     else newTopic = `\`\`\`\n${newTopic.replace('`', "'")}\n\`\`\``
                 } else { newTopic = "None"; }
-                if (oc.nsfw != nc.nsfw) changes["nsfw"] = entry([oc.nsfw, nc.nsfw], `${oc.nsfw ? "On" : "Off"} -> ${nc.nsfw ? "On" : "Off"}`);
+                if (oc.nsfw !== nc.nsfw) changes["nsfw"] = entry([oc.nsfw, nc.nsfw], `${oc.nsfw ? "On" : "Off"} -> ${nc.nsfw ? "On" : "Off"}`);
                 break;
             }
             case 'GUILD_VOICE': {
                 emoji = "CHANNEL.VOICE.EDIT";
                 readableType = "Voice";
                 displayName = "Voice Channel"
-                if (oc.bitrate != nc.bitrate) changes["bitrate"] = entry([oc.bitrate, nc.bitrate], `${oc.bitrate} -> ${nc.bitrate}`);
-                if (oc.userLimit != nc.userLimit) changes["maxUsers"] = entry([oc.userLimit, nc.userLimit], `${oc.userLimit ? oc.userLimit : "Unlimited"} -> ${nc.userLimit}`);
-                if (oc.rtcRegion != nc.rtcRegion) changes["region"] = entry(
+                if (oc.bitrate !== nc.bitrate) changes["bitrate"] = entry([oc.bitrate, nc.bitrate], `${oc.bitrate} -> ${nc.bitrate}`);
+                if (oc.userLimit !== nc.userLimit) changes["maxUsers"] = entry([oc.userLimit, nc.userLimit], `${oc.userLimit ? oc.userLimit : "Unlimited"} -> ${nc.userLimit}`);
+                if (oc.rtcRegion !== nc.rtcRegion) changes["region"] = entry(
                     [oc.rtcRegion, nc.rtcRegion],
                     `${oc.rtcRegion || "Automatic"} -> ${nc.rtcRegion || "Automatic"}`
                 );
@@ -93,9 +93,9 @@ export async function callback(client, oc, nc) {
                     if (newTopic.length > 256) newTopic = `\`\`\`\n${newTopic.replace('`', "'").substring(0, 253) + '...'}\n\`\`\``
                     else newTopic = `\`\`\`\n${newTopic.replace('`', "'")}\n\`\`\``
                 } else { newTopic = "None"; }
-                if (oc.bitrate != nc.bitrate) changes["bitrate"] = entry([oc.bitrate, nc.bitrate], `${oc.bitrate} -> ${nc.bitrate}`);
-                if (oc.userLimit != nc.userLimit) changes["maxUsers"] = entry([oc.userLimit, nc.userLimit], `${oc.userLimit ? oc.userLimit : "Unlimited"} -> ${nc.userLimit}`);
-                if (oc.rtcRegion != nc.rtcRegion) changes["region"] = entry(
+                if (oc.bitrate !== nc.bitrate) changes["bitrate"] = entry([oc.bitrate, nc.bitrate], `${oc.bitrate} -> ${nc.bitrate}`);
+                if (oc.userLimit !== nc.userLimit) changes["maxUsers"] = entry([oc.userLimit, nc.userLimit], `${oc.userLimit ? oc.userLimit : "Unlimited"} -> ${nc.userLimit}`);
+                if (oc.rtcRegion !== nc.rtcRegion) changes["region"] = entry(
                     [oc.rtcRegion, nc.rtcRegion],
                     `${oc.rtcRegion || "Automatic"} -> ${nc.rtcRegion || "Automatic"}`
                 );
@@ -114,7 +114,7 @@ export async function callback(client, oc, nc) {
             }
         }
         let t = oc.type.split("_")[1];
-        if (oc.type != nc.type) changes["type"] = entry([oc.type, nc.type], `${t[0] + t.splice(1).toLowerCase()} -> ${readableType}`);
+        if (oc.type !== nc.type) changes["type"] = entry([oc.type, nc.type], `${t[0] + t.splice(1).toLowerCase()} -> ${readableType}`);
         if (!(Object.values(changes).length - 4)) return
         let data = {
             meta:{

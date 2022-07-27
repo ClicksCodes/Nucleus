@@ -148,7 +148,7 @@ class confirmationMessage {
                 });
                 let out;
                 try {
-                    out = await modalInteractionCollector(m, (m) => m.channel.id == this.interaction.channel.id, (m) => m.customId == "reason")
+                    out = await modalInteractionCollector(m, (m) => m.channel.id === this.interaction.channel.id, (m) => m.customId === "reason")
                 } catch (e) { return {} }
                 if (out.fields) { return { newReason: out.fields.getTextInputValue("reason") ?? "" }; }
                 else { return { newReason: this.reason } }

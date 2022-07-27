@@ -18,7 +18,7 @@ export default async function logAttachment(message): Promise<AttachmentLogSchem
             attachments.push({local: await saveAttachment(link), url: link})
         }
     }
-    if (attachments.length == 0) return {files: []}
+    if (attachments.length === 0) return {files: []}
     if (client.database.premium.hasPremium(message.guild.id)) {
         let channel = (await client.database.guilds.read(message.guild.id)).logging.attachments.channel;
         if (!channel) {

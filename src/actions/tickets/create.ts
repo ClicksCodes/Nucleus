@@ -24,7 +24,7 @@ export default async function (interaction) {
     let category = interaction.guild.channels.cache.get(config.tickets.category) as Discord.CategoryChannel;
     let count = 0;
     category.children.forEach(element => {
-        if (!(element.type == "GUILD_TEXT")) return;
+        if (!(element.type === "GUILD_TEXT")) return;
         if ((element as Discord.TextChannel).topic.includes(`${interaction.member.user.id}`)) {
             if ((element as Discord.TextChannel).topic.endsWith("Active")) {
                 count++;
@@ -84,13 +84,13 @@ export default async function (interaction) {
             if (custom) {
                 return new MessageButton()
                     .setLabel(type)
-                    .setStyle(chosenType == type ? "SUCCESS" : "SECONDARY")
+                    .setStyle(chosenType === type ? "SUCCESS" : "SECONDARY")
                     .setCustomId(type)
                     .setDisabled(true)
                 } else {
                     return new MessageButton()
                     .setLabel(capitalize(type))
-                    .setStyle(chosenType == type ? "SUCCESS" : "SECONDARY")
+                    .setStyle(chosenType === type ? "SUCCESS" : "SECONDARY")
                     .setCustomId(type)
                     .setEmoji(getEmojiByName(("TICKETS." + type.toString().toUpperCase()), "id"))
                     .setDisabled(true)
@@ -122,7 +122,7 @@ export default async function (interaction) {
         deny: ["VIEW_CHANNEL"],
         type: "role"
     })
-    if (config.tickets.supportRole != null) {
+    if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: interaction.guild.roles.cache.get(config.tickets.supportRole),
             allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
@@ -151,10 +151,10 @@ export default async function (interaction) {
     try {
         await c.send(
             {
-                content: (`<@${interaction.member.user.id}>` + (config.tickets.supportRole != null ? ` • <@&${config.tickets.supportRole}>` : "")),
+                content: (`<@${interaction.member.user.id}>` + (config.tickets.supportRole !== null ? ` • <@&${config.tickets.supportRole}>` : "")),
                 allowedMentions: {
                     users: [(interaction.member as Discord.GuildMember).id],
-                    roles: (config.tickets.supportRole != null ? [config.tickets.supportRole] : [])
+                    roles: (config.tickets.supportRole !== null ? [config.tickets.supportRole] : [])
                 }
             }
         )
@@ -165,7 +165,7 @@ export default async function (interaction) {
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by <@${interaction.member.user.id}>\n` +
-                `**Support type:** ${chosenType != null ? (emoji) + " " + capitalize(chosenType) : "General"}\n` +
+                `**Support type:** ${chosenType !== null ? (emoji) + " " + capitalize(chosenType) : "General"}\n` +
                 `**Ticket ID:** \`${c.id}\`\n${content}\n` +
                 `Type \`/ticket close\` to close this ticket.`,
             )

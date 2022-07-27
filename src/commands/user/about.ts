@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -64,7 +65,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     membersArray.sort((a, b) => a.joinedTimestamp - b.joinedTimestamp)
     let joinPos = membersArray.findIndex(m => m.id === member.user.id)
 
-    let roles = member.roles.cache.filter(r => r.id != interaction.guild.id).sort()
+    let roles = member.roles.cache.filter(r => r.id !== interaction.guild.id).sort()
     let s = "";
     let count = 0;
     let ended = false
@@ -158,7 +159,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2),
     ]
     let m
-    m = await interaction.reply({embeds: [new EmojiEmbed().setTitle("Loading").setEmoji("NUCLEUS.LOADING").setStatus("Danger")], fetchReply: true, ephemeral: true});
+    m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let page = 0
     let breakReason = ""
     while (true) {
@@ -212,18 +213,18 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             i = await m.awaitMessageComponent({time: 300000});
         } catch { breakReason = "Message timed out"; break }
         i.deferUpdate()
-        if (i.component.customId == "left") {
+        if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (i.component.customId == "right") {
+        } else if (i.component.customId === "right") {
             if (page < embeds.length - 1) page++;
             selectPaneOpen = false;
-        } else if (i.component.customId == "select") {
+        } else if (i.component.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId == "close") {
+        } else if (i.component.customId === "close") {
             breakReason = "Message closed";
             break;
-        } else if (i.component.customId == "page") {
+        } else if (i.component.customId === "page") {
             page = parseInt(i.values[0]);
             selectPaneOpen = false;
         } else {

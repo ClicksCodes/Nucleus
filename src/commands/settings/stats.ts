@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import { ChannelType } from 'discord-api-types';
 import Discord, { AutocompleteInteraction, CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -8,6 +9,7 @@ import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
 import convertCurlyBracketString from '../../utils/convertCurlyBracketString.js';
 import {callback as statsChannelAddCallback} from "../../reflex/statsChannelUpdate.js";
+import singleNotify from '../../utils/singleNotify.js';
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -17,14 +19,20 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addStringOption(option => option.setName("name").setDescription("The new channel name | Enter any text or use the extra variables like {memberCount}").setAutocomplete(true))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
+    singleNotify("statsChannelDeleted", interaction.guild.id, true)
     let m;
-    m = await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Loading")
-        .setStatus("Danger")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true, fetchReply: true});
+    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+    let config = await client.database.guilds.read(interaction.guild.id);
     if (interaction.options.getString("name")) {
-        let channel
+        let channel;
+        if (Object.keys(config.getKey("stats")).length >= 25) {
+            return await interaction.editReply({embeds: [new EmojiEmbed()
+                .setEmoji("CHANNEL.TEXT.DELETE")
+                .setTitle("Stats Channel")
+                .setDescription("You can only have 25 stats channels in a server")
+                .setStatus("Danger")
+            ]})
+        }
         try {
             channel = interaction.options.getChannel("channel")
         } catch {
@@ -36,7 +44,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ]})
         }
         channel = channel as Discord.TextChannel
-        if (channel.guild.id != interaction.guild.id) {
+        if (channel.guild.id !== interaction.guild.id) {
             return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Stats Channel")
                 .setDescription(`You must choose a channel in this server`)
@@ -51,7 +59,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         let confirmation = await new confirmationMessage(interaction)
             .setEmoji("CHANNEL.TEXT.EDIT")
             .setTitle("Stats Channel")
-            .setDescription(`Are you sure you want to set <#${channel.id}> to a stats channel?\n\n*Preview: ${newName}*`)
+            .setDescription(`Are you sure you want to set <#${channel.id}> to a stats channel?\n\n*Preview: ${newName.replace(/^ +| $/g, "")}*`)
             .setColor("Warning")
             .setInverted(true)
         .send(true)
@@ -104,7 +112,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         await statsChannelAddCallback(client, interaction.member);
     }
     while (true) {
-        let config = await client.database.guilds.read(interaction.guild.id);
+        config = await client.database.guilds.read(interaction.guild.id);
         let stats = config.getKey("stats")
         let selectMenu = new MessageSelectMenu()
             .setCustomId("remove")
@@ -133,8 +141,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         i.deferUpdate()
         if (i.customId === "remove") {
             let toRemove = i.values;
-            console.log(toRemove.map(k => `stats.${k}`))
-            await client.database.guilds.write(interaction.guild.id, {}, toRemove.map(k => `stats.${k}`));
+            await client.database.guilds.write(interaction.guild.id, null, toRemove.map(k => `stats.${k}`));
         }
     }
     await interaction.editReply({embeds: [new EmojiEmbed()
@@ -147,7 +154,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
     return true;
 }
 

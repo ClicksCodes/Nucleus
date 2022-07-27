@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -53,15 +54,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ).setTitle(`Page ${pages.length + 1}`).setPageId(pages.length))
     }
     let m;
-    m = await interaction.reply({
-        embeds: [
-            new EmojiEmbed()
-                .setTitle("Welcome")
-                .setDescription(`One moment...`)
-                .setStatus("Danger")
-                .setEmoji("NUCLEUS.LOADING")
-        ], fetchReply: true, ephemeral: true
-    });
+    m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let page = 0;
     let selectPaneOpen = false;
     while (true) {
@@ -100,15 +93,15 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             i = await m.awaitMessageComponent({time: 300000 });
         } catch (e) { break }
         i.deferUpdate()
-        if (i.component.customId == "left") {
+        if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (i.component.customId == "right") {
+        } else if (i.component.customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if (i.component.customId == "select") {
+        } else if (i.component.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId == "page") {
+        } else if (i.component.customId === "page") {
             page = parseInt(i.values[0]);
             selectPaneOpen = false;
         } else {

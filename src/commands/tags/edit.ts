@@ -75,7 +75,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             toUnset.push(`tags.${name}`);
             toSet[`tags.${newname}`] = data.tags[name];
         }
-        await client.database.guilds.write(interaction.guild.id, toSet, toUnset);
+        await client.database.guilds.write(interaction.guild.id, toSet === {} ? null : toSet, toUnset);
     } catch (e) {
         return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Tag Edit")
@@ -94,7 +94,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the Manage Messages permission to use this command"
+    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the *Manage Messages* permission to use this command"
     return true;
 }
 

@@ -45,30 +45,15 @@ for (const file of files) {
                     "strict": data.wordfilter.strict,
                     "loose": data.wordfilter.soft
                 },
-                "allowed": {
-                    "users": data.wordfilter.ignore.members.map(user => user.toString()),
-                    "roles": data.wordfilter.ignore.roles.map(role => role.toString()),
-                    "channels": data.wordfilter.ignore.channels.map(channel => channel.toString())
-                }
             },
             "invite": {
                 "enabled": data.invite ? data.invite.enabled : false,
-                "allowed": {
-                    "users": data.invite ? data.invite.whitelist.members.map(user => user.toString()) : [],
-                    "channels": data.invite ? data.invite.whitelist.channels.map(channel => channel.toString()) : [],
-                    "roles": data.invite ? data.invite.whitelist.roles.map(role => role.toString()) : []
-                }
+                "channels": data.invite ? data.invite.whitelist.channels.map(channel => channel.toString()) : [],
             },
             "pings": {
                 "mass": 5,
                 "everyone": true,
-                "roles": true,
-                "allowed": {
-                    "roles": [],
-                    "rolesToMention": null,
-                    "users": null,
-                    "channels": null
-                }
+                "roles": true
             }
         },
         "welcome": {
@@ -81,7 +66,7 @@ for (const file of files) {
             "channel": data.welcome ? (data.welcome.message.text !== null ? data.welcome.message.channel.toString() : null) : null,
             "message": data.welcome ? (data.welcome.message.text) : null
         },
-        "stats": [],
+        "stats": {},
         "logging": {
             "logs": {
                 "enabled": true,

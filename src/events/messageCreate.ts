@@ -1,14 +1,17 @@
 import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from '../reflex/scanners.js'
 import logAttachment from '../premium/attachmentLogs.js'
 import createLogException from '../utils/createLogException.js'
-import getEmojiByName from '../utils/getEmojiByName.js'
+import getEmojiByName from '../utils/getEmojiByName.js';
+import client from '../utils/client.js';
+import {callback as a} from '../reflex/statsChannelUpdate.js'
 
 export const event = 'messageCreate'
 
-export async function callback(client, message) {
+export async function callback(_, message) {
     if(!message) return;
     if (message.author.bot) return
     if (message.channel.type === 'dm') return
+    try { await a(client, await message.guild.members.fetch(message.author.id)); } catch(e) { console.log(e)}
 
     const { log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger
 
@@ -66,7 +69,7 @@ export async function callback(client, message) {
         for (let element of fileNames.files) {
             if(!message) return;
             let url = element.url ? element.url : element.local
-            if (url != undefined) {
+            if (url !== undefined) {
                 if(/\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/.test(url)) {
                     if (config.filters.images.NSFW && !message.channel.nsfw) {
                         if (await NSFWCheck(url)) {
@@ -94,30 +97,28 @@ export async function callback(client, message) {
                     }
                     if (config.filters.wordFilter.enabled) {
                         let text = await TestImage(url)
-                        if (config.filters.wordFilter.enabled) {
-                            let check = TestString(text, config.filters.wordFilter.words.loose, config.filters.wordFilter.words.strict)
-                            if(check !== null) {
-                                createLogException(message.guild.id, message.channel.id, message.id)
-                                await message.delete()
-                                let data = {
-                                    meta: {
-                                        type: 'messageDelete',
-                                        displayName: 'Message Deleted',
-                                        calculateType: 'autoModeratorDeleted',
-                                        color: NucleusColors.red,
-                                        emoji: 'MESSAGE.DELETE',
-                                        timestamp: new Date().getTime()
-                                    },
-                                    separate: {
-                                        start: filter + " Image contained filtered word\n\n" + (content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*'),
-                                    },
-                                    list: list,
-                                    hidden: {
-                                        guild: message.channel.guild.id
-                                    }
+                        let check = TestString(text, config.filters.wordFilter.words.loose, config.filters.wordFilter.words.strict)
+                        if(check !== null) {
+                            createLogException(message.guild.id, message.channel.id, message.id)
+                            await message.delete()
+                            let data = {
+                                meta: {
+                                    type: 'messageDelete',
+                                    displayName: 'Message Deleted',
+                                    calculateType: 'autoModeratorDeleted',
+                                    color: NucleusColors.red,
+                                    emoji: 'MESSAGE.DELETE',
+                                    timestamp: new Date().getTime()
+                                },
+                                separate: {
+                                    start: filter + " Image contained filtered word\n\n" + (content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*'),
+                                },
+                                list: list,
+                                hidden: {
+                                    guild: message.channel.guild.id
                                 }
-                                return log(data);
                             }
+                            return log(data);
                         }
                     }
                     if (config.filters.images.size) {
@@ -199,6 +200,7 @@ export async function callback(client, message) {
         }
         return log(data);
     }
+
     if (config.filters.wordFilter.enabled) {
         let check = TestString(content, config.filters.wordFilter.words.loose, config.filters.wordFilter.words.strict)
         if(check !== null) {
@@ -225,78 +227,73 @@ export async function callback(client, message) {
         }
     }
 
-    if (!config.filters.pings.allowed.users.includes(message.author.id) ||
-        !config.filters.pings.allowed.channels.includes(message.channel.id) ||
-        !message.author.roles.cache.some(role => config.filters.pings.allowed.roles.includes(role.id))
-    ) {
-        if (config.filters.pings.everyone && message.mentions.everyone) {
-            let data = {
-                meta: {
-                    type: 'everyonePing',
-                    displayName: 'Everyone Pinged',
-                    calculateType: 'messageMassPing',
-                    color: NucleusColors.yellow,
-                    emoji: 'MESSAGE.PING.EVERYONE',
-                    timestamp: new Date().getTime()
-                },
-                separate: {
-                    start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
-                },
-                list: list,
-                hidden: {
-                    guild: message.channel.guild.id
-                }
+    if (config.filters.pings.everyone && message.mentions.everyone) {
+        let data = {
+            meta: {
+                type: 'everyonePing',
+                displayName: 'Everyone Pinged',
+                calculateType: 'messageMassPing',
+                color: NucleusColors.yellow,
+                emoji: 'MESSAGE.PING.EVERYONE',
+                timestamp: new Date().getTime()
+            },
+            separate: {
+                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
+            },
+            list: list,
+            hidden: {
+                guild: message.channel.guild.id
             }
-            return log(data);
         }
-        if (config.filters.pings.roles) {
-            for(let role of message.mentions.roles) {
-                if(!message) return;
-                if (!config.filters.pings.allowed.roles.includes(role.id)) {
-                    createLogException(message.guild.id, message.channel.id, message.id)
-                    await message.delete()
-                    let data = {
-                        meta: {
-                            type: 'rolePing',
-                            displayName: 'Role Pinged',
-                            calculateType: 'messageMassPing',
-                            color: NucleusColors.yellow,
-                            emoji: 'MESSAGE.PING.ROLE',
-                            timestamp: new Date().getTime()
-                        },
-                        separate: {
-                            start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
-                        },
-                        list: list,
-                        hidden: {
-                            guild: message.channel.guild.id
-                        }
+        return log(data);
+    }
+    if (config.filters.pings.roles) {
+        for(let role of message.mentions.roles) {
+            if(!message) return;
+            if (!config.filters.pings.allowed.roles.includes(role.id)) {
+                createLogException(message.guild.id, message.channel.id, message.id)
+                await message.delete()
+                let data = {
+                    meta: {
+                        type: 'rolePing',
+                        displayName: 'Role Pinged',
+                        calculateType: 'messageMassPing',
+                        color: NucleusColors.yellow,
+                        emoji: 'MESSAGE.PING.ROLE',
+                        timestamp: new Date().getTime()
+                    },
+                    separate: {
+                        start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
+                    },
+                    list: list,
+                    hidden: {
+                        guild: message.channel.guild.id
                     }
-                    return log(data);
                 }
+                return log(data);
             }
         }
-        if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
-            createLogException(message.guild.id, message.channel.id, message.id)
-            await message.delete()
-            let data = {
-                meta: {
-                    type: 'massPing',
-                    displayName: `Mass Ping`,
-                    calculateType: 'messageMassPing',
-                    color: NucleusColors.yellow,
-                    emoji: 'MESSAGE.PING.MASS',
-                    timestamp: new Date().getTime()
-                },
-                separate: {
-                    start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
-                },
-                list: list,
-                hidden: {
-                    guild: message.channel.guild.id
-                }
+    }
+    if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
+        createLogException(message.guild.id, message.channel.id, message.id)
+        await message.delete()
+        let data = {
+            meta: {
+                type: 'massPing',
+                displayName: `Mass Ping`,
+                calculateType: 'messageMassPing',
+                color: NucleusColors.yellow,
+                emoji: 'MESSAGE.PING.MASS',
+                timestamp: new Date().getTime()
+            },
+            separate: {
+                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : '**Message:** *Message had no content*',
+            },
+            list: list,
+            hidden: {
+                guild: message.channel.guild.id
             }
-            return log(data);
         }
+        return log(data);
     }
 }

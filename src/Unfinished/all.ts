@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../utils/defaultEmbeds.js';
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -78,12 +79,7 @@ const filterList = {
 }
 
 const callback = async (interaction: CommandInteraction) => {
-    await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Role all")
-        .setDescription("Loading...")
-        .setStatus("Danger")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true, fetchReply: true})
+    await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
     let filters: Filter[] = [
         filterList.member.has.role("959901346000154674"),
         filterList.member.nickname.startsWith("Pinea"),
@@ -112,7 +108,7 @@ const callback = async (interaction: CommandInteraction) => {
             .setDescription((all ? "All of the following must be true:" : "Any of the following must be true") + "\n" +
                 filters.map((f) => {
                     count ++;
-                    return (count == 1 ? getEmojiByName("ICONS.FILTER") : (all ? "**and** " : "**or** ")) +
+                    return (count === 1 ? getEmojiByName("ICONS.FILTER") : (all ? "**and** " : "**or** ")) +
                         (f.inverted ? "**not** " : "") + `${f.name}`
                 }).join("\n") + "\n\n" + `This will affect ${addPlural(affected.length, "member")}`)
             .setEmoji("GUILD.ROLES.CREATE")
@@ -144,11 +140,11 @@ const callback = async (interaction: CommandInteraction) => {
 const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
-    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the Manage roles permission";
+    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the *Manage Roles* permission";
     // Allow the owner to role anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has manage_roles permission
-    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the Manage roles permission";
+    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
     // Allow role
     return true;
 }

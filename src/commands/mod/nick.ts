@@ -96,7 +96,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             if (dmd) await dm.delete()
             return
         }
-        let failed = (dmd == false && notify)
+        let failed = (dmd === false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.NICKNAME.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Nickname`)
@@ -117,20 +117,20 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    if (member === null || me === null || apply === null) throw "That member is not in the server"
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Check if Nucleus can change the nickname
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to change the nickname
-    if (! me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the Manage nicknames permission";
+    if (! me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the *Manage Nicknames* permission";
     // Allow the owner to change anyone's nickname
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has manage_nicknames permission
-    if (! member.permissions.has("MANAGE_NICKNAMES")) throw "You do not have the Manage nicknames permission";
+    if (! member.permissions.has("MANAGE_NICKNAMES")) throw "You do not have the *Manage Nicknames* permission";
     // Allow changing your own nickname
-    if (member == apply) return true
+    if (member === apply) return true
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow change

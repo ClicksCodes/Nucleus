@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -33,7 +34,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     if (config.moderation.mute.role) serverSettingsDescription += (serverSettingsDescription ? " and " : "") + `given the <@&${config.moderation.mute.role}> role`
 
     let muteTime = (time.days * 24 * 60 * 60) + (time.hours * 60 * 60) + (time.minutes * 60) + time.seconds
-    if (muteTime == 0) {
+    if (muteTime === 0) {
         let m = await interaction.reply({embeds: [
             new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.GREEN")
@@ -90,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
         } catch { return }
         component.deferUpdate();
-        if (component.customId == "cancel") return interaction.editReply({embeds: [new EmojiEmbed()
+        if (component.customId === "cancel") return interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.MUTE.RED")
             .setTitle("Mute")
             .setDescription("Mute cancelled")
@@ -107,13 +108,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             case "1w": { muteTime = 60 * 60 * 24 * 7; break; }
         }
     } else {
-        await interaction.reply({embeds: [
-            new EmojiEmbed()
-                .setEmoji("PUNISH.MUTE.GREEN")
-                .setTitle("Mute")
-                .setDescription("Loading...")
-                .setStatus("Success")
-        ], ephemeral: true, fetchReply: true})
+        await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
     }
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -199,7 +194,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 })
             }
         } catch (e){ console.log(e); errors++ }
-        if (errors == 2) {
+        if (errors === 2) {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")
                 .setTitle(`Mute`)
@@ -210,7 +205,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             return
         }
         try { await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason) } catch {}
-        let failed = (dmd == false && notify)
+        let failed = (dmd === false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Mute`)
@@ -253,22 +248,22 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    if (member === null || me === null || apply === null) throw "That member is not in the server"
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Check if Nucleus can mute the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to mute
-    if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the Moderate members permission";
+    if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the *Moderate Members* permission";
     // Do not allow the user to have admin or be the owner
-    if (apply.permissions.has("ADMINISTRATOR") || (interaction.options.getMember("user") as GuildMember).id == interaction.guild.ownerId) throw "You cannot mute an admin or the owner"
+    if (apply.permissions.has("ADMINISTRATOR") || (interaction.options.getMember("user") as GuildMember).id === interaction.guild.ownerId) throw "You cannot mute an admin or the owner"
     // Do not allow muting Nucleus
-    if (member.id == me.id) throw "I cannot mute myself"
+    if (member.id === me.id) throw "I cannot mute myself"
     // Allow the owner to mute anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has moderate_members permission
-    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the Moderate members permission";
+    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow mute

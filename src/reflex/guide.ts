@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../utils/defaultEmbeds.js';
 import { SelectMenuOption } from '@discordjs/builders';
 import Discord, { MessageActionRow, MessageButton } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -126,23 +127,8 @@ export default async (guild, interaction?) => {
             ).setTitle("Premium").setDescription("Premium features").setPageId(7),
     ]
     let m;
-    if (interaction) {
-        m = await interaction.reply({embeds: [
-            new EmojiEmbed()
-                .setTitle("Welcome")
-                .setDescription(`One moment...`)
-                .setStatus("Danger")
-                .setEmoji("NUCLEUS.LOADING")
-        ], fetchReply: true, ephemeral: true});
-    } else {
-        m = await c.send({embeds: [
-            new EmojiEmbed()
-                .setTitle("Welcome")
-                .setDescription(`One moment...`)
-                .setStatus("Danger")
-                .setEmoji("NUCLEUS.LOADING")
-        ], fetchReply: true });
-    }
+    if (interaction) { m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true}); }
+    else { m = await c.send({embeds: LoadingEmbed }); }
     let page = 0;
 
     let f = async (component) => {
@@ -174,8 +160,7 @@ export default async (guild, interaction?) => {
         let components = selectPane.concat([new MessageActionRow().addComponents([
             new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
             new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(false),
-            new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1),
-            new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER")
+            new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1)
         ])])
         if (interaction) {
             let em = new Discord.MessageEmbed(pages[page].embed)
@@ -198,56 +183,53 @@ export default async (guild, interaction?) => {
             i = await m.awaitMessageComponent({filter: interaction ? () => { return true } : f, time: 300000});
         } catch(e) { break }
         i.deferUpdate()
-        if (i.component.customId == "left") {
+        if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (i.component.customId == "right") {
+        } else if (i.component.customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if (i.component.customId == "select") {
+        } else if (i.component.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId == "page") {
+        } else if (i.component.customId === "page") {
             page = parseInt(i.values[0]);
             selectPaneOpen = false;
         } else {
             if (interaction) {
                 let em = new Discord.MessageEmbed(pages[page].embed)
-                em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
+                em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+                em.setFooter({text: "Message closed"})
                 interaction.editReply({embeds: [em], components: [new MessageActionRow().addComponents([
                     new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
                     new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(true),
-                    new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),
-                    new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER").setDisabled(true)
-                ])], fetchReply: true});
+                    new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true)
+                ])]});
             } else {
                 m.delete();
             }
             return;
         }
     }
-    const { NucleusColors } = client.logger
     if (interaction) {
         let em = new Discord.MessageEmbed(pages[page].embed)
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out").setColor(NucleusColors.Danger);
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({text: "Message timed out"});
         await interaction.editReply({
             embeds: [em],
             components: [new MessageActionRow().addComponents([
                 new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
                 new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle("SECONDARY").setDisabled(true),
-                new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),
-                new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER").setDisabled(true)
+                new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true)
             ])]
         });
     } else {
         let em = new Discord.MessageEmbed(pages[page].embed)
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out").setColor(NucleusColors.Danger);
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({text: "Message timed out"});
         await m.edit({
             embeds: [em],
             components: [new MessageActionRow().addComponents([
                 new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
                 new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle("SECONDARY").setDisabled(true),
-                new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),
-                new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER").setDisabled(true)
+                new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true)
             ])]
         });
     }

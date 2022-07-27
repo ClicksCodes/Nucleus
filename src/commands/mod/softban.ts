@@ -81,7 +81,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ], components: []})
         }
         try { await client.database.history.create("softban", interaction.guild.id, member.user, reason) } catch {}
-        let failed = (dmd == false && notify)
+        let failed = (dmd === false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Softban`)
@@ -102,20 +102,20 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    if (member === null || me === null || apply === null) throw "That member is not in the server"
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Check if Nucleus can ban the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to ban
-    if (!me.permissions.has("BAN_MEMBERS")) throw "I do not have the Ban members permission";
+    if (!me.permissions.has("BAN_MEMBERS")) throw "I do not have the *Ban Members* permission";
     // Do not allow softbanning Nucleus
-    if (member.id == me.id) throw "I cannot softban myself"
+    if (member.id === me.id) throw "I cannot softban myself"
     // Allow the owner to ban anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has ban_members permission
-    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the Ban members permission";
+    if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the *Ban Members* permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow softban

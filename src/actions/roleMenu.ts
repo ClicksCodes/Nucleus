@@ -3,6 +3,7 @@ import EmojiEmbed from '../utils/generateEmojiEmbed.js'
 import { MessageActionRow, MessageSelectMenu } from 'discord.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
+import { LoadingEmbed } from "../utils/defaultEmbeds.js";
 
 export async function callback(interaction) {
     let config = await client.database.guilds.read(interaction.guild.id);
@@ -18,12 +19,7 @@ export async function callback(interaction) {
         .setStatus("Danger")
         .setEmoji("CONTROL.BLOCKCROSS")
     ], ephemeral: true})
-    await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Roles")
-        .setDescription("Loading...")
-        .setStatus("Success")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true})
+    await interaction.reply({embeds: LoadingEmbed, ephemeral: true})
     let m;
     if (config.roleMenu.allowWebUI) {
         let code = ""
@@ -54,7 +50,7 @@ export async function callback(interaction) {
         let up = true
         try {
             let status = await fetch(client.config.baseUrl).then(res => res.status);
-            if (status != 200) up = false
+            if (status !== 200) up = false
         } catch { up = false }
         m = await interaction.editReply({
             embeds: [new EmojiEmbed()
@@ -88,7 +84,7 @@ export async function callback(interaction) {
                     .setTitle("Roles")
                     .setEmoji("GUILD.GREEN")
                     .setDescription(`**${object.name}**` + (object.description ? `\n${object.description}` : ``) +
-                        `\n\nSelect ${object.min}` + (object.min != object.max ? ` to ${object.max}` : ``) + ` role${object.max == 1 ? '' : 's'} to add.`)
+                        `\n\nSelect ${object.min}` + (object.min !== object.max ? ` to ${object.max}` : ``) + ` role${object.max === 1 ? '' : 's'} to add.`)
                     .setStatus("Success")
                     .setFooter({text: `Step ${i + 1}/${config.roleMenu.options.length}`})
             ],
@@ -99,7 +95,7 @@ export async function callback(interaction) {
                         .setStyle("DANGER")
                         .setCustomId("cancel")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                    ].concat(object.min == 0 ? [
+                    ].concat(object.min === 0 ? [
                         new MessageButton()
                             .setLabel("Skip")
                             .setStyle("SECONDARY")
@@ -121,9 +117,9 @@ export async function callback(interaction) {
             return
         }
         component.deferUpdate()
-        if (component.customId == "rolemenu") {
+        if (component.customId === "rolemenu") {
             rolesToAdd = rolesToAdd.concat(component.values)
-        } else if (component.customId == "cancel") {
+        } else if (component.customId === "cancel") {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Roles")
                 .setDescription("Cancelled. No changes were made.")

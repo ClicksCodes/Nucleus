@@ -51,7 +51,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 `**${channels[page][0].parent ? channels[page][0].parent.name  : "Uncategorised"}**` + "\n" +
                 channels[page].map(c => {
                     let channelType = c.type
-                    if (interaction.guild.rulesChannelId == c.id) channelType = "RULES"
+                    if (interaction.guild.rulesChannelId === c.id) channelType = "RULES"
                     else if ("nsfw" in c && c.nsfw) channelType += "_NSFW"
                     return c.permissionsFor(member).has("VIEW_CHANNEL") ? (
                         `${getEmojiByName("ICONS.CHANNEL." + channelType)} ${c.name}\n` + (() => {
@@ -98,7 +98,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
-    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the Manage roles permission";
+    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
     return true
 }
 

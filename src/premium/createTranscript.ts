@@ -13,7 +13,7 @@ export default async function (interaction) {
     let messages = []
     let deleted = 100;
 
-    while (deleted == 100) {
+    while (deleted === 100) {
         let fetched;
         await (interaction.channel as TextChannel).messages.fetch({limit: 100}).then(async (ms) => {
             fetched = await (interaction.channel as TextChannel).bulkDelete(ms, true);

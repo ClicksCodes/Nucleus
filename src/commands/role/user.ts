@@ -28,7 +28,7 @@ const callback = async (interaction: CommandInteraction): Promise<any>  => {
         .setDescription(keyValueList({
             "user": renderUser(interaction.options.getUser("user")),
             "role": renderRole(interaction.options.getRole("role"))
-        }) + `\nAre you sure you want to ${action == "give" ? "give the role to" : "remove the role from"} ${interaction.options.getUser("user")}?`)
+        }) + `\nAre you sure you want to ${action === "give" ? "give the role to" : "remove the role from"} ${interaction.options.getUser("user")}?`)
         .setColor("Danger")
     .send()
     if (confirmation.cancelled) return
@@ -36,7 +36,7 @@ const callback = async (interaction: CommandInteraction): Promise<any>  => {
         try {
             let member = interaction.options.getMember("user") as GuildMember
             let role = interaction.options.getRole("role") as Role
-            if (interaction.options.getString("action") == "give") {
+            if (interaction.options.getString("action") === "give") {
                 member.roles.add(role)
             } else {
                 member.roles.remove(role)
@@ -51,7 +51,7 @@ const callback = async (interaction: CommandInteraction): Promise<any>  => {
         }
         return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Role")
-            .setDescription(`The role has been ${action == "give" ? "given" : "removed"} successfully`)
+            .setDescription(`The role has been ${action === "give" ? "given" : "removed"} successfully`)
             .setStatus("Success")
             .setEmoji("GUILD.ROLES.CREATE")
         ], components: []})
@@ -69,13 +69,13 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    if (member === null || me === null || apply === null) throw "That member is not in the server"
     // Check if Nucleus has permission to role
-    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the Manage roles permission";
+    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the *Manage Roles* permission";
     // Allow the owner to role anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has manage_roles permission
-    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the Manage roles permission";
+    if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
     // Allow role
     return true;
 }

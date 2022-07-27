@@ -5,8 +5,8 @@ export async function callback(client, thread) {
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = thread.client.logger
         let auditLog = await getAuditLog(thread.guild, 'THREAD_CREATE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == thread.id).first();
-        if (audit.executor.id == client.user.id) return;
+        let audit = auditLog.entries.filter(entry => entry.target.id === thread.id).first();
+        if (audit.executor.id === client.user.id) return;
         let data = {
             meta: {
                 type: 'channelCreate',

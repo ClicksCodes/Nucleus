@@ -17,7 +17,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_ROLES")) throw "You must have the Manage roles permission to use this command"
+    if (!member.permissions.has("MANAGE_ROLES")) throw "You must have the *Manage Roles* permission to use this command"
     return true;
 }
 

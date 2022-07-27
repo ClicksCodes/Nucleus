@@ -1,23 +1,20 @@
+import { LoadingEmbed } from '../utils/defaultEmbeds.js';
 import { CommandInteraction, GuildChannel, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
-import { SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import client from "../utils/client.js"
 import addPlural from "../utils/plurals.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-const command = new SlashCommandBuilder() // TODO: remove for release
+const command = new SlashCommandBuilder()
     .setName("categorise")
     .setDescription("Categorises your servers channels")
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let channels = interaction.guild.channels.cache.filter(c => c.type !== "GUILD_CATEGORY");
     let categorised = {}
-    await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Loading...")
-        .setEmoji("NUCLEUS.LOADING")
-        .setStatus("Success")
-    ], ephemeral: true});
+    await interaction.reply({embeds: LoadingEmbed, ephemeral: true});
     let predicted = {}
     let types = {
         general: ["general", "muted", "main", "topic", "discuss"],

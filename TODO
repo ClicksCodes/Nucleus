@@ -1,3 +1,15 @@
 Role all
 Server rules
-A way to add buttons to verify / role menu
+! A way to add buttons to verify / role menu
+
+ROLE MENU SETTINGS
+
+**Title**
+> Description
+name: role
+name: role
+name: role
+
+[ Select an option to remove                        ]
+[ Reorder roles                                     ]
+< Previous page | Add role | Delete page | Add page >

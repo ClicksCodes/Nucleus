@@ -84,7 +84,7 @@ export async function NSFWCheck(element): Promise<boolean> {
 }
 
 export async function SizeCheck(element): Promise<boolean> {
-    if (element.height == undefined || element.width == undefined) return true
+    if (element.height === undefined || element.width === undefined) return true
     if (element.height < 20 || element.width < 20) return false
     return true
 }
@@ -105,7 +105,7 @@ export function TestString(string, soft, strict): object | null {
     }
     for(let word of soft) {
         for(let word2 of string.match(/[a-z]+/gi) || []) {
-            if (word2 == word) {
+            if (word2 === word) {
                 return {word: word, type: "strict"}
             }
         }

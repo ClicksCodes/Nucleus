@@ -17,15 +17,20 @@ export async function callback(_, member) {
                 fetchedChannel = await guild.channels.fetch(channel)
             } catch (e) { fetchedChannel = null }
             if (!fetchedChannel) {
+                let deleted = config.getKey("stats")[channel]
+                console.log(`stats.${channel}`)
+                console.log(guild.id)
+                await client.database.guilds.write(guild.id, null, `stats.${channel}`)
                 return singleNotify(
                     "statsChannelDeleted",
                     guild.id,
-                    "One or more of your stats channels have been deleted. Please open the settings menu to change this.",
+                    "One or more of your stats channels have been deleted. Please use `/settings stats` if you wish to add the channel again.\n" +
+                    `The channels name was: ${deleted.name}`,
                     "Critical"
                 )
             }
             try {
-                await fetchedChannel.setName(string)
+                await fetchedChannel.setName(string.slice(0, 100))
             } catch (e) {
                 console.error(e)
             }

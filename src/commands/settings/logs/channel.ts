@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../../utils/defaultEmbeds.js';
 import { ChannelType } from 'discord-api-types';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
@@ -17,11 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    m = await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Loading")
-        .setStatus("Danger")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true, fetchReply: true});
+    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     if (interaction.options.getChannel("channel")) {
         let channel
         try {
@@ -35,7 +32,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ]})
         }
         channel = channel as Discord.TextChannel
-        if (channel.guild.id != interaction.guild.id) {
+        if (channel.guild.id !== interaction.guild.id) {
             return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Log Channel")
                 .setDescription(`You must choose a channel in this server`)
@@ -115,11 +112,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             i = await m.awaitMessageComponent({time: 300000});
         } catch(e) { break }
         i.deferUpdate()
-        if (i.component.customId == "clear") {
+        if (i.component.customId === "clear") {
             clicks += 1;
-            if (clicks == 2) {
+            if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild.id, {}, ["logging.logs.channel"])
+                await client.database.guilds.write(interaction.guild.id, null, ["logging.logs.channel"])
                 channel = undefined;
             }
         } else {
@@ -143,7 +140,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
     return true;
 }
 

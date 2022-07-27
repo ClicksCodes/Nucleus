@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -14,11 +15,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    m = await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Loading")
-        .setStatus("Danger")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true, fetchReply: true});
+    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     if (interaction.options.getRole("role")) {
         let role
         try {
@@ -32,7 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             ]})
         }
         role = role as Discord.Role
-        if (role.guild.id != interaction.guild.id) {
+        if (role.guild.id !== interaction.guild.id) {
             return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify Role")
                 .setDescription(`You must choose a role in this server`)
@@ -100,23 +97,24 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             .setDescription(role ? `Your verify role is currently set to <@&${role}>` : `You have not set a verify role`)
             .setStatus("Success")
             .setEmoji("GUILD.ROLES.CREATE")
-        ], components: [new MessageActionRow().addComponents([new MessageButton()
-            .setCustomId("clear")
-            .setLabel(clicks ? "Click again to confirm" : "Reset role")
-            .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
-            .setStyle("DANGER")
-            .setDisabled(!role)
+        ], components: [new MessageActionRow().addComponents([
+            new MessageButton()
+                .setCustomId("clear")
+                .setLabel(clicks ? "Click again to confirm" : "Reset role")
+                .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
+                .setStyle("DANGER")
+                .setDisabled(!role)
         ])]});
         let i;
         try {
             i = await m.awaitMessageComponent({time: 300000});
         } catch(e) { break }
         i.deferUpdate()
-        if (i.component.customId == "clear") {
+        if (i.component.customId === "clear") {
             clicks += 1;
-            if (clicks == 2) {
+            if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild.id, {}, ["verify.role", "verify.enabled"])
+                await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"])
                 role = undefined;
             }
         } else {
@@ -134,13 +132,13 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setLabel("Clear")
         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
         .setStyle("SECONDARY")
-        .setDisabled(true)
+        .setDisabled(true),
     ])]});
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
     return true;
 }
 

@@ -18,9 +18,9 @@ for (let i = 0; i < 100; i++) {
         guild: "864185037078790195",
         moderator: (["unban", "ban", "softban", "kick", "mute", "purge", "warn"].includes(type)) ? "438733159748599813" : null,
         reason: (["unban", "ban", "softban", "kick", "mute", "purge", "warn"].includes(type)) ? "Test" : null,
-        before: (type == "nickname") ? "TestBefore" : null,
-        after: (type == "nickname") ? "TestAfter" : null,
-        amount: (type == "purge") ? Math.floor(Math.random() * 100) : null,
+        before: (type === "nickname") ? "TestBefore" : null,
+        after: (type === "nickname") ? "TestAfter" : null,
+        amount: (type === "purge") ? Math.floor(Math.random() * 100) : null,
     });
     console.log("Inserted document " + i);
 }

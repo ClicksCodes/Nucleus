@@ -11,7 +11,7 @@ const wait = promisify(setTimeout);
 
 export class Logger {
     renderUser(user: Discord.User | string) {
-        if (typeof user == 'string') return `${user} [<@${user}>]`;
+        if (typeof user === 'string') return `${user} [<@${user}>]`;
         return `${user.username} [<@${user.id}>]`;
     }
     renderTime(t: number) {
@@ -55,7 +55,7 @@ export class Logger {
     async log(log: any): Promise<void> {
         let config = await client.database.guilds.read(log.hidden.guild);
         if (!config.logging.logs.enabled) return;
-        if (!(log.meta.calculateType == true)) {
+        if (!(log.meta.calculateType === true)) {
             if(!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) return console.log('Not logging this type of event');
         }
         if (config.logging.logs.channel) {
@@ -84,20 +84,8 @@ export class Logger {
                 channel.send({embeds: [embed]});
             }
         }
-        saveLog(log);
     }
 }
 
 
 export default {}
-
-async function saveLog(log: any): Promise<void> {
-}
-
-export function readLogs(guild: string) {
-    
-}
-
-export function readSpecificLog(guild: string, id: number) {
-    
-}

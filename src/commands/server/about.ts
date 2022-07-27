@@ -31,7 +31,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "2 factor authentication": `${guild.mfaLevel === "NONE" ? `${getEmojiByName("CONTROL.CROSS")} No` : `${getEmojiByName("CONTROL.TICK")} Yes`}`,
                 "verification level": `${toCapitals(guild.verificationLevel)}`,
                 "explicit content filter": `${toCapitals(guild.explicitContentFilter.toString().replace(/_/, " ", ))}`,
-                "nitro boost level": `${guild.premiumTier != "NONE" ? guild.premiumTier.toString()[-1] : "0"}`,
+                "nitro boost level": `${guild.premiumTier !== "NONE" ? guild.premiumTier.toString()[-1] : "0"}`,
                 "channels": `${guild.channels.cache.size}`,
                 "roles": `${guild.roles.cache.size}`,
                 "members": `${guild.memberCount}`,

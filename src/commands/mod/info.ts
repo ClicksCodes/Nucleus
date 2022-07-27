@@ -143,7 +143,7 @@ async function showHistory(member, interaction: CommandInteraction) {
         let end = "\n\nJanuary " + currentYear.toString() + pageIndicator(
             Math.max(groups.length, 1),
             groups.length === 0 ? 1 : pageIndex
-        ) + (currentYear == new Date().getFullYear() ? monthNames[new Date().getMonth()] : "December"
+        ) + (currentYear === new Date().getFullYear() ? monthNames[new Date().getMonth()] : "December"
         ) + " " + currentYear.toString()
         if (groups.length > 0) {
             let toRender = groups[Math.min(pageIndex, groups.length - 1)]
@@ -204,8 +204,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     let member = (interaction.options.getMember("user")) as Discord.GuildMember;
     await interaction.reply({embeds: [new EmojiEmbed()
         .setEmoji("NUCLEUS.LOADING")
-        .setTitle("Downloading data...")
-        .setStatus("Success")
+        .setTitle("Downloading Data")
+        .setStatus("Danger")
     ], ephemeral: true, fetchReply: true});
     let note;
     let firstLoad = true;
@@ -260,7 +260,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             });
             let out;
             try {
-                out = await modalInteractionCollector(m, (m) => m.channel.id == interaction.channel.id, (m) => m.customId == "modify")
+                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify")
             } catch (e) { continue }
             if (out.fields) {
                 let toAdd = out.fields.getTextInputValue("note") || null;
@@ -275,7 +275,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
-    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the Moderate members permission";
+    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     return true
 }
 

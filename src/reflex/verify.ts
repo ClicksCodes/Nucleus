@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../utils/defaultEmbeds.js';
 import Discord, { GuildMember } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
@@ -11,12 +12,7 @@ function step(i) {
 
 export default async function(interaction) {
     let verify = client.verify
-    await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Loading")
-        .setDescription(step(-1))
-        .setStatus("Danger")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true, fetchReply: true});
+    await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     let config = await client.database.guilds.read(interaction.guild.id);
     if ((!config.verify.enabled ) || (!config.verify.role)) return interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Verify")
@@ -40,7 +36,7 @@ export default async function(interaction) {
     ]});
     try {
         let status = await fetch(client.config.baseUrl).then(res => res.status);
-        if (status != 200) {
+        if (status !== 200) {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify")
                 .setDescription(`Our servers appear to be down, please try again later` + step(0))

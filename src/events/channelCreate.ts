@@ -4,8 +4,8 @@ export async function callback(client, channel) {
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = channel.client.logger
         let auditLog = await getAuditLog(channel.guild, 'CHANNEL_CREATE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == channel.id).first();
-        if (audit.executor.id == client.user.id) return;
+        let audit = auditLog.entries.filter(entry => entry.target.id === channel.id).first();
+        if (audit.executor.id === client.user.id) return;
         let emoji;
         let readableType;
         let displayName;

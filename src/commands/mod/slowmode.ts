@@ -62,9 +62,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     // Check if Nucleus can set the slowmode
-    if (! interaction.guild.me.permissions.has("MANAGE_CHANNELS")) throw "I do not have the Manage channels permission";
+    if (! interaction.guild.me.permissions.has("MANAGE_CHANNELS")) throw "I do not have the *Manage Channels* permission";
     // Check if the user has manage_channel permission
-    if (! member.permissions.has("MANAGE_CHANNELS")) throw "You do not have the Manage channels permission";
+    if (! member.permissions.has("MANAGE_CHANNELS")) throw "You do not have the *Manage Channels* permission";
     // Allow slowmode
     return true
 }

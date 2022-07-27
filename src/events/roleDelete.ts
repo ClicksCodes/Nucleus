@@ -7,8 +7,8 @@ export async function callback(client, role) {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = role.client.logger
         if (role.managed) return;
         let auditLog = await getAuditLog(role.guild, 'ROLE_DELETE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == role.id).first();
-        if (audit.executor.id == client.user.id) return;
+        let audit = auditLog.entries.filter(entry => entry.target.id === role.id).first();
+        if (audit.executor.id === client.user.id) return;
         let data = {
             meta: {
                 type: 'roleDelete',

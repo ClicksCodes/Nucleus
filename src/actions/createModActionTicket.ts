@@ -16,7 +16,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
         deny: ["VIEW_CHANNEL"],
         type: "role"
     })
-    if (config.tickets.supportRole != null) {
+    if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: guild.roles.cache.get(config.tickets.supportRole),
             allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
@@ -40,10 +40,10 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
     try {
         await c.send(
             {
-                content: (`<@${member.id}>` + (config.tickets.supportRole != null ? ` • <@&${config.tickets.supportRole}>` : "")),
+                content: (`<@${member.id}>` + (config.tickets.supportRole !== null ? ` • <@&${config.tickets.supportRole}>` : "")),
                 allowedMentions: {
                     users: [member.id],
-                    roles: (config.tickets.supportRole != null ? [config.tickets.supportRole] : [])
+                    roles: (config.tickets.supportRole !== null ? [config.tickets.supportRole] : [])
                 }
             }
         )
@@ -51,7 +51,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by a Moderator\n` +
-                `**Support type:** Appeal submission\n` + (reason != null ? `**Reason:**\n> ${reason}\n` : "") +
+                `**Support type:** Appeal submission\n` + (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                 `**Ticket ID:** \`${c.id}\`\n` +
                 `Type \`/ticket close\` to close this ticket.`,
             )

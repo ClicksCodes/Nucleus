@@ -10,7 +10,7 @@ export default async function (interaction) {
     let thread = false; let threadChannel
     if (interaction.channel instanceof Discord.ThreadChannel) thread = true; threadChannel = interaction.channel as Discord.ThreadChannel
     let channel = (interaction.channel as Discord.TextChannel)
-    if (!channel.parent || config.tickets.category != channel.parent.id || (thread ? (threadChannel.parent.parent.id != config.tickets.category) : false)) {
+    if (!channel.parent || config.tickets.category !== channel.parent.id || (thread ? (threadChannel.parent.parent.id !== config.tickets.category) : false)) {
         return interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Deleting Ticket...")
             .setDescription("This ticket is not in your tickets category, so cannot be deleted. You cannot run close in a thread.")
@@ -19,7 +19,7 @@ export default async function (interaction) {
         ], ephemeral: true});
     }
     let status = channel.topic.split(" ")[1];
-    if (status == "Archived") {
+    if (status === "Archived") {
         await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Delete Ticket")
             .setDescription("Your ticket is being deleted...")
@@ -47,7 +47,7 @@ export default async function (interaction) {
         log(data);
         interaction.channel.delete();
         return;
-    } else if (status == "Active") {
+    } else if (status === "Active") {
         await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Close Ticket")
             .setDescription("Your ticket is being closed...")
@@ -66,7 +66,7 @@ export default async function (interaction) {
                 type: "role"
             }
         ] as Discord.OverwriteResolvable[];
-        if (config.tickets.supportRole != null) {
+        if (config.tickets.supportRole !== null) {
             overwrites.push({
                 id: interaction.guild.roles.cache.get(config.tickets.supportRole),
                 allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
@@ -127,8 +127,8 @@ async function purgeByUser(member, guild) {
     let ticketChannels = tickets.children;
     let deleted = 0
     ticketChannels.forEach(element => {
-        if (element.type != "GUILD_TEXT") return;
-        if (element.topic.split(" ")[0] == member) {
+        if (element.type !== "GUILD_TEXT") return;
+        if (element.topic.split(" ")[0] === member) {
             try { element.delete(); } catch {}
             deleted++
         }

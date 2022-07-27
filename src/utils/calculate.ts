@@ -49,7 +49,7 @@ const toHexArray = (permissionsHex, array?) => {
     let permissions = [];
     let int = (BigInt("0x" + permissionsHex)).toString(2).split('').reverse();
     for (let index in int) {
-        if (int[index] == "1" && array.length > index) {
+        if (int[index] === "1" && array.length > index) {
             permissions.push(array[index]);
         }
     }

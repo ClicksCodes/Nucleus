@@ -6,10 +6,10 @@ export async function callback(client, oe, ne) {
     try {
         const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderEmoji } = client.logger
 
-        if (oe.name == ne.name) return
+        if (oe.name === ne.name) return
         let auditLog = await getAuditLog(ne.guild, 'EMOJI_UPDATE');
         let audit = auditLog.entries.first();
-        if (audit.executor.id == client.user.id) return;
+        if (audit.executor.id === client.user.id) return;
 
         let changes = {
             emojiId: entry(ne.id, `\`${ne.id}\``),

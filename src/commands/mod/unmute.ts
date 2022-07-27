@@ -89,7 +89,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             }
         }
         log(data);
-        let failed = (dmd == false && notify)
+        let failed = (dmd === false && notify)
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
             .setTitle(`Unmute`)
@@ -110,20 +110,20 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    if (member === null || me === null || apply === null) throw "That member is not in the server"
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Check if Nucleus can unmute the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to unmute
-    if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the Moderate members permission";
+    if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the *Moderate Members* permission";
     // Do not allow the user to have admin or be the owner
-    if (apply.permissions.has("ADMINISTRATOR") || apply.id == interaction.guild.ownerId) throw "You cannot unmute an admin or the owner"
+    if (apply.permissions.has("ADMINISTRATOR") || apply.id === interaction.guild.ownerId) throw "You cannot unmute an admin or the owner"
     // Allow the owner to unmute anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has moderate_members permission
-    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the Moderate members permission";
+    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow unmute

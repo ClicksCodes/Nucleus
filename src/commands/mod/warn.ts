@@ -98,7 +98,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             interaction.user, reason
         )} catch {}
         log(data);
-        let failed = (dmd == false && notify)
+        let failed = (dmd === false && notify)
         if (!failed) {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji(`PUNISH.WARN.GREEN`)
@@ -138,7 +138,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStatus("Success")
                 ], components: []})
             }
-            if ( component.customId == "here" ) {
+            if ( component.customId === "here" ) {
                 await interaction.channel.send({
                     embeds: [new EmojiEmbed()
                         .setEmoji(`PUNISH.WARN.RED`)
@@ -179,16 +179,16 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as GuildMember)
     let me = (interaction.guild.me as GuildMember)
     let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member == null || me == null || apply == null) throw "That member is not in the server"
+    if (member === null || me === null || apply === null) throw "That member is not in the server"
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
     // Do not allow warning bots
     if (member.user.bot) throw "I cannot warn bots"
     // Allow the owner to warn anyone
-    if (member.id == interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true
     // Check if the user has moderate_members permission
-    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the Moderate members permission";
+    if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
     if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
     // Allow warn

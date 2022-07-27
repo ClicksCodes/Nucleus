@@ -7,11 +7,13 @@ let severities = {
     "Info": "Success"
 }
 
-export default async function(type: string, guild: string, message: string, severity: string) {
+export default async function(type: string, guild: string, message: string | true, severity?: string) {
     let data = await client.database.guilds.read(guild);
+    if (message === true) {
+        return await client.database.guilds.write(guild, {[`singleEventNotifications.${type}`]: false});
+    }
     if (data.singleEventNotifications[type]) return;
-    data.singleEventNotifications[type] = true;
-    client.database.guilds.write(guild, data);
+    await client.database.guilds.write(guild, {[`singleEventNotifications.${type}`]: true});
     try {
         let channel = await client.channels.fetch(data.logging.staff.channel);
         if (!channel) return;

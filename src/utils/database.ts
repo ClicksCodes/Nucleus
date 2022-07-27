@@ -40,14 +40,16 @@ export class Guilds {
         return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig
     }
 
-    async write(guild: string, set: object = {}, unset: string[] = []) {
+    async write(guild: string, set: object | null, unset: string[] | string = []) {
         let uo = {}
+        if (!Array.isArray(unset)) unset = [unset]
         for (let key of unset) {
             uo[key] = null;
         }
-        let out = {}
+        let out = {$set: {}, $unset: {}}
         if (set) out["$set"] = set;
         if (unset.length) out["$unset"] = uo;
+        console.log(out)
         await this.guilds.updateOne({ id: guild }, out, { upsert: true });
     }
 
@@ -78,6 +80,10 @@ export class Guilds {
                 $pullAll: { [key]: [value] }
             }, { upsert: true });
         }
+    }
+
+    async delete(guild: string) {
+        await this.guilds.deleteOne({ id: guild });
     }
 }
 
@@ -116,6 +122,10 @@ export class History {
         }).toArray()) as HistorySchema[];
         return entry;
     }
+
+    async delete(guild: string) {
+        await this.histories.deleteMany({ guild: guild });
+    }
 }
 
 export class ModNotes {
@@ -147,7 +157,7 @@ export class Premium {
 
     async hasPremium(guild: string) {
         let entry = await this.premium.findOne({ appliesTo: { $in: [guild] } });
-        return entry != null;
+        return entry !== null;
     }
 }
 

@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -21,13 +22,7 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    m = await interaction.reply({
-        embeds: [new EmojiEmbed()
-            .setTitle("Loading")
-            .setStatus("Danger")
-            .setEmoji("NUCLEUS.LOADING")
-        ], ephemeral: true, fetchReply: true
-    });
+    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     let options = {
         enabled: interaction.options.getString("enabled") as string | boolean,
         category: interaction.options.getChannel("category"),
@@ -51,7 +46,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 })
             }
             channel = channel as Discord.CategoryChannel
-            if (channel.guild.id != interaction.guild.id) return interaction.editReply({
+            if (channel.guild.id !== interaction.guild.id) return interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Category")
                     .setDescription(`You must choose a category in this server`)
@@ -85,7 +80,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 })
             }
             role = role as Discord.Role
-            if (role.guild.id != interaction.guild.id) return interaction.editReply({
+            if (role.guild.id !== interaction.guild.id) return interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setTitle("Tickets > Support Ping")
                     .setDescription(`You must choose a role in this server`)
@@ -174,23 +169,23 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStyle(data.enabled ? "SUCCESS" : "DANGER")
                     .setCustomId("enabled"),
                 new MessageButton()
-                    .setLabel(lastClicked == "cat" ? "Click again to confirm" : "Clear category")
+                    .setLabel(lastClicked === "cat" ? "Click again to confirm" : "Clear category")
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     .setStyle("DANGER")
                     .setCustomId("clearCategory")
-                    .setDisabled(data.category == null),
+                    .setDisabled(data.category === null),
                 new MessageButton()
-                    .setLabel(lastClicked == "max" ? "Click again to confirm" : "Reset max tickets")
+                    .setLabel(lastClicked === "max" ? "Click again to confirm" : "Reset max tickets")
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     .setStyle("DANGER")
                     .setCustomId("clearMaxTickets")
-                    .setDisabled(data.maxTickets == 5),
+                    .setDisabled(data.maxTickets === 5),
                 new MessageButton()
-                    .setLabel(lastClicked == "sup" ? "Click again to confirm" : "Clear support ping")
+                    .setLabel(lastClicked === "sup" ? "Click again to confirm" : "Clear support ping")
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     .setStyle("DANGER")
                     .setCustomId("clearSupportPing")
-                    .setDisabled(data.supportRole == null),
+                    .setDisabled(data.supportRole === null),
             ]), new MessageActionRow().addComponents([
                 new MessageButton()
                     .setLabel("Manage types")
@@ -204,28 +199,28 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) { break }
         i.deferUpdate()
-        if (i.component.customId == "clearCategory") {
-            if (lastClicked == "cat") {
+        if (i.component.customId === "clearCategory") {
+            if (lastClicked === "cat") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, {}, ["tickets.category"])
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.category"])
                 data.category = undefined;
             } else lastClicked = "cat";
-        } else if (i.component.customId == "clearMaxTickets") {
-            if (lastClicked == "max") {
+        } else if (i.component.customId === "clearMaxTickets") {
+            if (lastClicked === "max") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, {}, ["tickets.maxTickets"])
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.maxTickets"])
                 data.maxTickets = 5;
             } else lastClicked = "max";
-        } else if (i.component.customId == "clearSupportPing") {
-            if (lastClicked == "sup") {
+        } else if (i.component.customId === "clearSupportPing") {
+            if (lastClicked === "sup") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, {}, ["tickets.supportRole"])
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.supportRole"])
                 data.supportRole = undefined;
             } else lastClicked = "sup";
-        } else if (i.component.customId == "enabled") {
+        } else if (i.component.customId === "enabled") {
             await client.database.guilds.write(interaction.guild.id, { "tickets.enabled": !data.enabled })
             data.enabled = !data.enabled;
-        } else if (i.component.customId == "manageTypes") {
+        } else if (i.component.customId === "manageTypes") {
             data = await manageTypes(interaction, data, m);
         } else {
             break
@@ -329,12 +324,12 @@ async function manageTypes(interaction, data, m) {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) { break }
-        if (i.component.customId == "types") {
+        if (i.component.customId === "types") {
             i.deferUpdate()
             let types = toHexInteger(i.values, ticketTypes);
             await client.database.guilds.write(interaction.guild.id, { "tickets.types": types })
             data.types = types;
-        } else if (i.component.customId == "removeTypes") {
+        } else if (i.component.customId === "removeTypes") {
             i.deferUpdate()
             let types = i.values
             let customTypes = data.customTypes;
@@ -344,7 +339,7 @@ async function manageTypes(interaction, data, m) {
                 await client.database.guilds.write(interaction.guild.id, { "tickets.customTypes": customTypes })
                 data.customTypes = customTypes;
             }
-        } else if (i.component.customId == "addType") {
+        } else if (i.component.customId === "addType") {
             await i.showModal(new Discord.Modal().setCustomId("modal").setTitle("Enter a name for the new type").addComponents(
                 new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                     .setCustomId("type")
@@ -371,7 +366,7 @@ async function manageTypes(interaction, data, m) {
             });
             let out;
             try {
-                out = await modalInteractionCollector(m, (m) => m.channel.id == interaction.channel.id, (m) => m.customId == "addType")
+                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "addType")
             } catch (e) { continue }
             if (out.fields) {
                 let toAdd = out.fields.getTextInputValue("type");
@@ -385,11 +380,11 @@ async function manageTypes(interaction, data, m) {
                     data.customTypes.push(toAdd);
                 }
             } else { continue }
-        } else if (i.component.customId == "switchToDefault") {
+        } else if (i.component.customId === "switchToDefault") {
             i.deferUpdate()
             await client.database.guilds.write(interaction.guild.id, { "tickets.useCustom": false }, [])
             data.useCustom = false;
-        } else if (i.component.customId == "switchToCustom") {
+        } else if (i.component.customId === "switchToCustom") {
             i.deferUpdate()
             await client.database.guilds.write(interaction.guild.id, { "tickets.useCustom": true }, [])
             data.useCustom = true;
@@ -404,7 +399,7 @@ async function manageTypes(interaction, data, m) {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage Server permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
     return true;
 }
 

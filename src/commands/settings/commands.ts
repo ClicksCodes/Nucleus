@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import Discord, { CommandInteraction, MessageActionRow, MessageButton, TextInputComponent } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -15,11 +16,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .addRoleOption(o => o.setName("role").setDescription("The role given when a member is muted"))
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("Loading")
-        .setStatus("Danger")
-        .setEmoji("NUCLEUS.LOADING")
-    ], ephemeral: true, fetchReply: true});
+    await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     let m;
     let clicked = "";
     if (interaction.options.getRole("role")) {
@@ -49,7 +46,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             .setEmoji("PUNISH.BAN.GREEN")
             .setStatus("Success")
             .setDescription(
-                "These links are shown below the message sent in a user's DM when they are warned, banned, etc.\n\n" +
+                "These links are shown below the message sent in a user's DM when they are punished.\n\n" +
                 `**Mute Role:** ` + (moderation.mute.role ? `<@&${moderation.mute.role}>` : "*None set*")
             )
         ], components: [new MessageActionRow().addComponents([
@@ -76,13 +73,16 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         } catch (e) { return }
         let chosen = moderation[i.customId] ?? {text: null, url: null};
         if (i.component.customId === "clearMuteRole") {
+            i.deferUpdate()
             if (clicked === "clearMuteRole") {
-                await client.database.guilds.write(interaction.guild.id, { moderation: { mute: { role: null } } });
+                await client.database.guilds.write(interaction.guild.id, {"moderation.mute.role": null });
             } else { clicked = "clearMuteRole" }
+            continue
         } else { clicked = "" }
         if (i.component.customId === "timeout") {
             await i.deferUpdate()
-            await client.database.guilds.write(interaction.guild.id, { moderation: { mute: { timeout: !moderation.mute.timeout } } });
+            await client.database.guilds.write(interaction.guild.id, {"moderation.mute.timeout": !moderation.mute.timeout } );
+            continue
         } else if (i.customId) {
             await i.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Options for ${i.customId}`).addComponents(
                 new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
@@ -117,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             });
             let out;
             try {
-                out = await modalInteractionCollector(m, (m) => m.channel.id == interaction.channel.id, (m) => true)
+                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => true)
             } catch (e) { continue }
             if (out.fields) {
                 let buttonText = out.fields.getTextInputValue("name");
@@ -125,7 +125,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 let current = chosen;
                 if (current.text !== buttonText || current.link !== buttonLink) {
                     chosen = { text: buttonText, link: buttonLink };
-                    await client.database.guilds.write(interaction.guild.id, { ["moderation" + i.customId]: { text: buttonText, link: buttonLink }});
+                    await client.database.guilds.write(interaction.guild.id, { ["moderation." + i.customId]: { text: buttonText, link: buttonLink }});
                 }
             } else { continue }
         }
@@ -135,7 +135,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the Manage server permission to use this command"
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
     return true;
 }
 

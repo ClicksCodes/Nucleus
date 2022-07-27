@@ -1,4 +1,3 @@
-import humanizeDuration from 'humanize-duration';
 import { purgeByUser } from '../actions/tickets/delete.js';
 import { callback as statsChannelRemove } from '../reflex/statsChannelUpdate.js';
 
@@ -6,10 +5,11 @@ export const event = 'guildMemberRemove'
 
 export async function callback(client, member) {
     try { purgeByUser(member.id, member.guild); } catch {}
+    try { await statsChannelRemove(client, member); } catch {}
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger
         let auditLog = await getAuditLog(member.guild, 'MEMBER_KICK');
-        let audit = auditLog.entries.filter(entry => entry.target.id == member.id).first();
+        let audit = auditLog.entries.filter(entry => entry.target.id === member.id).first();
         let type = "leave"
         if (audit) {
             if (audit.executor.id === client.user.id) return
@@ -18,7 +18,7 @@ export async function callback(client, member) {
             }
         }
         let data
-        if (type == "kick") {
+        if (type === "kick") {
             try { await client.database.history.create("kick", member.guild.id, member.user, audit.executor, audit.reason) } catch {}
             data = {
                 meta: {
@@ -36,7 +36,6 @@ export async function callback(client, member) {
                     kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                     kickedBy: entry(audit.executor.id, renderUser(audit.executor)),
                     reason: entry(audit.reason, audit.reason ? `\n> ${audit.reason}` : "*No reason provided.*"),
-                    timeInServer: entry(new Date().getTime() - member.joinedAt, humanizeDuration(new Date().getTime() - member.joinedAt, { round: true })),
                     accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
                     serverMemberCount: member.guild.memberCount,
                 },
@@ -60,7 +59,6 @@ export async function callback(client, member) {
                     name: entry(member.id, renderUser(member.user)),
                     joined: entry(member.joinedTimestamp, renderDelta(member.joinedAt)),
                     left: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                    timeInServer: entry(new Date().getTime() - member.joinedTimestamp, humanizeDuration(new Date().getTime() - member.joinedAt, { round: true })),
                     accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
                     serverMemberCount: member.guild.memberCount,
                 },
@@ -71,5 +69,4 @@ export async function callback(client, member) {
         }
         log(data);
     } catch (e) { console.log(e) }
-    try { await statsChannelRemove(client, member); } catch {}
 }

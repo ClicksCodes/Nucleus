@@ -8,9 +8,9 @@ export async function callback(client, channel) {
         let auditLogUpdate = getAuditLog(channel.guild, 'WEBHOOK_UPDATE');
         let auditLogDelete = getAuditLog(channel.guild, 'WEBHOOK_DELETE');
         [auditLogCreate, auditLogUpdate, auditLogDelete] = await Promise.all([auditLogCreate, auditLogUpdate, auditLogDelete]);
-        let auditCreate = auditLogCreate.entries.filter(entry => entry.target.channelId == channel.id).first();
-        let auditUpdate = auditLogUpdate.entries.filter(entry => entry.target.channelId == channel.id).first();
-        let auditDelete = auditLogDelete.entries.filter(entry => entry.target.channelId == channel.id).first();
+        let auditCreate = auditLogCreate.entries.filter(entry => entry.target.channelId === channel.id).first();
+        let auditUpdate = auditLogUpdate.entries.filter(entry => entry.target.channelId === channel.id).first();
+        let auditDelete = auditLogDelete.entries.filter(entry => entry.target.channelId === channel.id).first();
         if (!auditCreate && !auditUpdate && !auditDelete) return;
         let audit = auditCreate;
         let action = "Create";

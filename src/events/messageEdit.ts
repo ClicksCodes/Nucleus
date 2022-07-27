@@ -2,7 +2,7 @@ export const event = 'messageUpdate'
 
 export async function callback(client, oldMessage, newMessage) {
     try {
-        if (newMessage.author.id == client.user.id) return;
+        if (newMessage.author.id === client.user.id) return;
         const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = newMessage.channel.client.logger
         newMessage.reference = newMessage.reference || {}
         let newContent = newMessage.cleanContent.replaceAll("`", "‘")
@@ -10,7 +10,7 @@ export async function callback(client, oldMessage, newMessage) {
         let attachmentJump = "";
         let config = (await client.database.guilds.read(newMessage.guild.id)).logging.attachments.saved[newMessage.channel.id + newMessage.id];
         if (config) { attachmentJump = ` [[View attachments]](${config})` }
-        if (newContent == oldContent) {
+        if (newContent === oldContent) {
             if (!oldMessage.flags.has("CROSSPOSTED") && newMessage.flags.has("CROSSPOSTED")) {
                 let data = {
                     meta: {

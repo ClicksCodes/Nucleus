@@ -5,8 +5,8 @@ export async function callback(client, invite) {
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = invite.client.logger
         let auditLog = await getAuditLog(invite.guild, 'INVITE_CREATE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == invite.id).first();
-        if (audit.executor.id == client.user.id) return;
+        let audit = auditLog.entries.filter(entry => entry.target.id === invite.id).first();
+        if (audit.executor.id === client.user.id) return;
         let data = {
             meta: {
                 type: 'inviteCreate',

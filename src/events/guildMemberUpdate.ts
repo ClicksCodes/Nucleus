@@ -4,9 +4,9 @@ export async function callback(client, before, after) {
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = after.client.logger
         let auditLog = await getAuditLog(after.guild, 'MEMBER_UPDATE');
-        let audit = auditLog.entries.filter(entry => entry.target.id == after.id).first();
-        if (audit.executor.id == client.user.id) return;
-        if (before.nickname != after.nickname) {
+        let audit = auditLog.entries.filter(entry => entry.target.id === after.id).first();
+        if (audit.executor.id === client.user.id) return;
+        if (before.nickname !== after.nickname) {
             try { await client.database.history.create(
                 "nickname", after.guild.id, after.user, audit.executor,
                 null, before.nickname || before.user.username, after.nickname || after.user.username) } catch {}
