@@ -1,0 +1,14 @@
+{
+    "token": "",
+    "developmentToken": "",
+    "managementGuildID": "",
+    "developmentGuildID": "",
+    "enableDevelopment": true,
+    "owners": [],
+    "verifySecret": "",
+    "mongoUrl": "mongodb://127.0.0.1:27017/",
+    "baseUrl": "/",
+    "pastebinApiKey": "",
+    "pastebinUsername": "",
+    "pastebinPassword": ""
+}
