@@ -1,0 +1,96 @@
+import fs from 'fs';
+import * as readLine from 'node:readline/promises';
+import { exec } from 'node:child_process';
+
+const defaultDict = {
+    "token": "Your bot token",
+    "developmentToken": "Your development bot token",
+    "managementGuildID": "Your management guild ID",
+    "developmentGuildID": "Your development guild ID",
+    "enableDevelopment": true,
+    "owners": [],
+    "verifySecret": "If using verify, enter a code here which matches your website if needed",
+    "mongoUrl": "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",
+    "baseUrl": "Your website where buttons such as Verify will link to, e.g. https://example.com",
+    "pastebinApiKey": "An API key for pastebin (optional)",
+    "pastebinUsername": "Your pastebin username (optional)",
+    "pastebinPassword": "Your pastebin password (optional)",
+}
+
+const readline = readLine.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+});
+
+async function getInput(prompt) {
+    process.stdout.write(prompt);
+
+    const answer = await readline.question(prompt);
+    return answer.toString();
+}
+
+
+export default async function(walkthrough = false) {
+    if (walkthrough) {
+        console.log("\x1b[33m🛈  Entering walkthrough mode for any missing values.");
+        console.log("   \x1b[2mIf you don't want to enter a value, just hit enter.\x1b[0m\n");
+
+        // let toUse = await getInput("\x1b[36m[Installing packages] Use Yarn or NPM? \x1b[0m(\x1b[32my\x1b[0m/\x1b[31mN\x1b[0m) > ");
+        // toUse = toUse.toLowerCase() === "y" ? "yarn install" : "npm i";
+        // if ((await getInput(`\x1b[36m[Installing packages] Run ${toUse}? \x1b[0m(\x1b[32mY\x1b[0m/\x1b[31mn\x1b[0m) > `)).toLowerCase() !== "n") {
+        //     console.log(`\x1b[32m[Installing packages] Running ${toUse}...\x1b[0m`);
+        //     await exec(toUse);
+        //     console.log(`\x1b[32m[Installing packages] Installed\x1b[0m`);
+        // } else {
+        //     console.log("\x1b[32m[Installing packages] Skipping...\x1b[0m");
+        // }
+    }
+
+    let json;
+    let out = true
+    try {
+        json = JSON.parse(fs.readFileSync('./src/config/main.json', 'utf8'));
+    } catch (e) {
+        console.log("\x1b[31m⚠ No main.json found, creating one.")
+        console.log("  \x1b[2mYou can edit src/config/main.json directly using template written to the file.\x1b[0m\n")
+        out = false
+        json = {}
+    }
+    for (const key in defaultDict) {
+        if (!json[key]) {
+            if (walkthrough) {
+                switch (key) {
+                    case "enableDevelopment": {
+                        json[key] = (await getInput("\x1b[36mEnable development mode? \x1b[0m(\x1b[32mY\x1b[0m/\x1b[31mn\x1b[0m) > ") || "Y").toLowerCase() === "y"; break;
+                    } case "owners": {
+                        let chosen = "!";
+                        let toWrite = []
+                        while (chosen !== "") {
+                            chosen = await getInput("\x1b[36mEnter an owner ID \x1b[0m(\x1b[35mleave blank to finish\x1b[0m) > ");
+                            if (chosen !== "") { toWrite.push(chosen); }
+                        }
+                        json[key] = toWrite; break;
+                    } default: {
+                        json[key] = await getInput(`\x1b[36m${key} \x1b[0m(\x1b[35m${defaultDict[key]}\x1b[0m) > `);
+                    }
+                }
+            }
+            else { json[key] = defaultDict[key] }
+        }
+    }
+    if (!json.mongoUrl.endsWith("/")) json.mongoUrl += "/";
+    if (!json.baseUrl.endsWith("/")) json.baseUrl += "/";
+    let hosts = fs.readFileSync('/etc/hosts', 'utf8').toString().split("\n");
+    let localhost = hosts.find(line => line.split(" ")[1] === "localhost");
+    if (localhost) { localhost = localhost.split(" ")[0]; }
+    else { localhost = "127.0.0.1" }
+    json.mongoUrl = json.mongoUrl.replace("localhost", localhost);
+    json.baseUrl = json.baseUrl.replace("localhost", localhost);
+
+    fs.writeFileSync("./src/config/main.json", JSON.stringify(json, null, 4))
+
+    if (walkthrough) {
+        console.log("\x1b[32m✓ All properties added.\x1b[0m")
+    }
+    return out;
+}

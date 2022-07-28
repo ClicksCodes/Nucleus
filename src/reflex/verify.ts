@@ -133,6 +133,6 @@ export default async function(interaction) {
     ], components: [new Discord.MessageActionRow().addComponents([new Discord.MessageButton()
         .setLabel("Verify")
         .setStyle("LINK")
-        .setURL(`${client.config.baseUrl}/nucleus/verify?code=${code}`)
+        .setURL(`${client.config.baseUrl}nucleus/verify?code=${code}`)
     ])]});
 }

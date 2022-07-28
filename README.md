@@ -6,7 +6,7 @@
 - [Commands](#commands)
 - [Verification](#verification)
 - [Privacy](#privacy)
-- [Legal](#legal)
+- [Self hosting and Legal](#self-hosting)
 
 ### About
 
@@ -48,15 +48,15 @@ Nucleus is a moderation bot by Clicks for Discord. It adds features such as veri
 - `/user avatar` Shows the user avatar.
 - `/user track` Allows you to move a user up and down a role track.
 
-- `/tags create` Creates a tag
-- `/tags edit` Edits a tag
-- `/tags delete` Deletes a tag
+- `/tags create` Creates a tag.
+- `/tags edit` Edits a tag.
+- `/tags delete` Deletes a tag.
 
 - `/verify` Verifies a member to give them access to the server.
 - `/help` Shows all commands on Nucleus.
 - `/privacy` Information and options for server and user privacy.
 - `/rolemenu` Lets users select roles, similar to reaction roles.
-- `/tag` Lets users use tags created with `/tags create`
+- `/tag` Lets users use tags created with `/tags create`.
 
 
 ### Verification
@@ -67,10 +67,10 @@ For more information, see the [about](https://clicks.codes/nucleus/verify/about)
 
 ### Privacy
 
-You can run `/privacy` to view and manage all data stored about your server
+You can run `/privacy` to view and manage all data stored about your server.
 
 You should always know what we know and store about you, so here is the complete list.
 
-### Legal
+### Self hosting
 
-Before copying, modifying or running our code, please read [COPYING](https://github.com/ClicksMinutePer/Nucleus/blob/development/COPYING.md)
+Nucleus is fully open source, and you can run your own copy. Read [COPYING.md](https://github.com/ClicksMinutePer/Nucleus/blob/development/COPYING.md) for the legal requirements and a guide for how to configure your own copy.

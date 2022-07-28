@@ -63,7 +63,7 @@ export async function callback(interaction) {
                     .setLabel("Online")
                     .setStyle("LINK")
                     .setDisabled(!up)
-                    .setURL(`${client.config.baseUrl}/nucleus/rolemenu?code=${code}`),
+                    .setURL(`${client.config.baseUrl}nucleus/rolemenu?code=${code}`),
                 new MessageButton()
                     .setLabel("Manual")
                     .setStyle("PRIMARY")
