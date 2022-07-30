@@ -17,6 +17,7 @@ export default async function(interaction) {
     if ((!config.verify.enabled ) || (!config.verify.role)) return interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Verify")
         .setDescription(`Verify is not enabled on this server`)
+        .setFooter({text: interaction.member.permissions.has("MANAGE_GUILD") ? "You can enable it by running /settings verify" : ""})
         .setStatus("Danger")
         .setEmoji("CONTROL.BLOCKCROSS")
     ], ephemeral: true, fetchReply: true});

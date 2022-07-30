@@ -61,7 +61,7 @@ export default async function(walkthrough = false) {
             if (walkthrough) {
                 switch (key) {
                     case "enableDevelopment": {
-                        json[key] = (await getInput("\x1b[36mEnable development mode? \x1b[0m(\x1b[32mY\x1b[0m/\x1b[31mn\x1b[0m) > ") || "Y").toLowerCase() === "y"; break;
+                        json[key] = (await getInput("\x1b[36mEnable development mode? This redisters commands in a single server making it easier to test\x1b[0m(\x1b[32mY\x1b[0m/\x1b[31mn\x1b[0m) > ") || "Y").toLowerCase() === "y"; break;
                     } case "owners": {
                         let chosen = "!";
                         let toWrite = []
@@ -80,7 +80,12 @@ export default async function(walkthrough = false) {
     }
     if (!json.mongoUrl.endsWith("/")) json.mongoUrl += "/";
     if (!json.baseUrl.endsWith("/")) json.baseUrl += "/";
-    let hosts = fs.readFileSync('/etc/hosts', 'utf8').toString().split("\n");
+    let hosts;
+    try {
+        hosts = fs.readFileSync('/etc/hosts', 'utf8').toString().split("\n");
+    } catch (e) {
+        return console.log("\x1b[31m⚠ No /etc/hosts found. Please ensure the file exists and is readable. (Windows is not supported, Mac and Linux users should not experience this error)")
+    }
     let localhost = hosts.find(line => line.split(" ")[1] === "localhost");
     if (localhost) { localhost = localhost.split(" ")[0]; }
     else { localhost = "127.0.0.1" }

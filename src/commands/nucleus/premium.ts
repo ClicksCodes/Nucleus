@@ -8,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("premium")
     .setDescription("Information about Nucleus Premium")
 
-const callback = (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Premium")
         .setDescription(

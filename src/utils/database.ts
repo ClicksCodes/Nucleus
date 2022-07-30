@@ -49,7 +49,6 @@ export class Guilds {
         let out = {$set: {}, $unset: {}}
         if (set) out["$set"] = set;
         if (unset.length) out["$unset"] = uo;
-        console.log(out)
         await this.guilds.updateOne({ id: guild }, out, { upsert: true });
     }
 
@@ -211,7 +210,8 @@ export interface GuildConfig {
             message: boolean,
             role: string | null
         },
-        welcomeRole: string | null,
+        role: string | null,
+        ping: string | null,
         channel: string | null,
         message: string | null,
     }

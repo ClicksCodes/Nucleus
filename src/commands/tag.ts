@@ -9,7 +9,7 @@ const command = new SlashCommandBuilder()
     .setDescription("Get and manage the servers tags")
     .addStringOption(o => o.setName("tag").setDescription("The tag to get").setAutocomplete(true).setRequired(true))
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     const config = await client.database.guilds.read(interaction.guild.id)
     const tags = config.getKey("tags")
     const tag = tags[interaction.options.getString("tag")]

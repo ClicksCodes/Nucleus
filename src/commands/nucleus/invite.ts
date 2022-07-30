@@ -9,7 +9,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("invite")
     .setDescription("Invites Nucleus to your server")
 
-const callback = (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Invite")
         .setDescription("You can invite Nucleus to your server by clicking the button below")

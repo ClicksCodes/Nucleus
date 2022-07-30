@@ -29,7 +29,8 @@
     },
     "welcome": {
         "enabled": false,
-        "welcomeRole": null,
+        "role": null,
+        "ping": null,
         "channel": null,
         "message": null
     },

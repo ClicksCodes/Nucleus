@@ -1,11 +1,12 @@
 import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, Emoji, MessageActionRow, MessageButton, MessageSelectMenu, TextInputComponent } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
+import { modalInteractionCollector } from '../../utils/dualCollector.js';
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -53,7 +54,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     let data = {
                         meta:{
                             type: 'verifyRoleChanged',
-                            displayName: 'Ignored Groups Changed',
+                            displayName: 'Verify Role Changed',
                             calculateType: 'nucleusSettingsUpdated',
                             color: NucleusColors.green,
                             emoji: "CONTROL.BLOCKTICK",
@@ -103,7 +104,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setLabel(clicks ? "Click again to confirm" : "Reset role")
                 .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
                 .setStyle("DANGER")
-                .setDisabled(!role)
+                .setDisabled(!role),
+            new MessageButton()
+                .setCustomId("send")
+                .setLabel("Add verify button")
+                .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
+                .setStyle("PRIMARY")
         ])]});
         let i;
         try {
@@ -117,23 +123,127 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"])
                 role = undefined;
             }
+        } else if (i.component.customId === "send") {
+            const verifyMessages = [
+                {label: "Verify", description: "Click the button below to get verified"},
+                {label: "Get verified", description: "To get access to the rest of the server, click the button below"},
+                {label: "Ready to verify?", description: "Click the button below to verify yourself"},
+            ]
+            while (true) {
+                await interaction.editReply({embeds: [new EmojiEmbed()
+                    .setTitle("Verify Button")
+                    .setDescription("Select a message template to send in this channel")
+                    .setFooter({text: role ? "" : "You do no have a verify role set so the button will not work."})
+                    .setStatus(role ? "Success" : "Warning")
+                    .setEmoji("GUILD.ROLES.CREATE")
+                ], components: [
+                    new MessageActionRow().addComponents([
+                        new MessageSelectMenu().setOptions(verifyMessages.map((t: {label: string, description: string, value?: string}, index) => {
+                            t.value = index.toString(); return t as {value: string, label: string, description: string}
+                        })).setCustomId("template").setMaxValues(1).setMinValues(1).setPlaceholder("Select a message template"),
+                    ]),
+                    new MessageActionRow().addComponents([
+                        new MessageButton()
+                            .setCustomId("back")
+                            .setLabel("Back")
+                            .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                            .setStyle("DANGER"),
+                        new MessageButton()
+                            .setCustomId("blank")
+                            .setLabel("Empty")
+                            .setStyle("SECONDARY"),
+                        new MessageButton()
+                            .setCustomId("custom")
+                            .setLabel("Custom")
+                            .setEmoji(getEmojiByName("TICKETS.OTHER", "id"))
+                            .setStyle("PRIMARY")
+                    ])
+                ]});
+                let i;
+                try {
+                    i = await m.awaitMessageComponent({time: 300000});
+                } catch(e) { break }
+                if (i.component.customId === "template") {
+                    i.deferUpdate()
+                    await interaction.channel.send({embeds: [new EmojiEmbed()
+                        .setTitle(verifyMessages[parseInt(i.values[0])].label)
+                        .setDescription(verifyMessages[parseInt(i.values[0])].description)
+                        .setStatus("Success")
+                        .setEmoji("CONTROL.BLOCKTICK")
+                    ], components: [new MessageActionRow().addComponents([new MessageButton()
+                        .setLabel("Verify")
+                        .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
+                        .setStyle("SUCCESS")
+                        .setCustomId("verifybutton")
+                    ])]});
+                    break
+                } else if (i.component.customId === "blank") {
+                    i.deferUpdate()
+                    await interaction.channel.send({components: [new MessageActionRow().addComponents([new MessageButton()
+                        .setLabel("Verify")
+                        .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
+                        .setStyle("SUCCESS")
+                        .setCustomId("verifybutton")
+                    ])]});
+                    break
+                } else if (i.component.customId === "custom") {
+                    await i.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Enter embed details`).addComponents(
+                        new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
+                            .setCustomId("title")
+                            .setLabel("Title")
+                            .setMaxLength(256)
+                            .setRequired(true)
+                            .setStyle("SHORT")
+                        ),
+                        new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
+                            .setCustomId("description")
+                            .setLabel("Description")
+                            .setMaxLength(4000)
+                            .setRequired(true)
+                            .setStyle("PARAGRAPH")
+                        )
+                    ))
+                    await interaction.editReply({
+                        embeds: [new EmojiEmbed()
+                            .setTitle("Verify Button")
+                            .setDescription("Modal opened. If you can't see it, click back and try again.")
+                            .setStatus("Success")
+                            .setEmoji("GUILD.TICKET.OPEN")
+                        ], components: [new MessageActionRow().addComponents([new MessageButton()
+                            .setLabel("Back")
+                            .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                            .setStyle("PRIMARY")
+                            .setCustomId("back")
+                        ])]
+                    });
+                    let out;
+                    try {
+                        out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify")
+                    } catch (e) { break }
+                    if (out.fields) {
+                        let title = out.fields.getTextInputValue("title");
+                        let description = out.fields.getTextInputValue("description");
+                        await interaction.channel.send({embeds: [new EmojiEmbed()
+                            .setTitle(title)
+                            .setDescription(description)
+                            .setStatus("Success")
+                            .setEmoji("CONTROL.BLOCKTICK")
+                        ], components: [new MessageActionRow().addComponents([new MessageButton()
+                            .setLabel("Verify")
+                            .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
+                            .setStyle("SUCCESS")
+                            .setCustomId("verifybutton")
+                        ])]});
+                        break
+                    } else { continue }
+                }
+            }
         } else {
-            break
+            i.deferUpdate()
+            break;
         }
     }
-    await interaction.editReply({embeds: [new EmojiEmbed()
-        .setTitle("Verify Role")
-        .setDescription(role ? `Your verify role is currently set to <@&${role}}>` : `You have not set a verify role`)
-        .setStatus("Success")
-        .setEmoji("GUILD.ROLE.CREATE")
-        .setFooter({text: "Message closed"})
-    ], components: [new MessageActionRow().addComponents([new MessageButton()
-        .setCustomId("clear")
-        .setLabel("Clear")
-        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-        .setStyle("SECONDARY")
-        .setDisabled(true),
-    ])]});
+    await interaction.editReply({embeds: [m.embeds[0].setFooter({text: "Message closed"})], components: []});
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {

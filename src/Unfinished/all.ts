@@ -78,7 +78,7 @@ const filterList = {
     }
 }
 
-const callback = async (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
     let filters: Filter[] = [
         filterList.member.has.role("959901346000154674"),

@@ -9,7 +9,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     .setName("stats")
     .setDescription("Gets the bot's stats")
 
-const callback = (interaction: CommandInteraction) => {
+const callback = async (interaction: CommandInteraction): Promise<any> => {
     interaction.reply({
         embeds: [new EmojiEmbed()
             .setTitle("Stats")

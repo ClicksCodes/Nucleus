@@ -29,7 +29,7 @@ export class Logger {
     entry(value, displayValue) {
         return { value: value, displayValue: displayValue }
     }
-    renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel | Discord.NewsChannel) {
+    renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel) {
         return `${channel.name} [<#${channel.id}>]`;
     }
     renderRole(role: Discord.Role) {

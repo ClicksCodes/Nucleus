@@ -17,6 +17,7 @@ export default async function (interaction) {
         return await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Tickets are disabled")
             .setDescription("Please enable tickets in the configuration to use this command.")
+            .setFooter({text: interaction.member.permissions.has("MANAGE_GUILD") ? "You can enable it by running /settings tickets" : ""})
             .setStatus("Danger")
             .setEmoji("CONTROL.BLOCKCROSS")
         ], ephemeral: true});

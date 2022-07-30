@@ -16,8 +16,16 @@ function getAutocomplete(typed: string, options: string[]): object[] {
     return fuse.slice(0, 25).map(option => ({name: option.item, value: option.item}))
 }
 
-const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"]
 function generateStatsChannelAutocomplete(typed) {
+    const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"]
+    let autocompletions = []
+    const beforeLastOpenBracket = typed.match(/(.*){[^{}]{0,15}$/)
+    if (beforeLastOpenBracket !== null) { for (let replacement of validReplacements) { autocompletions.push(`${beforeLastOpenBracket[1]} {${replacement}}`) } }
+    else { for (let replacement of validReplacements) { autocompletions.push(`${typed} {${replacement}}`) } }
+    return getAutocomplete(typed, autocompletions)
+}
+function generateWelcomeMessageAutocomplete(typed) {
+    const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans", "member:mention", "member:name"]
     let autocompletions = []
     const beforeLastOpenBracket = typed.match(/(.*){[^{}]{0,15}$/)
     if (beforeLastOpenBracket !== null) { for (let replacement of validReplacements) { autocompletions.push(`${beforeLastOpenBracket[1]} {${replacement}}`) } }
@@ -39,6 +47,7 @@ async function interactionCreate(interaction) {
         switch (`${interaction.commandName} ${interaction.options.getSubcommandGroup(false)} ${interaction.options.getSubcommand(false)}`) {
             case `tag null null`: { return interaction.respond(getAutocomplete(interaction.options.getString("tag"), (await tagAutocomplete(interaction)))) }
             case `settings null stats`: { return interaction.respond(generateStatsChannelAutocomplete(interaction.options.getString("name"))) }
+            case `settings null welcome`: { return interaction.respond(generateWelcomeMessageAutocomplete(interaction.options.getString("message"))) }
         }
     }
 }

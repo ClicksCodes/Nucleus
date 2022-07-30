@@ -192,6 +192,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setEmoji(getEmojiByName("TICKETS.OTHER", "id"))
                     .setStyle("SECONDARY")
                     .setCustomId("manageTypes"),
+                new MessageButton()
+                    .setLabel("Add create ticket button")
+                    .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
+                    .setStyle("PRIMARY")
+                    .setCustomId("send"),
             ])]
         });
         let i;
@@ -217,6 +222,122 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 await client.database.guilds.write(interaction.guild.id, null, ["tickets.supportRole"])
                 data.supportRole = undefined;
             } else lastClicked = "sup";
+        } else if (i.component.customId === "send") {
+            const ticketMessages = [
+                {label: "Create ticket", description: "Click the button below to create a ticket"},
+                {label: "Issues, questions or feedback?", description: "Click below to open a ticket and get help from our staff team"},
+                {label: "Contact Us", description: "Click the button below to speak to us privately"},
+            ]
+            while (true) {
+                let enabled = data.enabled && data.category !== null;
+                await interaction.editReply({embeds: [new EmojiEmbed()
+                    .setTitle("Ticket Button")
+                    .setDescription("Select a message template to send in this channel")
+                    .setFooter({text: enabled ? "" : "Tickets are not set up correctly so the button may not work for users. Check the main menu to find which options must be set."})
+                    .setStatus(enabled ? "Success" : "Warning")
+                    .setEmoji("GUILD.ROLES.CREATE")
+                ], components: [
+                    new MessageActionRow().addComponents([
+                        new MessageSelectMenu().setOptions(ticketMessages.map((t: {label: string, description: string, value?: string}, index) => {
+                            t.value = index.toString(); return t as {value: string, label: string, description: string}
+                        })).setCustomId("template").setMaxValues(1).setMinValues(1).setPlaceholder("Select a message template"),
+                    ]),
+                    new MessageActionRow().addComponents([
+                        new MessageButton()
+                            .setCustomId("back")
+                            .setLabel("Back")
+                            .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                            .setStyle("DANGER"),
+                        new MessageButton()
+                            .setCustomId("blank")
+                            .setLabel("Empty")
+                            .setStyle("SECONDARY"),
+                        new MessageButton()
+                            .setCustomId("custom")
+                            .setLabel("Custom")
+                            .setEmoji(getEmojiByName("TICKETS.OTHER", "id"))
+                            .setStyle("PRIMARY")
+                    ])
+                ]});
+                let i;
+                try {
+                    i = await m.awaitMessageComponent({time: 300000});
+                } catch(e) { break }
+                if (i.component.customId === "template") {
+                    i.deferUpdate()
+                    await interaction.channel.send({embeds: [new EmojiEmbed()
+                        .setTitle(ticketMessages[parseInt(i.values[0])].label)
+                        .setDescription(ticketMessages[parseInt(i.values[0])].description)
+                        .setStatus("Success")
+                        .setEmoji("GUILD.TICKET.OPEN")
+                    ], components: [new MessageActionRow().addComponents([new MessageButton()
+                        .setLabel("Create Ticket")
+                        .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
+                        .setStyle("SUCCESS")
+                        .setCustomId("createticket")
+                    ])]});
+                    break
+                } else if (i.component.customId === "blank") {
+                    i.deferUpdate()
+                    await interaction.channel.send({components: [new MessageActionRow().addComponents([new MessageButton()
+                        .setLabel("Create Ticket")
+                        .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
+                        .setStyle("SUCCESS")
+                        .setCustomId("createticket")
+                    ])]});
+                    break
+                } else if (i.component.customId === "custom") {
+                    await i.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Enter embed details`).addComponents(
+                        new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
+                            .setCustomId("title")
+                            .setLabel("Title")
+                            .setMaxLength(256)
+                            .setRequired(true)
+                            .setStyle("SHORT")
+                        ),
+                        new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
+                            .setCustomId("description")
+                            .setLabel("Description")
+                            .setMaxLength(4000)
+                            .setRequired(true)
+                            .setStyle("PARAGRAPH")
+                        )
+                    ))
+                    await interaction.editReply({
+                        embeds: [new EmojiEmbed()
+                            .setTitle("Ticket Button")
+                            .setDescription("Modal opened. If you can't see it, click back and try again.")
+                            .setStatus("Success")
+                            .setEmoji("GUILD.TICKET.OPEN")
+                        ], components: [new MessageActionRow().addComponents([new MessageButton()
+                            .setLabel("Back")
+                            .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                            .setStyle("PRIMARY")
+                            .setCustomId("back")
+                        ])]
+                    });
+                    let out;
+                    try {
+                        out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify")
+                    } catch (e) { break }
+                    if (out.fields) {
+                        let title = out.fields.getTextInputValue("title");
+                        let description = out.fields.getTextInputValue("description");
+                        await interaction.channel.send({embeds: [new EmojiEmbed()
+                            .setTitle(title)
+                            .setDescription(description)
+                            .setStatus("Success")
+                            .setEmoji("GUILD.TICKET.OPEN")
+                        ], components: [new MessageActionRow().addComponents([new MessageButton()
+                            .setLabel("Create Ticket")
+                            .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
+                            .setStyle("SUCCESS")
+                            .setCustomId("createticket")
+                        ])]});
+                        break
+                    } else { continue }
+                }
+            }
         } else if (i.component.customId === "enabled") {
             await client.database.guilds.write(interaction.guild.id, { "tickets.enabled": !data.enabled })
             data.enabled = !data.enabled;

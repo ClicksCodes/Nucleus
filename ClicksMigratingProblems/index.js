@@ -62,7 +62,7 @@ for (const file of files) {
                 "message": null,
                 "role": null,
             },
-            "welcomeRole": data.welcome ? (data.welcome.role !== null ? data.welcome.role.toString() : null) : null,
+            "role": data.welcome ? (data.welcome.role !== null ? data.welcome.role.toString() : null) : null,
             "channel": data.welcome ? (data.welcome.message.text !== null ? data.welcome.message.channel.toString() : null) : null,
             "message": data.welcome ? (data.welcome.message.text) : null
         },

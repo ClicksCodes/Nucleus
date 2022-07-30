@@ -144,12 +144,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             await client.database.guilds.write(interaction.guild.id, null, toRemove.map(k => `stats.${k}`));
         }
     }
-    await interaction.editReply({embeds: [new EmojiEmbed()
-        .setTitle("Stats Channel")
-        .setDescription("The following channels update when someone joins or leaves the server. You can select a channel to remove it from the list.")
-        .setStatus("Danger")
-        .setEmoji("CHANNEL.TEXT.DELETE")
-    ], components: []})
+    await interaction.editReply({embeds: [m.embeds[0].setFooter({text: "Message closed"})], components: []});
 }
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
