@@ -3,15 +3,15 @@ import * as readLine from 'node:readline/promises';
 import { exec } from 'node:child_process';
 
 const defaultDict = {
-    "token": "Your bot token",
-    "developmentToken": "Your development bot token",
-    "managementGuildID": "Your management guild ID",
+    "developmentToken": "Your development bot token (Used for testing in one server, rather than production)",
     "developmentGuildID": "Your development guild ID",
     "enableDevelopment": true,
+    "token": "Your bot token",
+    "managementGuildID": "Your management guild ID (Used for running management commands on the bot)",
     "owners": [],
-    "verifySecret": "If using verify, enter a code here which matches your website if needed",
+    "verifySecret": "If using verify, enter a code here which matches your website. You can use a random code if you do not have one already. (Optional)",
     "mongoUrl": "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",
-    "baseUrl": "Your website where buttons such as Verify will link to, e.g. https://example.com",
+    "baseUrl": "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com",
     "pastebinApiKey": "An API key for pastebin (optional)",
     "pastebinUsername": "Your pastebin username (optional)",
     "pastebinPassword": "Your pastebin password (optional)",
@@ -78,6 +78,7 @@ export default async function(walkthrough = false) {
             else { json[key] = defaultDict[key] }
         }
     }
+    if (walkthrough && !json.mongoUrl) json.mongoUrl = "mongodb://127.0.0.1:27017"
     if (!json.mongoUrl.endsWith("/")) json.mongoUrl += "/";
     if (!json.baseUrl.endsWith("/")) json.baseUrl += "/";
     let hosts = fs.readFileSync('/etc/hosts', 'utf8').toString().split("\n");
