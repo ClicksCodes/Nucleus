@@ -41,6 +41,8 @@ Alternatively, you can run `Installer.js` to generate it for you.
     "mongoUrl": "mongodb://your-mongo-ip-and-port",
     "baseUrl": "your website url, e.g. https://clicks.codes",
     "pastebinApiKey": "your-pastebin-api-key"
+    "pastebinUsername": "your-pastebin-username"
+    "pastebinPassword": "your-pastebin-password"
 }
 ```
 
