@@ -9,7 +9,7 @@ const defaultDict = {
     "token": "Your bot token",
     "managementGuildID": "Your management guild ID (Used for running management commands on the bot)",
     "owners": [],
-    "verifySecret": "If using verify, enter a code here which matches your website. You can use a random code if you do not have one already. (Optional)",
+    "verifySecret": "If using verify, enter a code here which matches the secret send back by your website. You can use a random code if you do not have one already. (Optional)",
     "mongoUrl": "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",
     "baseUrl": "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com",
     "pastebinApiKey": "An API key for pastebin (optional)",
