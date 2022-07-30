@@ -73,4 +73,4 @@ You should always know what we know and store about you, so here is the complete
 
 ### Self hosting
 
-Nucleus is fully open source, and you can run your own copy. Read [COPYING.md](https://github.com/ClicksMinutePer/Nucleus/blob/development/COPYING.md) for the legal requirements and a guide for how to configure your own copy.
+Nucleus is fully open source, and you can run your own copy. Read [SELF_HOSTING.md](https://github.com/ClicksMinutePer/Nucleus/blob/development/SELF_HOSTING.md) for the legal requirements and a guide for how to configure your own copy.
