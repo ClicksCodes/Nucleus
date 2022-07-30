@@ -25,6 +25,7 @@ However, you **must**:
 ## How to:
 
 We hide the config file with our important data like the bot token. Below you can find a copy of `src/config/main.json`.
+Alternatively, you can run `Installer.js` to generate it for you.
 
 ```json
 {
