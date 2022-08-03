@@ -166,10 +166,12 @@ const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck
     if (member.id === interaction.guild.ownerId) return true
     // Check if the user can manage any of the tracks
     let managed = false
-    tracks.forEach(element => {
-        if (!element.track.manageableBy) return
-        if (element.track.manageableBy.some(role => member.roles.cache.has(role))) managed = true
-    });
+    for (const element of tracks) {
+        if (!element.track.manageableBy) continue
+        if (!element.track.manageableBy.some(role => member.roles.cache.has(role))) continue
+        managed = true;
+        break;
+    };
     // Check if the user has manage_roles permission
     if (!managed && ! member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
     // Allow track

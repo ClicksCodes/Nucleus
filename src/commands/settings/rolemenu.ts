@@ -8,9 +8,9 @@ import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("role")
-    .setDescription("Sets or shows the role given to users after using /verify")
-    .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying"))
+    .setName("rolemenu")
+    .setDescription("rolemenu")// TODO
+    .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying")) // TODO
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
 }

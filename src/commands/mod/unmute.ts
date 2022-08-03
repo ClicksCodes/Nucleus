@@ -114,12 +114,12 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
+    // Do not allow unmuting the owner
+    if (member.id === interaction.guild.ownerId) throw "You cannot unmute the owner of the server"
     // Check if Nucleus can unmute the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to unmute
     if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the *Moderate Members* permission";
-    // Do not allow the user to have admin or be the owner
-    if (apply.permissions.has("ADMINISTRATOR") || apply.id === interaction.guild.ownerId) throw "You cannot unmute an admin or the owner"
     // Allow the owner to unmute anyone
     if (member.id === interaction.guild.ownerId) return true
     // Check if the user has moderate_members permission

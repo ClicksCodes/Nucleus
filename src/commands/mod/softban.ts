@@ -106,13 +106,15 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
+    // Do not allow softbanning the owner
+    if (member.id === interaction.guild.ownerId) throw "You cannot softban the owner of the server"
     // Check if Nucleus can ban the member
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to ban
     if (!me.permissions.has("BAN_MEMBERS")) throw "I do not have the *Ban Members* permission";
     // Do not allow softbanning Nucleus
     if (member.id === me.id) throw "I cannot softban myself"
-    // Allow the owner to ban anyone
+    // Allow the owner to softban anyone
     if (member.id === interaction.guild.ownerId) return true
     // Check if the user has ban_members permission
     if (! member.permissions.has("BAN_MEMBERS")) throw "You do not have the *Ban Members* permission";

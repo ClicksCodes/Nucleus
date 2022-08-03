@@ -1,10 +1,8 @@
 import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
-import { ChannelType } from 'discord-api-types';
-import Discord, { AutocompleteInteraction, CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import Discord, { CommandInteraction, MessageActionRow, MessageSelectMenu } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import getEmojiByName from "../../utils/getEmojiByName.js";
-import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
 import convertCurlyBracketString from '../../utils/convertCurlyBracketString.js';
@@ -149,7 +147,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
+    if (!member.permissions.has("MANAGE_CHANNELS")) throw "You must have the *Manage Channels* permission to use this command"
     return true;
 }
 

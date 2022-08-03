@@ -121,6 +121,8 @@ const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     let memberPos = member.roles ? member.roles.highest.position : 0
     let mePos = me.roles ? me.roles.highest.position : 0
     let applyPos = apply.roles ? apply.roles.highest.position : 0
+    // Do not allow any changing of the owner
+    if (member.id === interaction.guild.ownerId) throw "You cannot change the owner's nickname"
     // Check if Nucleus can change the nickname
     if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
     // Check if Nucleus has permission to change the nickname

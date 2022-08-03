@@ -22,13 +22,14 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
     let options = {
         enabled: interaction.options.getString("enabled") as string | boolean,
         category: interaction.options.getChannel("category"),
         maxtickets: interaction.options.getNumber("maxticketsperuser"),
         supportping: interaction.options.getRole("supportrole")
     }
+    console.log(m)
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         options.enabled = options.enabled === "yes" ? true : false;
         if (options.category) {

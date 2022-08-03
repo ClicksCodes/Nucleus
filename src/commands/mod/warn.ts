@@ -107,6 +107,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setStatus("Success")
             ], components: []})
         } else {
+            let canSeeChannel = (interaction.options.getMember("user") as GuildMember).permissionsIn(interaction.channel as Discord.TextChannel).has("VIEW_CHANNEL")
             let m = await interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setEmoji(`PUNISH.WARN.RED`)
@@ -122,8 +123,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         new Discord.MessageButton()
                             .setCustomId("here")
                             .setLabel("Warn here")
-                            .setStyle("SECONDARY")
-                            .setDisabled((interaction.options.getMember("user") as GuildMember).permissionsIn(interaction.channel as Discord.TextChannel).has("VIEW_CHANNEL") === false),
+                            .setStyle(canSeeChannel ? "PRIMARY" : "SECONDARY")
+                            .setDisabled(!canSeeChannel),
+                        new Discord.MessageButton()
+                            .setCustomId("ticket")
+                            .setLabel("Create ticket")
+                            .setStyle(canSeeChannel ? "SECONDARY" : "PRIMARY")
                     ])
                 ]
             })
@@ -156,11 +161,27 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setDescription("The user was warned" + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
                     .setStatus("Success")
                 ], components: []})
-            } else {
+            } else if (component.customId === "log") {
                 await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji(`PUNISH.WARN.GREEN`)
                     .setTitle(`Warn`)
                     .setDescription("The warn was logged")
+                    .setStatus("Success")
+                ], components: []})
+            } else if (component.customId === "ticket") {
+                let ticketChannel = await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason, "Warn Notification")
+                if (ticketChannel === null) {
+                    return await interaction.editReply({embeds: [new EmojiEmbed()
+                        .setEmoji(`PUNISH.WARN.RED`)
+                        .setTitle(`Warn`)
+                        .setDescription("A ticket could not be created")
+                        .setStatus("Danger")
+                    ], components: []})
+                }
+                await interaction.editReply({embeds: [new EmojiEmbed()
+                    .setEmoji(`PUNISH.WARN.GREEN`)
+                    .setTitle(`Warn`)
+                    .setDescription(`A ticket was created in <#${ticketChannel}>`)
                     .setStatus("Success")
                 ], components: []})
             }

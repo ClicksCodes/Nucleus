@@ -3,7 +3,7 @@ import EmojiEmbed from '../utils/generateEmojiEmbed.js';
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 
-export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string) {
+export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string, customReason?: string) {
     let config = await client.database.guilds.read(guild.id);
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
     let overwrites = [{
@@ -51,7 +51,7 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by a Moderator\n` +
-                `**Support type:** Appeal submission\n` + (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
+                `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` + (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                 `**Ticket ID:** \`${c.id}\`\n` +
                 `Type \`/ticket close\` to close this ticket.`,
             )

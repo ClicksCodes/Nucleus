@@ -59,7 +59,7 @@ const callback = async (interaction: CommandInteraction): Promise<any>  => {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("GUILD.ROLES.CREATE")
             .setTitle("Role")
-            .setDescription(`You have cancelled the role change.`)
+            .setDescription(`No changes were made.`)
             .setStatus("Danger")
         ], components: []})
     }
