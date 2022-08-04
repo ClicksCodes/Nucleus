@@ -1,4 +1,4 @@
-import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, Emoji, MessageActionRow, MessageButton, MessageSelectMenu, TextInputComponent } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -6,76 +6,74 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
-import { modalInteractionCollector } from '../../utils/dualCollector.js';
+import { modalInteractionCollector } from "../../utils/dualCollector.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("verify")
-    .setDescription("Manage the role given after typing /verify")
-    .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying").setRequired(false))
+        .setName("verify")
+        .setDescription("Manage the role given after typing /verify")
+        .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying").setRequired(false));
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
     m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     if (interaction.options.getRole("role")) {
-        let role
+        let role;
         try {
-            role = interaction.options.getRole("role")
+            role = interaction.options.getRole("role");
         } catch {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("GUILD.ROLES.DELETE")
                 .setTitle("Verify Role")
                 .setDescription("The role you provided is not a valid role")
                 .setStatus("Danger")
-            ]})
+            ]});
         }
-        role = role as Discord.Role
+        role = role as Discord.Role;
         if (role.guild.id !== interaction.guild.id) {
             return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify Role")
-                .setDescription(`You must choose a role in this server`)
+                .setDescription("You must choose a role in this server")
                 .setStatus("Danger")
                 .setEmoji("GUILD.ROLES.DELETE")
             ]});
         }
-        let confirmation = await new confirmationMessage(interaction)
+        const confirmation = await new confirmationMessage(interaction)
             .setEmoji("GUILD.ROLES.EDIT")
             .setTitle("Verify Role")
             .setDescription(`Are you sure you want to set the verify role to <@&${role.id}>?`)
             .setColor("Warning")
             .setInverted(true)
-        .send(true)
-        if (confirmation.cancelled) return
+            .send(true);
+        if (confirmation.cancelled) return;
         if (confirmation.success) {
             try {
                 await client.database.guilds.write(interaction.guild.id, {"verify.role": role.id, "verify.enabled": true});
-                const { log, NucleusColors, entry, renderUser, renderRole } = client.logger
-                try {
-                    let data = {
-                        meta:{
-                            type: 'verifyRoleChanged',
-                            displayName: 'Verify Role Changed',
-                            calculateType: 'nucleusSettingsUpdated',
-                            color: NucleusColors.green,
-                            emoji: "CONTROL.BLOCKTICK",
-                            timestamp: new Date().getTime()
-                        },
-                        list: {
-                            memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
-                            changedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                            role: entry(role.id, renderRole(role)),
-                        },
-                        hidden: {
-                            guild: interaction.guild.id
-                        }
+                const { log, NucleusColors, entry, renderUser, renderRole } = client.logger;
+                const data = {
+                    meta:{
+                        type: "verifyRoleChanged",
+                        displayName: "Verify Role Changed",
+                        calculateType: "nucleusSettingsUpdated",
+                        color: NucleusColors.green,
+                        emoji: "CONTROL.BLOCKTICK",
+                        timestamp: new Date().getTime()
+                    },
+                    list: {
+                        memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                        changedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                        role: entry(role.id, renderRole(role))
+                    },
+                    hidden: {
+                        guild: interaction.guild.id
                     }
-                    log(data);
-                } catch {}
+                };
+                log(data);
             } catch (e) {
-                console.log(e)
+                console.log(e);
                 return interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Verify Role")
-                    .setDescription(`Something went wrong while setting the verify role`)
+                    .setDescription("Something went wrong while setting the verify role")
                     .setStatus("Danger")
                     .setEmoji("GUILD.ROLES.DELETE")
                 ], components: []});
@@ -83,19 +81,19 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         } else {
             return interaction.editReply({embeds: [new EmojiEmbed()
                 .setTitle("Verify Role")
-                .setDescription(`No changes were made`)
+                .setDescription("No changes were made")
                 .setStatus("Success")
                 .setEmoji("GUILD.ROLES.CREATE")
             ], components: []});
         }
     }
     let clicks = 0;
-    let data = await client.database.guilds.read(interaction.guild.id);
+    const data = await client.database.guilds.read(interaction.guild.id);
     let role = data.verify.role;
     while (true) {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Verify Role")
-            .setDescription(role ? `Your verify role is currently set to <@&${role}>` : `You have not set a verify role`)
+            .setDescription(role ? `Your verify role is currently set to <@&${role}>` : "You have not set a verify role")
             .setStatus("Success")
             .setEmoji("GUILD.ROLES.CREATE")
         ], components: [new MessageActionRow().addComponents([
@@ -114,21 +112,21 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         let i;
         try {
             i = await m.awaitMessageComponent({time: 300000});
-        } catch(e) { break }
-        i.deferUpdate()
+        } catch(e) { break; }
+        i.deferUpdate();
         if (i.component.customId === "clear") {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"])
+                await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"]);
                 role = undefined;
             }
         } else if (i.component.customId === "send") {
             const verifyMessages = [
                 {label: "Verify", description: "Click the button below to get verified"},
                 {label: "Get verified", description: "To get access to the rest of the server, click the button below"},
-                {label: "Ready to verify?", description: "Click the button below to verify yourself"},
-            ]
+                {label: "Ready to verify?", description: "Click the button below to verify yourself"}
+            ];
             while (true) {
                 await interaction.editReply({embeds: [new EmojiEmbed()
                     .setTitle("Verify Button")
@@ -139,8 +137,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 ], components: [
                     new MessageActionRow().addComponents([
                         new MessageSelectMenu().setOptions(verifyMessages.map((t: {label: string, description: string, value?: string}, index) => {
-                            t.value = index.toString(); return t as {value: string, label: string, description: string}
-                        })).setCustomId("template").setMaxValues(1).setMinValues(1).setPlaceholder("Select a message template"),
+                            t.value = index.toString(); return t as {value: string, label: string, description: string};
+                        })).setCustomId("template").setMaxValues(1).setMinValues(1).setPlaceholder("Select a message template")
                     ]),
                     new MessageActionRow().addComponents([
                         new MessageButton()
@@ -162,9 +160,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 let i;
                 try {
                     i = await m.awaitMessageComponent({time: 300000});
-                } catch(e) { break }
+                } catch(e) { break; }
                 if (i.component.customId === "template") {
-                    i.deferUpdate()
+                    i.deferUpdate();
                     await interaction.channel.send({embeds: [new EmojiEmbed()
                         .setTitle(verifyMessages[parseInt(i.values[0])].label)
                         .setDescription(verifyMessages[parseInt(i.values[0])].description)
@@ -176,18 +174,18 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setStyle("SUCCESS")
                         .setCustomId("verifybutton")
                     ])]});
-                    break
+                    break;
                 } else if (i.component.customId === "blank") {
-                    i.deferUpdate()
+                    i.deferUpdate();
                     await interaction.channel.send({components: [new MessageActionRow().addComponents([new MessageButton()
                         .setLabel("Verify")
                         .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                         .setStyle("SUCCESS")
                         .setCustomId("verifybutton")
                     ])]});
-                    break
+                    break;
                 } else if (i.component.customId === "custom") {
-                    await i.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Enter embed details`).addComponents(
+                    await i.showModal(new Discord.Modal().setCustomId("modal").setTitle("Enter embed details").addComponents(
                         new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                             .setCustomId("title")
                             .setLabel("Title")
@@ -202,7 +200,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setRequired(true)
                             .setStyle("PARAGRAPH")
                         )
-                    ))
+                    ));
                     await interaction.editReply({
                         embeds: [new EmojiEmbed()
                             .setTitle("Verify Button")
@@ -218,11 +216,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     });
                     let out;
                     try {
-                        out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify")
-                    } catch (e) { break }
+                        out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify");
+                    } catch (e) { break; }
                     if (out.fields) {
-                        let title = out.fields.getTextInputValue("title");
-                        let description = out.fields.getTextInputValue("description");
+                        const title = out.fields.getTextInputValue("title");
+                        const description = out.fields.getTextInputValue("description");
                         await interaction.channel.send({embeds: [new EmojiEmbed()
                             .setTitle(title)
                             .setDescription(description)
@@ -234,23 +232,23 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setStyle("SUCCESS")
                             .setCustomId("verifybutton")
                         ])]});
-                        break
-                    } else { continue }
+                        break;
+                    } else { continue; }
                 }
             }
         } else {
-            i.deferUpdate()
+            i.deferUpdate();
             break;
         }
     }
     await interaction.editReply({embeds: [m.embeds[0].setFooter({text: "Message closed"})], components: []});
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
+    const member = (interaction.member as Discord.GuildMember);
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;
-}
+};
 
 export { command };
 export { callback };

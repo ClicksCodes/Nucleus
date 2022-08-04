@@ -1,12 +1,12 @@
-import Discord, { MessageActionRow, MessageButton } from 'discord.js';
-import EmojiEmbed from '../utils/generateEmojiEmbed.js';
+import Discord, { MessageActionRow, MessageButton } from "discord.js";
+import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 
 export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string, customReason?: string) {
-    let config = await client.database.guilds.read(guild.id);
-    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
-    let overwrites = [{
+    const config = await client.database.guilds.read(guild.id);
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
+    const overwrites = [{
         id: member,
         allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
         type: "member"
@@ -15,13 +15,13 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
         id: guild.roles.everyone,
         deny: ["VIEW_CHANNEL"],
         type: "role"
-    })
+    });
     if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: guild.roles.cache.get(config.tickets.supportRole),
             allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
             type: "role"
-        })
+        });
     }
 
     let c;
@@ -33,9 +33,9 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             nsfw: false,
             permissionOverwrites: (overwrites as Discord.OverwriteResolvable[]),
             reason: "Creating ticket"
-        })
+        });
     } catch (e) {
-        return null
+        return null;
     }
     try {
         await c.send(
@@ -46,14 +46,14 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
                     roles: (config.tickets.supportRole !== null ? [config.tickets.supportRole] : [])
                 }
             }
-        )
+        );
         await c.send({ embeds: [new EmojiEmbed()
             .setTitle("New Ticket")
             .setDescription(
-                `Ticket created by a Moderator\n` +
+                "Ticket created by a Moderator\n" +
                 `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` + (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                 `**Ticket ID:** \`${c.id}\`\n` +
-                `Type \`/ticket close\` to close this ticket.`,
+                "Type `/ticket close` to close this ticket."
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN")
@@ -62,32 +62,32 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             .setStyle("DANGER")
             .setCustomId("closeticket")
             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-        ])]})
-        let data = {
+        ])]});
+        const data = {
             meta:{
-                type: 'ticketCreate',
-                displayName: 'Ticket Created',
+                type: "ticketCreate",
+                displayName: "Ticket Created",
                 calculateType: "ticketUpdate",
                 color: NucleusColors.green,
-                emoji: 'GUILD.TICKET.OPEN',
+                emoji: "GUILD.TICKET.OPEN",
                 timestamp: new Date().getTime()
             },
             list: {
                 ticketFor: entry(member.id, renderUser(member)),
                 createdBy: entry(createdBy.id, renderUser(createdBy)),
                 created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                ticketChannel: entry(c.id, renderChannel(c)),
+                ticketChannel: entry(c.id, renderChannel(c))
             },
             hidden: {
                 guild: guild.id
             }
-        }
+        };
         log(data);
-    } catch (e) { console.log(e); return null }
-    return c.id
+    } catch (e) { console.log(e); return null; }
+    return c.id;
 }
 
 export async function areTicketsEnabled(guild: string) {
-    let config = await client.database.guilds.read(guild);
+    const config = await client.database.guilds.read(guild);
     return config.tickets.enabled;
 }

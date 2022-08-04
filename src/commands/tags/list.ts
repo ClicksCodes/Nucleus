@@ -1,10 +1,10 @@
-import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
-import { SelectMenuOption } from '@discordjs/builders';
+import { SelectMenuOption } from "@discordjs/builders";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
 
@@ -12,8 +12,8 @@ import createPageIndicator from "../../utils/createPageIndicator.js";
 class Embed {
     embed: Discord.MessageEmbed;
     title: string;
-    description: string = "";
-    pageId: number = 0;
+    description = "";
+    pageId = 0;
     setEmbed(embed: Discord.MessageEmbed) { this.embed = embed; return this; }
     setTitle(title: string) { this.title = title; return this; }
     setDescription(description: string) { this.description = description; return this; }
@@ -23,61 +23,61 @@ class Embed {
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("list")
-        .setDescription("Lists all tags in the server")
+        .setDescription("Lists all tags in the server");
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    let data = await client.database.guilds.read(interaction.guild.id);
-    let tags = data.getKey("tags");
-    let strings = []
-    if (data === {}) strings = ["*No tags exist*"]
+    const data = await client.database.guilds.read(interaction.guild.id);
+    const tags = data.getKey("tags");
+    let strings = [];
+    if (data === {}) strings = ["*No tags exist*"];
     else {
-        let string = ""
-        for (let tag in tags) {
-            let proposed = `**${tag}:** ${tags[tag]}\n`
+        let string = "";
+        for (const tag in tags) {
+            const proposed = `**${tag}:** ${tags[tag]}\n`;
             if (string.length + proposed.length > 2000) {
-                strings.push(string.slice(0, -1))
-                string = ""
+                strings.push(string.slice(0, -1));
+                string = "";
             }
-            string += proposed
+            string += proposed;
         }
-        strings.push(string.slice(0, -1))
+        strings.push(string.slice(0, -1));
     }
 
-    let pages = []
-    for (let string of strings) {
+    const pages = [];
+    for (const string of strings) {
         pages.push(new Embed()
             .setEmbed(new EmojiEmbed()
                 .setTitle("Tags")
                 .setDescription(string)
                 .setEmoji("PUNISH.NICKNAME.GREEN")
                 .setStatus("Success")
-            ).setTitle(`Page ${pages.length + 1}`).setPageId(pages.length))
+            ).setTitle(`Page ${pages.length + 1}`).setPageId(pages.length));
     }
     let m;
     m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let page = 0;
     let selectPaneOpen = false;
     while (true) {
-        let selectPane = []
+        let selectPane = [];
 
         if (selectPaneOpen) {
-            let options = [];
+            const options = [];
             pages.forEach(embed => {
                 options.push(new SelectMenuOption({
                     label: embed.title,
                     value: embed.pageId.toString(),
-                    description: embed.description || "",
-                }))
-            })
+                    description: embed.description || ""
+                }));
+            });
             selectPane = [new MessageActionRow().addComponents([
                 new Discord.MessageSelectMenu()
                     .addOptions(options)
                     .setCustomId("page")
                     .setMaxValues(1)
                     .setPlaceholder("Choose a page...")
-            ])]
+            ])];
         }
-        let em = new Discord.MessageEmbed(pages[page].embed)
+        const em = new Discord.MessageEmbed(pages[page].embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
         await interaction.editReply({
             embeds: [em],
@@ -88,11 +88,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER")
             ])])
         });
-        let i
+        let i;
         try {
             i = await m.awaitMessageComponent({time: 300000 });
-        } catch (e) { break }
-        i.deferUpdate()
+        } catch (e) { break; }
+        i.deferUpdate();
         if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
@@ -105,7 +105,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             page = parseInt(i.values[0]);
             selectPaneOpen = false;
         } else {
-            let em = new Discord.MessageEmbed(pages[page].embed)
+            const em = new Discord.MessageEmbed(pages[page].embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
             await interaction.editReply({
                 embeds: [em], components: [new MessageActionRow().addComponents([
@@ -114,11 +114,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(true),
                     new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER").setDisabled(true)
                 ])]
-            })
+            });
             return;
         }
     }
-    let em = new Discord.MessageEmbed(pages[page].embed)
+    const em = new Discord.MessageEmbed(pages[page].embed);
     em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
     await interaction.editReply({
         embeds: [em],
@@ -129,11 +129,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER").setDisabled(true)
         ])]
     });
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     return true;
-}
+};
 
 export { command };
 export { callback };

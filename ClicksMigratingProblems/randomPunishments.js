@@ -1,7 +1,7 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient } from "mongodb";
 
-const mongoClient = new MongoClient('mongodb://127.0.0.1:27017/local');
-await mongoClient.connect()
+const mongoClient = new MongoClient("mongodb://127.0.0.1:27017/local");
+await mongoClient.connect();
 const database = mongoClient.db("Nucleus");
 const collection = database.collection("history");
 
@@ -20,7 +20,7 @@ for (let i = 0; i < 100; i++) {
         reason: (["unban", "ban", "softban", "kick", "mute", "purge", "warn"].includes(type)) ? "Test" : null,
         before: (type === "nickname") ? "TestBefore" : null,
         after: (type === "nickname") ? "TestAfter" : null,
-        amount: (type === "purge") ? Math.floor(Math.random() * 100) : null,
+        amount: (type === "purge") ? Math.floor(Math.random() * 100) : null
     });
     console.log("Inserted document " + i);
 }

@@ -1,4 +1,4 @@
-import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -12,30 +12,30 @@ import { areTicketsEnabled, create } from "../../actions/createModActionTicket.j
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("mute")
-    .setDescription("Mutes a member, stopping them from talking in the server")
-    .addUserOption(option => option.setName("user").setDescription("The user to mute").setRequired(true))
-    .addIntegerOption(option => option.setName("days").setDescription("The number of days to mute the user for | Default: 0").setMinValue(0).setMaxValue(27).setRequired(false))
-    .addIntegerOption(option => option.setName("hours").setDescription("The number of hours to mute the user for | Default: 0").setMinValue(0).setMaxValue(23).setRequired(false))
-    .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
-    .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
+        .setName("mute")
+        .setDescription("Mutes a member, stopping them from talking in the server")
+        .addUserOption(option => option.setName("user").setDescription("The user to mute").setRequired(true))
+        .addIntegerOption(option => option.setName("days").setDescription("The number of days to mute the user for | Default: 0").setMinValue(0).setMaxValue(27).setRequired(false))
+        .addIntegerOption(option => option.setName("hours").setDescription("The number of hours to mute the user for | Default: 0").setMinValue(0).setMaxValue(23).setRequired(false))
+        .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
+        .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false));
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger
-    const user = interaction.options.getMember("user") as GuildMember
+    const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
+    const user = interaction.options.getMember("user") as GuildMember;
     const time = {
         days: interaction.options.getInteger("days") || 0,
         hours: interaction.options.getInteger("hours") || 0,
         minutes: interaction.options.getInteger("minutes") || 0,
         seconds: interaction.options.getInteger("seconds") || 0
-    }
-    let config = await client.database.guilds.read(interaction.guild.id)
-    let serverSettingsDescription = (config.moderation.mute.timeout ? "given a timeout" : "")
-    if (config.moderation.mute.role) serverSettingsDescription += (serverSettingsDescription ? " and " : "") + `given the <@&${config.moderation.mute.role}> role`
+    };
+    const config = await client.database.guilds.read(interaction.guild.id);
+    let serverSettingsDescription = (config.moderation.mute.timeout ? "given a timeout" : "");
+    if (config.moderation.mute.role) serverSettingsDescription += (serverSettingsDescription ? " and " : "") + `given the <@&${config.moderation.mute.role}> role`;
 
-    let muteTime = (time.days * 24 * 60 * 60) + (time.hours * 60 * 60) + (time.minutes * 60) + time.seconds
+    let muteTime = (time.days * 24 * 60 * 60) + (time.hours * 60 * 60) + (time.minutes * 60) + time.seconds;
     if (muteTime === 0) {
-        let m = await interaction.reply({embeds: [
+        const m = await interaction.reply({embeds: [
             new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.GREEN")
                 .setTitle("Mute")
@@ -85,30 +85,30 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStyle("DANGER")
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
             ])
-        ], ephemeral: true, fetchReply: true})
+        ], ephemeral: true, fetchReply: true});
         let component;
         try {
             component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
-        } catch { return }
+        } catch { return; }
         component.deferUpdate();
         if (component.customId === "cancel") return interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.MUTE.RED")
             .setTitle("Mute")
             .setDescription("Mute cancelled")
             .setStatus("Danger")
-        ]})
+        ]});
         switch (component.customId) {
-            case "1m": { muteTime = 60; break; }
-            case "10m": { muteTime = 60 * 10; break; }
-            case "30m": { muteTime = 60 * 30; break; }
-            case "1h": { muteTime = 60 * 60; break; }
-            case "6h": { muteTime = 60 * 60 * 6; break; }
-            case "12h": { muteTime = 60 * 60 * 12; break; }
-            case "1d": { muteTime = 60 * 60 * 24; break; }
-            case "1w": { muteTime = 60 * 60 * 24 * 7; break; }
+        case "1m": { muteTime = 60; break; }
+        case "10m": { muteTime = 60 * 10; break; }
+        case "30m": { muteTime = 60 * 30; break; }
+        case "1h": { muteTime = 60 * 60; break; }
+        case "6h": { muteTime = 60 * 60 * 6; break; }
+        case "12h": { muteTime = 60 * 60 * 12; break; }
+        case "1d": { muteTime = 60 * 60 * 24; break; }
+        case "1w": { muteTime = 60 * 60 * 24 * 7; break; }
         }
     } else {
-        await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
+        await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     }
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -124,8 +124,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "time": `${humanizeDuration(muteTime * 1000, {round: true})}`,
                 "reason": reason ?  ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
-            + `The user will be ` + serverSettingsDescription + "\n"
-            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
+            + "The user will be " + serverSettingsDescription + "\n"
+            + `The user **will${notify ? "" : " not"}** be notified\n\n`
             + `Are you sure you want to mute <@!${user.id}>?`)
             .setColor("Danger")
             .addCustomBoolean(
@@ -134,20 +134,20 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "An appeal ticket will be created when Confirm is clicked", "CONTROL.TICKET", createAppealTicket)
             .addCustomBoolean("notify", "Notify user", false, null, null, "ICONS.NOTIFY." + (notify ? "ON" : "OFF" ), notify)
             .addReasonButton(reason ?? "")
-        .send(true)
-        reason = reason ?? ""
-        if (confirmation.cancelled) return
-        if (confirmation.success) break
-        if (confirmation.newReason) reason = confirmation.newReason
+            .send(true);
+        reason = reason ?? "";
+        if (confirmation.cancelled) return;
+        if (confirmation.success) break;
+        if (confirmation.newReason) reason = confirmation.newReason;
         if (confirmation.components) {
-            notify = confirmation.components.notify.active
-            createAppealTicket = confirmation.components.appeal.active
+            notify = confirmation.components.notify.active;
+            createAppealTicket = confirmation.components.appeal.active;
         }
     }
     if (confirmation.success) {
-        let dmd = false
+        let dmd = false;
         let dm;
-        let config = await client.database.guilds.read(interaction.guild.id);
+        const config = await client.database.guilds.read(interaction.guild.id);
         try {
             if (notify) {
                 dm = await user.send({
@@ -157,7 +157,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setDescription(`You have been muted in ${interaction.guild.name}` +
                                     (reason ? ` for:\n> ${reason}` : ".\n\n" +
                                     `You will be unmuted at: <t:${Math.round((new Date).getTime() / 1000) + muteTime}:D> at <t:${Math.round((new Date).getTime() / 1000) + muteTime}:T> (<t:${Math.round((new Date).getTime() / 1000) + muteTime}:R>)`) +
-                                    (confirmation.components.appeal.response ? `You can appeal this here: <#${confirmation.components.appeal.response}>` : ``))
+                                    (confirmation.components.appeal.response ? `You can appeal this here: <#${confirmation.components.appeal.response}>` : ""))
                         .setStatus("Danger")
                     ],
                     components: [new MessageActionRow().addComponents(config.moderation.mute.text ? [new MessageButton()
@@ -165,60 +165,60 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setLabel(config.moderation.mute.text)
                         .setURL(config.moderation.mute.link)
                     ] : [])]
-                })
-                dmd = true
+                });
+                dmd = true;
             }
-        } catch {}
-        let member = user
-        let errors = 0
+        } catch { dmd = false; }
+        const member = user;
+        let errors = 0;
         try {
             if (config.moderation.mute.timeout) {
-                await member.timeout(muteTime * 1000, reason || "No reason provided")
+                await member.timeout(muteTime * 1000, reason || "No reason provided");
                 if (config.moderation.mute.role !== null) {
-                    await member.roles.add(config.moderation.mute.role)
+                    await member.roles.add(config.moderation.mute.role);
                     await client.database.eventScheduler.schedule("naturalUnmute", new Date().getTime() + muteTime * 1000, {
                         guild: interaction.guild.id,
                         user: user.id,
                         expires: new Date().getTime() + muteTime * 1000
-                    })
+                    });
                 }
             }
-        } catch { errors++ }
+        } catch { errors++; }
         try {
             if (config.moderation.mute.role !== null) {
-                await member.roles.add(config.moderation.mute.role)
+                await member.roles.add(config.moderation.mute.role);
                 await client.database.eventScheduler.schedule("unmuteRole", new Date().getTime() + muteTime * 1000, {
                     guild: interaction.guild.id,
                     user: user.id,
                     role: config.moderation.mute.role
-                })
+                });
             }
-        } catch (e){ console.log(e); errors++ }
+        } catch (e){ console.log(e); errors++; }
         if (errors === 2) {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")
-                .setTitle(`Mute`)
+                .setTitle("Mute")
                 .setDescription("Something went wrong and the user was not muted")
                 .setStatus("Danger")
-            ], components: []}) // TODO: make this clearer
-            if (dmd) await dm.delete()
-            return
+            ], components: []}); // TODO: make this clearer
+            if (dmd) await dm.delete();
+            return;
         }
-        try { await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason) } catch {}
-        let failed = (dmd === false && notify)
+        await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason);
+        const failed = (dmd === false && notify);
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
-            .setTitle(`Mute`)
-            .setDescription("The member was muted" + (failed ? ", but could not be notified" : "") + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ``))
+            .setTitle("Mute")
+            .setDescription("The member was muted" + (failed ? ", but could not be notified" : "") + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ""))
             .setStatus(failed ? "Warning" : "Success")
-        ], components: []})
-        let data = {
+        ], components: []});
+        const data = {
             meta:{
-                type: 'memberMute',
-                displayName: 'Member Muted',
-                calculateType: 'guildMemberPunish',
+                type: "memberMute",
+                displayName: "Member Muted",
+                calculateType: "guildMemberPunish",
                 color: NucleusColors.yellow,
-                emoji: 'PUNISH.WARN.YELLOW',
+                emoji: "PUNISH.WARN.YELLOW",
                 timestamp: new Date().getTime()
             },
             list: {
@@ -227,47 +227,47 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 mutedUntil: entry(new Date().getTime() + muteTime * 1000, renderDelta(new Date().getTime() + muteTime * 1000)),
                 muted: entry(new Date().getTime(), renderDelta(new Date().getTime() - 1000)),
                 mutedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
-                reason: entry(reason, reason ? reason : '*No reason provided*')
+                reason: entry(reason, reason ? reason : "*No reason provided*")
             },
             hidden: {
                 guild: interaction.guild.id
             }
-        }
+        };
         log(data);
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.MUTE.GREEN")
-            .setTitle(`Mute`)
+            .setTitle("Mute")
             .setDescription("No changes were made")
             .setStatus("Success")
-        ], components: []})
+        ], components: []});
     }
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as GuildMember)
-    let me = (interaction.guild.me as GuildMember)
-    let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member === null || me === null || apply === null) throw "That member is not in the server"
-    let memberPos = member.roles ? member.roles.highest.position : 0
-    let mePos = me.roles ? me.roles.highest.position : 0
-    let applyPos = apply.roles ? apply.roles.highest.position : 0
+    const member = (interaction.member as GuildMember);
+    const me = (interaction.guild.me as GuildMember);
+    const apply = (interaction.options.getMember("user") as GuildMember);
+    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    const memberPos = member.roles ? member.roles.highest.position : 0;
+    const mePos = me.roles ? me.roles.highest.position : 0;
+    const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow muting the owner
-    if (member.id === interaction.guild.ownerId) throw "You cannot mute the owner of the server"
+    if (member.id === interaction.guild.ownerId) throw "You cannot mute the owner of the server";
     // Check if Nucleus can mute the member
-    if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
+    if (! (mePos > applyPos)) throw "I do not have a role higher than that member";
     // Check if Nucleus has permission to mute
     if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the *Moderate Members* permission";
     // Do not allow muting Nucleus
-    if (member.id === me.id) throw "I cannot mute myself"
+    if (member.id === me.id) throw "I cannot mute myself";
     // Allow the owner to mute anyone
-    if (member.id === interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member";
     // Allow mute
-    return true
-}
+    return true;
+};
 
 export { command, callback, check };

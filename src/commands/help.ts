@@ -4,15 +4,15 @@ import { WrappedCheck } from "jshaiku";
 
 const command = new SlashCommandBuilder()
     .setName("help")
-    .setDescription("Shows help for commands")
+    .setDescription("Shows help for commands");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     interaction.reply("hel p"); // TODO: FINISH THIS FOR RELEASE
-}
+};
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
-}
+};
 
 export { command };
 export { callback };

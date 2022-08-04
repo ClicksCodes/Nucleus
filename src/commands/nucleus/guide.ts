@@ -7,17 +7,17 @@ import guide from "../../reflex/guide.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("guide")
-    .setDescription("Shows the welcome guide for the bot")
+        .setName("guide")
+        .setDescription("Shows the welcome guide for the bot");
 
 
 const callback = async (interaction) => {
-    guide(interaction.guild, interaction)
-}
+    guide(interaction.guild, interaction);
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    return true
-}
+    return true;
+};
 
 export { command };
 export { callback };

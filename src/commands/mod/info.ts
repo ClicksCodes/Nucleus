@@ -1,18 +1,18 @@
-import { HistorySchema } from '../../utils/database';
+import { HistorySchema } from "../../utils/database";
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton, TextInputComponent } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";
-import { modalInteractionCollector } from '../../utils/dualCollector.js';
-import pageIndicator from '../../utils/createPageIndicator.js';
+import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import pageIndicator from "../../utils/createPageIndicator.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("info")
-    .setDescription("Shows moderator information about a user")
-    .addUserOption(option => option.setName("user").setDescription("The user to get information about").setRequired(true))
+        .setName("info")
+        .setDescription("Shows moderator information about a user")
+        .addUserOption(option => option.setName("user").setDescription("The user to get information about").setRequired(true));
 
 const types = {
     "warn": {emoji: "PUNISH.WARN.YELLOW", text: "Warned"},
@@ -26,7 +26,7 @@ const types = {
     "unban": {emoji: "MEMBER.UNBAN", text: "Unbanned"},
     "purge": {emoji: "PUNISH.CLEARHISTORY", text: "Messages cleared"},
     "nickname": {emoji: "PUNISH.NICKNAME.YELLOW", text: "Nickname changed"}
-}
+};
 
 function historyToString(history: HistorySchema) {
     let s = `${getEmojiByName(types[history.type].emoji)} ${
@@ -44,16 +44,16 @@ function historyToString(history: HistorySchema) {
 
 class TimelineSection {
     name: string;
-    content: {data: HistorySchema, rendered: string}[] = []
+    content: {data: HistorySchema, rendered: string}[] = [];
 
-    addContent = (content: {data: HistorySchema, rendered: string}) => { this.content.push(content); return this; }
+    addContent = (content: {data: HistorySchema, rendered: string}) => { this.content.push(content); return this; };
     contentLength = () => { return this.content.reduce((acc, cur) => acc + cur.rendered.length, 0); };
     generateName = () => {
-        let first = Math.round(this.content[0].data.occurredAt.getTime() / 1000)
-        let last = Math.round(this.content[this.content.length - 1].data.occurredAt.getTime() / 1000)
+        const first = Math.round(this.content[0].data.occurredAt.getTime() / 1000);
+        const last = Math.round(this.content[this.content.length - 1].data.occurredAt.getTime() / 1000);
         if (first === last) { return this.name = `<t:${first}:F>`; }
         return this.name = `<t:${first}:F> - <t:${last}:F>`;
-    }
+    };
 }
 
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -70,15 +70,15 @@ async function showHistory(member, interaction: CommandInteraction) {
             history = await client.database.history.read(member.guild.id, member.id, currentYear);
             history = history.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime()).reverse();
             if (openFilterPane) {
-                let tempFilteredTypes = filteredTypes
+                let tempFilteredTypes = filteredTypes;
                 if (filteredTypes.length === 0) { tempFilteredTypes = Object.keys(types); }
-                history = history.filter(h => tempFilteredTypes.includes(h.type))
-            };
+                history = history.filter(h => tempFilteredTypes.includes(h.type));
+            }
             refresh = false;
         }
-        let groups: TimelineSection[] = []
+        const groups: TimelineSection[] = [];
         if (history.length > 0) {
-            current = new TimelineSection()
+            current = new TimelineSection();
             history.forEach(event => {
                 if (current.contentLength() + historyToString(event).length > 2000 || current.content.length === 5) {
                     groups.push(current);
@@ -91,17 +91,17 @@ async function showHistory(member, interaction: CommandInteraction) {
             groups.push(current);
             if (pageIndex === null) { pageIndex = groups.length - 1; }
         }
-        let components = (
+        const components = (
             openFilterPane ? [
-            new MessageActionRow().addComponents([new Discord.MessageSelectMenu().setOptions(
-                Object.entries(types).map(([key, value]) => ({
+                new MessageActionRow().addComponents([new Discord.MessageSelectMenu().setOptions(
+                    Object.entries(types).map(([key, value]) => ({
                         label: value.text,
                         value: key,
                         default: filteredTypes.includes(key),
                         emoji: client.emojis.resolve(getEmojiByName(value.emoji, "id"))
-                }))
-            ).setMinValues(1).setMaxValues(Object.keys(types).length).setCustomId("filter").setPlaceholder("Select at least one event")])
-        ] : []).concat([
+                    }))
+                ).setMinValues(1).setMaxValues(Object.keys(types).length).setCustomId("filter").setPlaceholder("Select at least one event")])
+            ] : []).concat([
             new MessageActionRow().addComponents([
                 new MessageButton()
                     .setCustomId("prevYear")
@@ -126,7 +126,7 @@ async function showHistory(member, interaction: CommandInteraction) {
                     .setLabel((currentYear + 1).toString())
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                     .setStyle("SECONDARY")
-                    .setDisabled(currentYear === new Date().getFullYear()),
+                    .setDisabled(currentYear === new Date().getFullYear())
             ]), new MessageActionRow().addComponents([
                 new MessageButton()
                     .setLabel("Mod notes")
@@ -139,14 +139,14 @@ async function showHistory(member, interaction: CommandInteraction) {
                     .setStyle(openFilterPane ? "SUCCESS" : "PRIMARY")
                     .setEmoji(getEmojiByName("ICONS.FILTER", "id"))
             ])
-        ])
-        let end = "\n\nJanuary " + currentYear.toString() + pageIndicator(
+        ]);
+        const end = "\n\nJanuary " + currentYear.toString() + pageIndicator(
             Math.max(groups.length, 1),
             groups.length === 0 ? 1 : pageIndex
         ) + (currentYear === new Date().getFullYear() ? monthNames[new Date().getMonth()] : "December"
-        ) + " " + currentYear.toString()
+        ) + " " + currentYear.toString();
         if (groups.length > 0) {
-            let toRender = groups[Math.min(pageIndex, groups.length - 1)]
+            const toRender = groups[Math.min(pageIndex, groups.length - 1)];
             m = await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("MEMBER.JOIN")
                 .setTitle("Moderation history for " + member.user.username)
@@ -158,7 +158,7 @@ async function showHistory(member, interaction: CommandInteraction) {
             m = await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("MEMBER.JOIN")
                 .setTitle("Moderation history for " + member.user.username)
-                .setDescription(`**${currentYear}**\n\n*No events*` + `\n\n` + end)
+                .setDescription(`**${currentYear}**\n\n*No events*` + "\n\n" + end)
                 .setStatus("Success")
                 .setFooter({text: (openFilterPane && filteredTypes.length) ? "Filters are currently enabled" : ""})
             ], components: components});
@@ -174,9 +174,9 @@ async function showHistory(member, interaction: CommandInteraction) {
                 .setStatus("Danger")
                 .setFooter({text: "Message timed out"})
             ]});
-            return 0
+            return 0;
         }
-        i.deferUpdate()
+        i.deferUpdate();
         if (i.customId === "filter") {
             filteredTypes = i.values;
             pageIndex = null;
@@ -193,15 +193,15 @@ async function showHistory(member, interaction: CommandInteraction) {
             if (pageIndex >= groups.length) { pageIndex = 0; currentYear++; refresh = true; }
         }
         if (i.customId === "today") { currentYear = new Date().getFullYear(); pageIndex = null; refresh = true; }
-        if (i.customId === "modNotes") { return 1 }
-        if (i.customId === "openFilter") { openFilterPane = !openFilterPane; refresh = true }
+        if (i.customId === "modNotes") { return 1; }
+        if (i.customId === "openFilter") { openFilterPane = !openFilterPane; refresh = true; }
     }
 }
 
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
-    let member = (interaction.options.getMember("user")) as Discord.GuildMember;
+    const member = (interaction.options.getMember("user")) as Discord.GuildMember;
     await interaction.reply({embeds: [new EmojiEmbed()
         .setEmoji("NUCLEUS.LOADING")
         .setTitle("Downloading Data")
@@ -233,9 +233,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         let i;
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
-        } catch (e) { return }
+        } catch (e) { return; }
         if (i.customId === "modify") {
-            await i.showModal(new Discord.Modal().setCustomId("modal").setTitle(`Editing moderator note`).addComponents(
+            await i.showModal(new Discord.Modal().setCustomId("modal").setTitle("Editing moderator note").addComponents(
                 new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                     .setCustomId("note")
                     .setLabel("Note")
@@ -244,7 +244,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStyle("PARAGRAPH")
                     .setValue(note ? note : "")
                 )
-            ))
+            ));
             await interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setTitle("Mod notes for " + member.user.username)
@@ -260,24 +260,24 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             });
             let out;
             try {
-                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify")
-            } catch (e) { continue }
+                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => m.customId === "modify");
+            } catch (e) { continue; }
             if (out.fields) {
-                let toAdd = out.fields.getTextInputValue("note") || null;
+                const toAdd = out.fields.getTextInputValue("note") || null;
                 await client.database.notes.create(member.guild.id, member.id, toAdd);
-            } else { continue }
+            } else { continue; }
         } else if (i.customId === "history") {
             i.deferUpdate();
-            if (!await showHistory(member, interaction) ) return
+            if (!await showHistory(member, interaction) ) return;
         }
     }
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as GuildMember)
+    const member = (interaction.member as GuildMember);
     if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
-    return true
-}
+    return true;
+};
 
 export { command };
 export { callback };

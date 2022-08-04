@@ -1,4 +1,9 @@
-import format from "./src/config/format.js";
+let format;
+try {
+    format = await import("./dist/config/format.js");
+} catch (e) {
+    console.log("Please run `yarn` and `yarn build` first.");
+}
 
-await format(true)
-process.exit(0)
+await format(true);
+process.exit(0);

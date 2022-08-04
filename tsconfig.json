@@ -1,5 +1,5 @@
 {
-    "extends": "@tsconfig/node16-strictest-esm/tsconfig.json",
+    "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
     "compilerOptions": {
         "module": "esnext",
         "target": "es2020",
@@ -10,7 +10,8 @@
         "declarationMap": true,
         "resolveJsonModule": true,
         "moduleResolution": "node",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noImplicitReturns": false
     },
     "include": ["src/**/*", "installer.js"],
     "exclude": []

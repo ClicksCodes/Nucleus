@@ -19,7 +19,7 @@ const logs = [
     "autoModeratorDeleted",
     "nucleusSettingsUpdated",
     "ticketUpdate"
-]
+];
 
 const tickets = [
     "support",
@@ -28,7 +28,7 @@ const tickets = [
     "issue",
     "suggestion",
     "other"
-]
+];
 
 const toHexInteger = (permissions, array?) => {
     if (!array) {
@@ -36,29 +36,29 @@ const toHexInteger = (permissions, array?) => {
     }
     let int = 0n;
 
-    for(let perm of permissions) {
+    for(const perm of permissions) {
         int += BigInt(2 ** array.indexOf(perm));
     }
-    return int.toString(16)
-}
+    return int.toString(16);
+};
 
 const toHexArray = (permissionsHex, array?) => {
     if (!array) {
         array = logs;
     }
-    let permissions = [];
-    let int = (BigInt("0x" + permissionsHex)).toString(2).split('').reverse();
-    for (let index in int) {
+    const permissions = [];
+    const int = (BigInt("0x" + permissionsHex)).toString(2).split("").reverse();
+    for (const index in int) {
         if (int[index] === "1" && array.length > index) {
             permissions.push(array[index]);
         }
     }
     return permissions;
-}
+};
 
 export {
     toHexInteger,
     toHexArray,
     tickets,
     logs
-}
+};

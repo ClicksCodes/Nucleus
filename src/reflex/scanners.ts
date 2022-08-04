@@ -1,33 +1,36 @@
-import * as us from 'unscan'
-import fetch from 'node-fetch'
-import { writeFileSync } from 'fs'
-import generateFileName from '../utils/temp/generateFileName.js'
-import Tesseract from 'node-tesseract-ocr';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as us from "unscan";
+import fetch from "node-fetch";
+import { writeFileSync } from "fs";
+import generateFileName from "../utils/temp/generateFileName.js";
+import Tesseract from "node-tesseract-ocr";
+import type Discord from "discord.js";
 
 interface NSFWSchema { nsfw: boolean }
 interface MalwareSchema { safe: boolean }
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
-    let p = await saveAttachment(link)
-    let result = await us.nsfw.file(p)
-    return result
+    const p = await saveAttachment(link);
+    const result = await us.nsfw.file(p);
+    return result;
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
-    let p = await saveAttachment(link)
-    let result = await us.malware.file(p)
-    return result
+    const p = await saveAttachment(link);
+    const result = await us.malware.file(p);
+    return result;
 }
 
-export async function saveAttachment(link): Promise<string> {
-    const image = (await (await fetch(link)).buffer()).toString('base64')
-    let fileName = generateFileName(link.split('/').pop().split('.').pop())
-    writeFileSync(fileName, image, 'base64')
-    return fileName
+export async function saveAttachment(link: string): Promise<string> {
+    const image = (await (await fetch(link)).buffer()).toString("base64");
+    const fileName = generateFileName((link.split("/").pop() as string).split(".").pop() as string);
+    writeFileSync(fileName, image, "base64");
+    return fileName;
 }
 
-export async function testLink(link: string): Promise<unknown> {
-    return await us.link.scan(link)
+export async function testLink(link: string): Promise<{safe: boolean, tags: string[]}> {
+    return await us.link.scan(link);
 }
 
 
@@ -49,71 +52,76 @@ const linkTypes = {
     "SCAMS": "Sites which are designed to trick you into doing something.",
     "TORRENT": "Websites that download torrent files.",
     "HATE": "Websites that spread hate towards groups or individuals.",
-    "JUNK": "Websites that are designed to make you waste time.",
-}
+    "JUNK": "Websites that are designed to make you waste time."
+};
 export { linkTypes };
 
 
-export async function LinkCheck(message): Promise<string[]> {
-    let links = message.content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi) ?? []
-    let detections = []
-    const promises = links.map(async element => {
+export async function LinkCheck(message: Discord.Message): Promise<string[]> {
+    const links = message.content.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi) ?? [];
+    const detections: {tags: string[], safe: boolean}[] = [];
+    const promises: Promise<void>[] = links.map(async element => {
+        let returned;
         try {
-            if (element.match(/https?:\/\/[a-zA-Z]+\.?discord(app)?\.(com|net)\/?/)) return // Also matches discord.net, not enough of a bug
-            element = await testLink(element)
-        } catch {}
-        detections.push({tags: element.tags || [], safe: element.safe})
+            if (element.match(/https?:\/\/[a-zA-Z]+\.?discord(app)?\.(com|net)\/?/)) return; // Also matches discord.net, not enough of a bug
+            returned = await testLink(element);
+        } catch {
+            detections.push({tags: [], safe: true});
+            return;
+        }
+        if (returned) { detections.push({tags: returned.tags || [], safe: returned.safe}); }
+        else { detections.push({tags: [], safe: true}); }
     });
     await Promise.all(promises);
-    let detectionsTypes = detections.map(element => {
-        let type = Object.keys(linkTypes).find(type => element.tags.includes(type))
-        if (type) return type
+    const detectionsTypes = detections.map(element => {
+        const type = Object.keys(linkTypes).find(type => element.tags.includes(type));
+        if (type) return type;
         // if (!element.safe) return "UNSAFE"
-        return undefined
-    }).filter(element => element !== undefined)
-    return detectionsTypes
+        return undefined;
+    }).filter(element => element !== undefined);
+    return detectionsTypes as string[];
 }
 
-export async function NSFWCheck(element): Promise<boolean> {
+export async function NSFWCheck(element: string): Promise<boolean> {
     try {
-        let test = (await testNSFW(element))
-        return test.nsfw
+        const test = (await testNSFW(element));
+        return test.nsfw;
     } catch {
-        return false
+        return false;
     }
 }
 
-export async function SizeCheck(element): Promise<boolean> {
-    if (element.height === undefined || element.width === undefined) return true
-    if (element.height < 20 || element.width < 20) return false
-    return true
+export async function SizeCheck(element: {height: number | null, width: number | null}): Promise<boolean> {
+    if (element.height === null || element.width === null) return true;
+    if (element.height < 20 || element.width < 20) return false;
+    return true;
 }
 
-export async function MalwareCheck(element): Promise<boolean> {
+export async function MalwareCheck(element: string): Promise<boolean> {
     try {
-        return (await testMalware(element)).safe
+        return (await testMalware(element)).safe;
     } catch {
-        return true
+        return true;
     }
 }
 
-export function TestString(string, soft, strict): object | null {
-    for(let word of strict || []) {
+export function TestString(string: string, soft: string[], strict: string[]): object | null {
+    for(const word of strict || []) {
         if (string.toLowerCase().includes(word)) {
-            return {word: word, type: "strict"}
+            return {word: word, type: "strict"};
         }
     }
-    for(let word of soft) {
-        for(let word2 of string.match(/[a-z]+/gi) || []) {
+    for(const word of soft) {
+        for(const word2 of string.match(/[a-z]+/gi) || []) {
             if (word2 === word) {
-                return {word: word, type: "strict"}
+                return {word: word, type: "strict"};
             }
         }
     }
-    return null
+    return null;
 }
 
-export async function TestImage(url): Promise<string | null> {
-    let text = await Tesseract.recognize(url, {lang: "eng", oem: 1, psm: 3})
+export async function TestImage(url: string): Promise<string | null> {
+    const text = await Tesseract.recognize(url, {lang: "eng", oem: 1, psm: 3});
     return text;
 }

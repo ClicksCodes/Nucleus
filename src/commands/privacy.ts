@@ -1,4 +1,4 @@
-import { LoadingEmbed } from './../utils/defaultEmbeds.js';
+import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -11,13 +11,13 @@ import confirmationMessage from "../utils/confirmationMessage.js";
 
 const command = new SlashCommandBuilder()
     .setName("privacy")
-    .setDescription("Information and options for you and your server's settings")
+    .setDescription("Information and options for you and your server's settings");
 
 class Embed {
     embed: Discord.MessageEmbed;
     title: string;
-    description: string = "";
-    pageId: number = 0;
+    description = "";
+    pageId = 0;
     components?: MessageActionRow[] = [];
     setEmbed(embed: Discord.MessageEmbed) { this.embed = embed; return this; }
     setTitle(title: string) { this.title = title; return this; }
@@ -27,7 +27,7 @@ class Embed {
 }
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    let pages = [
+    const pages = [
         new Embed()
             .setEmbed(new EmojiEmbed()
                 .setTitle("Nucleus Privacy")
@@ -81,43 +81,43 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     let nextFooter = null;
 
     while (true) {
-        let selectPane = []
+        let selectPane = [];
 
         if (selectPaneOpen) {
-            let options = [];
+            const options = [];
             pages.forEach(embed => {
                 options.push(new SelectMenuOption({
                     label: embed.title,
                     value: embed.pageId.toString(),
-                    description: embed.description || "",
-                }))
-            })
+                    description: embed.description || ""
+                }));
+            });
             selectPane = [new MessageActionRow().addComponents([
                 new Discord.MessageSelectMenu()
                     .addOptions(options)
                     .setCustomId("page")
                     .setMaxValues(1)
                     .setPlaceholder("Choose a page...")
-            ])]
+            ])];
         }
-        let components = selectPane.concat([new MessageActionRow().addComponents([
+        const components = selectPane.concat([new MessageActionRow().addComponents([
             new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
             new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(false),
             new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1)
-        ])])
-        let em = new Discord.MessageEmbed(pages[page].embed)
+        ])]);
+        const em = new Discord.MessageEmbed(pages[page].embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
-        em.setFooter({text: nextFooter ?? ""})
+        em.setFooter({text: nextFooter ?? ""});
         await interaction.editReply({
             embeds: [em],
             components: components.concat(pages[page].components)
         });
-        let i
+        let i;
         try {
             i = await m.awaitMessageComponent({time: 300000});
-        } catch(e) { break }
-        nextFooter = null
-        i.deferUpdate()
+        } catch(e) { break; }
+        nextFooter = null;
+        i.deferUpdate();
         if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
@@ -130,15 +130,15 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             page = parseInt(i.values[0]);
             selectPaneOpen = false;
         } else if (i.component.customId === "clear-all-data") {
-            let confirmation = await new confirmationMessage(interaction)
+            const confirmation = await new confirmationMessage(interaction)
                 .setEmoji("CONTROL.BLOCKCROSS")
                 .setTitle("Clear All Data")
                 .setDescription(
-                    `Are you sure you want to delete all data on this server? This includes your settings and all punishment histories.\n\n` +
+                    "Are you sure you want to delete all data on this server? This includes your settings and all punishment histories.\n\n" +
                     "**This cannot be undone.**"
                 )
                 .setColor("Danger")
-            .send(true)
+                .send(true);
             if (confirmation.cancelled) { break; }
             if (confirmation.success) {
                 client.database.guilds.delete(interaction.guild.id);
@@ -150,25 +150,25 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 continue;
             }
         } else {
-            let em = new Discord.MessageEmbed(pages[page].embed)
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page))
+            const em = new Discord.MessageEmbed(pages[page].embed);
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({text: "Message closed"});
             interaction.editReply({embeds: [em], components: []});
-            return
+            return;
         }
     }
-    let em = new Discord.MessageEmbed(pages[page].embed)
-    em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page))
+    const em = new Discord.MessageEmbed(pages[page].embed);
+    em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
     em.setFooter({text: "Message timed out"});
     await interaction.editReply({
         embeds: [em],
         components: []
     });
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     return true;
-}
+};
 
 export { command };
 export { callback };

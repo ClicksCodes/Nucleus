@@ -8,12 +8,12 @@ import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("unmute")
-    .setDescription("Unmutes a user")
-    .addUserOption(option => option.setName("user").setDescription("The user to unmute").setRequired(true))
+        .setName("unmute")
+        .setDescription("Unmutes a user")
+        .addUserOption(option => option.setName("user").setDescription("The user to unmute").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger
+    const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
     let notify = false;
@@ -26,20 +26,20 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "user": renderUser(interaction.options.getUser("user")),
                 "reason": `\n> ${reason ? reason : "*No reason provided*"}`
             })
-            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
+            + `The user **will${notify ? "" : " not"}** be notified\n\n`
             + `Are you sure you want to unmute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
             .setColor("Danger")
             .addReasonButton(reason ?? "")
-        .send(reason !== null)
-        if (confirmation.success) break
-        if (confirmation.newReason) reason = confirmation.newReason
+            .send(reason !== null);
+        if (confirmation.success) break;
+        if (confirmation.newReason) reason = confirmation.newReason;
         if (confirmation.components) {
-            notify = confirmation.components.notify.active
+            notify = confirmation.components.notify.active;
         }
     }
-    if (confirmation.cancelled) return
+    if (confirmation.cancelled) return;
     if (confirmation.success) {
-        let dmd = false
+        let dmd = false;
         let dm;
         try {
             if (notify) {
@@ -51,29 +51,29 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                                     (reason ? ` for:\n> ${reason}` : " with no reason provided."))
                         .setStatus("Success")
                     ]
-                })
-                dmd = true
+                });
+                dmd = true;
             }
-        } catch {}
-        let member = (interaction.options.getMember("user") as GuildMember)
+        } catch { dmd = false; }
+        const member = (interaction.options.getMember("user") as GuildMember);
         try {
-            member.timeout(0, reason || "No reason provided")
+            member.timeout(0, reason || "No reason provided");
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.MUTE.RED")
-                .setTitle(`Unmute`)
+                .setTitle("Unmute")
                 .setDescription("Something went wrong and the user was not unmuted")
                 .setStatus("Danger")
-            ], components: []})
-            if (dmd) await dm.delete()
-            return
+            ], components: []});
+            if (dmd) await dm.delete();
+            return;
         }
-        try { await client.database.history.create("unmute", interaction.guild.id, (interaction.options.getMember("user") as GuildMember).user, interaction.user, reason) } catch {}
-        let data = {
+        await client.database.history.create("unmute", interaction.guild.id, (interaction.options.getMember("user") as GuildMember).user, interaction.user, reason);
+        const data = {
             meta: {
-                type: 'memberUnmute',
-                displayName: 'Unmuted',
-                calculateType: 'guildMemberPunish',
+                type: "memberUnmute",
+                displayName: "Unmuted",
+                calculateType: "guildMemberPunish",
                 color: NucleusColors.green,
                 emoji: "PUNISH.MUTE.GREEN",
                 timestamp: new Date().getTime()
@@ -82,52 +82,52 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 memberId: entry(member.user.id, `\`${member.user.id}\``),
                 name: entry(member.user.id, renderUser(member.user)),
                 unmuted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                unmutedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
             },
             hidden: {
                 guild: interaction.guild.id
             }
-        }
+        };
         log(data);
-        let failed = (dmd === false && notify)
+        const failed = (dmd === false && notify);
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
-            .setTitle(`Unmute`)
+            .setTitle("Unmute")
             .setDescription("The member was unmuted" + (failed ? ", but could not be notified" : ""))
             .setStatus(failed ? "Warning" : "Success")
-        ], components: []})
+        ], components: []});
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.MUTE.GREEN")
-            .setTitle(`Unmute`)
+            .setTitle("Unmute")
             .setDescription("No changes were made")
             .setStatus("Success")
-        ], components: []})
+        ], components: []});
     }
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as GuildMember)
-    let me = (interaction.guild.me as GuildMember)
-    let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member === null || me === null || apply === null) throw "That member is not in the server"
-    let memberPos = member.roles ? member.roles.highest.position : 0
-    let mePos = me.roles ? me.roles.highest.position : 0
-    let applyPos = apply.roles ? apply.roles.highest.position : 0
+    const member = (interaction.member as GuildMember);
+    const me = (interaction.guild.me as GuildMember);
+    const apply = (interaction.options.getMember("user") as GuildMember);
+    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    const memberPos = member.roles ? member.roles.highest.position : 0;
+    const mePos = me.roles ? me.roles.highest.position : 0;
+    const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow unmuting the owner
-    if (member.id === interaction.guild.ownerId) throw "You cannot unmute the owner of the server"
+    if (member.id === interaction.guild.ownerId) throw "You cannot unmute the owner of the server";
     // Check if Nucleus can unmute the member
-    if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
+    if (! (mePos > applyPos)) throw "I do not have a role higher than that member";
     // Check if Nucleus has permission to unmute
     if (! me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the *Moderate Members* permission";
     // Allow the owner to unmute anyone
-    if (member.id === interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member";
     // Allow unmute
-    return true
-}
+    return true;
+};
 
 export { command, callback, check };

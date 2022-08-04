@@ -1,4 +1,4 @@
-import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -6,20 +6,20 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
-import client from "../../utils/client.js"
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("about")
-    .setDescription("Shows info about a user")
-    .addUserOption(option => option.setName("user").setDescription("The user to get info about | Default: Yourself"))
+        .setName("about")
+        .setDescription("Shows info about a user")
+        .addUserOption(option => option.setName("user").setDescription("The user to get info about | Default: Yourself"));
 
 
 class Embed {
     embed: Discord.MessageEmbed;
     title: string;
-    description: string = "";
-    pageId: number = 0;
+    description = "";
+    pageId = 0;
     setEmbed(embed: Discord.MessageEmbed) { this.embed = embed; return this; }
     setTitle(title: string) { this.title = title; return this; }
     setDescription(description: string) { this.description = description; return this; }
@@ -28,23 +28,23 @@ class Embed {
 
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    const { renderUser, renderDelta } = client.logger
-    let member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
-    let flags: string[] = [];
+    const { renderUser, renderDelta } = client.logger;
+    const member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
+    const flags: string[] = [];
     if ([
         "438733159748599813", // Pinea
         "317731855317336067", // Mini
         "261900651230003201", // Coded
-        "511655498676699136", // Zan
-    ].includes(member.user.id)) { flags.push("NUCLEUSDEVELOPER") }
-    if ((await client.guilds.cache.get("684492926528651336")?.members.fetch())?.filter(m => m.roles.cache.has("760896837866749972"))?.map(m => m.id).includes(member.user.id)) { flags.push("CLICKSDEVELOPER") }
+        "511655498676699136" // Zan
+    ].includes(member.user.id)) { flags.push("NUCLEUSDEVELOPER"); }
+    if ((await client.guilds.cache.get("684492926528651336")?.members.fetch())?.filter(m => m.roles.cache.has("760896837866749972"))?.map(m => m.id).includes(member.user.id)) { flags.push("CLICKSDEVELOPER"); }
     member.user.flags.toArray().map(flag => {
-        flags.push(flag.toString())
-    })
-    if (member.user.bot === true) { flags.push("BOT") }
+        flags.push(flag.toString());
+    });
+    if (member.user.bot === true) { flags.push("BOT"); }
     // Check if they are boosting the server
-    if (member.premiumSince) { flags.push("BOOSTER") }
-    let nameReplacements = {
+    if (member.premiumSince) { flags.push("BOOSTER"); }
+    const nameReplacements = {
         "NUCLEUSDEVELOPER": "**Nucleus Developer**",
         "CLICKSDEVELOPER": "Clicks Developer",
         "HOUSE_BRAVERY": "Hypesquad Bravery",
@@ -59,31 +59,31 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         "EARLY_VERIFIED_BOT_DEVELOPER": "Verified Bot Developer",
         "BOT": "Bot",
         "BOOSTER": "Server Booster"
-    }
-    let members = await interaction.guild.members.fetch()
-    let membersArray = [...members.values()]
-    membersArray.sort((a, b) => a.joinedTimestamp - b.joinedTimestamp)
-    let joinPos = membersArray.findIndex(m => m.id === member.user.id)
+    };
+    const members = await interaction.guild.members.fetch();
+    const membersArray = [...members.values()];
+    membersArray.sort((a, b) => a.joinedTimestamp - b.joinedTimestamp);
+    const joinPos = membersArray.findIndex(m => m.id === member.user.id);
 
-    let roles = member.roles.cache.filter(r => r.id !== interaction.guild.id).sort()
+    const roles = member.roles.cache.filter(r => r.id !== interaction.guild.id).sort();
     let s = "";
     let count = 0;
-    let ended = false
+    let ended = false;
     roles.map(item => {
         if (ended) return;
-        let string = `<@&${item.id}>, `
+        const string = `<@&${item.id}>, `;
         if(s.length + string.length > 1000) {
-            ended = true
-            s += `and ${roles.size - count} more`
-            return
-        };
-        count ++
+            ended = true;
+            s += `and ${roles.size - count} more`;
+            return;
+        }
+        count ++;
         s += string;
-    })
+    });
     if(s.length > 0 && !ended) s = s.slice(0, -2);
 
-    let perms = ""
-    let permsArray = {
+    let perms = "";
+    const permsArray = {
         "ADMINISTRATOR": "Administrator",
         "MANAGE_GUILD": "Manage Server",
         "MANAGE_ROLES": "Manage Roles",
@@ -96,15 +96,15 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         "MANAGE_MESSAGES": "Manage Messages",
         "VIEW_AUDIT_LOG": "View Audit Log",
         "MENTION_EVERYONE": "Mention Everyone"
-    }
+    };
     Object.keys(permsArray).map(perm => {
-        let hasPerm = member.permissions.has(perm as Discord.PermissionString)
-        perms += `${getEmojiByName("CONTROL." + (hasPerm ? "TICK" : "CROSS"))} ${permsArray[perm]}\n`
-    })
+        const hasPerm = member.permissions.has(perm as Discord.PermissionString);
+        perms += `${getEmojiByName("CONTROL." + (hasPerm ? "TICK" : "CROSS"))} ${permsArray[perm]}\n`;
+    });
 
     let selectPaneOpen = false;
 
-    let embeds = [
+    const embeds = [
         new Embed()
             .setEmbed(new EmojiEmbed()
                 .setTitle("User Info: General")
@@ -138,7 +138,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     generateKeyValueList({
                         "member": renderUser(member.user),
                         "id": `\`${member.id}\``,
-                        "roles": `${member.roles.cache.size - 1}`,
+                        "roles": `${member.roles.cache.size - 1}`
                     }) + "\n" +
                     (s.length > 0 ? s : "*None*") + "\n"
                 )
@@ -152,37 +152,37 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setDescription(
                     generateKeyValueList({
                         "member": renderUser(member.user),
-                        "id": `\`${member.id}\``,
+                        "id": `\`${member.id}\``
                     }) + "\n" + perms
                 )
                 .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
-            ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2),
-    ]
-    let m
+            ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2)
+    ];
+    let m;
     m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
-    let page = 0
-    let breakReason = ""
+    let page = 0;
+    let breakReason = "";
     while (true) {
-        let em = new Discord.MessageEmbed(embeds[page].embed)
+        const em = new Discord.MessageEmbed(embeds[page].embed);
         em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
-        let selectPane = []
+        let selectPane = [];
 
         if (selectPaneOpen) {
-            let options = [];
+            const options = [];
             embeds.forEach(embed => {
                 options.push(new SelectMenuOption({
                     label: embed.title,
                     value: embed.pageId.toString(),
-                    description: embed.description || "",
-                }))
-            })
+                    description: embed.description || ""
+                }));
+            });
             selectPane = [new MessageActionRow().addComponents([
                 new Discord.MessageSelectMenu()
                     .addOptions(options)
                     .setCustomId("page")
                     .setMaxValues(1)
                     .setPlaceholder("Choose a page...")
-            ])]
+            ])];
         }
         await interaction.editReply({
             embeds: [em],
@@ -207,12 +207,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setCustomId("close")
                     .setStyle("DANGER")
             ])])
-        })
-        let i
+        });
+        let i;
         try {
             i = await m.awaitMessageComponent({time: 300000});
-        } catch { breakReason = "Message timed out"; break }
-        i.deferUpdate()
+        } catch { breakReason = "Message timed out"; break; }
+        i.deferUpdate();
         if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
@@ -232,7 +232,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             break;
         }
     }
-    let em = new Discord.MessageEmbed(embeds[page].embed)
+    const em = new Discord.MessageEmbed(embeds[page].embed);
     em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page) + " | " + breakReason);
     await interaction.editReply({embeds: [em], components: [new MessageActionRow().addComponents([
         new MessageButton()
@@ -255,12 +255,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             .setCustomId("close")
             .setStyle("DANGER")
             .setDisabled(true)
-    ])]})
-}
+    ])]});
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     return true;
-}
+};
 
 export { command };
 export { callback };

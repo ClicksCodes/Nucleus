@@ -1,21 +1,19 @@
-import Discord from 'discord.js';
-import client from './client.js';
-import EmojiEmbed from "./generateEmojiEmbed.js";
+import Discord from "discord.js";
+import client from "./client.js";
 
 export default async function (m, interactionFilter, messageFilter) {
     let out;
     try {
-        out = await new Promise((resolve, reject) => {
-            let mes, int;
-            mes = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 300000})
-                .on("collect", (m) => { resolve(m); })
-            int = m.channel.createMessageCollector({filter: (m) => messageFilter(m), time: 300000})
-                .then("collect", (m) => { try {m.delete();} catch {}; resolve(m); })
-            mes.on("end", () => { int.stop(); })
-            int.on("end", () => { mes.stop(); })
-        })
+        out = await new Promise((resolve, _reject) => {
+            const mes = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 300000})
+                .on("collect", (m) => { resolve(m); });
+            const int = m.channel.createMessageCollector({filter: (m) => messageFilter(m), time: 300000})
+                .then("collect", (m) => { try {m.delete();} catch (e) { client._error(e); } resolve(m); });
+            mes.on("end", () => { int.stop(); });
+            int.on("end", () => { mes.stop(); });
+        });
     } catch(e) {
-        console.log(e)
+        console.log(e);
         return null;
     }
 
@@ -25,24 +23,23 @@ export default async function (m, interactionFilter, messageFilter) {
 export async function modalInteractionCollector(m, modalFilter, interactionFilter) {
     let out;
     try {
-        out = await new Promise((resolve, reject) => {
-            let mod, int;
-            int = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 300000})
-                .on("collect", (m) => { resolve(m); })
-            mod = new Discord.InteractionCollector(
+        out = await new Promise((resolve, _reject) => {
+            const int = m.createMessageComponentCollector({filter: (m) => interactionFilter(m), time: 300000})
+                .on("collect", (m) => { resolve(m); });
+            const mod = new Discord.InteractionCollector(
                 client, {
                     filter: (m) => modalFilter(m),
                     time: 300000
                 })
                 .on("collect", async (m) => {
                     int.stop();
-                    (m as Discord.ModalSubmitInteraction).deferUpdate()
-                    resolve((m as Discord.ModalSubmitInteraction)); })
-            int.on("end", () => { mod.stop(); })
-            mod.on("end", () => { int.stop(); })
-        })
+                    (m as Discord.ModalSubmitInteraction).deferUpdate();
+                    resolve((m as Discord.ModalSubmitInteraction)); });
+            int.on("end", () => { mod.stop(); });
+            mod.on("end", () => { int.stop(); });
+        });
     } catch(e) {
-        console.log(e)
+        console.log(e);
         return null;
     }
     return out;

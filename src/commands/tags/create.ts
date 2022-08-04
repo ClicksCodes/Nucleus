@@ -8,14 +8,14 @@ import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("create")
-    .setDescription("Creates a tag")
-    .addStringOption(o => o.setName("name").setRequired(true).setDescription("The name of the tag"))
-    .addStringOption(o => o.setName("value").setRequired(true).setDescription("The value of the tag, shown after running /tag name"))
+        .setName("create")
+        .setDescription("Creates a tag")
+        .addStringOption(o => o.setName("name").setRequired(true).setDescription("The name of the tag"))
+        .addStringOption(o => o.setName("value").setRequired(true).setDescription("The value of the tag, shown after running /tag name"));
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    let name = interaction.options.getString("name");
-    let value = interaction.options.getString("value");
+    const name = interaction.options.getString("name");
+    const value = interaction.options.getString("value");
     if (name.length > 100) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Create")
         .setDescription("Tag names cannot be longer than 100 characters")
@@ -28,7 +28,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setStatus("Danger")
         .setEmoji("PUNISH.NICKNAME.RED")
     ], ephemeral: true});
-    let data = await client.database.guilds.read(interaction.guild.id);
+    const data = await client.database.guilds.read(interaction.guild.id);
     if (data.tags.length >= 100) return await interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Tag Create")
         .setDescription("You cannot have more than 100 tags")
@@ -41,18 +41,18 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setStatus("Danger")
         .setEmoji("PUNISH.NICKNAME.RED")
     ], ephemeral: true});
-    let confirmation = await new confirmationMessage(interaction)
-    .setEmoji("PUNISH.NICKNAME.YELLOW")
+    const confirmation = await new confirmationMessage(interaction)
+        .setEmoji("PUNISH.NICKNAME.YELLOW")
         .setTitle("Tag create")
         .setDescription(keyValueList({
             "name": `${name}`,
             "value": `\n> ${value}`
         })
-        + `\nAre you sure you want to create this tag?`)
+        + "\nAre you sure you want to create this tag?")
         .setColor("Warning")
         .setInverted(true)
-    .send()
-    if (confirmation.cancelled) return
+        .send();
+    if (confirmation.cancelled) return;
     if (!confirmation) return await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Tag Create")
         .setDescription("No changes were made")
@@ -75,13 +75,13 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setStatus("Success")
         .setEmoji("PUNISH.NICKNAME.GREEN")
     ], components: []});
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the *Manage Messages* permission to use this command"
+    const member = (interaction.member as Discord.GuildMember);
+    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the *Manage Messages* permission to use this command";
     return true;
-}
+};
 
 export { command };
 export { callback };

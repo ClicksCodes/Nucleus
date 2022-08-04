@@ -5,16 +5,16 @@ import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
-import client from "../../utils/client.js"
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("warn")
-    .setDescription("Warns a user")
-    .addUserOption(option => option.setName("user").setDescription("The user to warn").setRequired(true))
+        .setName("warn")
+        .setDescription("Warns a user")
+        .addUserOption(option => option.setName("user").setDescription("The user to warn").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    const { log, NucleusColors, renderUser, entry } = client.logger
+    const { log, NucleusColors, renderUser, entry } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
     let notify = true;
@@ -28,7 +28,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "user": renderUser(interaction.options.getUser("user")),
                 "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
-            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
+            + `The user **will${notify ? "" : " not"}** be notified\n\n`
             + `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
             .setColor("Danger")
             .addCustomBoolean(
@@ -37,28 +37,28 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "An appeal ticket will be created when Confirm is clicked", "CONTROL.TICKET", createAppealTicket)
             .addCustomBoolean("notify", "Notify user", false, null, null, "ICONS.NOTIFY." + (notify ? "ON" : "OFF" ), notify)
             .addReasonButton(reason ?? "")
-        .send(reason !== null)
-        reason = reason ?? ""
-        if (confirmation.cancelled) return
-        if (confirmation.success) break
-        if (confirmation.newReason) reason = confirmation.newReason
+            .send(reason !== null);
+        reason = reason ?? "";
+        if (confirmation.cancelled) return;
+        if (confirmation.success) break;
+        if (confirmation.newReason) reason = confirmation.newReason;
         if (confirmation.components) {
-            notify = confirmation.components.notify.active
-            createAppealTicket = confirmation.components.appeal.active
+            notify = confirmation.components.notify.active;
+            createAppealTicket = confirmation.components.appeal.active;
         }
     }
     if (confirmation.success) {
-        let dmd = false
+        let dmd = false;
         try {
             if (notify) {
-                const config = await client.database.guilds.read(interaction.guild.id)
+                const config = await client.database.guilds.read(interaction.guild.id);
                 await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [new EmojiEmbed()
                         .setEmoji("PUNISH.WARN.RED")
                         .setTitle("Warned")
                         .setDescription(`You have been warned in ${interaction.guild.name}` +
                                     (reason ? ` for:\n> ${reason}` : ".") + "\n\n" +
-                                    (confirmation.components.appeal.response ? `You can appeal this here ticket: <#${confirmation.components.appeal.response}>` : ``))
+                                    (confirmation.components.appeal.response ? `You can appeal this here ticket: <#${confirmation.components.appeal.response}>` : ""))
                         .setStatus("Danger")
                         .setFooter({
                             text: config.moderation.warn.text ? "The button below is set by the server admins. Do not enter any passwords or other account details on the linked site." : "",
@@ -70,17 +70,17 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setLabel(config.moderation.warn.text)
                         .setURL(config.moderation.warn.link)
                     ])] : []
-                })
-                dmd = true
+                });
+                dmd = true;
             }
-        } catch {}
-        let data = {
+        } catch { dmd = false; }
+        const data = {
             meta:{
-                type: 'memberWarn',
-                displayName: 'Member warned',
-                calculateType: 'guildMemberPunish',
+                type: "memberWarn",
+                displayName: "Member warned",
+                calculateType: "guildMemberPunish",
                 color: NucleusColors.yellow,
-                emoji: 'PUNISH.WARN.YELLOW',
+                emoji: "PUNISH.WARN.YELLOW",
                 timestamp: new Date().getTime()
             },
             list: {
@@ -91,27 +91,27 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             hidden: {
                 guild: interaction.guild.id
             }
-        }
-        try { await client.database.history.create(
+        };
+        await client.database.history.create(
             "warn", interaction.guild.id,
             (interaction.options.getMember("user") as GuildMember).user,
             interaction.user, reason
-        )} catch {}
+        );
         log(data);
-        let failed = (dmd === false && notify)
+        const failed = (dmd === false && notify);
         if (!failed) {
             await interaction.editReply({embeds: [new EmojiEmbed()
-                .setEmoji(`PUNISH.WARN.GREEN`)
-                .setTitle(`Warn`)
-                .setDescription("The user was warned" + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ``))
+                .setEmoji("PUNISH.WARN.GREEN")
+                .setTitle("Warn")
+                .setDescription("The user was warned" + (confirmation.components.appeal.response ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>` : ""))
                 .setStatus("Success")
-            ], components: []})
+            ], components: []});
         } else {
-            let canSeeChannel = (interaction.options.getMember("user") as GuildMember).permissionsIn(interaction.channel as Discord.TextChannel).has("VIEW_CHANNEL")
-            let m = await interaction.editReply({
+            const canSeeChannel = (interaction.options.getMember("user") as GuildMember).permissionsIn(interaction.channel as Discord.TextChannel).has("VIEW_CHANNEL");
+            const m = await interaction.editReply({
                 embeds: [new EmojiEmbed()
-                    .setEmoji(`PUNISH.WARN.RED`)
-                    .setTitle(`Warn`)
+                    .setEmoji("PUNISH.WARN.RED")
+                    .setTitle("Warn")
                     .setDescription("The user's DMs are not open\n\nWhat would you like to do?")
                     .setStatus("Danger")
                 ], components: [
@@ -131,89 +131,89 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setStyle(canSeeChannel ? "SECONDARY" : "PRIMARY")
                     ])
                 ]
-            })
+            });
             let component;
             try {
                 component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch (e) {
                 return await interaction.editReply({embeds: [new EmojiEmbed()
-                    .setEmoji(`PUNISH.WARN.GREEN`)
-                    .setTitle(`Warn`)
+                    .setEmoji("PUNISH.WARN.GREEN")
+                    .setTitle("Warn")
                     .setDescription("No changes were made")
                     .setStatus("Success")
-                ], components: []})
+                ], components: []});
             }
             if ( component.customId === "here" ) {
                 await interaction.channel.send({
                     embeds: [new EmojiEmbed()
-                        .setEmoji(`PUNISH.WARN.RED`)
-                        .setTitle(`Warn`)
-                        .setDescription(`You have been warned` +
+                        .setEmoji("PUNISH.WARN.RED")
+                        .setTitle("Warn")
+                        .setDescription("You have been warned" +
                                     (reason ? ` for:\n> ${reason}` : "."))
                         .setStatus("Danger")
                     ],
                     content: `<@!${(interaction.options.getMember("user") as GuildMember).id}>`,
                     allowedMentions: {users: [(interaction.options.getMember("user") as GuildMember).id]}
-                })
+                });
                 return await interaction.editReply({embeds: [new EmojiEmbed()
-                    .setEmoji(`PUNISH.WARN.GREEN`)
-                    .setTitle(`Warn`)
-                    .setDescription("The user was warned" + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ``))
+                    .setEmoji("PUNISH.WARN.GREEN")
+                    .setTitle("Warn")
+                    .setDescription("The user was warned" + (confirmation.response ? ` and an appeal ticket was opened in <#${confirmation.response}>` : ""))
                     .setStatus("Success")
-                ], components: []})
+                ], components: []});
             } else if (component.customId === "log") {
                 await interaction.editReply({embeds: [new EmojiEmbed()
-                    .setEmoji(`PUNISH.WARN.GREEN`)
-                    .setTitle(`Warn`)
+                    .setEmoji("PUNISH.WARN.GREEN")
+                    .setTitle("Warn")
                     .setDescription("The warn was logged")
                     .setStatus("Success")
-                ], components: []})
+                ], components: []});
             } else if (component.customId === "ticket") {
-                let ticketChannel = await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason, "Warn Notification")
+                const ticketChannel = await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason, "Warn Notification");
                 if (ticketChannel === null) {
                     return await interaction.editReply({embeds: [new EmojiEmbed()
-                        .setEmoji(`PUNISH.WARN.RED`)
-                        .setTitle(`Warn`)
+                        .setEmoji("PUNISH.WARN.RED")
+                        .setTitle("Warn")
                         .setDescription("A ticket could not be created")
                         .setStatus("Danger")
-                    ], components: []})
+                    ], components: []});
                 }
                 await interaction.editReply({embeds: [new EmojiEmbed()
-                    .setEmoji(`PUNISH.WARN.GREEN`)
-                    .setTitle(`Warn`)
+                    .setEmoji("PUNISH.WARN.GREEN")
+                    .setTitle("Warn")
                     .setDescription(`A ticket was created in <#${ticketChannel}>`)
                     .setStatus("Success")
-                ], components: []})
+                ], components: []});
             }
         }
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.WARN.GREEN")
-            .setTitle(`Warn`)
+            .setTitle("Warn")
             .setDescription("No changes were made")
             .setStatus("Success")
-        ], components: []})
+        ], components: []});
     }
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as GuildMember)
-    let me = (interaction.guild.me as GuildMember)
-    let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member === null || me === null || apply === null) throw "That member is not in the server"
-    let memberPos = member.roles ? member.roles.highest.position : 0
-    let mePos = me.roles ? me.roles.highest.position : 0
-    let applyPos = apply.roles ? apply.roles.highest.position : 0
+    const member = (interaction.member as GuildMember);
+    const me = (interaction.guild.me as GuildMember);
+    const apply = (interaction.options.getMember("user") as GuildMember);
+    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    const memberPos = member.roles ? member.roles.highest.position : 0;
+    const mePos = me.roles ? me.roles.highest.position : 0;
+    const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow warning bots
-    if (member.user.bot) throw "I cannot warn bots"
+    if (member.user.bot) throw "I cannot warn bots";
     // Allow the owner to warn anyone
-    if (member.id === interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member";
     // Allow warn
-    return true
-}
+    return true;
+};
 
 export { command, callback, check };

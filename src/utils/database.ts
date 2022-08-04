@@ -1,57 +1,68 @@
-import Discord from 'discord.js';
-import { Collection, MongoClient } from 'mongodb';
-import structuredClone from '@ungap/structured-clone';
-import config from '../config/main.json' assert {type: 'json'};
+import type Discord from "discord.js";
+import { Collection, MongoClient } from "mongodb";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import structuredClone from "@ungap/structured-clone";
+import config from "../config/main.json" assert {type: "json"};
 
 
 const mongoClient = new MongoClient(config.mongoUrl);
-await mongoClient.connect()
+await mongoClient.connect();
 const database = mongoClient.db("Nucleus");
 
-
-export const Entry = data => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const Entry = (data: any) => {
     data = data ?? {};
-    data.getKey = key => data[key]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data.getKey = (key: any) => data[key];
     return {
-        get(target, prop, receiver) {
-            let dataToReturn = data[prop]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        get(target: Record<string, any>, prop: string, receiver: any) {
+            let dataToReturn = data[prop];
             if (dataToReturn === null ) return Reflect.get(target, prop, receiver);
             if (typeof dataToReturn === "object" && !Array.isArray(dataToReturn)) dataToReturn = new Proxy(
                 Reflect.get(target, prop, receiver),
-                Entry(dataToReturn),
-            )
+                Entry(dataToReturn)
+            );
             return dataToReturn ?? Reflect.get(target, prop, receiver);
         }
-    }
-}
+    };
+};
 
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
-    defaultData: GuildConfig;
-    async setup() {
+    defaultData: GuildConfig | null;
+
+    constructor() {
         this.guilds = database.collection<GuildConfig>("guilds");
-        this.defaultData = (await import("../config/default.json", { assert: { type: "json" }})).default as unknown as GuildConfig;
+        this.defaultData = null;
         return this;
     }
 
+    async setup() {
+        this.defaultData = (await import("../config/default.json", { assert: { type: "json" }})).default as unknown as GuildConfig;
+    }
+
     async read(guild: string) {
-        let entry = await this.guilds.findOne({ id: guild });
-        return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig
+        const entry = await this.guilds.findOne({ id: guild });
+        return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig;
     }
 
     async write(guild: string, set: object | null, unset: string[] | string = []) {
-        let uo = {}
-        if (!Array.isArray(unset)) unset = [unset]
-        for (let key of unset) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const uo: Record<string, any> = {};
+        if (!Array.isArray(unset)) unset = [unset];
+        for (const key of unset) {
             uo[key] = null;
         }
-        let out = {$set: {}, $unset: {}}
+        const out = {$set: {}, $unset: {}};
         if (set) out["$set"] = set;
         if (unset.length) out["$unset"] = uo;
         await this.guilds.updateOne({ id: guild }, out, { upsert: true });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async append(guild: string, key: string, value: any) {
         if (Array.isArray(value)) {
             await this.guilds.updateOne({ id: guild }, {
@@ -64,8 +75,9 @@ export class Guilds {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async remove(guild: string, key: string, value: any, innerKey?: string | null) {
-        console.log(Array.isArray(value))
+        console.log(Array.isArray(value));
         if (innerKey) {
             await this.guilds.updateOne({ id: guild }, {
                 $pull: { [key]: { [innerKey]: { $eq: value } } }
@@ -111,7 +123,7 @@ export class History {
     }
 
     async read(guild: string, user: string, year: number) {
-        let entry = (await this.histories.find({
+        const entry = (await this.histories.find({
             guild: guild,
             user: user,
             occurredAt: {
@@ -141,7 +153,7 @@ export class ModNotes {
     }
 
     async read(guild: string, user: string) {
-        let entry = await this.modNotes.findOne({ guild: guild, user: user });
+        const entry = await this.modNotes.findOne({ guild: guild, user: user });
         return entry?.note ?? null;
     }
 }
@@ -155,7 +167,7 @@ export class Premium {
     }
 
     async hasPremium(guild: string) {
-        let entry = await this.premium.findOne({ appliesTo: { $in: [guild] } });
+        const entry = await this.premium.findOne({ appliesTo: { $in: [guild] } });
         return entry !== null;
     }
 }
@@ -186,11 +198,7 @@ export interface GuildConfig {
         },
         invite: {
             enabled: boolean,
-            allowed: {
-                users: string[],
-                channels: string[],
-                roles: string[]
-            }
+            channels: string[]
         },
         pings: {
             mass: number,
@@ -215,7 +223,7 @@ export interface GuildConfig {
         channel: string | null,
         message: string | null,
     }
-    stats: {}
+    stats: Record<string, {name: string, enabled: boolean}>
     logging: {
         logs: {
             enabled: boolean,
@@ -227,7 +235,7 @@ export interface GuildConfig {
         },
         attachments: {
             channel: string | null,
-            saved: {}  // {channelID+messageID: log url (string)}
+            saved: Record<string, string>
         }
     }
     verify: {
@@ -292,8 +300,8 @@ export interface GuildConfig {
             }[]
         }[]
     }
-    tags: {}
-};
+    tags: Record<string, string>
+}
 
 export interface HistorySchema {
     type: string,

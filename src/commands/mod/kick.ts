@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
-import humanizeDuration from 'humanize-duration';
+import humanizeDuration from "humanize-duration";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -9,16 +9,16 @@ import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("kick")
-    .setDescription("Kicks a user from the server")
-    .addUserOption(option => option.setName("user").setDescription("The user to kick").setRequired(true))
+        .setName("kick")
+        .setDescription("Kicks a user from the server")
+        .addUserOption(option => option.setName("user").setDescription("The user to kick").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
-    const { renderUser } = client.logger
+    const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
     let notify = true;
-    let confirmation
+    let confirmation;
     while (true) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.KICK.RED")
@@ -27,23 +27,23 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 "user": renderUser(interaction.options.getUser("user")),
                 "reason": reason ? ("\n> " + ((reason ?? "").replaceAll("\n", "\n> "))) : "*No reason provided*"
             })
-            + `The user **will${notify ? '' : ' not'}** be notified\n\n`
+            + `The user **will${notify ? "" : " not"}** be notified\n\n`
             + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`)
             .setColor("Danger")
             .addReasonButton(reason ?? "")
-        .send(reason !== null)
-        reason = reason ?? ""
-        if (confirmation.cancelled) return
-        if (confirmation.success) break
-        if (confirmation.newReason) reason = confirmation.newReason
+            .send(reason !== null);
+        reason = reason ?? "";
+        if (confirmation.cancelled) return;
+        if (confirmation.success) break;
+        if (confirmation.newReason) reason = confirmation.newReason;
         if (confirmation.components) {
-            notify = confirmation.components.notify.active
+            notify = confirmation.components.notify.active;
         }
     }
     if (confirmation.success) {
-        let dmd = false
+        let dmd = false;
         let dm;
-        let config = await client.database.guilds.read(interaction.guild.id);
+        const config = await client.database.guilds.read(interaction.guild.id);
         try {
             if (notify) {
                 dm = await (interaction.options.getMember("user") as GuildMember).send({
@@ -59,20 +59,20 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setLabel(config.moderation.kick.text)
                         .setURL(config.moderation.kick.link)
                     ] : [])]
-                })
-                dmd = true
+                });
+                dmd = true;
             }
-        } catch {}
+        } catch { dmd = false; }
         try {
-            (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.")
-            let member = (interaction.options.getMember("user") as GuildMember)
-            try { await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason) } catch {}
-            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
-            let data = {
+            (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.");
+            const member = (interaction.options.getMember("user") as GuildMember);
+            await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+            const data = {
                 meta: {
-                    type: 'memberKick',
-                    displayName: 'Member Kicked',
-                    calculateType: 'guildMemberPunish',
+                    type: "memberKick",
+                    displayName: "Member Kicked",
+                    calculateType: "guildMemberPunish",
                     color: NucleusColors.red,
                     emoji: "PUNISH.KICK.RED",
                     timestamp: new Date().getTime()
@@ -86,64 +86,64 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                     timeInServer: entry(new Date().getTime() - member.joinedTimestamp, humanizeDuration(new Date().getTime() - member.joinedTimestamp, { round: true })),
                     accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
-                    serverMemberCount: member.guild.memberCount,
+                    serverMemberCount: member.guild.memberCount
                 },
                 hidden: {
                     guild: member.guild.id
                 }
-            }
+            };
             log(data);
         } catch {
             await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("PUNISH.KICK.RED")
-                .setTitle(`Kick`)
+                .setTitle("Kick")
                 .setDescription("Something went wrong and the user was not kicked")
                 .setStatus("Danger")
-            ], components: []})
-            if (dmd) await dm.delete()
-            return
+            ], components: []});
+            if (dmd) await dm.delete();
+            return;
         }
-        let failed = (dmd === false && notify)
+        const failed = (dmd === false && notify);
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji(`PUNISH.KICK.${failed ? "YELLOW" : "GREEN"}`)
-            .setTitle(`Kick`)
+            .setTitle("Kick")
             .setDescription("The member was kicked" + (failed ? ", but could not be notified" : ""))
             .setStatus(failed ? "Warning" : "Success")
-        ], components: []})
+        ], components: []});
     } else {
         await interaction.editReply({embeds: [new EmojiEmbed()
             .setEmoji("PUNISH.KICK.GREEN")
-            .setTitle(`Kick`)
+            .setTitle("Kick")
             .setDescription("No changes were made")
             .setStatus("Success")
-        ], components: []})
+        ], components: []});
     }
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as GuildMember)
-    let me = (interaction.guild.me as GuildMember)
-    let apply = (interaction.options.getMember("user") as GuildMember)
-    if (member === null || me === null || apply === null) throw "That member is not in the server"
-    let memberPos = member.roles ? member.roles.highest.position : 0
-    let mePos = me.roles ? me.roles.highest.position : 0
-    let applyPos = apply.roles ? apply.roles.highest.position : 0
+    const member = (interaction.member as GuildMember);
+    const me = (interaction.guild.me as GuildMember);
+    const apply = (interaction.options.getMember("user") as GuildMember);
+    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    const memberPos = member.roles ? member.roles.highest.position : 0;
+    const mePos = me.roles ? me.roles.highest.position : 0;
+    const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow kicking the owner
-    if (member.id === interaction.guild.ownerId) throw "You cannot kick the owner of the server"
+    if (member.id === interaction.guild.ownerId) throw "You cannot kick the owner of the server";
     // Check if Nucleus can kick the member
-    if (! (mePos > applyPos)) throw "I do not have a role higher than that member"
+    if (! (mePos > applyPos)) throw "I do not have a role higher than that member";
     // Check if Nucleus has permission to kick
     if (! me.permissions.has("KICK_MEMBERS")) throw "I do not have the *Kick Members* permission";
     // Do not allow kicking Nucleus
-    if (member.id === interaction.guild.me.id) throw "I cannot kick myself"
+    if (member.id === interaction.guild.me.id) throw "I cannot kick myself";
     // Allow the owner to kick anyone
-    if (member.id === interaction.guild.ownerId) return true
+    if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has kick_members permission
     if (! member.permissions.has("KICK_MEMBERS")) throw "You do not have the *Kick Members* permission";
     // Check if the user is below on the role list
-    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member"
+    if (! (memberPos > applyPos)) throw "You do not have a role higher than that member";
     // Allow kick
-    return true
-}
+    return true;
+};
 
 export { command, callback, check };

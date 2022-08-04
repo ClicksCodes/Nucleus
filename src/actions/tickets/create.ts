@@ -5,14 +5,14 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
 function capitalize(s: string) {
-    s = s.replace(/([A-Z])/g, ' $1');
+    s = s.replace(/([A-Z])/g, " $1");
     return s.length < 3 ? s.toUpperCase() : s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 
 export default async function (interaction) {
-    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
 
-    let config = await client.database.guilds.read(interaction.guild.id);
+    const config = await client.database.guilds.read(interaction.guild.id);
     if (!config.tickets.enabled || !config.tickets.category) {
         return await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Tickets are disabled")
@@ -22,7 +22,7 @@ export default async function (interaction) {
             .setEmoji("CONTROL.BLOCKCROSS")
         ], ephemeral: true});
     }
-    let category = interaction.guild.channels.cache.get(config.tickets.category) as Discord.CategoryChannel;
+    const category = interaction.guild.channels.cache.get(config.tickets.category) as Discord.CategoryChannel;
     let count = 0;
     category.children.forEach(element => {
         if (!(element.type === "GUILD_TEXT")) return;
@@ -41,8 +41,8 @@ export default async function (interaction) {
         ], ephemeral: true});
     }
     let ticketTypes;
-    let custom = false
-    if (config.tickets.customTypes && config.tickets.useCustom) { ticketTypes = config.tickets.customTypes; custom = true }
+    let custom = false;
+    if (config.tickets.customTypes && config.tickets.useCustom) { ticketTypes = config.tickets.customTypes; custom = true; }
     else if (config.tickets.types) ticketTypes = toHexArray(config.tickets.types, tickets);
     else ticketTypes = [];
     let chosenType;
@@ -54,7 +54,7 @@ export default async function (interaction) {
                 return new MessageButton()
                     .setLabel(type)
                     .setStyle("PRIMARY")
-                    .setCustomId(type)
+                    .setCustomId(type);
             } else {
                 return new MessageButton()
                     .setLabel(capitalize(type))
@@ -66,7 +66,7 @@ export default async function (interaction) {
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
             splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
-        let m = await interaction.reply({embeds: [new EmojiEmbed()
+        const m = await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setDescription("Select a ticket type")
             .setStatus("Success")
@@ -87,14 +87,14 @@ export default async function (interaction) {
                     .setLabel(type)
                     .setStyle(chosenType === type ? "SUCCESS" : "SECONDARY")
                     .setCustomId(type)
-                    .setDisabled(true)
-                } else {
-                    return new MessageButton()
+                    .setDisabled(true);
+            } else {
+                return new MessageButton()
                     .setLabel(capitalize(type))
                     .setStyle(chosenType === type ? "SUCCESS" : "SECONDARY")
                     .setCustomId(type)
                     .setEmoji(getEmojiByName(("TICKETS." + type.toString().toUpperCase()), "id"))
-                    .setDisabled(true)
+                    .setDisabled(true);
             }
         });
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
@@ -107,13 +107,13 @@ export default async function (interaction) {
             .setEmoji("GUILD.TICKET.OPEN")
         ], components: splitFormattedTicketTypes});
     } else {
-        chosenType = null
+        chosenType = null;
         await interaction.reply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
             .setEmoji("GUILD.TICKET.OPEN")
-        ], ephemeral: true, components: splitFormattedTicketTypes})
+        ], ephemeral: true, components: splitFormattedTicketTypes});
     }
-    let overwrites = [{
+    const overwrites = [{
         id: interaction.member,
         allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
         type: "member"
@@ -122,13 +122,13 @@ export default async function (interaction) {
         id: interaction.guild.roles.everyone,
         deny: ["VIEW_CHANNEL"],
         type: "role"
-    })
+    });
     if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: interaction.guild.roles.cache.get(config.tickets.supportRole),
             allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
             type: "role"
-        })
+        });
     }
 
     let c;
@@ -140,7 +140,7 @@ export default async function (interaction) {
             nsfw: false,
             permissionOverwrites: (overwrites as Discord.OverwriteResolvable[]),
             reason: "Creating ticket"
-        })
+        });
     } catch (e) {
         return await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Create Ticket")
@@ -158,17 +158,17 @@ export default async function (interaction) {
                     roles: (config.tickets.supportRole !== null ? [config.tickets.supportRole] : [])
                 }
             }
-        )
+        );
         let content = interaction.options ? interaction.options.getString("message") || "" : "";
         if (content) content = `**Message:**\n> ${content}\n`;
-        let emoji = custom ? "" : getEmojiByName("TICKETS." + chosenType.toUpperCase());
+        const emoji = custom ? "" : getEmojiByName("TICKETS." + chosenType.toUpperCase());
         await c.send({ embeds: [new EmojiEmbed()
             .setTitle("New Ticket")
             .setDescription(
                 `Ticket created by <@${interaction.member.user.id}>\n` +
                 `**Support type:** ${chosenType !== null ? (emoji) + " " + capitalize(chosenType) : "General"}\n` +
                 `**Ticket ID:** \`${c.id}\`\n${content}\n` +
-                `Type \`/ticket close\` to close this ticket.`,
+                "Type `/ticket close` to close this ticket."
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN")
@@ -177,27 +177,27 @@ export default async function (interaction) {
             .setStyle("DANGER")
             .setCustomId("closeticket")
             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-        ])]})
-        let data = {
+        ])]});
+        const data = {
             meta:{
-                type: 'ticketCreate',
-                displayName: 'Ticket Created',
+                type: "ticketCreate",
+                displayName: "Ticket Created",
                 calculateType: "ticketUpdate",
                 color: NucleusColors.green,
-                emoji: 'GUILD.TICKET.OPEN',
+                emoji: "GUILD.TICKET.OPEN",
                 timestamp: new Date().getTime()
             },
             list: {
                 ticketFor: entry(interaction.member.user.id, renderUser(interaction.member.user)),
                 created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                ticketChannel: entry(c.id, renderChannel(c)),
+                ticketChannel: entry(c.id, renderChannel(c))
             },
             hidden: {
                 guild: interaction.guild.id
             }
-        }
+        };
         log(data);
-    } catch (e) { console.log(e)}
+    } catch (e) { console.log(e);}
     await interaction.editReply({embeds: [new EmojiEmbed()
         .setTitle("Create Ticket")
         .setDescription(`Ticket created. You can view it here: <#${c.id}>`)

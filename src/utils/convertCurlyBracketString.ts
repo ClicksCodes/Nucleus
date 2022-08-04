@@ -1,6 +1,6 @@
 async function convertCurlyBracketString(str, memberID, memberName, serverName, members): Promise<string> {
-    let memberCount = (await members.fetch()).size
-    let bots = (await members.fetch()).filter(m => m.user.bot).size
+    const memberCount = (await members.fetch()).size;
+    const bots = (await members.fetch()).filter(m => m.user.bot).size;
     str = str
         .replace("{member:mention}", memberID ? `<@${memberID}>` : "{member:mention}")
         .replace("{member:name}", memberName ? `${memberName}` : "{member:name}")
@@ -9,7 +9,7 @@ async function convertCurlyBracketString(str, memberID, memberName, serverName, 
         .replace("{memberCount:bots}", bots ? `${bots}` : "{memberCount:bots}")
         .replace("{memberCount:humans}", (memberCount && bots) ? `${memberCount - bots}` : "{memberCount:humans}");
 
-    return str
+    return str;
 }
 
 export default convertCurlyBracketString;

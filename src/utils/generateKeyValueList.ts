@@ -2,17 +2,17 @@ const forceCaps = [
     "ID",
     "NSFW",
     "URL"
-]
+];
 
 export function capitalize(s: string) {
-    s = s.replace(/([A-Z])/g, ' $1');
+    s = s.replace(/([A-Z])/g, " $1");
     s = s.split(" ").map(word => {
         return forceCaps.includes(word.toUpperCase()) ? word.toUpperCase() : word[0]
             .toUpperCase() + word.slice(1)
             .toLowerCase()
-            .replace("discord", "Discord")
+            .replace("discord", "Discord");
     }).join(" ");
-    return s
+    return s;
 }
 
 export function toCapitals(s: string) {
@@ -22,8 +22,8 @@ export function toCapitals(s: string) {
 function keyValueList(data) {
     let out = "";
     Object.entries(data).map(([key, value]) => {
-        out += `**${capitalize(key)}:** ${value}\n`
-    })
+        out += `**${capitalize(key)}:** ${value}\n`;
+    });
     return out;
 }
 

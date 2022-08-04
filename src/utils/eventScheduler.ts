@@ -1,39 +1,39 @@
 import { Agenda } from "agenda/es.js";
-import client from './client.js';
-import * as fs from 'fs';
-import * as path from 'path';
-import config from '../config/main.json' assert {type: 'json'};
+import client from "./client.js";
+import * as fs from "fs";
+import * as path from "path";
+import config from "../config/main.json" assert {type: "json"};
 
 class EventScheduler {
     private agenda: Agenda;
 
     constructor() {
-        this.agenda = new Agenda({db: {address: config.mongoUrl + "Nucleus", collection: 'eventScheduler'}})
+        this.agenda = new Agenda({db: {address: config.mongoUrl + "Nucleus", collection: "eventScheduler"}});
 
         this.agenda.define("unmuteRole", async (job: Agenda.job) => {
-            let guild = await client.guilds.fetch(job.attrs.data.guild);
-            let user = await guild.members.fetch(job.attrs.data.user);
-            let role = await guild.roles.fetch(job.attrs.data.role);
+            const guild = await client.guilds.fetch(job.attrs.data.guild);
+            const user = await guild.members.fetch(job.attrs.data.user);
+            const role = await guild.roles.fetch(job.attrs.data.role);
             await user.roles.remove(role);
             await job.remove();
-        })
+        });
         this.agenda.define("deleteFile", async (job: Agenda.job) => {
-            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), (err) => {})
+            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), client._error);
             await job.remove();
-        })
+        });
         this.agenda.define("naturalUnmute", async (job: Agenda.job) => {
-            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger
-            let guild = await client.guilds.fetch(job.attrs.data.guild);
-            let user = await guild.members.fetch(job.attrs.data.user);
-            if (user.communicationDisabledUntil === null) return
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+            const guild = await client.guilds.fetch(job.attrs.data.guild);
+            const user = await guild.members.fetch(job.attrs.data.user);
+            if (user.communicationDisabledUntil === null) return;
             try { await client.database.history.create(
                 "unmute", user.guild.id, user.user, null, null, null, null
-            )} catch {}
-            let data = {
+            );} catch (e) { client._error(e); }
+            const data = {
                 meta: {
-                    type: 'memberUnmute',
-                    displayName: 'Unmuted',
-                    calculateType: 'guildMemberPunish',
+                    type: "memberUnmute",
+                    displayName: "Unmuted",
+                    calculateType: "guildMemberPunish",
                     color: NucleusColors.green,
                     emoji: "PUNISH.MUTE.GREEN",
                     timestamp: new Date().getTime()
@@ -47,23 +47,25 @@ class EventScheduler {
                 hidden: {
                     guild: guild.id
                 }
-            }
+            };
             log(data);
-        })
+        });
     }
 
     async start() {
-        await new Promise(resolve => this.agenda.once('ready', resolve));
-        this.agenda.start()
-        return this
+        await new Promise(resolve => this.agenda.once("ready", resolve));
+        this.agenda.start();
+        return this;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async schedule(name: string, time: string, data: any) {
-        await this.agenda.schedule(time, name, data)
+        await this.agenda.schedule(time, name, data);
     }
 
-    cancel(name: string, data: Object) {
-        this.agenda.cancel({name, data})
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    cancel(name: string, data: any) {
+        this.agenda.cancel({name, data});
     }
 }
 

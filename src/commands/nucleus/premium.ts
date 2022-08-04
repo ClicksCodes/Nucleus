@@ -5,8 +5,8 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("premium")
-    .setDescription("Information about Nucleus Premium")
+        .setName("premium")
+        .setDescription("Information about Nucleus Premium");
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     interaction.reply({embeds: [new EmojiEmbed()
@@ -20,11 +20,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setEmoji("NUCLEUS.LOGO")
         .setStatus("Danger")
     ], ephemeral: true});
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     return true;
-}
+};
 
 export { command };
 export { callback };

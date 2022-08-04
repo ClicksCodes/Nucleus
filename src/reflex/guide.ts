@@ -1,16 +1,15 @@
-import { LoadingEmbed } from './../utils/defaultEmbeds.js';
-import { SelectMenuOption } from '@discordjs/builders';
+import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
+import { SelectMenuOption } from "@discordjs/builders";
 import Discord, { MessageActionRow, MessageButton } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
-import client from "../utils/client.js";
 
 class Embed {
     embed: Discord.MessageEmbed;
     title: string;
-    description: string = "";
-    pageId: number = 0;
+    description = "";
+    pageId = 0;
     setEmbed(embed: Discord.MessageEmbed) { this.embed = embed; return this; }
     setTitle(title: string) { this.title = title; return this; }
     setDescription(description: string) { this.description = description; return this; }
@@ -20,7 +19,7 @@ class Embed {
 export default async (guild, interaction?) => {
     let c = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
     c = c ? c : guild.channels.cache.find(ch => ch.type === "GUILD_TEXT" && ch.permissionsFor(guild.roles.everyone).has("SEND_MESSAGES") && ch.permissionsFor(guild.me).has("EMBED_LINKS"));
-    let pages = [
+    const pages = [
         new Embed()
             .setEmbed(new EmojiEmbed()
                 .setTitle("Welcome to Nucleus")
@@ -62,8 +61,8 @@ export default async (guild, interaction?) => {
                     `**${getEmojiByName("PUNISH.BAN.RED")} Ban:** The user is removed from the server, and they are unable to rejoin.\n` +
                     `**${getEmojiByName("PUNISH.BAN.GREEN")} Unban:** The user is able to rejoin the server.`
                 )
-            .setEmoji("PUNISH.BAN.RED")
-            .setStatus("Danger")
+                .setEmoji("PUNISH.BAN.RED")
+                .setStatus("Danger")
             ).setTitle("Moderation").setDescription("Basic moderation commands").setPageId(2),
         new Embed()
             .setEmbed(new EmojiEmbed()
@@ -124,53 +123,53 @@ export default async (guild, interaction?) => {
                 )
                 .setEmoji("NUCLEUS.COMMANDS.LOCK")
                 .setStatus("Danger")
-            ).setTitle("Premium").setDescription("Premium features").setPageId(7),
-    ]
+            ).setTitle("Premium").setDescription("Premium features").setPageId(7)
+    ];
     let m;
     if (interaction) { m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true}); }
     else { m = await c.send({embeds: LoadingEmbed }); }
     let page = 0;
 
-    let f = async (component) => {
+    const f = async (component) => {
         return (component.member as Discord.GuildMember).permissions.has("MANAGE_GUILD");
-    }
+    };
 
     let selectPaneOpen = false;
 
     while (true) {
-        let selectPane = []
+        let selectPane = [];
 
         if (selectPaneOpen) {
-            let options = [];
+            const options = [];
             pages.forEach(embed => {
                 options.push(new SelectMenuOption({
                     label: embed.title,
                     value: embed.pageId.toString(),
-                    description: embed.description || "",
-                }))
-            })
+                    description: embed.description || ""
+                }));
+            });
             selectPane = [new MessageActionRow().addComponents([
                 new Discord.MessageSelectMenu()
                     .addOptions(options)
                     .setCustomId("page")
                     .setMaxValues(1)
                     .setPlaceholder("Choose a page...")
-            ])]
+            ])];
         }
-        let components = selectPane.concat([new MessageActionRow().addComponents([
+        const components = selectPane.concat([new MessageActionRow().addComponents([
             new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(page === 0),
             new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(false),
             new MessageButton().setCustomId("right").setEmoji(getEmojiByName("CONTROL.RIGHT", "id")).setStyle("SECONDARY").setDisabled(page === pages.length - 1)
-        ])])
+        ])]);
         if (interaction) {
-            let em = new Discord.MessageEmbed(pages[page].embed)
+            const em = new Discord.MessageEmbed(pages[page].embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             await interaction.editReply({
                 embeds: [em],
                 components: components
             });
         } else {
-            let em = new Discord.MessageEmbed(pages[page].embed)
+            const em = new Discord.MessageEmbed(pages[page].embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             await m.edit({
                 embeds: [em],
@@ -178,11 +177,11 @@ export default async (guild, interaction?) => {
                 fetchReply: true
             });
         }
-        let i
+        let i;
         try {
-            i = await m.awaitMessageComponent({filter: interaction ? () => { return true } : f, time: 300000});
-        } catch(e) { break }
-        i.deferUpdate()
+            i = await m.awaitMessageComponent({filter: interaction ? () => { return true; } : f, time: 300000});
+        } catch(e) { break; }
+        i.deferUpdate();
         if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
@@ -196,9 +195,9 @@ export default async (guild, interaction?) => {
             selectPaneOpen = false;
         } else {
             if (interaction) {
-                let em = new Discord.MessageEmbed(pages[page].embed)
+                const em = new Discord.MessageEmbed(pages[page].embed);
                 em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
-                em.setFooter({text: "Message closed"})
+                em.setFooter({text: "Message closed"});
                 interaction.editReply({embeds: [em], components: [new MessageActionRow().addComponents([
                     new MessageButton().setCustomId("left").setEmoji(getEmojiByName("CONTROL.LEFT", "id")).setStyle("SECONDARY").setDisabled(true),
                     new MessageButton().setCustomId("select").setEmoji(getEmojiByName("CONTROL.MENU", "id")).setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY").setDisabled(true),
@@ -211,7 +210,7 @@ export default async (guild, interaction?) => {
         }
     }
     if (interaction) {
-        let em = new Discord.MessageEmbed(pages[page].embed)
+        const em = new Discord.MessageEmbed(pages[page].embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({text: "Message timed out"});
         await interaction.editReply({
             embeds: [em],
@@ -222,7 +221,7 @@ export default async (guild, interaction?) => {
             ])]
         });
     } else {
-        let em = new Discord.MessageEmbed(pages[page].embed)
+        const em = new Discord.MessageEmbed(pages[page].embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({text: "Message timed out"});
         await m.edit({
             embeds: [em],
@@ -233,4 +232,4 @@ export default async (guild, interaction?) => {
             ])]
         });
     }
-}
+};

@@ -1,9 +1,9 @@
-import { LoadingEmbed } from './../../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
-import client from '../../../utils/client.js';
+import client from "../../../utils/client.js";
 import { toHexArray, toHexInteger } from "../../../utils/calculate.js";
 
 
@@ -27,20 +27,20 @@ const logs = {
     "guildMemberVerify": "Member runs verify",
     "autoModeratorDeleted": "Messages auto deleted by Nucleus",
     "nucleusSettingsUpdated": "Nucleus' settings updated by a moderator",
-    "ticketUpdate": "Tickets created or deleted",
-}
+    "ticketUpdate": "Tickets created or deleted"
+};
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("events")
-    .setDescription("Sets what events should be logged")
+        .setName("events")
+        .setDescription("Sets what events should be logged");
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let m;
     while (true) {
-        let config = await client.database.guilds.read(interaction.guild.id)
-        let converted = toHexArray(config.logging.logs.toLog)
+        const config = await client.database.guilds.read(interaction.guild.id);
+        const converted = toHexArray(config.logging.logs.toLog);
         m = await interaction.editReply({embeds: [new EmojiEmbed()
             .setTitle("Logging Events")
             .setDescription("Below are the events being logged in the server. You can toggle them on and off in the dropdown")
@@ -68,25 +68,25 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStyle("DANGER")
                     .setCustomId("none")
             ])
-        ]})
+        ]});
         let i;
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break
+            break;
         }
-        i.deferUpdate()
+        i.deferUpdate();
         if (i.customId === "logs") {
-            let selected = i.values;
-            let newLogs = toHexInteger(selected.map(e => Object.keys(logs)[parseInt(e)]))
-            await client.database.guilds.write(interaction.guild.id, {"logging.logs.toLog": newLogs})
+            const selected = i.values;
+            const newLogs = toHexInteger(selected.map(e => Object.keys(logs)[parseInt(e)]));
+            await client.database.guilds.write(interaction.guild.id, {"logging.logs.toLog": newLogs});
         } else if (i.customId === "all") {
-            let newLogs = toHexInteger(Object.keys(logs).map(e => e))
-            await client.database.guilds.write(interaction.guild.id, {"logging.logs.toLog": newLogs})
+            const newLogs = toHexInteger(Object.keys(logs).map(e => e));
+            await client.database.guilds.write(interaction.guild.id, {"logging.logs.toLog": newLogs});
         } else if (i.customId === "none") {
-            await client.database.guilds.write(interaction.guild.id, {"logging.logs.toLog": 0})
+            await client.database.guilds.write(interaction.guild.id, {"logging.logs.toLog": 0});
         } else {
-            break
+            break;
         }
     }
     m = await interaction.editReply({embeds: [new EmojiEmbed()
@@ -95,14 +95,14 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setFooter({text: "Message timed out"})
         .setStatus("Success")
         .setEmoji("CHANNEL.TEXT.CREATE")
-    ]})
-}
+    ]});
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
-    let member = (interaction.member as Discord.GuildMember)
-    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command"
+    const member = (interaction.member as Discord.GuildMember);
+    if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;
-}
+};
 
 export { command };
 export { callback };

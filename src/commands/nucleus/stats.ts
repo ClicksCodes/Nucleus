@@ -2,12 +2,12 @@ import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
-import client from "../../utils/client.js"
+import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-    .setName("stats")
-    .setDescription("Gets the bot's stats")
+        .setName("stats")
+        .setDescription("Gets the bot's stats");
 
 const callback = async (interaction: CommandInteraction): Promise<any> => {
     interaction.reply({
@@ -22,11 +22,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
         ], ephemeral: true
     });
-}
+};
 
 const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
     return true;
-}
+};
 
 export { command };
 export { callback };

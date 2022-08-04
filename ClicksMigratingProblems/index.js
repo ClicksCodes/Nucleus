@@ -1,31 +1,31 @@
-import fs from 'fs';
-import { MongoClient } from 'mongodb';
+import fs from "fs";
+import { MongoClient } from "mongodb";
 
-const mongoClient = new MongoClient('mongodb://127.0.0.1:27017/local');
-await mongoClient.connect()
+const mongoClient = new MongoClient("mongodb://127.0.0.1:27017/local");
+await mongoClient.connect();
 const database = mongoClient.db("Nucleus");
 const collection = database.collection("migrationTesting");
 
 // Loop through all files in the oldData folder
-const files = fs.readdirSync('./oldData');
-let x = 0
+const files = fs.readdirSync("./oldData");
+let x = 0;
 for (const file of files) {
     console.log(`┌ Processing file ${x} of ${files.length - 1} | ${file}`);
     // Read the file as a json
-    let data
+    let data;
     try {
         data = JSON.parse(fs.readFileSync(`./oldData/${file}`));
     } catch {
         console.log(`└ Error reading file ${file}`);
-        x++
+        x++;
         continue;
     }
     // Check if data version is 3
     if (data.version !== 3) {
         console.log(`├ Version was too old on ${file}`);
-        console.log(`└ Skipping file`);
+        console.log("└ Skipping file");
         x++;
-        continue
+        continue;
     }
     // Convert to the new format
     const newData = {
@@ -44,11 +44,11 @@ for (const file of files) {
                 "words": {
                     "strict": data.wordfilter.strict,
                     "loose": data.wordfilter.soft
-                },
+                }
             },
             "invite": {
                 "enabled": data.invite ? data.invite.enabled : false,
-                "channels": data.invite ? data.invite.whitelist.channels.map(channel => channel.toString()) : [],
+                "channels": data.invite ? data.invite.whitelist.channels.map(channel => channel.toString()) : []
             },
             "pings": {
                 "mass": 5,
@@ -60,7 +60,7 @@ for (const file of files) {
             "enabled": data.welcome ? (data.welcome.message.text !== null) : false,
             "verificationRequired": {
                 "message": null,
-                "role": null,
+                "role": null
             },
             "role": data.welcome ? (data.welcome.role !== null ? data.welcome.role.toString() : null) : null,
             "channel": data.welcome ? (data.welcome.message.text !== null ? data.welcome.message.channel.toString() : null) : null,
@@ -74,12 +74,12 @@ for (const file of files) {
                 "toLog": "3fffff"
             },
             "staff": {
-                "channel": data.log_info.staff ? data.log_info.staff.toString() : null,
+                "channel": data.log_info.staff ? data.log_info.staff.toString() : null
             }
         },
         "verify": {
             "enabled": data.verify_role !== null,
-            "role": data.verify_role ? data.verify_role.toString() : null,
+            "role": data.verify_role ? data.verify_role.toString() : null
         },
         "tickets": {
             "enabled": data.modmail ? (data.modmail.cat !== null) : null,
@@ -119,7 +119,7 @@ for (const file of files) {
         "tracks": [],
         "roleMenu": [],
         "tags": data.tags
-    }
+    };
     // Insert the new data into the database
     await collection.updateOne({ id: data.guild_info.id.toString() }, { $set: newData }, { upsert: true });
     // Delete the old file
