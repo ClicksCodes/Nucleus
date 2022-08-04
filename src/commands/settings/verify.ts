@@ -1,10 +1,9 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, Emoji, MessageActionRow, MessageButton, MessageSelectMenu, TextInputComponent } from "discord.js";
+import Discord, { CommandInteraction, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, MessageSelectMenu, Role, SelectMenuInteraction, TextInputComponent } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
+import { Embed, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../utils/client.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 
@@ -14,13 +13,12 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Manage the role given after typing /verify")
         .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying").setRequired(false));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     if (interaction.options.getRole("role")) {
-        let role;
+        let role: Role;
         try {
-            role = interaction.options.getRole("role");
+            role = interaction.options.getRole("role") as Role;
         } catch {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("GUILD.ROLES.DELETE")
@@ -109,19 +107,19 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
                 .setStyle("PRIMARY")
         ])]});
-        let i;
+        let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({time: 300000});
+            i = await (m as Message).awaitMessageComponent({time: 300000});
         } catch(e) { break; }
         i.deferUpdate();
-        if (i.component.customId === "clear") {
+        if ((i.component as MessageActionRowComponent).customId === "clear") {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
                 await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"]);
                 role = undefined;
             }
-        } else if (i.component.customId === "send") {
+        } else if ((i.component as MessageActionRowComponent).customId === "send") {
             const verifyMessages = [
                 {label: "Verify", description: "Click the button below to get verified"},
                 {label: "Get verified", description: "To get access to the rest of the server, click the button below"},
@@ -157,15 +155,15 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setStyle("PRIMARY")
                     ])
                 ]});
-                let i;
+                let i: MessageComponentInteraction;
                 try {
-                    i = await m.awaitMessageComponent({time: 300000});
+                    i = await (m as Message).awaitMessageComponent({time: 300000});
                 } catch(e) { break; }
-                if (i.component.customId === "template") {
+                if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
                     await interaction.channel.send({embeds: [new EmojiEmbed()
-                        .setTitle(verifyMessages[parseInt(i.values[0])].label)
-                        .setDescription(verifyMessages[parseInt(i.values[0])].description)
+                        .setTitle(verifyMessages[parseInt((i as SelectMenuInteraction).values[0])].label)
+                        .setDescription(verifyMessages[parseInt((i as SelectMenuInteraction).values[0])].description)
                         .setStatus("Success")
                         .setEmoji("CONTROL.BLOCKTICK")
                     ], components: [new MessageActionRow().addComponents([new MessageButton()
@@ -175,7 +173,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setCustomId("verifybutton")
                     ])]});
                     break;
-                } else if (i.component.customId === "blank") {
+                } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel.send({components: [new MessageActionRow().addComponents([new MessageButton()
                         .setLabel("Verify")
@@ -184,7 +182,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setCustomId("verifybutton")
                     ])]});
                     break;
-                } else if (i.component.customId === "custom") {
+                } else if ((i.component as MessageActionRowComponent).customId === "custom") {
                     await i.showModal(new Discord.Modal().setCustomId("modal").setTitle("Enter embed details").addComponents(
                         new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                             .setCustomId("title")
@@ -241,10 +239,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             break;
         }
     }
-    await interaction.editReply({embeds: [m.embeds[0].setFooter({text: "Message closed"})], components: []});
+    await interaction.editReply({embeds: [(m.embeds[0] as Embed).setFooter({text: "Message closed"})], components: []});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;

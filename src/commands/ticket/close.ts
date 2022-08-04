@@ -1,6 +1,5 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import close from "../../actions/tickets/delete.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -8,11 +7,11 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("close")
         .setDescription("Closes a ticket");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     await close(interaction);
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

@@ -1,7 +1,6 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, SelectMenuInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import { SelectMenuOption } from "@discordjs/builders";
@@ -25,7 +24,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("list")
         .setDescription("Lists all tags in the server");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const data = await client.database.guilds.read(interaction.guild.id);
     const tags = data.getKey("tags");
     let strings = [];
@@ -53,8 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setStatus("Success")
             ).setTitle(`Page ${pages.length + 1}`).setPageId(pages.length));
     }
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let page = 0;
     let selectPaneOpen = false;
     while (true) {
@@ -88,21 +86,21 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 new MessageButton().setCustomId("close").setEmoji(getEmojiByName("CONTROL.CROSS", "id")).setStyle("DANGER")
             ])])
         });
-        let i;
+        let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({time: 300000 });
+            i = await (m as Message).awaitMessageComponent({time: 300000 });
         } catch (e) { break; }
         i.deferUpdate();
-        if (i.component.customId === "left") {
+        if ((i.component as MessageActionRowComponent).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (i.component.customId === "right") {
+        } else if ((i.component as MessageActionRowComponent).customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if (i.component.customId === "select") {
+        } else if ((i.component as MessageActionRowComponent).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId === "page") {
-            page = parseInt(i.values[0]);
+        } else if ((i.component as MessageActionRowComponent).customId === "page") {
+            page = parseInt((i as SelectMenuInteraction).values[0]);
             selectPaneOpen = false;
         } else {
             const em = new Discord.MessageEmbed(pages[page].embed);
@@ -131,7 +129,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     });
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

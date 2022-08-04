@@ -1,7 +1,6 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, SelectMenuInteraction } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
@@ -27,7 +26,7 @@ class Embed {
 }
 
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const { renderUser, renderDelta } = client.logger;
     const member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
     const flags: string[] = [];
@@ -37,7 +36,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         "261900651230003201", // Coded
         "511655498676699136" // Zan
     ].includes(member.user.id)) { flags.push("NUCLEUSDEVELOPER"); }
-    if ((await client.guilds.cache.get("684492926528651336")?.members.fetch())?.filter(m => m.roles.cache.has("760896837866749972"))?.map(m => m.id).includes(member.user.id)) { flags.push("CLICKSDEVELOPER"); }
+    if ((await client.guilds.cache.get("684492926528651336")?.members.fetch())?.filter((m: GuildMember) => m.roles.cache.has("760896837866749972"))?.map((m: GuildMember) => m.id).includes(member.user.id)) { flags.push("CLICKSDEVELOPER"); }
     member.user.flags.toArray().map(flag => {
         flags.push(flag.toString());
     });
@@ -126,7 +125,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         "join position": `${joinPos + 1}`
                     })
                 )
-                .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+                .setThumbnail(member.user.displayAvatarURL({dynamic: true}))
                 .setImage((await member.user.fetch()).bannerURL({format: "gif"}))
             ).setTitle("General").setDescription("General information about the user").setPageId(0),
         new Embed()
@@ -142,7 +141,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     }) + "\n" +
                     (s.length > 0 ? s : "*None*") + "\n"
                 )
-                .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+                .setThumbnail(member.user.displayAvatarURL({dynamic: true}))
             ).setTitle("Roles").setDescription("Roles the user has").setPageId(1),
         new Embed()
             .setEmbed(new EmojiEmbed()
@@ -155,11 +154,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         "id": `\`${member.id}\``
                     }) + "\n" + perms
                 )
-                .setThumbnail(await member.user.displayAvatarURL({dynamic: true}))
+                .setThumbnail(member.user.displayAvatarURL({dynamic: true}))
             ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2)
     ];
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let page = 0;
     let breakReason = "";
     while (true) {
@@ -208,24 +206,24 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStyle("DANGER")
             ])])
         });
-        let i;
+        let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({time: 300000});
+            i = await (m as Message).awaitMessageComponent({time: 300000});
         } catch { breakReason = "Message timed out"; break; }
         i.deferUpdate();
-        if (i.component.customId === "left") {
+        if ((i.component as MessageActionRowComponent).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (i.component.customId === "right") {
+        } else if ((i.component as MessageActionRowComponent).customId === "right") {
             if (page < embeds.length - 1) page++;
             selectPaneOpen = false;
-        } else if (i.component.customId === "select") {
+        } else if ((i.component as MessageActionRowComponent).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId === "close") {
+        } else if ((i.component as MessageActionRowComponent).customId === "close") {
             breakReason = "Message closed";
             break;
-        } else if (i.component.customId === "page") {
-            page = parseInt(i.values[0]);
+        } else if ((i.component as MessageActionRowComponent).customId === "page") {
+            page = parseInt((i as SelectMenuInteraction).values[0]);
             selectPaneOpen = false;
         } else {
             breakReason = "Message closed";
@@ -258,7 +256,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     ])]});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

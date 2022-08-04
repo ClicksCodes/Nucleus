@@ -1,7 +1,6 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import Discord, { Channel, CommandInteraction, Message, MessageActionRow, MessageButton, MessageComponentInteraction, Role } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -20,17 +19,17 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             ChannelType.GuildText, ChannelType.GuildNews
         ]));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const { renderRole, renderChannel, log, NucleusColors, entry, renderUser } = client.logger;
     await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
-    let m;
+    let m: Message;
     if (interaction.options.getRole("role") || interaction.options.getChannel("channel") || interaction.options.getString("message")) {
-        let role;
-        let ping;
+        let role: Role;
+        let ping: Role;
         const message = interaction.options.getString("message");
         try {
-            role = interaction.options.getRole("role");
-            ping = interaction.options.getRole("ping");
+            role = interaction.options.getRole("role") as Role;
+            ping = interaction.options.getRole("ping") as Role;
         } catch {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("GUILD.ROLES.DELETE")
@@ -39,9 +38,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setStatus("Danger")
             ]});
         }
-        let channel;
+        let channel: Channel;
         try {
-            channel = interaction.options.getChannel("channel");
+            channel = interaction.options.getChannel("channel") as Channel;
         } catch {
             return await interaction.editReply({embeds: [new EmojiEmbed()
                 .setEmoji("GUILD.ROLES.DELETE")
@@ -160,8 +159,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setDisabled(config.welcome.channel == "dm")
                     .setStyle("SECONDARY")
             ])
-        ]});
-        let i;
+        ]}) as Message;
+        let i: MessageComponentInteraction;
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
@@ -196,7 +195,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     await interaction.editReply({embeds: [m.embeds[0].setFooter({text: "Message closed"})], components: []});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;

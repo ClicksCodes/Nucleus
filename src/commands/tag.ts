@@ -1,6 +1,5 @@
 import { AutocompleteInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 
@@ -9,7 +8,7 @@ const command = new SlashCommandBuilder()
     .setDescription("Get and manage the servers tags")
     .addStringOption(o => o.setName("tag").setDescription("The tag to get").setAutocomplete(true).setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const config = await client.database.guilds.read(interaction.guild.id);
     const tags = config.getKey("tags");
     const tag = tags[interaction.options.getString("tag")];
@@ -41,7 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

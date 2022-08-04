@@ -1,6 +1,5 @@
 import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -13,7 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addStringOption(o => o.setName("name").setRequired(true).setDescription("The name of the tag"))
         .addStringOption(o => o.setName("value").setRequired(true).setDescription("The value of the tag, shown after running /tag name"));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const name = interaction.options.getString("name");
     const value = interaction.options.getString("value");
     if (name.length > 100) return await interaction.reply({embeds: [new EmojiEmbed()
@@ -77,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     ], components: []});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_MESSAGES")) throw "You must have the *Manage Messages* permission to use this command";
     return true;

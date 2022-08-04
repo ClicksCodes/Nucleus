@@ -2,14 +2,14 @@ import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu, TextInputComponent } from "discord.js";
+import Discord, { CommandInteraction, GuildChannel, Interaction, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, MessageSelectMenu, Role, SelectMenuInteraction, TextInputComponent } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import { ChannelType } from "discord-api-types";
 import client from "../../utils/client.js";
 import { toHexInteger, toHexArray, tickets as ticketTypes } from "../../utils/calculate.js";
 import { capitalize } from "../../utils/generateKeyValueList.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import {GuildConfig} from "../../utils/database.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("tickets")
@@ -20,9 +20,8 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
     .addNumberOption(option => option.setName("maxticketsperuser").setDescription("The maximum amount of tickets a user can create | Default: 5").setRequired(false).setMinValue(1))
     .addRoleOption(option => option.setName("supportrole").setDescription("This role will have view access to all tickets and will be pinged when a ticket is created").setRequired(false));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+    let m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     const options = {
         enabled: interaction.options.getString("enabled") as string | boolean,
         category: interaction.options.getChannel("category"),
@@ -33,9 +32,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         options.enabled = options.enabled === "yes" ? true : false;
         if (options.category) {
-            let channel;
+            let channel: GuildChannel;
             try {
-                channel = interaction.guild.channels.cache.get(options.category.id);
+                channel = await interaction.guild.channels.fetch(options.category.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [new EmojiEmbed()
@@ -66,10 +65,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 ]
             });
         }
-        let role;
+        let role: Role;
         if (options.supportping) {
             try {
-                role = interaction.guild.roles.cache.get(options.supportping.id);
+                role = await interaction.guild.roles.fetch(options.supportping.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [new EmojiEmbed()
@@ -136,9 +135,9 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         }
     }
     let data = await client.database.guilds.read(interaction.guild.id);
-    data.tickets.customTypes = (data.tickets.customTypes || []).filter((v, i, a) => a.indexOf(v) === i);
+    data.tickets.customTypes = (data.tickets.customTypes || []).filter((value: string, index: number, array: string[]) => array.indexOf(value) === index);
     let lastClicked = "";
-    let embed;
+    let embed: EmojiEmbed;
     data = {
         enabled: data.tickets.enabled,
         category: data.tickets.category,
@@ -200,30 +199,30 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setCustomId("send")
             ])]
         });
-        let i;
+        let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await (m as Message).awaitMessageComponent({ time: 300000 });
         } catch (e) { break; }
         i.deferUpdate();
-        if (i.component.customId === "clearCategory") {
+        if ((i.component as MessageActionRowComponent).customId === "clearCategory") {
             if (lastClicked === "cat") {
                 lastClicked = "";
                 await client.database.guilds.write(interaction.guild.id, null, ["tickets.category"]);
                 data.category = undefined;
             } else lastClicked = "cat";
-        } else if (i.component.customId === "clearMaxTickets") {
+        } else if ((i.component as MessageActionRowComponent).customId === "clearMaxTickets") {
             if (lastClicked === "max") {
                 lastClicked = "";
                 await client.database.guilds.write(interaction.guild.id, null, ["tickets.maxTickets"]);
                 data.maxTickets = 5;
             } else lastClicked = "max";
-        } else if (i.component.customId === "clearSupportPing") {
+        } else if ((i.component as MessageActionRowComponent).customId === "clearSupportPing") {
             if (lastClicked === "sup") {
                 lastClicked = "";
                 await client.database.guilds.write(interaction.guild.id, null, ["tickets.supportRole"]);
                 data.supportRole = undefined;
             } else lastClicked = "sup";
-        } else if (i.component.customId === "send") {
+        } else if ((i.component as MessageActionRowComponent).customId === "send") {
             const ticketMessages = [
                 {label: "Create ticket", description: "Click the button below to create a ticket"},
                 {label: "Issues, questions or feedback?", description: "Click below to open a ticket and get help from our staff team"},
@@ -260,15 +259,15 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setStyle("PRIMARY")
                     ])
                 ]});
-                let i;
+                let i: MessageComponentInteraction;
                 try {
-                    i = await m.awaitMessageComponent({time: 300000});
+                    i = await (m as Message).awaitMessageComponent({time: 300000});
                 } catch(e) { break; }
-                if (i.component.customId === "template") {
+                if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
                     await interaction.channel.send({embeds: [new EmojiEmbed()
-                        .setTitle(ticketMessages[parseInt(i.values[0])].label)
-                        .setDescription(ticketMessages[parseInt(i.values[0])].description)
+                        .setTitle(ticketMessages[parseInt((i as SelectMenuInteraction).values[0])].label)
+                        .setDescription(ticketMessages[parseInt((i as SelectMenuInteraction).values[0])].description)
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
                     ], components: [new MessageActionRow().addComponents([new MessageButton()
@@ -278,7 +277,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setCustomId("createticket")
                     ])]});
                     break;
-                } else if (i.component.customId === "blank") {
+                } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel.send({components: [new MessageActionRow().addComponents([new MessageButton()
                         .setLabel("Create Ticket")
@@ -287,7 +286,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                         .setCustomId("createticket")
                     ])]});
                     break;
-                } else if (i.component.customId === "custom") {
+                } else if ((i.component as MessageActionRowComponent).customId === "custom") {
                     await i.showModal(new Discord.Modal().setCustomId("modal").setTitle("Enter embed details").addComponents(
                         new MessageActionRow<TextInputComponent>().addComponents(new TextInputComponent()
                             .setCustomId("title")
@@ -339,11 +338,11 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     } else { continue; }
                 }
             }
-        } else if (i.component.customId === "enabled") {
+        } else if ((i.component as MessageActionRowComponent).customId === "enabled") {
             await client.database.guilds.write(interaction.guild.id, { "tickets.enabled": !data.enabled });
             data.enabled = !data.enabled;
-        } else if (i.component.customId === "manageTypes") {
-            data = await manageTypes(interaction, data, m);
+        } else if ((i.component as MessageActionRowComponent).customId === "manageTypes") {
+            data = await manageTypes(interaction, data, m as Message);
         } else {
             break;
         }
@@ -351,7 +350,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     await interaction.editReply({ embeds: [embed.setFooter({ text: "Message closed" })], components: [] });
 };
 
-async function manageTypes(interaction, data, m) {
+async function manageTypes(interaction: Interaction, data: GuildConfig["tickets"], m: Message) {
     while (true) {
         if (data.useCustom) {
             const customTypes = data.customTypes;
@@ -519,7 +518,7 @@ async function manageTypes(interaction, data, m) {
 }
 
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;
