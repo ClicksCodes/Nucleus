@@ -7,7 +7,7 @@ const forceCaps = [
 export function capitalize(s: string) {
     s = s.replace(/([A-Z])/g, " $1");
     s = s.split(" ").map(word => {
-        return forceCaps.includes(word.toUpperCase()) ? word.toUpperCase() : word[0]
+        return forceCaps.includes(word.toUpperCase()) ? word.toUpperCase() : (word[0] ?? "")
             .toUpperCase() + word.slice(1)
             .toLowerCase()
             .replace("discord", "Discord");
@@ -16,10 +16,11 @@ export function capitalize(s: string) {
 }
 
 export function toCapitals(s: string) {
+    if (s[0] === undefined) return "";
     return s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 
-function keyValueList(data) {
+function keyValueList(data: Record<string, string>) {
     let out = "";
     Object.entries(data).map(([key, value]) => {
         out += `**${capitalize(key)}:** ${value}\n`;

@@ -1,4 +1,4 @@
-import { Agenda } from "agenda/es.js";
+import { Agenda } from "@hokify/agenda";
 import client from "./client.js";
 import * as fs from "fs";
 import * as path from "path";
@@ -10,18 +10,18 @@ class EventScheduler {
     constructor() {
         this.agenda = new Agenda({db: {address: config.mongoUrl + "Nucleus", collection: "eventScheduler"}});
 
-        this.agenda.define("unmuteRole", async (job: Agenda.job) => {
+        this.agenda.define("unmuteRole", async (job) => {
             const guild = await client.guilds.fetch(job.attrs.data.guild);
             const user = await guild.members.fetch(job.attrs.data.user);
             const role = await guild.roles.fetch(job.attrs.data.role);
             await user.roles.remove(role);
             await job.remove();
         });
-        this.agenda.define("deleteFile", async (job: Agenda.job) => {
+        this.agenda.define("deleteFile", async (job) => {
             fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), client._error);
             await job.remove();
         });
-        this.agenda.define("naturalUnmute", async (job: Agenda.job) => {
+        this.agenda.define("naturalUnmute", async (job) => {
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             const guild = await client.guilds.fetch(job.attrs.data.guild);
             const user = await guild.members.fetch(job.attrs.data.user);

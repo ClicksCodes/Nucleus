@@ -1,10 +1,8 @@
-import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
+import { CommandInteraction, GuildMember } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -14,7 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption(option => option.setName("user").setDescription("The user to change").setRequired(true))
         .addStringOption(option => option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let notify = true;
@@ -113,7 +111,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     const apply = (interaction.options.getMember("user") as GuildMember);

@@ -1,7 +1,6 @@
 import Discord, { CategoryChannel, CommandInteraction, GuildMember, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
-import { WrappedCheck } from "jshaiku";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import pageIndicator from "../../utils/createPageIndicator.js";
 
@@ -11,7 +10,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("View the server as a specific member")
         .addUserOption(option => option.setName("member").setDescription("The member to view as").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     let channels = [];
     let m;
     interaction.guild.channels.cache.forEach(channel => {
@@ -96,7 +95,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 };
 
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     if (! member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
     return true;

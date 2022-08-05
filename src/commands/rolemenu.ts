@@ -7,11 +7,11 @@ const command = new SlashCommandBuilder()
     .setName("rolemenu")
     .setDescription("Lets you choose from sets of roles to apply to yourself");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     await roleMenu(interaction);
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

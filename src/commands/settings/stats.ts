@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageSelectMenu } from "discord.js";
+import Discord, { CommandInteraction, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -16,10 +16,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addChannelOption(option => option.setName("channel").setDescription("The channel to modify"))
         .addStringOption(option => option.setName("name").setDescription("The new channel name | Enter any text or use the extra variables like {memberCount}").setAutocomplete(true));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     singleNotify("statsChannelDeleted", interaction.guild.id, true);
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true}) as Message;
     let config = await client.database.guilds.read(interaction.guild.id);
     if (interaction.options.getString("name")) {
         let channel;
@@ -140,10 +139,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             await client.database.guilds.write(interaction.guild.id, null, toRemove.map(k => `stats.${k}`));
         }
     }
-    await interaction.editReply({embeds: [m.embeds[0].setFooter({text: "Message closed"})], components: []});
+    await interaction.editReply({embeds: [(m.embeds[0] as Discord.MessageEmbed).setFooter({text: "Message closed"})], components: []});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_CHANNELS")) throw "You must have the *Manage Channels* permission to use this command";
     return true;

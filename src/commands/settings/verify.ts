@@ -1,9 +1,9 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, MessageSelectMenu, Role, SelectMenuInteraction, TextInputComponent } from "discord.js";
+import Discord, { CommandInteraction, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, MessageEmbed, MessageSelectMenu, Role, SelectMenuInteraction, TextInputComponent } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import { Embed, SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../utils/client.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 
@@ -14,7 +14,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addRoleOption(option => option.setName("role").setDescription("The role to give after verifying").setRequired(false));
 
 const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
-    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true}) as Message;
     if (interaction.options.getRole("role")) {
         let role: Role;
         try {
@@ -109,7 +109,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
         ])]});
         let i: MessageComponentInteraction;
         try {
-            i = await (m as Message).awaitMessageComponent({time: 300000});
+            i = await m.awaitMessageComponent({time: 300000});
         } catch(e) { break; }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "clear") {
@@ -157,7 +157,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                 ]});
                 let i: MessageComponentInteraction;
                 try {
-                    i = await (m as Message).awaitMessageComponent({time: 300000});
+                    i = await m.awaitMessageComponent({time: 300000});
                 } catch(e) { break; }
                 if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
@@ -239,7 +239,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             break;
         }
     }
-    await interaction.editReply({embeds: [(m.embeds[0] as Embed).setFooter({text: "Message closed"})], components: []});
+    await interaction.editReply({embeds: [(m.embeds[0] as MessageEmbed).setFooter({text: "Message closed"})], components: []});
 };
 
 const check = (interaction: CommandInteraction) => {

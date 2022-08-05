@@ -2,7 +2,7 @@ import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import Discord, { CommandInteraction, GuildChannel, Interaction, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, MessageSelectMenu, Role, SelectMenuInteraction, TextInputComponent } from "discord.js";
+import Discord, { CommandInteraction, GuildChannel, Message, MessageActionRow, MessageActionRowComponent, MessageButton, MessageComponentInteraction, MessageSelectMenu, Role, SelectMenuInteraction, TextInputComponent } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { ChannelType } from "discord-api-types";
 import client from "../../utils/client.js";
@@ -21,14 +21,13 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
     .addRoleOption(option => option.setName("supportrole").setDescription("This role will have view access to all tickets and will be pinged when a ticket is created").setRequired(false));
 
 const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
-    let m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+    let m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true}) as Message;
     const options = {
         enabled: interaction.options.getString("enabled") as string | boolean,
         category: interaction.options.getChannel("category"),
         maxtickets: interaction.options.getNumber("maxticketsperuser"),
         supportping: interaction.options.getRole("supportrole")
     };
-    console.log(m);
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         options.enabled = options.enabled === "yes" ? true : false;
         if (options.category) {
@@ -198,10 +197,10 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                     .setStyle("PRIMARY")
                     .setCustomId("send")
             ])]
-        });
+        }) as Message;
         let i: MessageComponentInteraction;
         try {
-            i = await (m as Message).awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) { break; }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "clearCategory") {
@@ -261,7 +260,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                 ]});
                 let i: MessageComponentInteraction;
                 try {
-                    i = await (m as Message).awaitMessageComponent({time: 300000});
+                    i = await m.awaitMessageComponent({time: 300000});
                 } catch(e) { break; }
                 if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
@@ -350,7 +349,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
     await interaction.editReply({ embeds: [embed.setFooter({ text: "Message closed" })], components: [] });
 };
 
-async function manageTypes(interaction: Interaction, data: GuildConfig["tickets"], m: Message) {
+async function manageTypes(interaction: CommandInteraction, data: GuildConfig["tickets"], m: Message) {
     while (true) {
         if (data.useCustom) {
             const customTypes = data.customTypes;
@@ -374,7 +373,10 @@ async function manageTypes(interaction: Interaction, data: GuildConfig["tickets"
                         .setPlaceholder("Select types to remove")
                         .setMaxValues(customTypes.length)
                         .setMinValues(1)
-                        .addOptions(customTypes.map((t) => new SelectMenuOption().setLabel(t).setValue(t)))
+                        .addOptions(customTypes.map((t) => ({
+                            label: t,
+                            value: t
+                        })))
                     ])
                 ] : []).concat([
                     new MessageActionRow().addComponents([

@@ -16,9 +16,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             ChannelType.GuildNews, ChannelType.GuildText
         ]).setRequired(false));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true}) as Discord.Message;
     if (interaction.options.getChannel("channel")) {
         let channel;
         try {
@@ -141,7 +140,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     ])]});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;

@@ -1,6 +1,5 @@
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -13,7 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Warns a user")
         .addUserOption(option => option.setName("user").setDescription("The user to warn").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const { log, NucleusColors, renderUser, entry } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -131,10 +130,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setStyle(canSeeChannel ? "SECONDARY" : "PRIMARY")
                     ])
                 ]
-            });
+            }) as Discord.Message;
             let component;
             try {
-                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
+                component = await m.awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch (e) {
                 return await interaction.editReply({embeds: [new EmojiEmbed()
                     .setEmoji("PUNISH.WARN.GREEN")
@@ -196,13 +195,12 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     const apply = (interaction.options.getMember("user") as GuildMember);
     if (member === null || me === null || apply === null) throw "That member is not in the server";
     const memberPos = member.roles ? member.roles.highest.position : 0;
-    const mePos = me.roles ? me.roles.highest.position : 0;
     const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow warning bots
     if (member.user.bot) throw "I cannot warn bots";

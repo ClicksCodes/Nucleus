@@ -1,8 +1,4 @@
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
-import getEmojiByName from "../../utils/getEmojiByName.js";
-import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import guide from "../../reflex/guide.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -15,7 +11,7 @@ const callback = async (interaction) => {
     guide(interaction.guild, interaction);
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

@@ -1,4 +1,4 @@
-import { Message, MessageButton } from "discord.js";
+import { MessageButton } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { MessageActionRow, MessageSelectMenu } from "discord.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -73,7 +73,7 @@ export async function callback(interaction) {
         });
     }
     let component;
-    try { component = await (m as Message).awaitMessageComponent({time: 300000});
+    try { component = await m.awaitMessageComponent({time: 300000});
     } catch (e) { return; }
     component.deferUpdate();
     let rolesToAdd = [];
@@ -113,7 +113,7 @@ export async function callback(interaction) {
         });
         let component;
         try {
-            component = await (m as Message).awaitMessageComponent({time: 300000});
+            component = await m.awaitMessageComponent({time: 300000});
         } catch (e) {
             return;
         }

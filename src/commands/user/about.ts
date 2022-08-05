@@ -157,7 +157,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setThumbnail(member.user.displayAvatarURL({dynamic: true}))
             ).setTitle("Key Permissions").setDescription("Key permissions the user has").setPageId(2)
     ];
-    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true}) as Message;
     let page = 0;
     let breakReason = "";
     while (true) {
@@ -208,7 +208,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
         let i: MessageComponentInteraction;
         try {
-            i = await (m as Message).awaitMessageComponent({time: 300000});
+            i = await m.awaitMessageComponent({time: 300000});
         } catch { breakReason = "Message timed out"; break; }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "left") {

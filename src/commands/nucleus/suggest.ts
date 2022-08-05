@@ -11,7 +11,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Sends a suggestion to the developers")
         .addStringOption(option => option.setName("suggestion").setDescription("The suggestion to send").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const { renderUser } = client.logger;
     const suggestion = interaction.options.getString("suggestion");
     const confirmation = await new confirmationMessage(interaction)
@@ -49,7 +49,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

@@ -1,6 +1,5 @@
-import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -8,7 +7,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("premium")
         .setDescription("Information about Nucleus Premium");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     interaction.reply({embeds: [new EmojiEmbed()
         .setTitle("Premium")
         .setDescription(
@@ -22,7 +21,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     ], ephemeral: true});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, MessageActionRow, Message, MessageButton, TextInputComponent } from "discord.js";
+import Discord, { CommandInteraction, MessageActionRow, MessageButton, TextInputComponent } from "discord.js";
 import { modalInteractionCollector } from "./dualCollector.js";
 import EmojiEmbed from "./generateEmojiEmbed.js";
 import getEmojiByName from "./getEmojiByName.js";
@@ -106,7 +106,7 @@ class confirmationMessage {
             } catch { return { cancelled: true }; }
             let component;
             try {
-                component = await (m as Message).awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 300000});
+                component = await m.awaitMessageComponent({filter: (m) => m.user.id === this.interaction.user.id, time: 300000});
             } catch (e) {
                 return { success: false, components: this.customButtons };
             }

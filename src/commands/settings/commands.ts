@@ -15,7 +15,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Links and text shown to a user after a moderator action is performed")
         .addRoleOption(o => o.setName("role").setDescription("The role given when a member is muted"));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     let m;
     let clicked = "";
@@ -117,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             });
             let out;
             try {
-                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (m) => true);
+                out = await modalInteractionCollector(m, (m) => m.channel.id === interaction.channel.id, (_) => true);
             } catch (e) { continue; }
             if (out.fields) {
                 const buttonText = out.fields.getTextInputValue("name");
@@ -133,7 +133,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
 };
 
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;

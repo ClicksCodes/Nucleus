@@ -123,10 +123,11 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                                 currentRoleIndex === data.track.length - 1 || currentRoleIndex <= -1
                         ) || !allowed[currentRoleIndex])
                 ])
-            ])});
+            ])
+        }) as Message;
         let component;
         try {
-            component = await (m as Message).awaitMessageComponent({time: 300000});
+            component = await m.awaitMessageComponent({time: 300000});
         } catch (e) {
             return;
         }

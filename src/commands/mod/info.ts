@@ -1,7 +1,6 @@
 import { HistorySchema } from "../../utils/database";
 import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton, TextInputComponent } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";
@@ -199,7 +198,7 @@ async function showHistory(member, interaction: CommandInteraction) {
 }
 
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     let m;
     const member = (interaction.options.getMember("user")) as Discord.GuildMember;
     await interaction.reply({embeds: [new EmojiEmbed()
@@ -273,7 +272,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     if (! member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     return true;

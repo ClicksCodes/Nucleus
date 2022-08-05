@@ -21,11 +21,11 @@ export class Logger {
         t = Math.floor(t /= 1000);
         return `<t:${t}:R> (<t:${t}:D> at <t:${t}:T>)`;
     }
-    renderNumberDelta(num1, num2) {
+    renderNumberDelta(num1: number, num2: number) {
         const delta = num2 - num1;
         return `${num1} -> ${num2} (${delta > 0 ? "+" : ""}${delta})`;
     }
-    entry(value, displayValue) {
+    entry(value: string, displayValue: string) {
         return { value: value, displayValue: displayValue };
     }
     renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel) {
@@ -45,7 +45,7 @@ export class Logger {
 
     };
 
-    async getAuditLog(guild: Discord.Guild, event): Promise<Discord.GuildAuditLogsEntry[]>{
+    async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable): Promise<Discord.GuildAuditLogsEntry[]>{
         await wait(250);
         const auditLog = await guild.fetchAuditLogs({type: event});
         return auditLog as unknown as Discord.GuildAuditLogsEntry[];
@@ -60,9 +60,9 @@ export class Logger {
         }
         if (config.logging.logs.channel) {
             const channel = await client.channels.fetch(config.logging.logs.channel) as Discord.TextChannel;
-            const description = {};
+            const description: Record<string, string> = {};
             Object.entries(log.list).map(entry => {
-                const key = entry[0];
+                const key: string = entry[0];
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const value: any = entry[1];
                 if(value.displayValue) {

@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, Guild, MessageActionRow, MessageButton } from "discord.js";
+import { CommandInteraction, Guild } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -10,7 +10,7 @@ const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("about")
     .setDescription("Shows info about the server");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const guild = interaction.guild as Guild;
     const { renderUser, renderDelta } = client.logger;
     interaction.reply({embeds: [new EmojiEmbed()
@@ -41,7 +41,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     ], ephemeral: true});
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

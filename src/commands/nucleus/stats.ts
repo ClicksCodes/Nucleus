@@ -1,6 +1,5 @@
 import { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 
@@ -9,7 +8,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("stats")
         .setDescription("Gets the bot's stats");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     interaction.reply({
         embeds: [new EmojiEmbed()
             .setTitle("Stats")
@@ -24,7 +23,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     });
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = () => {
     return true;
 };
 

@@ -13,7 +13,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addStringOption(o => o.setName("value").setRequired(false).setDescription("The new value of the tag / Rename"))
         .addStringOption(o => o.setName("newname").setRequired(false).setDescription("The new name of the tag / Edit"));
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const name = interaction.options.getString("name");
     const value = interaction.options.getString("value") || "";
     const newname = interaction.options.getString("newname") || "";

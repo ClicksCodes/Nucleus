@@ -7,8 +7,9 @@ export default async function (interaction) {
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
 
     const config = await client.database.guilds.read(interaction.guild.id);
-    let thread = false; let threadChannel;
-    if (interaction.channel instanceof Discord.ThreadChannel) thread = true; threadChannel = interaction.channel as Discord.ThreadChannel;
+    let thread = false;
+    if (interaction.channel instanceof Discord.ThreadChannel) thread = true;
+    const threadChannel = interaction.channel as Discord.ThreadChannel;
     const channel = (interaction.channel as Discord.TextChannel);
     if (!channel.parent || config.tickets.category !== channel.parent.id || (thread ? (threadChannel.parent.parent.id !== config.tickets.category) : false)) {
         return interaction.reply({embeds: [new EmojiEmbed()

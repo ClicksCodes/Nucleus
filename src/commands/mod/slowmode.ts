@@ -1,7 +1,6 @@
 import humanizeDuration from "humanize-duration";
 import { CommandInteraction, GuildMember, TextChannel } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -19,7 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             ["1 hour", "3600"], ["2 hours", "7200"], ["6 hours", "21600"]
         ]));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     let time = parseInt(interaction.options.getString("time") ?? "0");
     if (time === 0 && (interaction.channel as TextChannel).rateLimitPerUser === 0) { time = 10; }
     const confirmation = await new confirmationMessage(interaction)
@@ -59,7 +58,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     // Check if Nucleus can set the slowmode
     if (! interaction.guild.me.permissions.has("MANAGE_CHANNELS")) throw "I do not have the *Manage Channels* permission";

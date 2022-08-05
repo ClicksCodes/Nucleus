@@ -1,6 +1,5 @@
 import { CommandInteraction, GuildMember, User } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -12,7 +11,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Unbans a user")
         .addStringOption(option => option.setName("user").setDescription("The user to unban (Username or ID)").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const bans = await interaction.guild.bans.fetch();
     const user = interaction.options.getString("user");
     let resolved = bans.find(ban => ban.user.id === user);
@@ -88,7 +87,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     // Check if Nucleus can unban members

@@ -1,6 +1,5 @@
 import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -20,7 +19,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption(option => option.setName("user").setDescription("The user to purge messages from").setRequired(false))
         .addStringOption(option => option.setName("reason").setDescription("The reason for the purge").setRequired(false));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const user = interaction.options.getMember("user") as GuildMember ?? null;
     const channel = (interaction.channel as GuildChannel);
     if (!(["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(channel.type.toString()))) {
@@ -97,10 +96,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                             .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                     ])
                 ]
-            });
+            }) as Discord.Message;
             let component;
             try {
-                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
+                component = m.awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch (e) { break; }
             component.deferUpdate();
             if (component.customId === "done") break;
@@ -174,10 +173,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                 .setLabel("Download transcript")
                 .setStyle("SUCCESS")
                 .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
-        ])]});
+        ])]}) as Discord.Message;
         let component;
         try {
-            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
+            component = await m.awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
         } catch { return; }
         if (component && component.customId === "download") {
             interaction.editReply({embeds: [new EmojiEmbed()
@@ -273,10 +272,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setLabel("Download transcript")
                     .setStyle("SUCCESS")
                     .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
-            ])]});
+            ])]}) as Discord.Message;
             let component;
             try {
-                component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
+                component = await m.awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
             } catch { return; }
             if (component && component.customId === "download") {
                 interaction.editReply({embeds: [new EmojiEmbed()
@@ -304,7 +303,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     // Check if nucleus has the manage_messages permission

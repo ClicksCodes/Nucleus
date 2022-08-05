@@ -1,7 +1,6 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -20,7 +19,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addIntegerOption(option => option.setName("minutes").setDescription("The number of minutes to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false))
         .addIntegerOption(option => option.setName("seconds").setDescription("The number of seconds to mute the user for | Default: 0").setMinValue(0).setMaxValue(59).setRequired(false));
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
     const user = interaction.options.getMember("user") as GuildMember;
     const time = {
@@ -85,10 +84,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
                     .setStyle("DANGER")
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
             ])
-        ], ephemeral: true, fetchReply: true});
+        ], ephemeral: true, fetchReply: true}) as Message;
         let component;
         try {
-            component = await (m as Discord.Message).awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
+            component = await m.awaitMessageComponent({filter: (m) => m.user.id === interaction.user.id, time: 300000});
         } catch { return; }
         component.deferUpdate();
         if (component.customId === "cancel") return interaction.editReply({embeds: [new EmojiEmbed()
@@ -244,7 +243,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     const apply = (interaction.options.getMember("user") as GuildMember);

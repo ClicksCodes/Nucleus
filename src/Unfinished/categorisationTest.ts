@@ -11,7 +11,7 @@ const command = new SlashCommandBuilder()
     .setName("categorise")
     .setDescription("Categorises your servers channels");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const channels = interaction.guild.channels.cache.filter(c => c.type !== "GUILD_CATEGORY");
     const categorised = {};
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true});
@@ -40,8 +40,8 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     let m;
     for (const c of channels) {
         // convert channel to a channel if its a string
-        let channel: any;
-        if (typeof c === "string") channel = interaction.guild.channels.cache.get(channel).id;
+        let channel: string | GuildChannel;
+        if (typeof c === "string") channel = interaction.guild.channels.cache.get(channel as string).id;
         else channel = (c[0] as unknown as GuildChannel).id;
         console.log(channel);
         if (!predicted[channel]) predicted[channel] = [];
@@ -89,7 +89,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     console.log(categorised);
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

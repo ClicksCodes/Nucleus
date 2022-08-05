@@ -8,23 +8,24 @@ const colors = {
 };
 
 class EmojiEmbed extends MessageEmbed {
-    _title: string;
-    _emoji: string;
+    _title = "";
+    _emoji: string | null = null;
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     // This *is* meant to be an accessor rather than a property
-    get title() {
+    override get title() {
+        if (!this._emoji) return this._title;
         return `${getEmojiByName(this._emoji)} ${this._title}`;
     }
 
-    set title(title: string) {
+    override set title(title: string) {
         this._title = title;
     }
 
-    setTitle(title: string) { this._title = title; return this; }
+    override setTitle(title: string) { this._title = title; return this; }
     setEmoji(emoji: string) { this._emoji = emoji; return this; }
-    setStatus(color: string) { this.setColor(colors[color]); return this; }
+    setStatus(color: "Danger" | "Warning" | "Success") { this.setColor(colors[color]); return this; }
 }
 
 export default EmojiEmbed;

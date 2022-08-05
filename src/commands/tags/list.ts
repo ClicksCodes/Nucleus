@@ -52,7 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setStatus("Success")
             ).setTitle(`Page ${pages.length + 1}`).setPageId(pages.length));
     }
-    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true}) as Message;
     let page = 0;
     let selectPaneOpen = false;
     while (true) {
@@ -88,7 +88,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
         let i: MessageComponentInteraction;
         try {
-            i = await (m as Message).awaitMessageComponent({time: 300000 });
+            i = await m.awaitMessageComponent({time: 300000 });
         } catch (e) { break; }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "left") {

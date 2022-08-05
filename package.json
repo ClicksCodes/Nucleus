@@ -1,6 +1,8 @@
 {
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
+    "@hokify/agenda": "^6.2.12",
+    "@tsconfig/node18-strictest-esm": "^1.0.0",
     "@ungap/structured-clone": "^1.0.1",
     "agenda": "^4.3.0",
     "body-parser": "^1.20.0",
@@ -9,6 +11,7 @@
     "express": "^4.18.1",
     "fuse.js": "^6.6.2",
     "humanize-duration": "^3.27.1",
+    "immutable": "^4.1.0",
     "jshaiku": "file:../haiku",
     "mongodb": "^4.7.0",
     "node-tesseract-ocr": "^2.2.1",
@@ -45,7 +48,6 @@
   "private": false,
   "type": "module",
   "devDependencies": {
-    "@tsconfig/node16-strictest-esm": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0"
   }

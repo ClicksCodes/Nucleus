@@ -3,7 +3,6 @@ import express from "express";
 import bodyParser from "body-parser";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import structuredClone from "@ungap/structured-clone";
-import client from "../utils/client.js";
 
 
 const jsonParser = bodyParser.json();
@@ -89,7 +88,6 @@ const runServer = (client: HaikuClient) => {
     app.post("/rolemenu/:code", jsonParser, async function (req, res) {
         const code = req.params.code;
         const secret = req.body.secret;
-        const data = req.body.data;
         if (secret === client.config.verifySecret) {
             const guild = await client.guilds.fetch(client.roleMenu[code].guild);
             if (!guild) { return res.status(404); }

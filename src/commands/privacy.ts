@@ -2,7 +2,6 @@ import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
-import { testLink, testMalware, testNSFW } from "../reflex/scanners.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
@@ -26,7 +25,7 @@ class Embed {
     setComponents(components: MessageActionRow[]) { this.components = components; return this; }
 }
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     const pages = [
         new Embed()
             .setEmbed(new EmojiEmbed()
@@ -73,8 +72,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
             new MessageButton().setLabel("Clear all data").setCustomId("clear-all-data").setStyle("DANGER")
         ])])
     ] : []);
-    let m;
-    m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
+    const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let page = 0;
 
     let selectPaneOpen = false;
@@ -166,7 +164,7 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
     });
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

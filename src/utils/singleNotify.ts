@@ -1,13 +1,15 @@
 import client from "./client.js";
 import EmojiEmbed from "./generateEmojiEmbed.js";
+import { Record as ImmutableRecord } from "immutable";
 
-const severities = {
+const severitiesType = ImmutableRecord({
     "Critical": "Danger",
     "Warning": "Warning",
     "Info": "Success"
-};
+} as Record<string, "Danger" | "Warning" | "Success">);
+const severities = severitiesType();
 
-export default async function(type: string, guild: string, message: string | true, severity?: string) {
+export default async function(type: string, guild: string, message: string | true, severity: "Critical" | "Warning" | "Info" = "Info") {
     const data = await client.database.guilds.read(guild);
     if (message === true) {
         return await client.database.guilds.write(guild, {[`singleEventNotifications.${type}`]: false});
@@ -20,7 +22,7 @@ export default async function(type: string, guild: string, message: string | tru
         await channel.send({embeds: [new EmojiEmbed()
             .setTitle(`${severity} notification`)
             .setDescription(message)
-            .setStatus(severities[severity])
+            .setStatus(severities.get(severity))
             .setEmoji("CONTROL.BLOCKCROSS")
         ]});
     } catch (err) {

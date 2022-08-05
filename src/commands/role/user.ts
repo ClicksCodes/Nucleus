@@ -18,7 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         ]));
 
 
-const callback = async (interaction: CommandInteraction): Promise<any>  => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown>  => {
     const { renderUser, renderRole } = client.logger;
     const action = interaction.options.getString("action");
     // TODO:[Modals] Replace this with a modal
@@ -65,7 +65,7 @@ const callback = async (interaction: CommandInteraction): Promise<any>  => {
     }
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     const apply = (interaction.options.getMember("user") as GuildMember);

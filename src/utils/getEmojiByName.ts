@@ -1,10 +1,21 @@
 import emojis from "../config/emojis.json" assert {type: "json"};
 
+interface EmojisIndex {
+    [key: string]: string | EmojisIndex | EmojisIndex[];
+}
+
 function getEmojiByName(name: string, format?: string): string {
     const split = name.split(".");
-    let id = emojis;
+    let id: string | EmojisIndex | EmojisIndex[] | undefined = emojis;
     split.forEach(part => {
-        id = id[part];
+        if (typeof id === "string" || id === undefined) {
+            throw new Error(`Emoji ${name} not found`);
+        }
+        if (Array.isArray(id)) {
+            id = id[parseInt(part)];
+        } else {
+            id = id[part];
+        }
     });
     if ( format === "id" ) {
         if (id === undefined) return "0";

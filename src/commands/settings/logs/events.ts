@@ -35,7 +35,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("events")
         .setDescription("Sets what events should be logged");
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {
     await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
     let m;
     while (true) {
@@ -96,9 +96,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         .setStatus("Success")
         .setEmoji("CHANNEL.TEXT.CREATE")
     ]});
+    return;
 };
 
-const check = (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = (interaction.member as Discord.GuildMember);
     if (!member.permissions.has("MANAGE_GUILD")) throw "You must have the *Manage Server* permission to use this command";
     return true;

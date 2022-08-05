@@ -39,18 +39,18 @@ const filterList = {
         },
         joined: {
             render: "joined",
-            before: (date) => ( new Filter((data) => `Joined server before <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "before"}, (member) => {
+            before: (date) => ( new Filter((_data) => `Joined server before <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "before"}, (member) => {
                 return member.joinedTimestamp < date.getTime();
             }))
         },
         nickname: {
             render: "Nickname",
-            set: () => ( new Filter((data) => "Member has a nickname set\"", {render: "set"}, (member) => { return member.nickname !== null;})),
-            includes: (name) => ( new Filter((data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
+            set: () => ( new Filter((_data) => "Member has a nickname set\"", {render: "set"}, (member) => { return member.nickname !== null;})),
+            includes: (name) => ( new Filter((_data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
                 return member.displayName.includes(name);})),
-            startsWith: (name) => ( new Filter((data) => `Nickname starts with "${name}"`, {nickname: name, type: String, render: "starts with"}, (member) => {
+            startsWith: (name) => ( new Filter((_data) => `Nickname starts with "${name}"`, {nickname: name, type: String, render: "starts with"}, (member) => {
                 return member.displayName.startsWith(name);})),
-            endsWith: (name) => ( new Filter((data) => `Nickname ends with "${name}"`, {nickname: name, type: String, render: "ends with"}, (member) => {
+            endsWith: (name) => ( new Filter((_data) => `Nickname ends with "${name}"`, {nickname: name, type: String, render: "ends with"}, (member) => {
                 return member.displayName.endsWith(name);}))
         }
     },
@@ -58,27 +58,27 @@ const filterList = {
         render: "Account",
         created: {
             render: "created",
-            before: (date) => ( new Filter((data) => `Account created before <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "before"}, (member) => {
+            before: (date) => ( new Filter((_data) => `Account created before <t:${Math.round(date.getTime() / 1000)}:D>`, {date: date, type: Date, render: "before"}, (member) => {
                 return member.user.createdTimestamp < date.getTime();
             }))
         },
         is: {
             render: "is",
-            human: () => ( new Filter((data) => "Member is a human", {human: true, render: "human"}, (member) => { return !member.bot; }))
+            human: () => ( new Filter((_data) => "Member is a human", {human: true, render: "human"}, (member) => { return !member.bot; }))
         },
         username: {
             render: "Username",
-            includes: (name) => ( new Filter((data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
+            includes: (name) => ( new Filter((_data) => `Nickname includes "${name}"`, {nickname: name, type: String, render: "includes"}, (member) => {
                 return member.user.name.includes(name);})),
-            startsWith: (name) => ( new Filter((data) => `Nickname starts with "${name}"`, {nickname: name, type: String, render: "starts with"}, (member) => {
+            startsWith: (name) => ( new Filter((_data) => `Nickname starts with "${name}"`, {nickname: name, type: String, render: "starts with"}, (member) => {
                 return member.user.name.startsWith(name);})),
-            endsWith: (name) => ( new Filter((data) => `Nickname ends with "${name}"`, {nickname: name, type: String, render: "ends with"}, (member) => {
+            endsWith: (name) => ( new Filter((_data) => `Nickname ends with "${name}"`, {nickname: name, type: String, render: "ends with"}, (member) => {
                 return member.user.name.endsWith(name);}))
         }
     }
 };
 
-const callback = async (interaction: CommandInteraction): Promise<any> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true});
     const filters: Filter[] = [
         filterList.member.has.role("959901346000154674"),
@@ -135,9 +135,10 @@ const callback = async (interaction: CommandInteraction): Promise<any> => {
         ]});
         break;
     }
+    return;
 };
 
-const check = async (interaction: CommandInteraction, defaultCheck: WrappedCheck) => {
+const check = async (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = (interaction.member as GuildMember);
     const me = (interaction.guild.me as GuildMember);
     if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the *Manage Roles* permission";
