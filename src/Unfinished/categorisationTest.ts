@@ -7,7 +7,8 @@ import {
     MessageSelectMenu
 } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
+// @ts-expect-error
+import type { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import client from "../utils/client.js";
 import addPlural from "../utils/plurals.js";
@@ -17,9 +18,7 @@ const command = new SlashCommandBuilder()
     .setName("categorise")
     .setDescription("Categorises your servers channels");
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const channels = interaction.guild.channels.cache.filter(
         (c) => c.type !== "GUILD_CATEGORY"
     );

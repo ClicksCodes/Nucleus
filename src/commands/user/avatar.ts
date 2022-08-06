@@ -19,7 +19,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const { renderUser } = client.logger;
-    const member = (interaction.options.getMember("user") ||
+    const member = (interaction.options.getMember("user") ??
         interaction.member) as Discord.GuildMember;
     await interaction.reply({
         embeds: [
@@ -33,7 +33,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         url: member.user.displayAvatarURL({ dynamic: true })
                     })
                 )
-                .setImage(await member.user.displayAvatarURL({ dynamic: true }))
+                .setImage(member.user.displayAvatarURL({ dynamic: true }))
         ],
         ephemeral: true,
         fetchReply: true

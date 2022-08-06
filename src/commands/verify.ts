@@ -1,6 +1,5 @@
 import type { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { WrappedCheck } from "jshaiku";
 import verify from "../reflex/verify.js";

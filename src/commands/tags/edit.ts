@@ -1,5 +1,5 @@
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -28,10 +28,11 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setDescription("The new name of the tag / Edit")
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (!interaction.guild) return;
     const name = interaction.options.getString("name");
-    const value = interaction.options.getString("value") || "";
-    const newname = interaction.options.getString("newname") || "";
+    const value = interaction.options.getString("value") ?? "";
+    const newname = interaction.options.getString("newname") ?? "";
     if (!newname && !value)
         return await interaction.reply({
             embeds: [
@@ -155,9 +156,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 };
 
 const check = (interaction: CommandInteraction) => {
-    const member = interaction.member as Discord.GuildMember;
+    const member = interaction.member as GuildMember;
     if (!member.permissions.has("MANAGE_MESSAGES"))
-        throw "You must have the *Manage Messages* permission to use this command";
+        throw new Error(
+            "You must have the *Manage Messages* permission to use this command"
+        );
     return true;
 };
 

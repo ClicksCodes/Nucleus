@@ -1,6 +1,5 @@
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import structuredClone from "@ungap/structured-clone";
 import config from "../config/main.json" assert { type: "json" };
@@ -95,10 +94,10 @@ export class Guilds {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async remove(
         guild: string,
         key: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any,
         innerKey?: string | null
     ) {

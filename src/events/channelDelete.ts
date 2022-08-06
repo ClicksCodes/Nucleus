@@ -40,7 +40,17 @@ export async function callback(client, channel) {
             displayName = "Channel";
         }
     }
-    const list = {
+    const list: {
+        channelId: string;
+        name: string;
+        topic?: string | null;
+        type: any;
+        category: any;
+        nsfw?: boolean | null;
+        created: any;
+        deleted: any;
+        deletedBy: any;
+    } = {
         channelId: entry(channel.id, `\`${channel.id}\``),
         name: entry(channel.id, `${channel.name}`),
         topic: null,

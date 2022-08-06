@@ -55,8 +55,9 @@ class Embed {
 }
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
+    if (!interaction.guild) return;
     const { renderUser, renderDelta } = client.logger;
-    const member = (interaction.options.getMember("user") ||
+    const member = (interaction.options.getMember("user") ??
         interaction.member) as Discord.GuildMember;
     const flags: string[] = [];
     if (
@@ -107,26 +108,29 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     };
     const members = await interaction.guild.members.fetch();
     const membersArray = [...members.values()];
-    membersArray.sort((a, b) => a.joinedTimestamp - b.joinedTimestamp);
+    membersArray.sort((a, b) => {
+        if (a.joinedTimestamp === null) return 1;
+        if (b.joinedTimestamp === null) return -1;
+        return a.joinedTimestamp - b.joinedTimestamp;
+    });
     const joinPos = membersArray.findIndex((m) => m.id === member.user.id);
 
     const roles = member.roles.cache
-        .filter((r) => r.id !== interaction.guild.id)
+        .filter((r) => r.id !== interaction.guild!.id)
         .sort();
     let s = "";
     let count = 0;
     let ended = false;
-    roles.map((item) => {
-        if (ended) return;
-        const string = `<@&${item.id}>, `;
+    for (const roleId in roles) {
+        const string = `<@&${roleId}>, `;
         if (s.length + string.length > 1000) {
             ended = true;
             s += `and ${roles.size - count} more`;
-            return;
+            break;
         }
         count++;
         s += string;
-    });
+    }
     if (s.length > 0 && !ended) s = s.slice(0, -2);
 
     let perms = "";

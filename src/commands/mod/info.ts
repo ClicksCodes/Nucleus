@@ -1,4 +1,4 @@
-import { HistorySchema } from "../../utils/database";
+import { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
     GuildMember,

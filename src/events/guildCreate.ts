@@ -1,5 +1,4 @@
 import type { Guild } from "discord.js";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import type { HaikuClient } from "jshaiku";
 import guide from "../reflex/guide.js";

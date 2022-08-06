@@ -11,7 +11,6 @@ class EmojiEmbed extends MessageEmbed {
     _title = "";
     _emoji: string | null = null;
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     // This *is* meant to be an accessor rather than a property
     override get title() {

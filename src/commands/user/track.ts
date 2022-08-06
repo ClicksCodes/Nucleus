@@ -10,7 +10,6 @@ import {
     SelectMenuOption,
     SlashCommandSubcommandBuilder
 } from "@discordjs/builders";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -45,9 +44,7 @@ const generateFromTrack = (
     return "TRACKS.VERTICAL.MIDDLE." + disabled + active;
 };
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { renderUser } = client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
     const guild = interaction.guild;
@@ -57,7 +54,7 @@ const callback = async (
     let track = 0;
     let generated;
     const roles = await guild.roles.fetch();
-    const memberRoles = await member.roles;
+    const memberRoles = member.roles;
     let managed: boolean;
     while (true) {
         const data = config.tracks[track];
@@ -137,9 +134,8 @@ const callback = async (
                 })
                 .join("\n");
         const selected = [];
-        for (let i = 0; i < data.track.length; i++) {
-            if (memberRoles.cache.has(data.track[i]))
-                selected.push(data.track[i]);
+        for (const position of data.track) {
+            if (memberRoles.cache.has(position)) selected.push(position);
         }
         const conflict = data.retainPrevious ? false : selected.length > 1;
         let conflictDropdown;
@@ -278,7 +274,8 @@ const check = async (
 ) => {
     const tracks = (await client.database.guilds.read(interaction.guild.id))
         .tracks;
-    if (tracks.length === 0) throw "This server does not have any tracks";
+    if (tracks.length === 0)
+        throw new Error("This server does not have any tracks");
     const member = interaction.member as GuildMember;
     // Allow the owner to promote anyone
     if (member.id === interaction.guild.ownerId) return true;
@@ -297,7 +294,7 @@ const check = async (
     }
     // Check if the user has manage_roles permission
     if (!managed && !member.permissions.has("MANAGE_ROLES"))
-        throw "You do not have the *Manage Roles* permission";
+        throw new Error("You do not have the *Manage Roles* permission");
     // Allow track
     return true;
 };

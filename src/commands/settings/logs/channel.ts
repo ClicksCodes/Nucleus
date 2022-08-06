@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
-import { ChannelType } from "discord-api-types";
+import { ChannelType } from "discord-api-types/v9";
 import Discord, {
     CommandInteraction,
     MessageActionRow,

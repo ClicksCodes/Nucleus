@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
-import { ChannelType } from "discord-api-types";
+import { ChannelType } from "discord-api-types/v9";
 import Discord, {
     CommandInteraction,
     MessageActionRow,
@@ -9,7 +9,6 @@ import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import type { WrappedCheck } from "jshaiku";
 import client from "../../../utils/client.js";

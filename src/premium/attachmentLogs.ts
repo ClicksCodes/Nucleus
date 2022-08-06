@@ -22,7 +22,7 @@ export default async function logAttachment(
             size: attachment.size
         });
     }
-    const links = message.content.match(/https?:\/\/\S+/gi) || [];
+    const links = message.content.match(/https?:\/\/\S+/gi) ?? [];
     for (const link of links) {
         if (
             link

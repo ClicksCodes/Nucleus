@@ -71,17 +71,15 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { log, NucleusColors, renderUser, entry, renderDelta } =
         client.logger;
     const user = interaction.options.getMember("user") as GuildMember;
     const time = {
-        days: interaction.options.getInteger("days") || 0,
-        hours: interaction.options.getInteger("hours") || 0,
-        minutes: interaction.options.getInteger("minutes") || 0,
-        seconds: interaction.options.getInteger("seconds") || 0
+        days: interaction.options.getInteger("days") ?? 0,
+        hours: interaction.options.getInteger("hours") ?? 0,
+        minutes: interaction.options.getInteger("minutes") ?? 0,
+        seconds: interaction.options.getInteger("seconds") ?? 0
     };
     const config = await client.database.guilds.read(interaction.guild.id);
     let serverSettingsDescription = config.moderation.mute.timeout

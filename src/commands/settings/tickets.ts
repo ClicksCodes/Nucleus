@@ -19,7 +19,7 @@ import {
     SelectMenuOption,
     SlashCommandSubcommandBuilder
 } from "@discordjs/builders";
-import { ChannelType } from "discord-api-types";
+import { ChannelType } from "discord-api-types/v9";
 import client from "../../utils/client.js";
 import {
     toHexInteger,

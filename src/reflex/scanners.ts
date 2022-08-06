@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import * as us from "unscan";
 import fetch from "node-fetch";
@@ -17,13 +16,13 @@ interface MalwareSchema {
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const p = await saveAttachment(link);
     const result = await us.nsfw.file(p);
-    return result;
+    return { nsfw: result.nsfw ?? false };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
     const p = await saveAttachment(link);
     const result = await us.malware.file(p);
-    return result;
+    return { safe: result.safe ?? true };
 }
 
 export async function saveAttachment(link: string): Promise<string> {

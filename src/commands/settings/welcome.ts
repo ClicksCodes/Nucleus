@@ -8,12 +8,12 @@ import Discord, {
     MessageComponentInteraction,
     Role
 } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
-import { ChannelType } from "discord-api-types";
+import { ChannelType } from "discord-api-types/v9";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -49,9 +49,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .addChannelTypes([ChannelType.GuildText, ChannelType.GuildNews])
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { renderRole, renderChannel, log, NucleusColors, entry, renderUser } =
         client.logger;
     await interaction.reply({
@@ -340,7 +338,9 @@ const callback = async (
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
-        throw "You must have the *Manage Server* permission to use this command";
+        throw new Error(
+            "You must have the *Manage Server* permission to use this command"
+        );
     return true;
 };
 

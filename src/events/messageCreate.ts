@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import { HaikuClient } from "jshaiku";
 import {
@@ -14,12 +13,11 @@ import createLogException from "../utils/createLogException.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { callback as a } from "../reflex/statsChannelUpdate.js";
-import type { Message } from "discord.js";
+import { Message, ThreadChannel } from "discord.js";
 
 export const event = "messageCreate";
 
 export async function callback(_client: HaikuClient, message: Message) {
-    if (!message) return;
     if (!message.guild) return;
     if (message.author.bot) return;
     if (message.channel.type === "DM") return;
@@ -112,129 +110,17 @@ export async function callback(_client: HaikuClient, message: Message) {
 
     if (fileNames.files.length > 0) {
         for (const element of fileNames.files) {
-            if (!message) return;
             const url = element.url ? element.url : element.local;
-            if (url !== undefined) {
+            if (
+                /\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/.test(url)
+            ) {
                 if (
-                    /\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/.test(
-                        url
-                    )
+                    config.filters.images.NSFW &&
+                    !(message.channel instanceof ThreadChannel
+                        ? message.channel.parent?.nsfw
+                        : message.channel.nsfw)
                 ) {
-                    if (
-                        config.filters.images.NSFW &&
-                        !(message.channel.type === "GUILD_PUBLIC_THREAD"
-                            ? false
-                            : message.channel.nsfw)
-                    ) {
-                        if (await NSFWCheck(url)) {
-                            createLogException(
-                                message.guild.id,
-                                message.channel.id,
-                                message.id
-                            );
-                            await message.delete();
-                            const data = {
-                                meta: {
-                                    type: "messageDelete",
-                                    displayName: "Message Deleted",
-                                    calculateType: "autoModeratorDeleted",
-                                    color: NucleusColors.red,
-                                    emoji: "MESSAGE.DELETE",
-                                    timestamp: new Date().getTime()
-                                },
-                                separate: {
-                                    start:
-                                        filter +
-                                        " Image detected as NSFW\n\n" +
-                                        (content
-                                            ? `**Message:**\n\`\`\`${content}\`\`\``
-                                            : "**Message:** *Message had no content*")
-                                },
-                                list: list,
-                                hidden: {
-                                    guild: message.channel.guild.id
-                                }
-                            };
-                            return log(data);
-                        }
-                    }
-                    if (config.filters.wordFilter.enabled) {
-                        const text = await TestImage(url);
-                        const check = TestString(
-                            text ?? "",
-                            config.filters.wordFilter.words.loose,
-                            config.filters.wordFilter.words.strict
-                        );
-                        if (check !== null) {
-                            createLogException(
-                                message.guild.id,
-                                message.channel.id,
-                                message.id
-                            );
-                            await message.delete();
-                            const data = {
-                                meta: {
-                                    type: "messageDelete",
-                                    displayName: "Message Deleted",
-                                    calculateType: "autoModeratorDeleted",
-                                    color: NucleusColors.red,
-                                    emoji: "MESSAGE.DELETE",
-                                    timestamp: new Date().getTime()
-                                },
-                                separate: {
-                                    start:
-                                        filter +
-                                        " Image contained filtered word\n\n" +
-                                        (content
-                                            ? `**Message:**\n\`\`\`${content}\`\`\``
-                                            : "**Message:** *Message had no content*")
-                                },
-                                list: list,
-                                hidden: {
-                                    guild: message.channel.guild.id
-                                }
-                            };
-                            return log(data);
-                        }
-                    }
-                    if (config.filters.images.size) {
-                        if (url.match(/\.+(webp|png|jpg)$/gi)) {
-                            if (!(await SizeCheck(element))) {
-                                createLogException(
-                                    message.guild.id,
-                                    message.channel.id,
-                                    message.id
-                                );
-                                await message.delete();
-                                const data = {
-                                    meta: {
-                                        type: "messageDelete",
-                                        displayName: "Message Deleted",
-                                        calculateType: "autoModeratorDeleted",
-                                        color: NucleusColors.red,
-                                        emoji: "MESSAGE.DELETE",
-                                        timestamp: new Date().getTime()
-                                    },
-                                    separate: {
-                                        start:
-                                            filter +
-                                            " Image was too small\n\n" +
-                                            (content
-                                                ? `**Message:**\n\`\`\`${content}\`\`\``
-                                                : "**Message:** *Message had no content*")
-                                    },
-                                    list: list,
-                                    hidden: {
-                                        guild: message.channel.guild.id
-                                    }
-                                };
-                                return log(data);
-                            }
-                        }
-                    }
-                }
-                if (config.filters.malware) {
-                    if (!MalwareCheck(url)) {
+                    if (await NSFWCheck(url)) {
                         createLogException(
                             message.guild.id,
                             message.channel.id,
@@ -253,7 +139,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                             separate: {
                                 start:
                                     filter +
-                                    " File detected as malware\n\n" +
+                                    " Image detected as NSFW\n\n" +
                                     (content
                                         ? `**Message:**\n\`\`\`${content}\`\`\``
                                         : "**Message:** *Message had no content*")
@@ -266,10 +152,116 @@ export async function callback(_client: HaikuClient, message: Message) {
                         return log(data);
                     }
                 }
+                if (config.filters.wordFilter.enabled) {
+                    const text = await TestImage(url);
+                    const check = TestString(
+                        text ?? "",
+                        config.filters.wordFilter.words.loose,
+                        config.filters.wordFilter.words.strict
+                    );
+                    if (check !== null) {
+                        createLogException(
+                            message.guild.id,
+                            message.channel.id,
+                            message.id
+                        );
+                        await message.delete();
+                        const data = {
+                            meta: {
+                                type: "messageDelete",
+                                displayName: "Message Deleted",
+                                calculateType: "autoModeratorDeleted",
+                                color: NucleusColors.red,
+                                emoji: "MESSAGE.DELETE",
+                                timestamp: new Date().getTime()
+                            },
+                            separate: {
+                                start:
+                                    filter +
+                                    " Image contained filtered word\n\n" +
+                                    (content
+                                        ? `**Message:**\n\`\`\`${content}\`\`\``
+                                        : "**Message:** *Message had no content*")
+                            },
+                            list: list,
+                            hidden: {
+                                guild: message.channel.guild.id
+                            }
+                        };
+                        return log(data);
+                    }
+                }
+                if (config.filters.images.size) {
+                    if (url.match(/\.+(webp|png|jpg)$/gi)) {
+                        if (!(await SizeCheck(element))) {
+                            createLogException(
+                                message.guild.id,
+                                message.channel.id,
+                                message.id
+                            );
+                            await message.delete();
+                            const data = {
+                                meta: {
+                                    type: "messageDelete",
+                                    displayName: "Message Deleted",
+                                    calculateType: "autoModeratorDeleted",
+                                    color: NucleusColors.red,
+                                    emoji: "MESSAGE.DELETE",
+                                    timestamp: new Date().getTime()
+                                },
+                                separate: {
+                                    start:
+                                        filter +
+                                        " Image was too small\n\n" +
+                                        (content
+                                            ? `**Message:**\n\`\`\`${content}\`\`\``
+                                            : "**Message:** *Message had no content*")
+                                },
+                                list: list,
+                                hidden: {
+                                    guild: message.channel.guild.id
+                                }
+                            };
+                            return log(data);
+                        }
+                    }
+                }
+            }
+            if (config.filters.malware) {
+                if (!(await MalwareCheck(url))) {
+                    createLogException(
+                        message.guild.id,
+                        message.channel.id,
+                        message.id
+                    );
+                    await message.delete();
+                    const data = {
+                        meta: {
+                            type: "messageDelete",
+                            displayName: "Message Deleted",
+                            calculateType: "autoModeratorDeleted",
+                            color: NucleusColors.red,
+                            emoji: "MESSAGE.DELETE",
+                            timestamp: new Date().getTime()
+                        },
+                        separate: {
+                            start:
+                                filter +
+                                " File detected as malware\n\n" +
+                                (content
+                                    ? `**Message:**\n\`\`\`${content}\`\`\``
+                                    : "**Message:** *Message had no content*")
+                        },
+                        list: list,
+                        hidden: {
+                            guild: message.channel.guild.id
+                        }
+                    };
+                    return log(data);
+                }
             }
         }
     }
-    if (!message) return;
 
     const linkDetectionTypes = await LinkCheck(message);
     if (linkDetectionTypes.length > 0) {
@@ -363,7 +355,6 @@ export async function callback(_client: HaikuClient, message: Message) {
     }
     if (config.filters.pings.roles) {
         for (const roleId in message.mentions.roles) {
-            if (!message) return;
             if (!config.filters.pings.allowed.roles.includes(roleId)) {
                 createLogException(
                     message.guild.id,

@@ -5,8 +5,8 @@ import { Guilds, History, ModNotes, Premium } from "./utils/database.js";
 import client from "./utils/client.js";
 import EventScheduler from "./utils/eventScheduler.js";
 
-await client.registerCommandsIn("./commands");
-await client.registerEventsIn("./events");
+await client.registerCommandsIn(`dist/commands`);
+await client.registerEventsIn(`dist/events`);
 client.on("ready", () => {
     runServer(client);
 });
