@@ -1,0 +1,18 @@
+dist/
+.history/
+node_modules/
+src/config/*
+!src/config/format.ts
+!src/config/default.json
+!src/config/emojis.json
+src/config/main.json
+.vscode/
+yarn-error.log
+yarn.lock
+src/utils/temp/*.png
+src/utils/temp/*.webp
+src/utils/temp/*.jpeg
+src/utils/temp/*.jpg
+
+ClicksMigratingProblems/oldData/
+ClicksMigratingProblems/oldData copy/
