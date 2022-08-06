@@ -1,26 +1,25 @@
 # Nucleus by Clicks
 
-
 ## Contents:
 
-- [In short](in-short)
-- [How to](how-to)
-- [The legal bit](the-legal-bit)
-
+-   [In short](in-short)
+-   [How to](how-to)
+-   [The legal bit](the-legal-bit)
 
 ## In Short:
 
 You **may**:
-- Modify our code
-- Run our code for commercial and personal use
-- Distribute our code
+
+-   Modify our code
+-   Run our code for commercial and personal use
+-   Distribute our code
 
 However, you **must**:
-- Make your project open source
-- List all changes you made
-- Mention the code is originally by Clicks, and include a link to our [website](https://clicks.codes) or [GitHub](https://github.com/clicksminuteper)
-- Release your project with the same license [GNU Affero General Public License V3.0](https://choosealicense.com/licenses/agpl-3.0/)
 
+-   Make your project open source
+-   List all changes you made
+-   Mention the code is originally by Clicks, and include a link to our [website](https://clicks.codes) or [GitHub](https://github.com/clicksminuteper)
+-   Release your project with the same license [GNU Affero General Public License V3.0](https://choosealicense.com/licenses/agpl-3.0/)
 
 ## How to:
 
@@ -45,7 +44,6 @@ Alternatively, you can run `Installer.js` to generate it for you.
     "pastebinPassword": "your-pastebin-password"
 }
 ```
-
 
 ## The legal bit:
 

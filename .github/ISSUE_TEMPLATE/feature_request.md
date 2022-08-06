@@ -2,9 +2,8 @@
 name: Feature request
 about: I want something added to Nucleus
 title: "[FEATURE]"
-labels: ''
+labels: ""
 assignees: PineaFan
-
 ---
 
 **Is your feature request related to a problem? Please describe.**

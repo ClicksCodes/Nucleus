@@ -3,9 +3,7 @@ import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import close from "../../actions/tickets/delete.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("close")
-        .setDescription("Closes a ticket");
+    builder.setName("close").setDescription("Closes a ticket");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     await close(interaction);

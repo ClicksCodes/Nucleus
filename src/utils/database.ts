@@ -1,10 +1,9 @@
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error
 import structuredClone from "@ungap/structured-clone";
-import config from "../config/main.json" assert {type: "json"};
-
+import config from "../config/main.json" assert { type: "json" };
 
 const mongoClient = new MongoClient(config.mongoUrl);
 await mongoClient.connect();
@@ -19,16 +18,20 @@ export const Entry = (data: any) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         get(target: Record<string, any>, prop: string, receiver: any) {
             let dataToReturn = data[prop];
-            if (dataToReturn === null ) return Reflect.get(target, prop, receiver);
-            if (typeof dataToReturn === "object" && !Array.isArray(dataToReturn)) dataToReturn = new Proxy(
-                Reflect.get(target, prop, receiver),
-                Entry(dataToReturn)
-            );
+            if (dataToReturn === null)
+                return Reflect.get(target, prop, receiver);
+            if (
+                typeof dataToReturn === "object" &&
+                !Array.isArray(dataToReturn)
+            )
+                dataToReturn = new Proxy(
+                    Reflect.get(target, prop, receiver),
+                    Entry(dataToReturn)
+                );
             return dataToReturn ?? Reflect.get(target, prop, receiver);
         }
     };
 };
-
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
@@ -41,55 +44,89 @@ export class Guilds {
     }
 
     async setup() {
-        this.defaultData = (await import("../config/default.json", { assert: { type: "json" }})).default as unknown as GuildConfig;
+        this.defaultData = (
+            await import("../config/default.json", { assert: { type: "json" } })
+        ).default as unknown as GuildConfig;
     }
 
     async read(guild: string) {
         const entry = await this.guilds.findOne({ id: guild });
-        return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig;
+        return new Proxy(
+            structuredClone(this.defaultData),
+            Entry(entry)
+        ) as unknown as GuildConfig;
     }
 
-    async write(guild: string, set: object | null, unset: string[] | string = []) {
+    async write(
+        guild: string,
+        set: object | null,
+        unset: string[] | string = []
+    ) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uo: Record<string, any> = {};
         if (!Array.isArray(unset)) unset = [unset];
         for (const key of unset) {
             uo[key] = null;
         }
-        const out = {$set: {}, $unset: {}};
-        if (set) out["$set"] = set;
-        if (unset.length) out["$unset"] = uo;
+        const out = { $set: {}, $unset: {} };
+        if (set) out.$set = set;
+        if (unset.length) out.$unset = uo;
         await this.guilds.updateOne({ id: guild }, out, { upsert: true });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async append(guild: string, key: string, value: any) {
         if (Array.isArray(value)) {
-            await this.guilds.updateOne({ id: guild }, {
-                $addToSet: { [key]: { $each: value } }
-            }, { upsert: true });
+            await this.guilds.updateOne(
+                { id: guild },
+                {
+                    $addToSet: { [key]: { $each: value } }
+                },
+                { upsert: true }
+            );
         } else {
-            await this.guilds.updateOne({ id: guild }, {
-                $addToSet: { [key]: value }
-            }, { upsert: true });
+            await this.guilds.updateOne(
+                { id: guild },
+                {
+                    $addToSet: { [key]: value }
+                },
+                { upsert: true }
+            );
         }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async remove(guild: string, key: string, value: any, innerKey?: string | null) {
+    async remove(
+        guild: string,
+        key: string,
+        value: any,
+        innerKey?: string | null
+    ) {
         console.log(Array.isArray(value));
         if (innerKey) {
-            await this.guilds.updateOne({ id: guild }, {
-                $pull: { [key]: { [innerKey]: { $eq: value } } }
-            }, { upsert: true });
+            await this.guilds.updateOne(
+                { id: guild },
+                {
+                    $pull: { [key]: { [innerKey]: { $eq: value } } }
+                },
+                { upsert: true }
+            );
         } else if (Array.isArray(value)) {
-            await this.guilds.updateOne({ id: guild }, {
-                $pullAll: { [key]: value }
-            }, { upsert: true });
+            await this.guilds.updateOne(
+                { id: guild },
+                {
+                    $pullAll: { [key]: value }
+                },
+                { upsert: true }
+            );
         } else {
-            await this.guilds.updateOne({ id: guild }, {
-                $pullAll: { [key]: [value] }
-            }, { upsert: true });
+            await this.guilds.updateOne(
+                { id: guild },
+                {
+                    $pullAll: { [key]: [value] }
+                },
+                { upsert: true }
+            );
         }
     }
 
@@ -97,7 +134,6 @@ export class Guilds {
         await this.guilds.deleteOne({ id: guild });
     }
 }
-
 
 export class History {
     histories: Collection<HistorySchema>;
@@ -108,7 +144,16 @@ export class History {
         return this;
     }
 
-    async create(type: string, guild: string, user: Discord.User, moderator: Discord.User | null, reason: string | null, before?: null, after?: null, amount?: null) {
+    async create(
+        type: string,
+        guild: string,
+        user: Discord.User,
+        moderator: Discord.User | null,
+        reason: string | null,
+        before?: null,
+        after?: null,
+        amount?: null
+    ) {
         await this.histories.insertOne({
             type: type,
             guild: guild,
@@ -123,14 +168,16 @@ export class History {
     }
 
     async read(guild: string, user: string, year: number) {
-        const entry = (await this.histories.find({
-            guild: guild,
-            user: user,
-            occurredAt: {
-                $gte: new Date(year - 1, 11, 31, 23, 59, 59),
-                $lt: new Date(year + 1, 0, 1, 0, 0, 0)
-            }
-        }).toArray()) as HistorySchema[];
+        const entry = (await this.histories
+            .find({
+                guild: guild,
+                user: user,
+                occurredAt: {
+                    $gte: new Date(year - 1, 11, 31, 23, 59, 59),
+                    $lt: new Date(year + 1, 0, 1, 0, 0, 0)
+                }
+            })
+            .toArray()) as HistorySchema[];
         return entry;
     }
 
@@ -149,7 +196,11 @@ export class ModNotes {
     }
 
     async create(guild: string, user: string, note: string | null) {
-        await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note }}, { upsert: true });
+        await this.modNotes.updateOne(
+            { guild: guild, user: user },
+            { $set: { note: note } },
+            { upsert: true }
+        );
     }
 
     async read(guild: string, user: string) {
@@ -167,163 +218,165 @@ export class Premium {
     }
 
     async hasPremium(guild: string) {
-        const entry = await this.premium.findOne({ appliesTo: { $in: [guild] } });
+        const entry = await this.premium.findOne({
+            appliesTo: { $in: [guild] }
+        });
         return entry !== null;
     }
 }
 
 export interface GuildConfig {
-    id: string,
-    version: number,
+    id: string;
+    version: number;
     singleEventNotifications: {
-        statsChannelDeleted: boolean
-    }
+        statsChannelDeleted: boolean;
+    };
     filters: {
         images: {
-            NSFW: boolean,
-            size: boolean
-        },
-        malware: boolean,
+            NSFW: boolean;
+            size: boolean;
+        };
+        malware: boolean;
         wordFilter: {
-            enabled: boolean,
+            enabled: boolean;
             words: {
-                strict: string[],
-                loose: string[]
-            },
+                strict: string[];
+                loose: string[];
+            };
             allowed: {
-                users: string[],
-                roles: string[],
-                channels: string[]
-            }
-        },
+                users: string[];
+                roles: string[];
+                channels: string[];
+            };
+        };
         invite: {
-            enabled: boolean,
-            channels: string[]
-        },
+            enabled: boolean;
+            channels: string[];
+        };
         pings: {
-            mass: number,
-            everyone: boolean,
-            roles: boolean,
+            mass: number;
+            everyone: boolean;
+            roles: boolean;
             allowed: {
-                roles: string[],
-                rolesToMention: string[],
-                users: string[],
-                channels: string[]
-            }
-        }
-    }
+                roles: string[];
+                rolesToMention: string[];
+                users: string[];
+                channels: string[];
+            };
+        };
+    };
     welcome: {
-        enabled: boolean,
+        enabled: boolean;
         verificationRequired: {
-            message: boolean,
-            role: string | null
-        },
-        role: string | null,
-        ping: string | null,
-        channel: string | null,
-        message: string | null,
-    }
-    stats: Record<string, {name: string, enabled: boolean}>
+            message: boolean;
+            role: string | null;
+        };
+        role: string | null;
+        ping: string | null;
+        channel: string | null;
+        message: string | null;
+    };
+    stats: Record<string, { name: string; enabled: boolean }>;
     logging: {
         logs: {
-            enabled: boolean,
-            channel: string | null,
-            toLog: string | null,
-        },
+            enabled: boolean;
+            channel: string | null;
+            toLog: string | null;
+        };
         staff: {
-            channel: string | null,
-        },
+            channel: string | null;
+        };
         attachments: {
-            channel: string | null,
-            saved: Record<string, string>
-        }
-    }
+            channel: string | null;
+            saved: Record<string, string>;
+        };
+    };
     verify: {
-        enabled: boolean,
-        role: string | null,
-    }
+        enabled: boolean;
+        role: string | null;
+    };
     tickets: {
-        enabled: boolean,
-        category: string | null,
-        types: string | null,
-        customTypes: string[],
-        useCustom: boolean,
-        supportRole: string | null,
-        maxTickets: number
-    }
+        enabled: boolean;
+        category: string | null;
+        types: string | null;
+        customTypes: string[];
+        useCustom: boolean;
+        supportRole: string | null;
+        maxTickets: number;
+    };
     moderation: {
         mute: {
-            timeout: boolean,
-            role: string | null,
-            text: string | null,
-            link: string | null
-        },
+            timeout: boolean;
+            role: string | null;
+            text: string | null;
+            link: string | null;
+        };
         kick: {
-            text: string | null,
-            link: string | null
-        },
+            text: string | null;
+            link: string | null;
+        };
         ban: {
-            text: string | null,
-            link: string | null
-        },
+            text: string | null;
+            link: string | null;
+        };
         softban: {
-            text: string | null,
-            link: string | null
-        },
+            text: string | null;
+            link: string | null;
+        };
         warn: {
-            text: string | null,
-            link: string | null
-        },
+            text: string | null;
+            link: string | null;
+        };
         role: {
-            role: string | null,
-        }
-    }
+            role: string | null;
+        };
+    };
     tracks: {
-        name: string,
-        retainPrevious: boolean,
-        nullable: boolean,
-        track: string[],
-        manageableBy: string[]
-    }[]
+        name: string;
+        retainPrevious: boolean;
+        nullable: boolean;
+        track: string[];
+        manageableBy: string[];
+    }[];
     roleMenu: {
-        enabled: boolean,
-        allowWebUI: boolean,
+        enabled: boolean;
+        allowWebUI: boolean;
         options: {
-            name: string,
-            description: string,
-            min: number,
-            max: number,
+            name: string;
+            description: string;
+            min: number;
+            max: number;
             options: {
-                name: string,
-                description: string | null,
-                role: string
-            }[]
-        }[]
-    }
-    tags: Record<string, string>
+                name: string;
+                description: string | null;
+                role: string;
+            }[];
+        }[];
+    };
+    tags: Record<string, string>;
 }
 
 export interface HistorySchema {
-    type: string,
-    guild: string,
-    user: string,
-    moderator: string | null,
-    reason: string,
-    occurredAt: Date,
-    before: string | null,
-    after: string | null,
-    amount: string | null
+    type: string;
+    guild: string;
+    user: string;
+    moderator: string | null;
+    reason: string;
+    occurredAt: Date;
+    before: string | null;
+    after: string | null;
+    amount: string | null;
 }
 
 export interface ModNoteSchema {
-    guild: string,
-    user: string,
-    note: string
+    guild: string;
+    user: string;
+    note: string;
 }
 
 export interface PremiumSchema {
-    user: string,
-    level: number,
-    expires: Date,
-    appliesTo: string[]
+    user: string;
+    level: number;
+    expires: Date;
+    appliesTo: string[];
 }

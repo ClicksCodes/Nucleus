@@ -9,26 +9,41 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("avatar")
         .setDescription("Shows the avatar of a user")
-        .addUserOption(option => option.setName("user").setDescription("The user to get the avatar of | Default: Yourself"));
+        .addUserOption((option) =>
+            option
+                .setName("user")
+                .setDescription(
+                    "The user to get the avatar of | Default: Yourself"
+                )
+        );
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const { renderUser } = client.logger;
-    const member = (interaction.options.getMember("user") || interaction.member) as Discord.GuildMember;
-    await interaction.reply({embeds: [new EmojiEmbed()
-        .setTitle("User Info")
-        .setStatus("Success")
-        .setEmoji("MEMBER.JOIN")
-        .setDescription(
-            generateKeyValueList({
-                "member": renderUser(member.user),
-                "url": member.user.displayAvatarURL({dynamic: true})
-            })
-        )
-        .setImage(await member.user.displayAvatarURL({dynamic: true}))
-    ], ephemeral: true, fetchReply: true});
+    const member = (interaction.options.getMember("user") ||
+        interaction.member) as Discord.GuildMember;
+    await interaction.reply({
+        embeds: [
+            new EmojiEmbed()
+                .setTitle("User Info")
+                .setStatus("Success")
+                .setEmoji("MEMBER.JOIN")
+                .setDescription(
+                    generateKeyValueList({
+                        member: renderUser(member.user),
+                        url: member.user.displayAvatarURL({ dynamic: true })
+                    })
+                )
+                .setImage(await member.user.displayAvatarURL({ dynamic: true }))
+        ],
+        ephemeral: true,
+        fetchReply: true
+    });
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (
+    _interaction: CommandInteraction,
+    _defaultCheck: WrappedCheck
+) => {
     return true;
 };
 

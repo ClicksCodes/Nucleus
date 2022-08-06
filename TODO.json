@@ -1,28 +1,27 @@
-
 {
-	"filters": {
-		"images": {
-			"NSFW": false,
-			"size": false
-		},
-		"malware": false,
-		"wordFilter": {
-			"enabled": true,
-			"words": {
-				"strict": [],
-				"loose": []
-			}
-		},
-		"invite": {
-			"enabled": false,
-			"channels": []
-		},
-		"pings": {
-			"mass": 5,
-			"everyone": true,
-			"roles": true
-		}
-	},
-	"roleMenu": [],
-	"tracks": []
+    "filters": {
+        "images": {
+            "NSFW": false,
+            "size": false
+        },
+        "malware": false,
+        "wordFilter": {
+            "enabled": true,
+            "words": {
+                "strict": [],
+                "loose": []
+            }
+        },
+        "invite": {
+            "enabled": false,
+            "channels": []
+        },
+        "pings": {
+            "mass": 5,
+            "everyone": true,
+            "roles": true
+        }
+    },
+    "roleMenu": [],
+    "tracks": []
 }

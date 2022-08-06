@@ -10,7 +10,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     interaction.reply("hel p"); // TODO: FINISH THIS FOR RELEASE
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (
+    _interaction: CommandInteraction,
+    _defaultCheck: WrappedCheck
+) => {
     return true;
 };
 

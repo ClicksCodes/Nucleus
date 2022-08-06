@@ -1,4 +1,3 @@
-
 import { Logger } from "./utils/log.js";
 import runServer from "./api/index.js";
 import Memory from "./utils/memory.js";

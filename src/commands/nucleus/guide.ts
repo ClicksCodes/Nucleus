@@ -6,7 +6,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("guide")
         .setDescription("Shows the welcome guide for the bot");
 
-
 const callback = async (interaction) => {
     guide(interaction.guild, interaction);
 };

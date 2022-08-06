@@ -36,7 +36,7 @@ const toHexInteger = (permissions, array?) => {
     }
     let int = 0n;
 
-    for(const perm of permissions) {
+    for (const perm of permissions) {
         int += BigInt(2 ** array.indexOf(perm));
     }
     return int.toString(16);
@@ -47,7 +47,10 @@ const toHexArray = (permissionsHex, array?) => {
         array = logs;
     }
     const permissions = [];
-    const int = (BigInt("0x" + permissionsHex)).toString(2).split("").reverse();
+    const int = BigInt("0x" + permissionsHex)
+        .toString(2)
+        .split("")
+        .reverse();
     for (const index in int) {
         if (int[index] === "1" && array.length > index) {
             permissions.push(array[index]);
@@ -56,9 +59,4 @@ const toHexArray = (permissionsHex, array?) => {
     return permissions;
 };
 
-export {
-    toHexInteger,
-    toHexArray,
-    tickets,
-    logs
-};
+export { toHexInteger, toHexArray, tickets, logs };

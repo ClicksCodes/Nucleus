@@ -1,7 +1,7 @@
 import type { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error
 import { WrappedCheck } from "jshaiku";
 import verify from "../reflex/verify.js";
 
@@ -13,7 +13,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     verify(interaction);
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (
+    _interaction: CommandInteraction,
+    _defaultCheck: WrappedCheck
+) => {
     return true;
 };
 

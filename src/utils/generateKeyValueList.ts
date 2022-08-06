@@ -1,22 +1,21 @@
-const forceCaps = [
-    "ID",
-    "NSFW",
-    "URL"
-];
+const forceCaps = ["ID", "NSFW", "URL"];
 
 export function capitalize(s: string) {
     s = s.replace(/([A-Z])/g, " $1");
-    s = s.split(" ").map(word => {
-        return forceCaps.includes(word.toUpperCase()) ? word.toUpperCase() : (word[0] ?? "")
-            .toUpperCase() + word.slice(1)
-            .toLowerCase()
-            .replace("discord", "Discord");
-    }).join(" ");
+    s = s
+        .split(" ")
+        .map((word) => {
+            return forceCaps.includes(word.toUpperCase())
+                ? word.toUpperCase()
+                : (word[0] ?? "").toUpperCase() +
+                      word.slice(1).toLowerCase().replace("discord", "Discord");
+        })
+        .join(" ");
     return s;
 }
 
 export function toCapitals(s: string) {
-    if (s[0] === undefined) return "";
+    if (s.startsWith(undefined)) return "";
     return s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 

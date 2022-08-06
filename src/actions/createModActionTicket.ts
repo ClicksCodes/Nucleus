@@ -3,14 +3,35 @@ import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 
-export async function create(guild: Discord.Guild, member: Discord.User, createdBy: Discord.User, reason: string, customReason?: string) {
+export async function create(
+    guild: Discord.Guild,
+    member: Discord.User,
+    createdBy: Discord.User,
+    reason: string,
+    customReason?: string
+) {
     const config = await client.database.guilds.read(guild.id);
-    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-    const overwrites = [{
-        id: member,
-        allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
-        type: "member"
-    }] as Discord.OverwriteResolvable[];
+    const {
+        log,
+        NucleusColors,
+        entry,
+        renderUser,
+        renderChannel,
+        renderDelta
+    } = client.logger;
+    const overwrites = [
+        {
+            id: member,
+            allow: [
+                "VIEW_CHANNEL",
+                "SEND_MESSAGES",
+                "ATTACH_FILES",
+                "ADD_REACTIONS",
+                "READ_MESSAGE_HISTORY"
+            ],
+            type: "member"
+        }
+    ] as Discord.OverwriteResolvable[];
     overwrites.push({
         id: guild.roles.everyone,
         deny: ["VIEW_CHANNEL"],
@@ -19,7 +40,13 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
     if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: guild.roles.cache.get(config.tickets.supportRole),
-            allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
+            allow: [
+                "VIEW_CHANNEL",
+                "SEND_MESSAGES",
+                "ATTACH_FILES",
+                "ADD_REACTIONS",
+                "READ_MESSAGE_HISTORY"
+            ],
             type: "role"
         });
     }
@@ -31,40 +58,59 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             topic: `${member.id} Active`,
             parent: config.tickets.category,
             nsfw: false,
-            permissionOverwrites: (overwrites as Discord.OverwriteResolvable[]),
+            permissionOverwrites: overwrites as Discord.OverwriteResolvable[],
             reason: "Creating ticket"
         });
     } catch (e) {
         return null;
     }
     try {
-        await c.send(
-            {
-                content: (`<@${member.id}>` + (config.tickets.supportRole !== null ? ` • <@&${config.tickets.supportRole}>` : "")),
-                allowedMentions: {
-                    users: [member.id],
-                    roles: (config.tickets.supportRole !== null ? [config.tickets.supportRole] : [])
-                }
+        await c.send({
+            content:
+                `<@${member.id}>` +
+                (config.tickets.supportRole !== null
+                    ? ` • <@&${config.tickets.supportRole}>`
+                    : ""),
+            allowedMentions: {
+                users: [member.id],
+                roles:
+                    config.tickets.supportRole !== null
+                        ? [config.tickets.supportRole]
+                        : []
             }
-        );
-        await c.send({ embeds: [new EmojiEmbed()
-            .setTitle("New Ticket")
-            .setDescription(
-                "Ticket created by a Moderator\n" +
-                `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` + (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
-                `**Ticket ID:** \`${c.id}\`\n` +
-                "Type `/ticket close` to close this ticket."
-            )
-            .setStatus("Success")
-            .setEmoji("GUILD.TICKET.OPEN")
-        ], components: [new MessageActionRow().addComponents([new MessageButton()
-            .setLabel("Close")
-            .setStyle("DANGER")
-            .setCustomId("closeticket")
-            .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-        ])]});
+        });
+        await c.send({
+            embeds: [
+                new EmojiEmbed()
+                    .setTitle("New Ticket")
+                    .setDescription(
+                        "Ticket created by a Moderator\n" +
+                            `**Support type:** ${
+                                customReason
+                                    ? customReason
+                                    : "Appeal submission"
+                            }\n` +
+                            (reason !== null
+                                ? `**Reason:**\n> ${reason}\n`
+                                : "") +
+                            `**Ticket ID:** \`${c.id}\`\n` +
+                            "Type `/ticket close` to close this ticket."
+                    )
+                    .setStatus("Success")
+                    .setEmoji("GUILD.TICKET.OPEN")
+            ],
+            components: [
+                new MessageActionRow().addComponents([
+                    new MessageButton()
+                        .setLabel("Close")
+                        .setStyle("DANGER")
+                        .setCustomId("closeticket")
+                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
+                ])
+            ]
+        });
         const data = {
-            meta:{
+            meta: {
                 type: "ticketCreate",
                 displayName: "Ticket Created",
                 calculateType: "ticketUpdate",
@@ -75,7 +121,10 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             list: {
                 ticketFor: entry(member.id, renderUser(member)),
                 createdBy: entry(createdBy.id, renderUser(createdBy)),
-                created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                created: entry(
+                    new Date().getTime(),
+                    renderDelta(new Date().getTime())
+                ),
                 ticketChannel: entry(c.id, renderChannel(c))
             },
             hidden: {
@@ -83,7 +132,10 @@ export async function create(guild: Discord.Guild, member: Discord.User, created
             }
         };
         log(data);
-    } catch (e) { console.log(e); return null; }
+    } catch (e) {
+        console.log(e);
+        return null;
+    }
     return c.id;
 }
 

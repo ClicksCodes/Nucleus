@@ -1,13 +1,13 @@
-import emojis from "../config/emojis.json" assert {type: "json"};
+import emojis from "../config/emojis.json" assert { type: "json" };
 
 interface EmojisIndex {
     [key: string]: string | EmojisIndex | EmojisIndex[];
 }
 
 function getEmojiByName(name: string, format?: string): string {
-    const split = name.split(".");
+    const parts = name.split(".");
     let id: string | EmojisIndex | EmojisIndex[] | undefined = emojis;
-    split.forEach(part => {
+    for (const part of parts) {
         if (typeof id === "string" || id === undefined) {
             throw new Error(`Emoji ${name} not found`);
         }
@@ -16,8 +16,11 @@ function getEmojiByName(name: string, format?: string): string {
         } else {
             id = id[part];
         }
-    });
-    if ( format === "id" ) {
+    }
+    if (typeof id !== "string" && id !== undefined) {
+        throw new Error(`Emoji ${name} not found`);
+    }
+    if (format === "id") {
         if (id === undefined) return "0";
         return id.toString();
     }

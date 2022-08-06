@@ -2,9 +2,19 @@ import humanizeDuration from "humanize-duration";
 export const event = "inviteDelete";
 
 export async function callback(client, invite) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = invite.client.logger;
+    const {
+        getAuditLog,
+        log,
+        NucleusColors,
+        entry,
+        renderUser,
+        renderDelta,
+        renderChannel
+    } = invite.client.logger;
     const auditLog = await getAuditLog(invite.guild, "INVITE_DELETE");
-    const audit = auditLog.entries.filter(entry => entry.target.id === invite.id).first();
+    const audit = auditLog.entries
+        .filter((entry) => entry.target.id === invite.id)
+        .first();
     if (audit.executor.id === client.user.id) return;
     const data = {
         meta: {
@@ -18,9 +28,15 @@ export async function callback(client, invite) {
         list: {
             channel: entry(invite.channel.id, renderChannel(invite.channel)),
             link: entry(invite.url, invite.url),
-            expires: entry(invite.maxAge, invite.maxAge ? humanizeDuration(invite.maxAge * 1000) : "Never"),
+            expires: entry(
+                invite.maxAge,
+                invite.maxAge ? humanizeDuration(invite.maxAge * 1000) : "Never"
+            ),
             deletedBy: entry(audit.executor.id, renderUser(audit.executor)),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
+            deleted: entry(
+                new Date().getTime(),
+                renderDelta(new Date().getTime())
+            )
         },
         hidden: {
             guild: invite.guild.id

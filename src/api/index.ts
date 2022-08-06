@@ -4,7 +4,6 @@ import bodyParser from "body-parser";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import structuredClone from "@ungap/structured-clone";
 
-
 const jsonParser = bodyParser.json();
 const app = express();
 const port = 10000;
@@ -19,26 +18,36 @@ const runServer = (client: HaikuClient) => {
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
             const guild = await client.guilds.fetch(client.verify[code].gID);
-            if (!guild) { return res.status(404); }
+            if (!guild) {
+                return res.status(404);
+            }
             const member = await guild.members.fetch(client.verify[code].uID);
-            if (!member) { return res.status(404); }
-            if (member.roles.cache.has(client.verify[code].rID)) { return res.status(200); }
+            if (!member) {
+                return res.status(404);
+            }
+            if (member.roles.cache.has(client.verify[code].rID)) {
+                return res.status(200);
+            }
             await member.roles.add(client.verify[code].rID);
 
             const interaction = client.verify[code].interaction;
             if (interaction) {
-                interaction.editReply({embeds: [new EmojiEmbed()
-                    .setTitle("Verify")
-                    .setDescription("Verification complete")
-                    .setStatus("Success")
-                    .setEmoji("MEMBER.JOIN")
-                ], components: []});
+                interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed()
+                            .setTitle("Verify")
+                            .setDescription("Verification complete")
+                            .setStatus("Success")
+                            .setEmoji("MEMBER.JOIN")
+                    ],
+                    components: []
+                });
             }
             delete client.verify[code];
             const { log, NucleusColors, entry, renderUser } = client.logger;
             try {
                 const data = {
-                    meta:{
+                    meta: {
                         type: "memberVerify",
                         displayName: "Member Verified",
                         calculateType: "guildMemberVerify",
@@ -70,14 +79,21 @@ const runServer = (client: HaikuClient) => {
             try {
                 const interaction = client.verify[code].interaction;
                 if (interaction) {
-                    interaction.editReply({embeds: [new EmojiEmbed()
-                        .setTitle("Verify")
-                        .setDescription("Verify was opened in another tab or window, please complete the CAPTCHA there to continue")
-                        .setStatus("Success")
-                        .setEmoji("MEMBER.JOIN")
-                    ]});
+                    interaction.editReply({
+                        embeds: [
+                            new EmojiEmbed()
+                                .setTitle("Verify")
+                                .setDescription(
+                                    "Verify was opened in another tab or window, please complete the CAPTCHA there to continue"
+                                )
+                                .setStatus("Success")
+                                .setEmoji("MEMBER.JOIN")
+                        ]
+                    });
                 }
-            } catch { return res.sendStatus(410); }
+            } catch {
+                return res.sendStatus(410);
+            }
             const data = structuredClone(client.verify[code]);
             delete data.interaction;
             return res.status(200).send(data);
@@ -89,10 +105,18 @@ const runServer = (client: HaikuClient) => {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.roleMenu[code].guild);
-            if (!guild) { return res.status(404); }
-            const member = await guild.members.fetch(client.roleMenu[code].user);
-            if (!member) { return res.status(404); }
+            const guild = await client.guilds.fetch(
+                client.roleMenu[code].guild
+            );
+            if (!guild) {
+                return res.status(404);
+            }
+            const member = await guild.members.fetch(
+                client.roleMenu[code].user
+            );
+            if (!member) {
+                return res.status(404);
+            }
             res.sendStatus(200);
         } else {
             res.sendStatus(403);
@@ -105,14 +129,22 @@ const runServer = (client: HaikuClient) => {
             try {
                 const interaction = client.roleMenu[code].interaction;
                 if (interaction) {
-                    interaction.editReply({embeds: [new EmojiEmbed()
-                        .setTitle("Roles")
-                        .setDescription("The role menu was opened in another tab or window, please select your roles there to continue")
-                        .setStatus("Success")
-                        .setEmoji("GUILD.GREEN")
-                    ], components: []});
+                    interaction.editReply({
+                        embeds: [
+                            new EmojiEmbed()
+                                .setTitle("Roles")
+                                .setDescription(
+                                    "The role menu was opened in another tab or window, please select your roles there to continue"
+                                )
+                                .setStatus("Success")
+                                .setEmoji("GUILD.GREEN")
+                        ],
+                        components: []
+                    });
                 }
-            } catch { return res.sendStatus(410); }
+            } catch {
+                return res.sendStatus(410);
+            }
             const data = structuredClone(client.roleMenu[code]);
             delete data.interaction;
             console.log(data);
