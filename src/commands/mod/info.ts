@@ -18,10 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("info")
         .setDescription("Shows moderator information about a user")
         .addUserOption((option) =>
-            option
-                .setName("user")
-                .setDescription("The user to get information about")
-                .setRequired(true)
+            option.setName("user").setDescription("The user to get information about").setRequired(true)
         );
 
 const types = {
@@ -39,11 +36,9 @@ const types = {
 };
 
 function historyToString(history: HistorySchema) {
-    let s = `${getEmojiByName(types[history.type].emoji)} ${
-        history.amount ? history.amount + " " : ""
-    }${types[history.type].text} on <t:${Math.round(
-        history.occurredAt.getTime() / 1000
-    )}:F>`;
+    let s = `${getEmojiByName(types[history.type].emoji)} ${history.amount ? history.amount + " " : ""}${
+        types[history.type].text
+    } on <t:${Math.round(history.occurredAt.getTime() / 1000)}:F>`;
     if (history.moderator) {
         s += ` by <@${history.moderator}>`;
     }
@@ -71,13 +66,8 @@ class TimelineSection {
         return this.content.reduce((acc, cur) => acc + cur.rendered.length, 0);
     };
     generateName = () => {
-        const first = Math.round(
-            this.content[0].data.occurredAt.getTime() / 1000
-        );
-        const last = Math.round(
-            this.content[this.content.length - 1].data.occurredAt.getTime() /
-                1000
-        );
+        const first = Math.round(this.content[0].data.occurredAt.getTime() / 1000);
+        const last = Math.round(this.content[this.content.length - 1].data.occurredAt.getTime() / 1000);
         if (first === last) {
             return (this.name = `<t:${first}:F>`);
         }
@@ -109,22 +99,14 @@ async function showHistory(member, interaction: CommandInteraction) {
     let openFilterPane = false;
     while (true) {
         if (refresh) {
-            history = await client.database.history.read(
-                member.guild.id,
-                member.id,
-                currentYear
-            );
-            history = history
-                .sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime())
-                .reverse();
+            history = await client.database.history.read(member.guild.id, member.id, currentYear);
+            history = history.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime()).reverse();
             if (openFilterPane) {
                 let tempFilteredTypes = filteredTypes;
                 if (filteredTypes.length === 0) {
                     tempFilteredTypes = Object.keys(types);
                 }
-                history = history.filter((h) =>
-                    tempFilteredTypes.includes(h.type)
-                );
+                history = history.filter((h) => tempFilteredTypes.includes(h.type));
             }
             refresh = false;
         }
@@ -132,11 +114,7 @@ async function showHistory(member, interaction: CommandInteraction) {
         if (history.length > 0) {
             current = new TimelineSection();
             history.forEach((event) => {
-                if (
-                    current.contentLength() + historyToString(event).length >
-                        2000 ||
-                    current.content.length === 5
-                ) {
+                if (current.contentLength() + historyToString(event).length > 2000 || current.content.length === 5) {
                     groups.push(current);
                     current.generateName();
                     current = new TimelineSection();
@@ -162,9 +140,7 @@ async function showHistory(member, interaction: CommandInteraction) {
                                       label: value.text,
                                       value: key,
                                       default: filteredTypes.includes(key),
-                                      emoji: client.emojis.resolve(
-                                          getEmojiByName(value.emoji, "id")
-                                      )
+                                      emoji: client.emojis.resolve(getEmojiByName(value.emoji, "id"))
                                   }))
                               )
                               .setMinValues(1)
@@ -181,22 +157,13 @@ async function showHistory(member, interaction: CommandInteraction) {
                     .setLabel((currentYear - 1).toString())
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                     .setStyle("SECONDARY"),
-                new MessageButton()
-                    .setCustomId("prevPage")
-                    .setLabel("Previous page")
-                    .setStyle("PRIMARY"),
-                new MessageButton()
-                    .setCustomId("today")
-                    .setLabel("Today")
-                    .setStyle("PRIMARY"),
+                new MessageButton().setCustomId("prevPage").setLabel("Previous page").setStyle("PRIMARY"),
+                new MessageButton().setCustomId("today").setLabel("Today").setStyle("PRIMARY"),
                 new MessageButton()
                     .setCustomId("nextPage")
                     .setLabel("Next page")
                     .setStyle("PRIMARY")
-                    .setDisabled(
-                        pageIndex >= groups.length - 1 &&
-                            currentYear === new Date().getFullYear()
-                    ),
+                    .setDisabled(pageIndex >= groups.length - 1 && currentYear === new Date().getFullYear()),
                 new MessageButton()
                     .setCustomId("nextYear")
                     .setLabel((currentYear + 1).toString())
@@ -220,13 +187,8 @@ async function showHistory(member, interaction: CommandInteraction) {
         const end =
             "\n\nJanuary " +
             currentYear.toString() +
-            pageIndicator(
-                Math.max(groups.length, 1),
-                groups.length === 0 ? 1 : pageIndex
-            ) +
-            (currentYear === new Date().getFullYear()
-                ? monthNames[new Date().getMonth()]
-                : "December") +
+            pageIndicator(Math.max(groups.length, 1), groups.length === 0 ? 1 : pageIndex) +
+            (currentYear === new Date().getFullYear() ? monthNames[new Date().getMonth()] : "December") +
             " " +
             currentYear.toString();
         if (groups.length > 0) {
@@ -235,22 +197,13 @@ async function showHistory(member, interaction: CommandInteraction) {
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
-                        .setTitle(
-                            "Moderation history for " + member.user.username
-                        )
+                        .setTitle("Moderation history for " + member.user.username)
                         .setDescription(
-                            `**${toRender.name}**\n\n` +
-                                toRender.content
-                                    .map((c) => c.rendered)
-                                    .join("\n") +
-                                end
+                            `**${toRender.name}**\n\n` + toRender.content.map((c) => c.rendered).join("\n") + end
                         )
                         .setStatus("Success")
                         .setFooter({
-                            text:
-                                openFilterPane && filteredTypes.length
-                                    ? "Filters are currently enabled"
-                                    : ""
+                            text: openFilterPane && filteredTypes.length ? "Filters are currently enabled" : ""
                         })
                 ],
                 components: components
@@ -260,18 +213,11 @@ async function showHistory(member, interaction: CommandInteraction) {
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
-                        .setTitle(
-                            "Moderation history for " + member.user.username
-                        )
-                        .setDescription(
-                            `**${currentYear}**\n\n*No events*` + "\n\n" + end
-                        )
+                        .setTitle("Moderation history for " + member.user.username)
+                        .setDescription(`**${currentYear}**\n\n*No events*` + "\n\n" + end)
                         .setStatus("Success")
                         .setFooter({
-                            text:
-                                openFilterPane && filteredTypes.length
-                                    ? "Filters are currently enabled"
-                                    : ""
+                            text: openFilterPane && filteredTypes.length ? "Filters are currently enabled" : ""
                         })
                 ],
                 components: components
@@ -285,9 +231,7 @@ async function showHistory(member, interaction: CommandInteraction) {
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
-                        .setTitle(
-                            "Moderation history for " + member.user.username
-                        )
+                        .setTitle("Moderation history for " + member.user.username)
                         .setDescription(m.embeds[0].description)
                         .setStatus("Danger")
                         .setFooter({ text: "Message timed out" })
@@ -342,18 +286,11 @@ async function showHistory(member, interaction: CommandInteraction) {
     }
 }
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     let m;
     const member = interaction.options.getMember("user") as Discord.GuildMember;
     await interaction.reply({
-        embeds: [
-            new EmojiEmbed()
-                .setEmoji("NUCLEUS.LOADING")
-                .setTitle("Downloading Data")
-                .setStatus("Danger")
-        ],
+        embeds: [new EmojiEmbed().setEmoji("NUCLEUS.LOADING").setTitle("Downloading Data").setStatus("Danger")],
         ephemeral: true,
         fetchReply: true
     });
@@ -415,9 +352,7 @@ const callback = async (
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Mod notes for " + member.user.username)
-                        .setDescription(
-                            "Modal opened. If you can't see it, click back and try again."
-                        )
+                        .setDescription("Modal opened. If you can't see it, click back and try again.")
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
                 ],
@@ -443,11 +378,7 @@ const callback = async (
             }
             if (out.fields) {
                 const toAdd = out.fields.getTextInputValue("note") || null;
-                await client.database.notes.create(
-                    member.guild.id,
-                    member.id,
-                    toAdd
-                );
+                await client.database.notes.create(member.guild.id, member.id, toAdd);
             } else {
                 continue;
             }
@@ -460,8 +391,7 @@ const callback = async (
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("MODERATE_MEMBERS"))
-        throw "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     return true;
 };
 

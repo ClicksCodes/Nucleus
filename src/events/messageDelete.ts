@@ -3,25 +3,11 @@ export const event = "messageDelete";
 export async function callback(client, message) {
     try {
         if (message.author.id === client.user.id) return;
-        if (
-            client.noLog.includes(
-                `${message.guild.id}/${message.channel.id}/${message.id}`
-            )
-        )
-            return;
-        const {
-            getAuditLog,
-            log,
-            NucleusColors,
-            entry,
-            renderUser,
-            renderDelta,
-            renderChannel
-        } = message.channel.client.logger;
+        if (client.noLog.includes(`${message.guild.id}/${message.channel.id}/${message.id}`)) return;
+        const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } =
+            message.channel.client.logger;
         const auditLog = await getAuditLog(message.guild, "MEMBER_BAN_ADD");
-        const audit = auditLog.entries
-            .filter((entry) => entry.target.id === message.author.id)
-            .first();
+        const audit = auditLog.entries.filter((entry) => entry.target.id === message.author.id).first();
         if (audit) {
             if (audit.createdAt - 100 < new Date().getTime()) return;
         }
@@ -37,8 +23,9 @@ export async function callback(client, message) {
                 ) ?? []
             ).length;
         let attachmentJump = "";
-        const config = (await client.database.guilds.read(message.guild.id))
-            .logging.attachments.saved[message.channel.id + message.id];
+        const config = (await client.database.guilds.read(message.guild.id)).logging.attachments.saved[
+            message.channel.id + message.id
+        ];
         if (config) {
             attachmentJump = ` [[View attachments]](${config})`;
         }
@@ -52,21 +39,13 @@ export async function callback(client, message) {
                 timestamp: new Date().getTime()
             },
             separate: {
-                start: content
-                    ? `**Message:**\n\`\`\`${content}\`\`\``
-                    : "**Message:** *Message had no content*"
+                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
             },
             list: {
                 messageId: entry(message.id, `\`${message.id}\``),
                 sentBy: entry(message.author.id, renderUser(message.author)),
-                sentIn: entry(
-                    message.channel.id,
-                    renderChannel(message.channel)
-                ),
-                deleted: entry(
-                    new Date().getTime(),
-                    renderDelta(new Date().getTime())
-                ),
+                sentIn: entry(message.channel.id, renderChannel(message.channel)),
+                deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 mentions: message.mentions.users.size,
                 attachments: entry(attachments, attachments + attachmentJump),
                 repliedTo: entry(

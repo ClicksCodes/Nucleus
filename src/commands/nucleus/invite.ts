@@ -1,8 +1,4 @@
-import {
-    CommandInteraction,
-    MessageActionRow,
-    MessageButton
-} from "discord.js";
+import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -15,9 +11,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         embeds: [
             new EmojiEmbed()
                 .setTitle("Invite")
-                .setDescription(
-                    "You can invite Nucleus to your server by clicking the button below"
-                )
+                .setDescription("You can invite Nucleus to your server by clicking the button below")
                 .setEmoji("NUCLEUS.LOGO")
                 .setStatus("Danger")
         ],

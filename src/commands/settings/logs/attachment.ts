@@ -1,10 +1,6 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
 import { ChannelType } from "discord-api-types/v9";
-import Discord, {
-    CommandInteraction,
-    MessageActionRow,
-    MessageButton
-} from "discord.js";
+import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
@@ -24,9 +20,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -42,9 +36,7 @@ const callback = async (
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.TEXT.DELETE")
                         .setTitle("Attachment Log Channel")
-                        .setDescription(
-                            "The channel you provided is not a valid channel"
-                        )
+                        .setDescription("The channel you provided is not a valid channel")
                         .setStatus("Danger")
                 ]
             });
@@ -55,9 +47,7 @@ const callback = async (
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Attachment Log Channel")
-                        .setDescription(
-                            "You must choose a channel in this server"
-                        )
+                        .setDescription("You must choose a channel in this server")
                         .setStatus("Danger")
                         .setEmoji("CHANNEL.TEXT.DELETE")
                 ]
@@ -79,8 +69,7 @@ const callback = async (
                 await client.database.guilds.write(interaction.guild.id, {
                     "logging.attachments.channel": channel.id
                 });
-                const { log, NucleusColors, entry, renderUser, renderChannel } =
-                    client.logger;
+                const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
                 const data = {
                     meta: {
                         type: "attachmentChannelUpdate",
@@ -91,14 +80,8 @@ const callback = async (
                         timestamp: new Date().getTime()
                     },
                     list: {
-                        memberId: entry(
-                            interaction.user.id,
-                            `\`${interaction.user.id}\``
-                        ),
-                        changedBy: entry(
-                            interaction.user.id,
-                            renderUser(interaction.user)
-                        ),
+                        memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                        changedBy: entry(interaction.user.id, renderUser(interaction.user)),
                         channel: entry(channel.id, renderChannel(channel))
                     },
                     hidden: {
@@ -111,9 +94,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Attachment Log Channel")
-                            .setDescription(
-                                "Something went wrong and the attachment log channel could not be set"
-                            )
+                            .setDescription("Something went wrong and the attachment log channel could not be set")
                             .setStatus("Danger")
                             .setEmoji("CHANNEL.TEXT.DELETE")
                     ],
@@ -145,9 +126,7 @@ const callback = async (
                         channel
                             ? `Your attachment log channel is currently set to <#${channel}>`
                             : "This server does not have an attachment log channel" +
-                                  (client.database.premium.hasPremium(
-                                      interaction.guild.id
-                                  )
+                                  (client.database.premium.hasPremium(interaction.guild.id)
                                       ? ""
                                       : "\n\nThis server does not have premium, so this feature is disabled")
                     )
@@ -158,15 +137,8 @@ const callback = async (
                 new MessageActionRow().addComponents([
                     new MessageButton()
                         .setCustomId("clear")
-                        .setLabel(
-                            clicks ? "Click again to confirm" : "Reset channel"
-                        )
-                        .setEmoji(
-                            getEmojiByName(
-                                clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS",
-                                "id"
-                            )
-                        )
+                        .setLabel(clicks ? "Click again to confirm" : "Reset channel")
+                        .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
                         .setStyle("DANGER")
                         .setDisabled(!channel)
                 ])
@@ -183,9 +155,7 @@ const callback = async (
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild.id, null, [
-                    "logging.announcements.channel"
-                ]);
+                await client.database.guilds.write(interaction.guild.id, null, ["logging.announcements.channel"]);
                 channel = undefined;
             }
         } else {
@@ -218,10 +188,7 @@ const callback = async (
     });
 };
 
-const check = (
-    interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
         throw "You must have the *Manage Server* permission to use this command";

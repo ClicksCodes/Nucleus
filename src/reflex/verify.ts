@@ -1,10 +1,21 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Interaction } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "./scanners.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
 import client from "../utils/client.js";
+
+export interface VerifySchema {
+    uID: string;
+    gID: string;
+    rID: string;
+    rName: string;
+    uName: string;
+    gName: string;
+    gIcon: string;
+    interaction: Interaction;
+}
 
 function step(i: number) {
     return "\n\n" + createPageIndicator(5, i);
@@ -35,17 +46,12 @@ export default async function (interaction: CommandInteraction) {
             ephemeral: true,
             fetchReply: true
         });
-    if (
-        (interaction.member as GuildMember).roles.cache.has(config.verify.role)
-    ) {
+    if ((interaction.member as GuildMember).roles.cache.has(config.verify.role)) {
         return await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Verify")
-                    .setDescription(
-                        `You already have the <@&${config.verify.role}> role` +
-                            step(0)
-                    )
+                    .setDescription(`You already have the <@&${config.verify.role}> role` + step(0))
                     .setStatus("Danger")
                     .setEmoji("CONTROL.BLOCKCROSS")
             ]
@@ -61,18 +67,13 @@ export default async function (interaction: CommandInteraction) {
         ]
     });
     try {
-        const status = await fetch(client.config.baseUrl).then(
-            (res) => res.status
-        );
+        const status = await fetch(client.config.baseUrl).then((res) => res.status);
         if (status !== 200) {
             return await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Verify")
-                        .setDescription(
-                            "Our servers appear to be down, please try again later" +
-                                step(0)
-                        )
+                        .setDescription("Our servers appear to be down, please try again later" + step(0))
                         .setStatus("Danger")
                         .setEmoji("CONTROL.BLOCKCROSS")
                 ]
@@ -83,10 +84,7 @@ export default async function (interaction: CommandInteraction) {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Verify")
-                    .setDescription(
-                        "Our servers appear to be down, please try again later" +
-                            step(0)
-                    )
+                    .setDescription("Our servers appear to be down, please try again later" + step(0))
                     .setStatus("Danger")
                     .setEmoji("CONTROL.BLOCKCROSS")
             ],
@@ -109,9 +107,7 @@ export default async function (interaction: CommandInteraction) {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Verify")
-                    .setDescription(
-                        "Checking your avatar is safe for work" + step(1)
-                    )
+                    .setDescription("Checking your avatar is safe for work" + step(1))
                     .setStatus("Warning")
                     .setEmoji("NUCLEUS.LOADING")
             ]
@@ -180,8 +176,7 @@ export default async function (interaction: CommandInteraction) {
     let code = "";
     let length = 5;
     let itt = 0;
-    const chars =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     while (true) {
         itt += 1;
         code = "";
@@ -210,10 +205,7 @@ export default async function (interaction: CommandInteraction) {
         embeds: [
             new EmojiEmbed()
                 .setTitle("Verify")
-                .setDescription(
-                    "Looking good!\nClick the button below to get verified" +
-                        step(4)
-                )
+                .setDescription("Looking good!\nClick the button below to get verified" + step(4))
                 .setStatus("Success")
                 .setEmoji("MEMBER.JOIN")
         ],
@@ -222,9 +214,7 @@ export default async function (interaction: CommandInteraction) {
                 new Discord.MessageButton()
                     .setLabel("Verify")
                     .setStyle("LINK")
-                    .setURL(
-                        `${client.config.baseUrl}nucleus/verify?code=${code}`
-                    )
+                    .setURL(`${client.config.baseUrl}nucleus/verify?code=${code}`)
             ])
         ]
     });

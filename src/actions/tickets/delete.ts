@@ -4,14 +4,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
 export default async function (interaction) {
-    const {
-        log,
-        NucleusColors,
-        entry,
-        renderUser,
-        renderChannel,
-        renderDelta
-    } = client.logger;
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
 
     const config = await client.database.guilds.read(interaction.guild.id);
     let thread = false;
@@ -21,9 +14,7 @@ export default async function (interaction) {
     if (
         !channel.parent ||
         config.tickets.category !== channel.parent.id ||
-        (thread
-            ? threadChannel.parent.parent.id !== config.tickets.category
-            : false)
+        (thread ? threadChannel.parent.parent.id !== config.tickets.category : false)
     ) {
         return interaction.reply({
             embeds: [
@@ -61,22 +52,10 @@ export default async function (interaction) {
             list: {
                 ticketFor: entry(
                     channel.topic.split(" ")[0],
-                    renderUser(
-                        (
-                            await interaction.guild.members.fetch(
-                                channel.topic.split(" ")[0]
-                            )
-                        ).user
-                    )
+                    renderUser((await interaction.guild.members.fetch(channel.topic.split(" ")[0])).user)
                 ),
-                deletedBy: entry(
-                    interaction.member.user.id,
-                    renderUser(interaction.member.user)
-                ),
-                deleted: entry(
-                    new Date().getTime(),
-                    renderDelta(new Date().getTime())
-                )
+                deletedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+                deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
             },
             hidden: {
                 guild: interaction.guild.id
@@ -109,16 +88,8 @@ export default async function (interaction) {
         ] as Discord.OverwriteResolvable[];
         if (config.tickets.supportRole !== null) {
             overwrites.push({
-                id: interaction.guild.roles.cache.get(
-                    config.tickets.supportRole
-                ),
-                allow: [
-                    "VIEW_CHANNEL",
-                    "SEND_MESSAGES",
-                    "ATTACH_FILES",
-                    "ADD_REACTIONS",
-                    "READ_MESSAGE_HISTORY"
-                ],
+                id: interaction.guild.roles.cache.get(config.tickets.supportRole),
+                allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
                 type: "role"
             });
         }
@@ -136,22 +107,10 @@ export default async function (interaction) {
             list: {
                 ticketFor: entry(
                     channel.topic.split(" ")[0],
-                    renderUser(
-                        (
-                            await interaction.guild.members.fetch(
-                                channel.topic.split(" ")[0]
-                            )
-                        ).user
-                    )
+                    renderUser((await interaction.guild.members.fetch(channel.topic.split(" ")[0])).user)
                 ),
-                closedBy: entry(
-                    interaction.member.user.id,
-                    renderUser(interaction.member.user)
-                ),
-                closed: entry(
-                    new Date().getTime(),
-                    renderDelta(new Date().getTime())
-                ),
+                closedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+                closed: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 ticketChannel: entry(channel.id, renderChannel(channel))
             },
             hidden: {
@@ -184,12 +143,7 @@ export default async function (interaction) {
                                       .setLabel("Create Transcript and Delete")
                                       .setStyle("PRIMARY")
                                       .setCustomId("createtranscript")
-                                      .setEmoji(
-                                          getEmojiByName(
-                                              "CONTROL.DOWNLOAD",
-                                              "id"
-                                          )
-                                      )
+                                      .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
                               ]
                             : []
                     )
@@ -219,8 +173,7 @@ async function purgeByUser(member, guild) {
         }
     });
     if (deleted) {
-        const { log, NucleusColors, entry, renderUser, renderDelta } =
-            member.client.logger;
+        const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger;
         const data = {
             meta: {
                 type: "ticketPurge",
@@ -233,10 +186,7 @@ async function purgeByUser(member, guild) {
             list: {
                 ticketFor: entry(member, renderUser(member)),
                 deletedBy: entry(null, "Member left server"),
-                deleted: entry(
-                    new Date().getTime(),
-                    renderDelta(new Date().getTime())
-                ),
+                deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 ticketsDeleted: deleted
             },
             hidden: {

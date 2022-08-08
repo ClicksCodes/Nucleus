@@ -11,10 +11,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         embeds: [
             new EmojiEmbed()
                 .setTitle("Stats")
-                .setDescription(
-                    `**Servers:** ${client.guilds.cache.size}\n` +
-                        `**Ping:** \`${client.ws.ping * 2}ms\``
-                )
+                .setDescription(`**Servers:** ${client.guilds.cache.size}\n` + `**Ping:** \`${client.ws.ping * 2}ms\``)
                 .setStatus("Success")
                 .setEmoji("GUILD.GRAPHS")
         ],

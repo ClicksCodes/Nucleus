@@ -1,4 +1,12 @@
-import { MessageActionRow, MessageButton, TextChannel } from "discord.js";
+import {
+    CommandInteraction,
+    DMChannel,
+    Message,
+    MessageActionRow,
+    MessageButton,
+    PartialGroupDMChannel,
+    TextChannel
+} from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
@@ -7,35 +15,28 @@ import client from "../utils/client.js";
 
 const pbClient = new PasteClient(config.pastebinApiKey);
 
-export default async function (interaction) {
-    const { log, NucleusColors, entry, renderUser, renderDelta } =
-        client.logger;
+export default async function (interaction: CommandInteraction) {
+    if (interaction.channel === null) return;
+    if (interaction.channel instanceof DMChannel) return;
+    const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
 
-    let messages = [];
-    let deleted = 100;
+    let messages: Message[] = [];
+    let deletedCount: number;
 
-    while (deleted === 100) {
-        let fetched;
-        await (interaction.channel as TextChannel).messages
-            .fetch({ limit: 100 })
-            .then(async (ms) => {
-                fetched = await (interaction.channel as TextChannel).bulkDelete(
-                    ms,
-                    true
-                );
-            });
-        deleted = fetched.size;
-        if (fetched) {
-            messages = messages.concat(fetched.map((m) => m));
-        }
-    }
+    do {
+        const fetched = await (interaction.channel as TextChannel).messages.fetch({ limit: 100 });
+        const deleted = await (interaction.channel as TextChannel).bulkDelete(fetched, true);
+        deletedCount = deleted.size;
+        messages = messages.concat(Array.from(deleted.values()));
+    } while (deletedCount === 100);
+
     let out = "";
     messages.reverse().forEach((message) => {
         if (!message.author.bot) {
             const sentDate = new Date(message.createdTimestamp);
-            out += `${message.author.username}#${
-                message.author.discriminator
-            } (${message.author.id}) [${sentDate.toUTCString()}]\n`;
+            out += `${message.author.username}#${message.author.discriminator} (${
+                message.author.id
+            }) [${sentDate.toUTCString()}]\n`;
             const lines = message.content.split("\n");
             lines.forEach((line) => {
                 out += `> ${line}\n`;
@@ -43,24 +44,18 @@ export default async function (interaction) {
             out += "\n\n";
         }
     });
-    const member = interaction.channel.guild.members.cache.get(
-        interaction.channel.topic.split(" ")[0]
-    );
+    const member = interaction.channel.guild.members.cache.get(interaction.channel.topic.split(" ")[0]);
     let m;
     if (out !== "") {
         const url = await pbClient.createPaste({
             code: out,
             expireDate: ExpireDate.Never,
-            name: `Ticket Transcript for ${member.user.username}#${
-                member.user.discriminator
-            } (Created at ${new Date(
+            name: `Ticket Transcript for ${member.user.username}#${member.user.discriminator} (Created at ${new Date(
                 interaction.channel.createdTimestamp
             ).toDateString()})`,
             publicity: Publicity.Unlisted
         });
-        const guildConfig = await client.database.guilds.read(
-            interaction.guild.id
-        );
+        const guildConfig = await client.database.guilds.read(interaction.guild.id);
         m = await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -76,10 +71,7 @@ export default async function (interaction) {
             ],
             components: [
                 new MessageActionRow().addComponents([
-                    new MessageButton()
-                        .setLabel("View")
-                        .setStyle("LINK")
-                        .setURL(url),
+                    new MessageButton().setLabel("View").setStyle("LINK").setURL(url),
                     new MessageButton()
                         .setLabel("Delete")
                         .setStyle("DANGER")
@@ -131,22 +123,10 @@ export default async function (interaction) {
         list: {
             ticketFor: entry(
                 interaction.channel.topic.split(" ")[0],
-                renderUser(
-                    (
-                        await interaction.guild.members.fetch(
-                            interaction.channel.topic.split(" ")[0]
-                        )
-                    ).user
-                )
+                renderUser((await interaction.guild.members.fetch(interaction.channel.topic.split(" ")[0])).user)
             ),
-            deletedBy: entry(
-                interaction.member.user.id,
-                renderUser(interaction.member.user)
-            ),
-            deleted: entry(
-                new Date().getTime(),
-                renderDelta(new Date().getTime())
-            )
+            deletedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
         },
         hidden: {
             guild: interaction.guild.id

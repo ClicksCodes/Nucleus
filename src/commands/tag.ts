@@ -1,9 +1,4 @@
-import {
-    AutocompleteInteraction,
-    CommandInteraction,
-    MessageActionRow,
-    MessageButton
-} from "discord.js";
+import { AutocompleteInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -11,13 +6,7 @@ import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 const command = new SlashCommandBuilder()
     .setName("tag")
     .setDescription("Get and manage the servers tags")
-    .addStringOption((o) =>
-        o
-            .setName("tag")
-            .setDescription("The tag to get")
-            .setAutocomplete(true)
-            .setRequired(true)
-    );
+    .addStringOption((o) => o.setName("tag").setDescription("The tag to get").setAutocomplete(true).setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const config = await client.database.guilds.read(interaction.guild.id);
@@ -28,11 +17,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag")
-                    .setDescription(
-                        `Tag \`${interaction.options.getString(
-                            "tag"
-                        )}\` does not exist`
-                    )
+                    .setDescription(`Tag \`${interaction.options.getString("tag")}\` does not exist`)
                     .setEmoji("PUNISH.NICKNAME.RED")
                     .setStatus("Danger")
             ],
@@ -44,12 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (tag.match(/^(http|https):\/\/[^ "]+$/)) {
         url = tag;
         components = [
-            new MessageActionRow().addComponents([
-                new MessageButton()
-                    .setLabel("Open")
-                    .setURL(url)
-                    .setStyle("LINK")
-            ])
+            new MessageActionRow().addComponents([new MessageButton().setLabel("Open").setURL(url).setStyle("LINK")])
         ];
     }
     return await interaction.reply({
@@ -70,9 +50,7 @@ const check = () => {
     return true;
 };
 
-const autocomplete = async (
-    interaction: AutocompleteInteraction
-): Promise<string[]> => {
+const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
     if (!interaction.guild) return [];
     const config = await client.database.guilds.read(interaction.guild.id);
     const tags = Object.keys(config.getKey("tags"));

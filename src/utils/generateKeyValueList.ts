@@ -7,8 +7,7 @@ export function capitalize(s: string) {
         .map((word) => {
             return forceCaps.includes(word.toUpperCase())
                 ? word.toUpperCase()
-                : (word[0] ?? "").toUpperCase() +
-                      word.slice(1).toLowerCase().replace("discord", "Discord");
+                : (word[0] ?? "").toUpperCase() + word.slice(1).toLowerCase().replace("discord", "Discord");
         })
         .join(" ");
     return s;

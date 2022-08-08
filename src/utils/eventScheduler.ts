@@ -23,28 +23,16 @@ class EventScheduler {
             await job.remove();
         });
         this.agenda.define("deleteFile", async (job) => {
-            fs.rm(
-                path.resolve("dist/utils/temp", job.attrs.data.fileName),
-                client._error
-            );
+            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), client._error);
             await job.remove();
         });
         this.agenda.define("naturalUnmute", async (job) => {
-            const { log, NucleusColors, entry, renderUser, renderDelta } =
-                client.logger;
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             const guild = await client.guilds.fetch(job.attrs.data.guild);
             const user = await guild.members.fetch(job.attrs.data.user);
             if (user.communicationDisabledUntil === null) return;
             try {
-                await client.database.history.create(
-                    "unmute",
-                    user.guild.id,
-                    user.user,
-                    null,
-                    null,
-                    null,
-                    null
-                );
+                await client.database.history.create("unmute", user.guild.id, user.user, null, null, null, null);
             } catch (e) {
                 client._error(e);
             }
@@ -60,10 +48,7 @@ class EventScheduler {
                 list: {
                     memberId: entry(user.user.id, `\`${user.user.id}\``),
                     name: entry(user.user.id, renderUser(user.user)),
-                    unmuted: entry(
-                        new Date().getTime(),
-                        renderDelta(new Date().getTime())
-                    ),
+                    unmuted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                     unmutedBy: entry(null, "*Time out ended*")
                 },
                 hidden: {

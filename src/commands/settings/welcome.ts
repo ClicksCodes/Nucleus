@@ -19,39 +19,28 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("welcome")
-        .setDescription(
-            "Messages and roles sent or given when someone joins the server"
-        )
+        .setDescription("Messages and roles sent or given when someone joins the server")
         .addStringOption((option) =>
             option
                 .setName("message")
-                .setDescription(
-                    "The message to send when someone joins the server"
-                )
+                .setDescription("The message to send when someone joins the server")
                 .setAutocomplete(true)
         )
         .addRoleOption((option) =>
-            option
-                .setName("role")
-                .setDescription("The role given when someone joins the server")
+            option.setName("role").setDescription("The role given when someone joins the server")
         )
         .addRoleOption((option) =>
-            option
-                .setName("ping")
-                .setDescription("The role pinged when someone joins the server")
+            option.setName("ping").setDescription("The role pinged when someone joins the server")
         )
         .addChannelOption((option) =>
             option
                 .setName("channel")
-                .setDescription(
-                    "The channel the welcome message should be sent to"
-                )
+                .setDescription("The channel the welcome message should be sent to")
                 .addChannelTypes([ChannelType.GuildText, ChannelType.GuildNews])
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const { renderRole, renderChannel, log, NucleusColors, entry, renderUser } =
-        client.logger;
+    const { renderRole, renderChannel, log, NucleusColors, entry, renderUser } = client.logger;
     await interaction.reply({
         embeds: LoadingEmbed,
         fetchReply: true,
@@ -75,9 +64,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     new EmojiEmbed()
                         .setEmoji("GUILD.ROLES.DELETE")
                         .setTitle("Welcome Events")
-                        .setDescription(
-                            "The role you provided is not a valid role"
-                        )
+                        .setDescription("The role you provided is not a valid role")
                         .setStatus("Danger")
                 ]
             });
@@ -91,9 +78,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     new EmojiEmbed()
                         .setEmoji("GUILD.ROLES.DELETE")
                         .setTitle("Welcome Events")
-                        .setDescription(
-                            "The channel you provided is not a valid channel"
-                        )
+                        .setDescription("The channel you provided is not a valid channel")
                         .setStatus("Danger")
                 ]
             });
@@ -121,24 +106,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 if (ping) toChange["welcome.ping"] = ping.id;
                 if (channel) toChange["welcome.channel"] = channel.id;
                 if (message) toChange["welcome.message"] = message;
-                await client.database.guilds.write(
-                    interaction.guild.id,
-                    toChange
-                );
+                await client.database.guilds.write(interaction.guild.id, toChange);
                 const list = {
-                    memberId: entry(
-                        interaction.user.id,
-                        `\`${interaction.user.id}\``
-                    ),
-                    changedBy: entry(
-                        interaction.user.id,
-                        renderUser(interaction.user)
-                    )
+                    memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                    changedBy: entry(interaction.user.id, renderUser(interaction.user))
                 };
                 if (role) list.role = entry(role.id, renderRole(role));
                 if (ping) list.ping = entry(ping.id, renderRole(ping));
-                if (channel)
-                    list.channel = entry(channel.id, renderChannel(channel.id));
+                if (channel) list.channel = entry(channel.id, renderChannel(channel.id));
                 if (message) list.message = entry(message, `\`${message}\``);
                 const data = {
                     meta: {
@@ -161,9 +136,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Welcome Events")
-                            .setDescription(
-                                "Something went wrong while updating welcome settings"
-                            )
+                            .setDescription("Something went wrong while updating welcome settings")
                             .setStatus("Danger")
                             .setEmoji("GUILD.ROLES.DELETE")
                     ],
@@ -191,38 +164,22 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 new EmojiEmbed()
                     .setTitle("Welcome Events")
                     .setDescription(
-                        `**Message:** ${
-                            config.welcome.message
-                                ? `\n> ${config.welcome.message}`
-                                : "*None set*"
-                        }\n` +
+                        `**Message:** ${config.welcome.message ? `\n> ${config.welcome.message}` : "*None set*"}\n` +
                             `**Role:** ${
                                 config.welcome.role
-                                    ? renderRole(
-                                          await interaction.guild.roles.fetch(
-                                              config.welcome.role
-                                          )
-                                      )
+                                    ? renderRole(await interaction.guild.roles.fetch(config.welcome.role))
                                     : "*None set*"
                             }\n` +
                             `**Ping:** ${
                                 config.welcome.ping
-                                    ? renderRole(
-                                          await interaction.guild.roles.fetch(
-                                              config.welcome.ping
-                                          )
-                                      )
+                                    ? renderRole(await interaction.guild.roles.fetch(config.welcome.ping))
                                     : "*None set*"
                             }\n` +
                             `**Channel:** ${
                                 config.welcome.channel
                                     ? config.welcome.channel == "dm"
                                         ? "DM"
-                                        : renderChannel(
-                                              await interaction.guild.channels.fetch(
-                                                  config.welcome.channel
-                                              )
-                                          )
+                                        : renderChannel(await interaction.guild.channels.fetch(config.welcome.channel))
                                     : "*None set*"
                             }`
                     )
@@ -232,41 +189,25 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             components: [
                 new MessageActionRow().addComponents([
                     new MessageButton()
-                        .setLabel(
-                            lastClicked == "clear-message"
-                                ? "Click again to confirm"
-                                : "Clear Message"
-                        )
+                        .setLabel(lastClicked == "clear-message" ? "Click again to confirm" : "Clear Message")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-message")
                         .setDisabled(!config.welcome.message)
                         .setStyle("DANGER"),
                     new MessageButton()
-                        .setLabel(
-                            lastClicked == "clear-role"
-                                ? "Click again to confirm"
-                                : "Clear Role"
-                        )
+                        .setLabel(lastClicked == "clear-role" ? "Click again to confirm" : "Clear Role")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-role")
                         .setDisabled(!config.welcome.role)
                         .setStyle("DANGER"),
                     new MessageButton()
-                        .setLabel(
-                            lastClicked == "clear-ping"
-                                ? "Click again to confirm"
-                                : "Clear Ping"
-                        )
+                        .setLabel(lastClicked == "clear-ping" ? "Click again to confirm" : "Clear Ping")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-ping")
                         .setDisabled(!config.welcome.ping)
                         .setStyle("DANGER"),
                     new MessageButton()
-                        .setLabel(
-                            lastClicked == "clear-channel"
-                                ? "Click again to confirm"
-                                : "Clear Channel"
-                        )
+                        .setLabel(lastClicked == "clear-channel" ? "Click again to confirm" : "Clear Channel")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-channel")
                         .setDisabled(!config.welcome.channel)
@@ -338,9 +279,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
-        throw new Error(
-            "You must have the *Manage Server* permission to use this command"
-        );
+        throw new Error("You must have the *Manage Server* permission to use this command");
     return true;
 };
 

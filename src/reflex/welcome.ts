@@ -19,29 +19,16 @@ export async function callback(_, member) {
             );
             if (config.welcome.channel === "dm") {
                 await member.send({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setDescription(string)
-                            .setStatus("Success")
-                    ]
+                    embeds: [new EmojiEmbed().setDescription(string).setStatus("Success")]
                 });
             } else {
-                const channel = await member.guild.channels.fetch(
-                    config.welcome.channel
-                );
+                const channel = await member.guild.channels.fetch(config.welcome.channel);
                 if (channel.guild.id !== member.guild.id) return;
                 if (!channel) return;
                 try {
                     await channel.send({
-                        embeds: [
-                            new EmojiEmbed()
-                                .setDescription(string)
-                                .setStatus("Success")
-                        ],
-                        content:
-                            (config.welcome.ping
-                                ? `<@${config.welcome.ping}>`
-                                : "") + `<@${member.id}>`
+                        embeds: [new EmojiEmbed().setDescription(string).setStatus("Success")],
+                        content: (config.welcome.ping ? `<@${config.welcome.ping}>` : "") + `<@${member.id}>`
                     });
                 } catch (err) {
                     console.error(err); // TODO: SEN

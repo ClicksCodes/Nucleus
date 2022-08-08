@@ -3,19 +3,16 @@ import fs from "fs";
 import * as readLine from "node:readline/promises";
 
 const defaultDict = {
-    developmentToken:
-        "Your development bot token (Used for testing in one server, rather than production)",
+    developmentToken: "Your development bot token (Used for testing in one server, rather than production)",
     developmentGuildID: "Your development guild ID",
     enableDevelopment: true,
     token: "Your bot token",
-    managementGuildID:
-        "Your management guild ID (Used for running management commands on the bot)",
+    managementGuildID: "Your management guild ID (Used for running management commands on the bot)",
     owners: [],
     verifySecret:
         "If using verify, enter a code here which matches the secret sent back by your website. You can use a random code if you do not have one already. (Optional)",
     mongoUrl: "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",
-    baseUrl:
-        "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com",
+    baseUrl: "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com",
     pastebinApiKey: "An API key for pastebin (optional)",
     pastebinUsername: "Your pastebin username (optional)",
     pastebinPassword: "Your pastebin password (optional)"
@@ -35,12 +32,8 @@ async function getInput(prompt: string): Promise<string> {
 
 export default async function (walkthrough = false) {
     if (walkthrough) {
-        console.log(
-            "\x1b[33m🛈  Entering walkthrough mode for any missing values."
-        );
-        console.log(
-            "   \x1b[2mIf you don't want to enter a value, just hit enter.\x1b[0m\n"
-        );
+        console.log("\x1b[33m🛈  Entering walkthrough mode for any missing values.");
+        console.log("   \x1b[2mIf you don't want to enter a value, just hit enter.\x1b[0m\n");
 
         // let toUse = await getInput("\x1b[36m[Installing packages] Use Yarn or NPM? \x1b[0m(\x1b[32my\x1b[0m/\x1b[31mN\x1b[0m) > ");
         // toUse = toUse.toLowerCase() === "y" ? "yarn install" : "npm i";
@@ -59,9 +52,7 @@ export default async function (walkthrough = false) {
         json = JSON.parse(fs.readFileSync("./src/config/main.json", "utf8"));
     } catch (e) {
         console.log("\x1b[31m⚠ No main.json found, creating one.");
-        console.log(
-            "  \x1b[2mYou can edit src/config/main.json directly using template written to the file.\x1b[0m\n"
-        );
+        console.log("  \x1b[2mYou can edit src/config/main.json directly using template written to the file.\x1b[0m\n");
         out = false;
         json = {};
     }
@@ -93,9 +84,7 @@ export default async function (walkthrough = false) {
                         break;
                     }
                     default: {
-                        json[key] = await getInput(
-                            `\x1b[36m${key} \x1b[0m(\x1b[35m${defaultDict[key]}\x1b[0m) > `
-                        );
+                        json[key] = await getInput(`\x1b[36m${key} \x1b[0m(\x1b[35m${defaultDict[key]}\x1b[0m) > `);
                     }
                 }
             } else {
@@ -103,8 +92,7 @@ export default async function (walkthrough = false) {
             }
         }
     }
-    if (walkthrough && !json.mongoUrl)
-        json.mongoUrl = "mongodb://127.0.0.1:27017";
+    if (walkthrough && !json.mongoUrl) json.mongoUrl = "mongodb://127.0.0.1:27017";
     if (!json.mongoUrl.endsWith("/")) json.mongoUrl += "/";
     if (!json.baseUrl.endsWith("/")) json.baseUrl += "/";
     let hosts;

@@ -11,24 +11,11 @@ export async function create(
     customReason?: string
 ) {
     const config = await client.database.guilds.read(guild.id);
-    const {
-        log,
-        NucleusColors,
-        entry,
-        renderUser,
-        renderChannel,
-        renderDelta
-    } = client.logger;
+    const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
     const overwrites = [
         {
             id: member,
-            allow: [
-                "VIEW_CHANNEL",
-                "SEND_MESSAGES",
-                "ATTACH_FILES",
-                "ADD_REACTIONS",
-                "READ_MESSAGE_HISTORY"
-            ],
+            allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
             type: "member"
         }
     ] as Discord.OverwriteResolvable[];
@@ -40,13 +27,7 @@ export async function create(
     if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: guild.roles.cache.get(config.tickets.supportRole),
-            allow: [
-                "VIEW_CHANNEL",
-                "SEND_MESSAGES",
-                "ATTACH_FILES",
-                "ADD_REACTIONS",
-                "READ_MESSAGE_HISTORY"
-            ],
+            allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
             type: "role"
         });
     }
@@ -67,16 +48,10 @@ export async function create(
     try {
         await c.send({
             content:
-                `<@${member.id}>` +
-                (config.tickets.supportRole !== null
-                    ? ` • <@&${config.tickets.supportRole}>`
-                    : ""),
+                `<@${member.id}>` + (config.tickets.supportRole !== null ? ` • <@&${config.tickets.supportRole}>` : ""),
             allowedMentions: {
                 users: [member.id],
-                roles:
-                    config.tickets.supportRole !== null
-                        ? [config.tickets.supportRole]
-                        : []
+                roles: config.tickets.supportRole !== null ? [config.tickets.supportRole] : []
             }
         });
         await c.send({
@@ -85,14 +60,8 @@ export async function create(
                     .setTitle("New Ticket")
                     .setDescription(
                         "Ticket created by a Moderator\n" +
-                            `**Support type:** ${
-                                customReason
-                                    ? customReason
-                                    : "Appeal submission"
-                            }\n` +
-                            (reason !== null
-                                ? `**Reason:**\n> ${reason}\n`
-                                : "") +
+                            `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
+                            (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                             `**Ticket ID:** \`${c.id}\`\n` +
                             "Type `/ticket close` to close this ticket."
                     )
@@ -121,10 +90,7 @@ export async function create(
             list: {
                 ticketFor: entry(member.id, renderUser(member)),
                 createdBy: entry(createdBy.id, renderUser(createdBy)),
-                created: entry(
-                    new Date().getTime(),
-                    renderDelta(new Date().getTime())
-                ),
+                created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 ticketChannel: entry(c.id, renderChannel(c))
             },
             hidden: {

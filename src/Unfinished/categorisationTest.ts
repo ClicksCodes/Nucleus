@@ -1,11 +1,5 @@
 import { LoadingEmbed } from "../utils/defaultEmbeds.js";
-import {
-    CommandInteraction,
-    GuildChannel,
-    MessageActionRow,
-    MessageButton,
-    MessageSelectMenu
-} from "discord.js";
+import { CommandInteraction, GuildChannel, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 // @ts-expect-error
 import type { WrappedCheck } from "jshaiku";
@@ -14,14 +8,10 @@ import client from "../utils/client.js";
 import addPlural from "../utils/plurals.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-const command = new SlashCommandBuilder()
-    .setName("categorise")
-    .setDescription("Categorises your servers channels");
+const command = new SlashCommandBuilder().setName("categorise").setDescription("Categorises your servers channels");
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const channels = interaction.guild.channels.cache.filter(
-        (c) => c.type !== "GUILD_CATEGORY"
-    );
+    const channels = interaction.guild.channels.cache.filter((c) => c.type !== "GUILD_CATEGORY");
     const categorised = {};
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
     const predicted = {};
@@ -50,10 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     for (const c of channels) {
         // convert channel to a channel if its a string
         let channel: string | GuildChannel;
-        if (typeof c === "string")
-            channel = interaction.guild.channels.cache.get(
-                channel as string
-            ).id;
+        if (typeof c === "string") channel = interaction.guild.channels.cache.get(channel as string).id;
         else channel = (c[0] as unknown as GuildChannel).id;
         console.log(channel);
         if (!predicted[channel]) predicted[channel] = [];
@@ -63,10 +50,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setTitle("Categorise")
                     .setDescription(
                         `Select all types that apply to <#${channel}>.\n\n` +
-                            `${addPlural(
-                                predicted[channel].length,
-                                "Suggestion"
-                            )}: ${predicted[channel].join(", ")}`
+                            `${addPlural(predicted[channel].length, "Suggestion")}: ${predicted[channel].join(", ")}`
                     )
                     .setEmoji("CHANNEL.CATEGORY.CREATE")
                     .setStatus("Success")
@@ -77,9 +61,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("selected")
                         .setMaxValues(Object.keys(types).length)
                         .setMinValues(1)
-                        .setPlaceholder(
-                            "Select all types that apply to this channel"
-                        )
+                        .setPlaceholder("Select all types that apply to this channel")
                         .setOptions(
                             Object.keys(types).map((type) => ({
                                 label: type,
@@ -93,20 +75,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("accept")
                         .setStyle("SUCCESS")
                         .setDisabled(predicted[channel].length === 0)
-                        .setEmoji(
-                            client.emojis.cache.get(
-                                getEmojiByName("ICONS.TICK", "id")
-                            )
-                        ),
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.TICK", "id"))),
                     new MessageButton()
                         .setLabel('Use "Other"')
                         .setCustomId("reject")
                         .setStyle("SECONDARY")
-                        .setEmoji(
-                            client.emojis.cache.get(
-                                getEmojiByName("ICONS.CROSS", "id")
-                            )
-                        )
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.CROSS", "id")))
                 ])
             ]
         });
@@ -122,10 +96,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Danger")
                         .setDescription(
                             `Select all types that apply to <#${channel}>.\n\n` +
-                                `${addPlural(
-                                    predicted[channel].length,
-                                    "Suggestion"
-                                )}: ${predicted[channel].join(", ")}`
+                                `${addPlural(predicted[channel].length, "Suggestion")}: ${predicted[channel].join(
+                                    ", "
+                                )}`
                         )
                         .setFooter({ text: "Message timed out" })
                 ]
@@ -147,10 +120,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     console.log(categorised);
 };
 
-const check = (
-    _interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

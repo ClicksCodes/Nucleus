@@ -9,10 +9,7 @@ import Discord, {
     MessageComponentInteraction,
     SelectMenuInteraction
 } from "discord.js";
-import {
-    SelectMenuOption,
-    SlashCommandSubcommandBuilder
-} from "@discordjs/builders";
+import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
@@ -24,11 +21,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("about")
         .setDescription("Shows info about a user")
         .addUserOption((option) =>
-            option
-                .setName("user")
-                .setDescription(
-                    "The user to get info about | Default: Yourself"
-                )
+            option.setName("user").setDescription("The user to get info about | Default: Yourself")
         );
 
 class Embed {
@@ -57,8 +50,7 @@ class Embed {
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (!interaction.guild) return;
     const { renderUser, renderDelta } = client.logger;
-    const member = (interaction.options.getMember("user") ??
-        interaction.member) as Discord.GuildMember;
+    const member = (interaction.options.getMember("user") ?? interaction.member) as Discord.GuildMember;
     const flags: string[] = [];
     if (
         [
@@ -72,9 +64,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
     if (
         (await client.guilds.cache.get("684492926528651336")?.members.fetch())
-            ?.filter((m: GuildMember) =>
-                m.roles.cache.has("760896837866749972")
-            )
+            ?.filter((m: GuildMember) => m.roles.cache.has("760896837866749972"))
             ?.map((m: GuildMember) => m.id)
             .includes(member.user.id)
     ) {
@@ -115,9 +105,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
     const joinPos = membersArray.findIndex((m) => m.id === member.user.id);
 
-    const roles = member.roles.cache
-        .filter((r) => r.id !== interaction.guild!.id)
-        .sort();
+    const roles = member.roles.cache.filter((r) => r.id !== interaction.guild!.id).sort();
     let s = "";
     let count = 0;
     let ended = false;
@@ -149,12 +137,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         MENTION_EVERYONE: "Mention Everyone"
     };
     Object.keys(permsArray).map((perm) => {
-        const hasPerm = member.permissions.has(
-            perm as Discord.PermissionString
-        );
-        perms += `${getEmojiByName(
-            "CONTROL." + (hasPerm ? "TICK" : "CROSS")
-        )} ${permsArray[perm]}\n`;
+        const hasPerm = member.permissions.has(perm as Discord.PermissionString);
+        perms += `${getEmojiByName("CONTROL." + (hasPerm ? "TICK" : "CROSS"))} ${permsArray[perm]}\n`;
     });
 
     let selectPaneOpen = false;
@@ -170,11 +154,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         flags
                             .map((flag) => {
                                 if (nameReplacements[flag]) {
-                                    return (
-                                        getEmojiByName(`BADGES.${flag}`) +
-                                        " " +
-                                        nameReplacements[flag]
-                                    );
+                                    return getEmojiByName(`BADGES.${flag}`) + " " + nameReplacements[flag];
                                 }
                             })
                             .join("\n") +
@@ -183,26 +163,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                                 member: renderUser(member.user),
                                 nickname: member.nickname || "*None set*",
                                 id: `\`${member.id}\``,
-                                "joined the server": renderDelta(
-                                    member.joinedTimestamp
-                                ),
-                                "joined discord": renderDelta(
-                                    member.user.createdTimestamp
-                                ),
+                                "joined the server": renderDelta(member.joinedTimestamp),
+                                "joined discord": renderDelta(member.user.createdTimestamp),
                                 "boost status": member.premiumSince
-                                    ? `Started boosting ${renderDelta(
-                                          member.premiumSinceTimestamp
-                                      )}`
+                                    ? `Started boosting ${renderDelta(member.premiumSinceTimestamp)}`
                                     : "*Not boosting*",
                                 "join position": `${joinPos + 1}`
                             })
                     )
-                    .setThumbnail(
-                        member.user.displayAvatarURL({ dynamic: true })
-                    )
-                    .setImage(
-                        (await member.user.fetch()).bannerURL({ format: "gif" })
-                    )
+                    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
+                    .setImage((await member.user.fetch()).bannerURL({ format: "gif" }))
             )
             .setTitle("General")
             .setDescription("General information about the user")
@@ -223,9 +193,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             (s.length > 0 ? s : "*None*") +
                             "\n"
                     )
-                    .setThumbnail(
-                        member.user.displayAvatarURL({ dynamic: true })
-                    )
+                    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
             )
             .setTitle("Roles")
             .setDescription("Roles the user has")
@@ -244,9 +212,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             "\n" +
                             perms
                     )
-                    .setThumbnail(
-                        member.user.displayAvatarURL({ dynamic: true })
-                    )
+                    .setThumbnail(member.user.displayAvatarURL({ dynamic: true }))
             )
             .setTitle("Key Permissions")
             .setDescription("Key permissions the user has")
@@ -261,9 +227,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let breakReason = "";
     while (true) {
         const em = new Discord.MessageEmbed(embeds[page].embed);
-        em.setDescription(
-            em.description + "\n" + createPageIndicator(embeds.length, page)
-        );
+        em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
         let selectPane = [];
 
         if (selectPaneOpen) {
@@ -324,23 +288,15 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         if ((i.component as MessageActionRowComponent).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "right"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "right") {
             if (page < embeds.length - 1) page++;
             selectPaneOpen = false;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "select"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "close"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "close") {
             breakReason = "Message closed";
             break;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "page"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "page") {
             page = parseInt((i as SelectMenuInteraction).values[0]);
             selectPaneOpen = false;
         } else {
@@ -349,13 +305,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         }
     }
     const em = new Discord.MessageEmbed(embeds[page].embed);
-    em.setDescription(
-        em.description +
-            "\n" +
-            createPageIndicator(embeds.length, page) +
-            " | " +
-            breakReason
-    );
+    em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page) + " | " + breakReason);
     await interaction.editReply({
         embeds: [em],
         components: [

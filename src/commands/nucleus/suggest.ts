@@ -10,10 +10,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("suggest")
         .setDescription("Sends a suggestion to the developers")
         .addStringOption((option) =>
-            option
-                .setName("suggestion")
-                .setDescription("The suggestion to send")
-                .setRequired(true)
+            option.setName("suggestion").setDescription("The suggestion to send").setRequired(true)
         );
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
@@ -31,18 +28,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         .send();
     if (confirmation.cancelled) return;
     if (confirmation.success) {
-        await (
-            client.channels.cache.get(
-                "955161206459600976"
-            ) as Discord.TextChannel
-        ).send({
+        await (client.channels.cache.get("955161206459600976") as Discord.TextChannel).send({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Suggestion")
                     .setDescription(
-                        `**From:** ${renderUser(
-                            interaction.member.user
-                        )}\n**Suggestion:**\n> ${suggestion}`
+                        `**From:** ${renderUser(interaction.member.user)}\n**Suggestion:**\n> ${suggestion}`
                     )
                     .setStatus("Danger")
                     .setEmoji("NUCLEUS.LOGO")
@@ -72,10 +63,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
 };
 
-const check = (
-    _interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

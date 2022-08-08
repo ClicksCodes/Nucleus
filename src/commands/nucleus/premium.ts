@@ -3,9 +3,7 @@ import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("premium")
-        .setDescription("Information about Nucleus Premium");
+    builder.setName("premium").setDescription("Information about Nucleus Premium");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     interaction.reply({

@@ -20,25 +20,16 @@ function getAutocomplete(typed: string, options: string[]): object[] {
         findAllMatches: true,
         minMatchCharLength: 0
     }).search(typed);
-    return fuse
-        .slice(0, 25)
-        .map((option) => ({ name: option.item, value: option.item }));
+    return fuse.slice(0, 25).map((option) => ({ name: option.item, value: option.item }));
 }
 
 function generateStatsChannelAutocomplete(typed) {
-    const validReplacements = [
-        "serverName",
-        "memberCount",
-        "memberCount:bots",
-        "memberCount:humans"
-    ];
+    const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"];
     const autocompletions = [];
     const beforeLastOpenBracket = typed.match(/(.*){[^{}]{0,15}$/);
     if (beforeLastOpenBracket !== null) {
         for (const replacement of validReplacements) {
-            autocompletions.push(
-                `${beforeLastOpenBracket[1]} {${replacement}}`
-            );
+            autocompletions.push(`${beforeLastOpenBracket[1]} {${replacement}}`);
         }
     } else {
         for (const replacement of validReplacements) {
@@ -60,9 +51,7 @@ function generateWelcomeMessageAutocomplete(typed) {
     const beforeLastOpenBracket = typed.match(/(.*){[^{}]{0,15}$/);
     if (beforeLastOpenBracket !== null) {
         for (const replacement of validReplacements) {
-            autocompletions.push(
-                `${beforeLastOpenBracket[1]} {${replacement}}`
-            );
+            autocompletions.push(`${beforeLastOpenBracket[1]} {${replacement}}`);
         }
     } else {
         for (const replacement of validReplacements) {
@@ -93,32 +82,21 @@ async function interactionCreate(interaction) {
         }
     } else if (interaction.type === "APPLICATION_COMMAND_AUTOCOMPLETE") {
         switch (
-            `${
-                interaction.commandName
-            } ${interaction.options.getSubcommandGroup(
+            `${interaction.commandName} ${interaction.options.getSubcommandGroup(
                 false
             )} ${interaction.options.getSubcommand(false)}`
         ) {
             case "tag null null": {
                 return interaction.respond(
-                    getAutocomplete(
-                        interaction.options.getString("tag"),
-                        await tagAutocomplete(interaction)
-                    )
+                    getAutocomplete(interaction.options.getString("tag"), await tagAutocomplete(interaction))
                 );
             }
             case "settings null stats": {
-                return interaction.respond(
-                    generateStatsChannelAutocomplete(
-                        interaction.options.getString("name")
-                    )
-                );
+                return interaction.respond(generateStatsChannelAutocomplete(interaction.options.getString("name")));
             }
             case "settings null welcome": {
                 return interaction.respond(
-                    generateWelcomeMessageAutocomplete(
-                        interaction.options.getString("message")
-                    )
+                    generateWelcomeMessageAutocomplete(interaction.options.getString("message"))
                 );
             }
         }

@@ -9,23 +9,12 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("edit")
         .setDescription("Edits or renames a tag")
+        .addStringOption((o) => o.setName("name").setRequired(true).setDescription("The tag to edit"))
         .addStringOption((o) =>
-            o
-                .setName("name")
-                .setRequired(true)
-                .setDescription("The tag to edit")
+            o.setName("value").setRequired(false).setDescription("The new value of the tag / Rename")
         )
         .addStringOption((o) =>
-            o
-                .setName("value")
-                .setRequired(false)
-                .setDescription("The new value of the tag / Rename")
-        )
-        .addStringOption((o) =>
-            o
-                .setName("newname")
-                .setRequired(false)
-                .setDescription("The new name of the tag / Edit")
+            o.setName("newname").setRequired(false).setDescription("The new name of the tag / Edit")
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
@@ -49,9 +38,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Edit")
-                    .setDescription(
-                        "Tag names cannot be longer than 100 characters"
-                    )
+                    .setDescription("Tag names cannot be longer than 100 characters")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],
@@ -62,9 +49,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Edit")
-                    .setDescription(
-                        "Tag values cannot be longer than 2000 characters"
-                    )
+                    .setDescription("Tag values cannot be longer than 2000 characters")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],
@@ -124,19 +109,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             toUnset.push(`tags.${name}`);
             toSet[`tags.${newname}`] = data.tags[name];
         }
-        await client.database.guilds.write(
-            interaction.guild.id,
-            toSet === {} ? null : toSet,
-            toUnset
-        );
+        await client.database.guilds.write(interaction.guild.id, toSet === {} ? null : toSet, toUnset);
     } catch (e) {
         return await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Edit")
-                    .setDescription(
-                        "Something went wrong and the tag was not edited"
-                    )
+                    .setDescription("Something went wrong and the tag was not edited")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],
@@ -158,9 +137,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has("MANAGE_MESSAGES"))
-        throw new Error(
-            "You must have the *Manage Messages* permission to use this command"
-        );
+        throw new Error("You must have the *Manage Messages* permission to use this command");
     return true;
 };
 

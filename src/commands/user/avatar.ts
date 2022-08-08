@@ -10,17 +10,12 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("avatar")
         .setDescription("Shows the avatar of a user")
         .addUserOption((option) =>
-            option
-                .setName("user")
-                .setDescription(
-                    "The user to get the avatar of | Default: Yourself"
-                )
+            option.setName("user").setDescription("The user to get the avatar of | Default: Yourself")
         );
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const { renderUser } = client.logger;
-    const member = (interaction.options.getMember("user") ??
-        interaction.member) as Discord.GuildMember;
+    const member = (interaction.options.getMember("user") ?? interaction.member) as Discord.GuildMember;
     await interaction.reply({
         embeds: [
             new EmojiEmbed()
@@ -40,10 +35,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (
-    _interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

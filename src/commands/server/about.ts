@@ -3,9 +3,7 @@ import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import generateKeyValueList, {
-    toCapitals
-} from "../../utils/generateKeyValueList.js";
+import generateKeyValueList, { toCapitals } from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -31,18 +29,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             (guild.emojis.cache.size > 1
                                 ? `\n> ${guild.emojis.cache
                                       .first(10)
-                                      .map(
-                                          (emoji) =>
-                                              `<${emoji.animated ? "a" : ""}:${
-                                                  emoji.name
-                                              }:${emoji.id}>`
-                                      )
+                                      .map((emoji) => `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`)
                                       .join(" ")}` +
-                                  (guild.emojis.cache.size > 10
-                                      ? ` and ${
-                                            guild.emojis.cache.size - 10
-                                        } more`
-                                      : "")
+                                  (guild.emojis.cache.size > 10 ? ` and ${guild.emojis.cache.size - 10} more` : "")
                                 : ""),
                         icon: `[Discord](${guild.iconURL()})`,
                         "2 factor authentication": `${
@@ -50,19 +39,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                                 ? `${getEmojiByName("CONTROL.CROSS")} No`
                                 : `${getEmojiByName("CONTROL.TICK")} Yes`
                         }`,
-                        "verification level": `${toCapitals(
-                            guild.verificationLevel
-                        )}`,
+                        "verification level": `${toCapitals(guild.verificationLevel)}`,
                         "explicit content filter": `${toCapitals(
-                            guild.explicitContentFilter
-                                .toString()
-                                .replace(/_/, " ")
+                            guild.explicitContentFilter.toString().replace(/_/, " ")
                         )}`,
-                        "nitro boost level": `${
-                            guild.premiumTier !== "NONE"
-                                ? guild.premiumTier.toString()[-1]
-                                : "0"
-                        }`,
+                        "nitro boost level": `${guild.premiumTier !== "NONE" ? guild.premiumTier.toString()[-1] : "0"}`,
                         channels: `${guild.channels.cache.size}`,
                         roles: `${guild.roles.cache.size}`,
                         members: `${guild.memberCount}`
@@ -74,10 +55,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (
-    _interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

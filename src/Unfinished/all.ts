@@ -23,11 +23,7 @@ class Filter {
     data: object;
     checkFunction: (member) => boolean;
     inverted = false;
-    constructor(
-        name: (data) => string | string,
-        data: object,
-        check: (member) => boolean
-    ) {
+    constructor(name: (data) => string | string, data: object, check: (member) => boolean) {
         if (typeof name === "function") {
             this.name = name(data);
         } else {
@@ -64,10 +60,7 @@ const filterList = {
             render: "joined",
             before: (date) =>
                 new Filter(
-                    (_data) =>
-                        `Joined server before <t:${Math.round(
-                            date.getTime() / 1000
-                        )}:D>`,
+                    (_data) => `Joined server before <t:${Math.round(date.getTime() / 1000)}:D>`,
                     { date: date, type: Date, render: "before" },
                     (member) => {
                         return member.joinedTimestamp < date.getTime();
@@ -116,10 +109,7 @@ const filterList = {
             render: "created",
             before: (date) =>
                 new Filter(
-                    (_data) =>
-                        `Account created before <t:${Math.round(
-                            date.getTime() / 1000
-                        )}:D>`,
+                    (_data) => `Account created before <t:${Math.round(date.getTime() / 1000)}:D>`,
                     { date: date, type: Date, render: "before" },
                     (member) => {
                         return member.user.createdTimestamp < date.getTime();
@@ -167,9 +157,7 @@ const filterList = {
     }
 };
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -215,29 +203,20 @@ const callback = async (
                 new EmojiEmbed()
                     .setTitle("Role all")
                     .setDescription(
-                        (all
-                            ? "All of the following must be true:"
-                            : "Any of the following must be true") +
+                        (all ? "All of the following must be true:" : "Any of the following must be true") +
                             "\n" +
                             filters
                                 .map((f) => {
                                     count++;
                                     return (
-                                        (count === 1
-                                            ? getEmojiByName("ICONS.FILTER")
-                                            : all
-                                            ? "**and** "
-                                            : "**or** ") +
+                                        (count === 1 ? getEmojiByName("ICONS.FILTER") : all ? "**and** " : "**or** ") +
                                         (f.inverted ? "**not** " : "") +
                                         `${f.name}`
                                     );
                                 })
                                 .join("\n") +
                             "\n\n" +
-                            `This will affect ${addPlural(
-                                affected.length,
-                                "member"
-                            )}`
+                            `This will affect ${addPlural(affected.length, "member")}`
                     )
                     .setEmoji("GUILD.ROLES.CREATE")
                     .setStatus("Success")
@@ -261,21 +240,13 @@ const callback = async (
                         .setLabel("Apply")
                         .setStyle("PRIMARY")
                         .setCustomId("apply")
-                        .setEmoji(
-                            client.emojis.cache.get(
-                                getEmojiByName("CONTROL.TICK", "id")
-                            )
-                        )
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("CONTROL.TICK", "id")))
                         .setDisabled(affected.length === 0),
                     new MessageButton()
                         .setLabel("Add filter")
                         .setStyle("PRIMARY")
                         .setCustomId("add")
-                        .setEmoji(
-                            client.emojis.cache.get(
-                                getEmojiByName("ICONS.FILTER", "id")
-                            )
-                        )
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.FILTER", "id")))
                         .setDisabled(filters.length >= 25)
                 ])
             ]
@@ -285,19 +256,14 @@ const callback = async (
     return;
 };
 
-const check = async (
-    interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = async (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
-    if (!me.permissions.has("MANAGE_ROLES"))
-        throw "I do not have the *Manage Roles* permission";
+    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the *Manage Roles* permission";
     // Allow the owner to role anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_roles permission
-    if (!member.permissions.has("MANAGE_ROLES"))
-        throw "You do not have the *Manage Roles* permission";
+    if (!member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
     // Allow role
     return true;
 };

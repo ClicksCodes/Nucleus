@@ -1,33 +1,18 @@
-import Discord, {
-    CommandInteraction,
-    GuildMember,
-    MessageActionRow,
-    MessageButton
-} from "discord.js";
+import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
-import {
-    create,
-    areTicketsEnabled
-} from "../../actions/createModActionTicket.js";
+import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("warn")
         .setDescription("Warns a user")
-        .addUserOption((option) =>
-            option
-                .setName("user")
-                .setDescription("The user to warn")
-                .setRequired(true)
-        );
+        .addUserOption((option) => option.setName("user").setDescription("The user to warn").setRequired(true));
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const { log, NucleusColors, renderUser, entry } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -41,15 +26,10 @@ const callback = async (
             .setDescription(
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")),
-                    reason: reason
-                        ? "\n> " + (reason ?? "").replaceAll("\n", "\n> ")
-                        : "*No reason provided*"
+                    reason: reason ? "\n> " + (reason ?? "").replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n\n` +
-                    `Are you sure you want to warn <@!${
-                        (interaction.options.getMember("user") as GuildMember)
-                            .id
-                    }>?`
+                    `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .setColor("Danger")
             .addCustomBoolean(
@@ -57,12 +37,7 @@ const callback = async (
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild.id)),
                 async () =>
-                    await create(
-                        interaction.guild,
-                        interaction.options.getUser("user"),
-                        interaction.user,
-                        reason
-                    ),
+                    await create(interaction.guild, interaction.options.getUser("user"), interaction.user, reason),
                 "An appeal ticket will be created when Confirm is clicked",
                 "CONTROL.TICKET",
                 createAppealTicket
@@ -91,12 +66,8 @@ const callback = async (
         let dmd = false;
         try {
             if (notify) {
-                const config = await client.database.guilds.read(
-                    interaction.guild.id
-                );
-                await (
-                    interaction.options.getMember("user") as GuildMember
-                ).send({
+                const config = await client.database.guilds.read(interaction.guild.id);
+                await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [
                         new EmojiEmbed()
                             .setEmoji("PUNISH.WARN.RED")
@@ -145,17 +116,10 @@ const callback = async (
             },
             list: {
                 user: entry(
-                    (interaction.options.getMember("user") as GuildMember).user
-                        .id,
-                    renderUser(
-                        (interaction.options.getMember("user") as GuildMember)
-                            .user
-                    )
+                    (interaction.options.getMember("user") as GuildMember).user.id,
+                    renderUser((interaction.options.getMember("user") as GuildMember).user)
                 ),
-                warnedBy: entry(
-                    interaction.member.user.id,
-                    renderUser(interaction.member.user)
-                ),
+                warnedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
                 reason: reason ? `\n> ${reason}` : "No reason provided"
             },
             hidden: {
@@ -188,9 +152,7 @@ const callback = async (
                 components: []
             });
         } else {
-            const canSeeChannel = (
-                interaction.options.getMember("user") as GuildMember
-            )
+            const canSeeChannel = (interaction.options.getMember("user") as GuildMember)
                 .permissionsIn(interaction.channel as Discord.TextChannel)
                 .has("VIEW_CHANNEL");
             const m = (await interaction.editReply({
@@ -198,17 +160,12 @@ const callback = async (
                     new EmojiEmbed()
                         .setEmoji("PUNISH.WARN.RED")
                         .setTitle("Warn")
-                        .setDescription(
-                            "The user's DMs are not open\n\nWhat would you like to do?"
-                        )
+                        .setDescription("The user's DMs are not open\n\nWhat would you like to do?")
                         .setStatus("Danger")
                 ],
                 components: [
                     new MessageActionRow().addComponents([
-                        new Discord.MessageButton()
-                            .setCustomId("log")
-                            .setLabel("Ignore and log")
-                            .setStyle("SECONDARY"),
+                        new Discord.MessageButton().setCustomId("log").setLabel("Ignore and log").setStyle("SECONDARY"),
                         new Discord.MessageButton()
                             .setCustomId("here")
                             .setLabel("Warn here")
@@ -245,24 +202,12 @@ const callback = async (
                         new EmojiEmbed()
                             .setEmoji("PUNISH.WARN.RED")
                             .setTitle("Warn")
-                            .setDescription(
-                                "You have been warned" +
-                                    (reason ? ` for:\n> ${reason}` : ".")
-                            )
+                            .setDescription("You have been warned" + (reason ? ` for:\n> ${reason}` : "."))
                             .setStatus("Danger")
                     ],
-                    content: `<@!${
-                        (interaction.options.getMember("user") as GuildMember)
-                            .id
-                    }>`,
+                    content: `<@!${(interaction.options.getMember("user") as GuildMember).id}>`,
                     allowedMentions: {
-                        users: [
-                            (
-                                interaction.options.getMember(
-                                    "user"
-                                ) as GuildMember
-                            ).id
-                        ]
+                        users: [(interaction.options.getMember("user") as GuildMember).id]
                     }
                 });
                 return await interaction.editReply({
@@ -316,9 +261,7 @@ const callback = async (
                         new EmojiEmbed()
                             .setEmoji("PUNISH.WARN.GREEN")
                             .setTitle("Warn")
-                            .setDescription(
-                                `A ticket was created in <#${ticketChannel}>`
-                            )
+                            .setDescription(`A ticket was created in <#${ticketChannel}>`)
                             .setStatus("Success")
                     ],
                     components: []
@@ -343,8 +286,7 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null)
-        throw "That member is not in the server";
+    if (member === null || me === null || apply === null) throw "That member is not in the server";
     const memberPos = member.roles ? member.roles.highest.position : 0;
     const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow warning bots
@@ -352,11 +294,9 @@ const check = (interaction: CommandInteraction) => {
     // Allow the owner to warn anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
-    if (!member.permissions.has("MODERATE_MEMBERS"))
-        throw "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos))
-        throw "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) throw "You do not have a role higher than that member";
     // Allow warn
     return true;
 };

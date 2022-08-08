@@ -1,19 +1,9 @@
 export const event = "channelCreate";
 
 export async function callback(client, channel) {
-    const {
-        getAuditLog,
-        log,
-        NucleusColors,
-        entry,
-        renderUser,
-        renderDelta,
-        renderChannel
-    } = channel.client.logger;
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = channel.client.logger;
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_CREATE");
-    const audit = auditLog.entries
-        .filter((entry) => entry.target.id === channel.id)
-        .first();
+    const audit = auditLog.entries.filter((entry) => entry.target.id === channel.id).first();
     if (audit.executor.id === client.user.id) return;
     let emoji;
     let readableType;
@@ -73,10 +63,7 @@ export async function callback(client, channel) {
                 channel.parent ? channel.parent.name : "Uncategorised"
             ),
             createdBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(
-                channel.createdTimestamp,
-                renderDelta(channel.createdTimestamp)
-            )
+            created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp))
         },
         hidden: {
             guild: channel.guild.id

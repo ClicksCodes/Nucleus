@@ -20,9 +20,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setDescription(
                     `**Ping:** \`${ping}ms\`\n` +
                         `**To Discord:** \`${client.ws.ping}ms\`\n` +
-                        `**From Expected:** \`±${Math.abs(
-                            ping / 2 - client.ws.ping
-                        )}ms\``
+                        `**From Expected:** \`±${Math.abs(ping / 2 - client.ws.ping)}ms\``
                 )
                 .setEmoji("CHANNEL.SLOWMODE.OFF")
                 .setStatus("Danger")

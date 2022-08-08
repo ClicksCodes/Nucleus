@@ -1,10 +1,5 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, {
-    CommandInteraction,
-    Message,
-    MessageActionRow,
-    MessageSelectMenu
-} from "discord.js";
+import Discord, { CommandInteraction, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -17,24 +12,16 @@ import singleNotify from "../../utils/singleNotify.js";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("stats")
-        .setDescription(
-            "Controls channels which update when someone joins or leaves the server"
-        )
-        .addChannelOption((option) =>
-            option.setName("channel").setDescription("The channel to modify")
-        )
+        .setDescription("Controls channels which update when someone joins or leaves the server")
+        .addChannelOption((option) => option.setName("channel").setDescription("The channel to modify"))
         .addStringOption((option) =>
             option
                 .setName("name")
-                .setDescription(
-                    "The new channel name | Enter any text or use the extra variables like {memberCount}"
-                )
+                .setDescription("The new channel name | Enter any text or use the extra variables like {memberCount}")
                 .setAutocomplete(true)
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     singleNotify("statsChannelDeleted", interaction.guild.id, true);
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
@@ -50,9 +37,7 @@ const callback = async (
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.TEXT.DELETE")
                         .setTitle("Stats Channel")
-                        .setDescription(
-                            "You can only have 25 stats channels in a server"
-                        )
+                        .setDescription("You can only have 25 stats channels in a server")
                         .setStatus("Danger")
                 ]
             });
@@ -65,9 +50,7 @@ const callback = async (
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.TEXT.DELETE")
                         .setTitle("Stats Channel")
-                        .setDescription(
-                            "The channel you provided is not a valid channel"
-                        )
+                        .setDescription("The channel you provided is not a valid channel")
                         .setStatus("Danger")
                 ]
             });
@@ -78,9 +61,7 @@ const callback = async (
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Stats Channel")
-                        .setDescription(
-                            "You must choose a channel in this server"
-                        )
+                        .setDescription("You must choose a channel in this server")
                         .setStatus("Danger")
                         .setEmoji("CHANNEL.TEXT.DELETE")
                 ]
@@ -100,9 +81,7 @@ const callback = async (
             .setEmoji("CHANNEL.TEXT.EDIT")
             .setTitle("Stats Channel")
             .setDescription(
-                `Are you sure you want to set <#${
-                    channel.id
-                }> to a stats channel?\n\n*Preview: ${newName.replace(
+                `Are you sure you want to set <#${channel.id}> to a stats channel?\n\n*Preview: ${newName.replace(
                     /^ +| $/g,
                     ""
                 )}*`
@@ -118,8 +97,7 @@ const callback = async (
                 await client.database.guilds.write(interaction.guild.id, {
                     [`stats.${channel.id}`]: { name: name, enabled: true }
                 });
-                const { log, NucleusColors, entry, renderUser, renderChannel } =
-                    client.logger;
+                const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
                 const data = {
                     meta: {
                         type: "statsChannelUpdate",
@@ -130,14 +108,8 @@ const callback = async (
                         timestamp: new Date().getTime()
                     },
                     list: {
-                        memberId: entry(
-                            interaction.user.id,
-                            `\`${interaction.user.id}\``
-                        ),
-                        changedBy: entry(
-                            interaction.user.id,
-                            renderUser(interaction.user)
-                        ),
+                        memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                        changedBy: entry(interaction.user.id, renderUser(interaction.user)),
                         channel: entry(channel.id, renderChannel(channel)),
                         name: entry(
                             interaction.options.getString("name"),
@@ -155,9 +127,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Stats Channel")
-                            .setDescription(
-                                "Something went wrong and the stats channel could not be set"
-                            )
+                            .setDescription("Something went wrong and the stats channel could not be set")
                             .setStatus("Danger")
                             .setEmoji("CHANNEL.TEXT.DELETE")
                     ],
@@ -200,14 +170,10 @@ const callback = async (
                     Object.keys(stats).length
                         ? [
                               selectMenu
-                                  .setPlaceholder(
-                                      "Select a stats channel to remove, stopping it updating"
-                                  )
+                                  .setPlaceholder("Select a stats channel to remove, stopping it updating")
                                   .addOptions(
                                       Object.keys(stats).map((key) => ({
-                                          label: interaction.guild.channels.cache.get(
-                                              key
-                                          ).name,
+                                          label: interaction.guild.channels.cache.get(key).name,
                                           value: key,
                                           description: `${stats[key].name}`
                                       }))
@@ -215,9 +181,7 @@ const callback = async (
                           ]
                         : [
                               selectMenu
-                                  .setPlaceholder(
-                                      "The server has no stats channels"
-                                  )
+                                  .setPlaceholder("The server has no stats channels")
                                   .setDisabled(true)
                                   .setOptions([
                                       {
@@ -252,10 +216,7 @@ const callback = async (
     });
 };
 
-const check = (
-    interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_CHANNELS"))
         throw "You must have the *Manage Channels* permission to use this command";

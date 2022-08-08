@@ -5,11 +5,7 @@
         "node": true
     },
     "ignorePatterns": ["dist/"],
-    "extends": [
-        "eslint:recommended",
-        "plugin:@typescript-eslint/strict",
-        "prettier"
-    ],
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/strict", "prettier"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",

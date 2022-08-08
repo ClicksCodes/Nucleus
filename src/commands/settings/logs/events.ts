@@ -1,10 +1,5 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
-import Discord, {
-    CommandInteraction,
-    MessageActionRow,
-    MessageButton,
-    MessageSelectMenu
-} from "discord.js";
+import Discord, { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
@@ -35,9 +30,7 @@ const logs = {
 };
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("events")
-        .setDescription("Sets what events should be logged");
+    builder.setName("events").setDescription("Sets what events should be logged");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     await interaction.reply({
@@ -75,14 +68,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         )
                 ]),
                 new MessageActionRow().addComponents([
-                    new MessageButton()
-                        .setLabel("Select all")
-                        .setStyle("PRIMARY")
-                        .setCustomId("all"),
-                    new MessageButton()
-                        .setLabel("Select none")
-                        .setStyle("DANGER")
-                        .setCustomId("none")
+                    new MessageButton().setLabel("Select all").setStyle("PRIMARY").setCustomId("all"),
+                    new MessageButton().setLabel("Select none").setStyle("DANGER").setCustomId("none")
                 ])
             ]
         });
@@ -95,9 +82,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         i.deferUpdate();
         if (i.customId === "logs") {
             const selected = i.values;
-            const newLogs = toHexInteger(
-                selected.map((e) => Object.keys(logs)[parseInt(e)])
-            );
+            const newLogs = toHexInteger(selected.map((e) => Object.keys(logs)[parseInt(e)]));
             await client.database.guilds.write(interaction.guild.id, {
                 "logging.logs.toLog": newLogs
             });
@@ -129,10 +114,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     return;
 };
 
-const check = (
-    interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
         throw "You must have the *Manage Server* permission to use this command";

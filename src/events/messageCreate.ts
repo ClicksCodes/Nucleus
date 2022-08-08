@@ -1,13 +1,6 @@
 // @ts-expect-error
 import { HaikuClient } from "jshaiku";
-import {
-    LinkCheck,
-    MalwareCheck,
-    NSFWCheck,
-    SizeCheck,
-    TestString,
-    TestImage
-} from "../reflex/scanners.js";
+import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from "../reflex/scanners.js";
 import logAttachment from "../premium/attachmentLogs.js";
 import createLogException from "../utils/createLogException.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -27,14 +20,7 @@ export async function callback(_client: HaikuClient, message: Message) {
         console.log(e);
     }
 
-    const {
-        log,
-        NucleusColors,
-        entry,
-        renderUser,
-        renderDelta,
-        renderChannel
-    } = client.logger;
+    const { log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
 
     const fileNames = await logAttachment(message);
 
@@ -43,9 +29,7 @@ export async function callback(_client: HaikuClient, message: Message) {
     const filter = getEmojiByName("ICONS.FILTER");
     let attachmentJump = "";
     if (config.logging.attachments.saved[message.channel.id + message.id]) {
-        attachmentJump = ` [[View attachments]](${
-            config.logging.attachments.saved[message.channel.id + message.id]
-        })`;
+        attachmentJump = ` [[View attachments]](${config.logging.attachments.saved[message.channel.id + message.id]})`;
     }
     const list = {
         messageId: entry(message.id, `\`${message.id}\``),
@@ -53,10 +37,7 @@ export async function callback(_client: HaikuClient, message: Message) {
         sentIn: entry(message.channel.id, renderChannel(message.channel)),
         deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
         mentions: message.mentions.users.size,
-        attachments: entry(
-            message.attachments.size,
-            message.attachments.size + attachmentJump
-        ),
+        attachments: entry(message.attachments.size, message.attachments.size + attachmentJump),
         repliedTo: entry(
             message.reference ? message.reference.messageId : null,
             message.reference
@@ -66,25 +47,14 @@ export async function callback(_client: HaikuClient, message: Message) {
     };
 
     if (config.filters.invite.enabled) {
-        if (
-            !config.filters.invite.allowed.channels.includes(message.channel.id)
-        ) {
-            if (
-                /(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(
-                    content
-                )
-            ) {
-                createLogException(
-                    message.guild.id,
-                    message.channel.id,
-                    message.id
-                );
+        if (!config.filters.invite.allowed.channels.includes(message.channel.id)) {
+            if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(content)) {
+                createLogException(message.guild.id, message.channel.id, message.id);
                 message.delete();
                 const data = {
                     meta: {
                         type: "messageDelete",
-                        displayName:
-                            "Message Deleted (Automated, Contained Invite)",
+                        displayName: "Message Deleted (Automated, Contained Invite)",
                         calculateType: "autoModeratorDeleted",
                         color: NucleusColors.red,
                         emoji: "MESSAGE.DELETE",
@@ -94,9 +64,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                         start:
                             filter +
                             " Contained invite\n\n" +
-                            (content
-                                ? `**Message:**\n\`\`\`${content}\`\`\``
-                                : "**Message:** *Message had no content*")
+                            (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
                     },
                     list: list,
                     hidden: {
@@ -111,21 +79,13 @@ export async function callback(_client: HaikuClient, message: Message) {
     if (fileNames.files.length > 0) {
         for (const element of fileNames.files) {
             const url = element.url ? element.url : element.local;
-            if (
-                /\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/.test(url)
-            ) {
+            if (/\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/.test(url)) {
                 if (
                     config.filters.images.NSFW &&
-                    !(message.channel instanceof ThreadChannel
-                        ? message.channel.parent?.nsfw
-                        : message.channel.nsfw)
+                    !(message.channel instanceof ThreadChannel ? message.channel.parent?.nsfw : message.channel.nsfw)
                 ) {
                     if (await NSFWCheck(url)) {
-                        createLogException(
-                            message.guild.id,
-                            message.channel.id,
-                            message.id
-                        );
+                        createLogException(message.guild.id, message.channel.id, message.id);
                         await message.delete();
                         const data = {
                             meta: {
@@ -160,11 +120,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                         config.filters.wordFilter.words.strict
                     );
                     if (check !== null) {
-                        createLogException(
-                            message.guild.id,
-                            message.channel.id,
-                            message.id
-                        );
+                        createLogException(message.guild.id, message.channel.id, message.id);
                         await message.delete();
                         const data = {
                             meta: {
@@ -194,11 +150,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                 if (config.filters.images.size) {
                     if (url.match(/\.+(webp|png|jpg)$/gi)) {
                         if (!(await SizeCheck(element))) {
-                            createLogException(
-                                message.guild.id,
-                                message.channel.id,
-                                message.id
-                            );
+                            createLogException(message.guild.id, message.channel.id, message.id);
                             await message.delete();
                             const data = {
                                 meta: {
@@ -229,11 +181,7 @@ export async function callback(_client: HaikuClient, message: Message) {
             }
             if (config.filters.malware) {
                 if (!(await MalwareCheck(url))) {
-                    createLogException(
-                        message.guild.id,
-                        message.channel.id,
-                        message.id
-                    );
+                    createLogException(message.guild.id, message.channel.id, message.id);
                     await message.delete();
                     const data = {
                         meta: {
@@ -280,9 +228,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                 start:
                     filter +
                     ` Link filtered as ${linkDetectionTypes[0]?.toLowerCase()}\n\n` +
-                    (content
-                        ? `**Message:**\n\`\`\`${content}\`\`\``
-                        : "**Message:** *Message had no content*")
+                    (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
             },
             list: list,
             hidden: {
@@ -299,11 +245,7 @@ export async function callback(_client: HaikuClient, message: Message) {
             config.filters.wordFilter.words.strict
         );
         if (check !== null) {
-            createLogException(
-                message.guild.id,
-                message.channel.id,
-                message.id
-            );
+            createLogException(message.guild.id, message.channel.id, message.id);
             await message.delete();
             const data = {
                 meta: {
@@ -318,9 +260,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                     start:
                         filter +
                         " Message contained filtered word\n\n" +
-                        (content
-                            ? `**Message:**\n\`\`\`${content}\`\`\``
-                            : "**Message:** *Message had no content*")
+                        (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
                 },
                 list: list,
                 hidden: {
@@ -342,9 +282,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                 timestamp: new Date().getTime()
             },
             separate: {
-                start: content
-                    ? `**Message:**\n\`\`\`${content}\`\`\``
-                    : "**Message:** *Message had no content*"
+                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
             },
             list: list,
             hidden: {
@@ -356,11 +294,7 @@ export async function callback(_client: HaikuClient, message: Message) {
     if (config.filters.pings.roles) {
         for (const roleId in message.mentions.roles) {
             if (!config.filters.pings.allowed.roles.includes(roleId)) {
-                createLogException(
-                    message.guild.id,
-                    message.channel.id,
-                    message.id
-                );
+                createLogException(message.guild.id, message.channel.id, message.id);
                 await message.delete();
                 const data = {
                     meta: {
@@ -385,10 +319,7 @@ export async function callback(_client: HaikuClient, message: Message) {
             }
         }
     }
-    if (
-        message.mentions.users.size >= config.filters.pings.mass &&
-        config.filters.pings.mass
-    ) {
+    if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
         createLogException(message.guild.id, message.channel.id, message.id);
         await message.delete();
         const data = {
@@ -401,9 +332,7 @@ export async function callback(_client: HaikuClient, message: Message) {
                 timestamp: new Date().getTime()
             },
             separate: {
-                start: content
-                    ? `**Message:**\n\`\`\`${content}\`\`\``
-                    : "**Message:** *Message had no content*"
+                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
             },
             list: list,
             hidden: {
