@@ -1,0 +1,27 @@
+name: Lint & Compile
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "development" branch
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: yarn install --immutable
+      - name: Compile
+        run: yarn build
+      - name: Run eslint
+        uses: mrdivyansh/eslint-action@v1.0.7
+      - name: Run prettier
+        uses: actionsx/prettier@v2
+
