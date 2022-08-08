@@ -98,9 +98,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ]
             });
         }
-        role = role as Discord.Role;
-        ping = ping as Discord.Role;
-        channel = channel as Discord.TextChannel;
         const options = {};
         if (role) options.role = renderRole(role);
         if (ping) options.ping = renderRole(ping);

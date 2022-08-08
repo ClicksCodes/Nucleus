@@ -4,7 +4,7 @@ export const event = "channelDelete";
 
 export async function callback(client, channel) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } =
-        channel.client.logger;
+        client.logger;
 
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_DELETE");
     const audit = auditLog.entries
