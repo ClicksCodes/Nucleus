@@ -7,10 +7,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("create")
         .setDescription("Creates a new modmail ticket")
         .addStringOption((option) =>
-            option
-                .setName("message")
-                .setDescription("The content of the ticket")
-                .setRequired(false)
+            option.setName("message").setDescription("The content of the ticket").setRequired(false)
         );
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {

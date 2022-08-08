@@ -17,16 +17,9 @@ export const Entry = (data: any) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         get(target: Record<string, any>, prop: string, receiver: any) {
             let dataToReturn = data[prop];
-            if (dataToReturn === null)
-                return Reflect.get(target, prop, receiver);
-            if (
-                typeof dataToReturn === "object" &&
-                !Array.isArray(dataToReturn)
-            )
-                dataToReturn = new Proxy(
-                    Reflect.get(target, prop, receiver),
-                    Entry(dataToReturn)
-                );
+            if (dataToReturn === null) return Reflect.get(target, prop, receiver);
+            if (typeof dataToReturn === "object" && !Array.isArray(dataToReturn))
+                dataToReturn = new Proxy(Reflect.get(target, prop, receiver), Entry(dataToReturn));
             return dataToReturn ?? Reflect.get(target, prop, receiver);
         }
     };
@@ -43,24 +36,17 @@ export class Guilds {
     }
 
     async setup() {
-        this.defaultData = (
-            await import("../config/default.json", { assert: { type: "json" } })
-        ).default as unknown as GuildConfig;
+        this.defaultData = (await import("../config/default.json", { assert: { type: "json" } }))
+            .default as unknown as GuildConfig;
+        return this;
     }
 
     async read(guild: string) {
         const entry = await this.guilds.findOne({ id: guild });
-        return new Proxy(
-            structuredClone(this.defaultData),
-            Entry(entry)
-        ) as unknown as GuildConfig;
+        return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig;
     }
 
-    async write(
-        guild: string,
-        set: object | null,
-        unset: string[] | string = []
-    ) {
+    async write(guild: string, set: object | null, unset: string[] | string = []) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uo: Record<string, any> = {};
         if (!Array.isArray(unset)) unset = [unset];
@@ -195,11 +181,7 @@ export class ModNotes {
     }
 
     async create(guild: string, user: string, note: string | null) {
-        await this.modNotes.updateOne(
-            { guild: guild, user: user },
-            { $set: { note: note } },
-            { upsert: true }
-        );
+        await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, { upsert: true });
     }
 
     async read(guild: string, user: string) {

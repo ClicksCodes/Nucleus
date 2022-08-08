@@ -106,9 +106,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             ];
         }
         const em = new Discord.MessageEmbed(pages[page].embed);
-        em.setDescription(
-            em.description + "\n\n" + createPageIndicator(pages.length, page)
-        );
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
         await interaction.editReply({
             embeds: [em],
             components: selectPane.concat([
@@ -145,28 +143,17 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         if ((i.component as MessageActionRowComponent).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "right"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "select"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "page"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "page") {
             page = parseInt((i as SelectMenuInteraction).values[0]);
             selectPaneOpen = false;
         } else {
             const em = new Discord.MessageEmbed(pages[page].embed);
-            em.setDescription(
-                em.description +
-                    "\n\n" +
-                    createPageIndicator(pages.length, page) +
-                    " | Message closed"
-            );
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
             await interaction.editReply({
                 embeds: [em],
                 components: [
@@ -198,12 +185,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         }
     }
     const em = new Discord.MessageEmbed(pages[page].embed);
-    em.setDescription(
-        em.description +
-            "\n\n" +
-            createPageIndicator(pages.length, page) +
-            " | Message timed out"
-    );
+    em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
     await interaction.editReply({
         embeds: [em],
         components: [

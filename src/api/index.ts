@@ -105,15 +105,11 @@ const runServer = (client: HaikuClient) => {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(
-                client.roleMenu[code].guild
-            );
+            const guild = await client.guilds.fetch(client.roleMenu[code].guild);
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(
-                client.roleMenu[code].user
-            );
+            const member = await guild.members.fetch(client.roleMenu[code].user);
             if (!member) {
                 return res.status(404);
             }

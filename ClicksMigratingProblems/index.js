@@ -48,11 +48,7 @@ for (const file of files) {
             },
             invite: {
                 enabled: data.invite ? data.invite.enabled : false,
-                channels: data.invite
-                    ? data.invite.whitelist.channels.map((channel) =>
-                          channel.toString()
-                      )
-                    : []
+                channels: data.invite ? data.invite.whitelist.channels.map((channel) => channel.toString()) : []
             },
             pings: {
                 mass: 5,
@@ -66,11 +62,7 @@ for (const file of files) {
                 message: null,
                 role: null
             },
-            role: data.welcome
-                ? data.welcome.role !== null
-                    ? data.welcome.role.toString()
-                    : null
-                : null,
+            role: data.welcome ? (data.welcome.role !== null ? data.welcome.role.toString() : null) : null,
             channel: data.welcome
                 ? data.welcome.message.text !== null
                     ? data.welcome.message.channel.toString()
@@ -82,15 +74,11 @@ for (const file of files) {
         logging: {
             logs: {
                 enabled: true,
-                channel: data.log_info.log_channel
-                    ? data.log_info.log_channel.toString()
-                    : null,
+                channel: data.log_info.log_channel ? data.log_info.log_channel.toString() : null,
                 toLog: "3fffff"
             },
             staff: {
-                channel: data.log_info.staff
-                    ? data.log_info.staff.toString()
-                    : null
+                channel: data.log_info.staff ? data.log_info.staff.toString() : null
             }
         },
         verify: {
@@ -99,18 +87,10 @@ for (const file of files) {
         },
         tickets: {
             enabled: data.modmail ? data.modmail.cat !== null : null,
-            category: data.modmail
-                ? data.modmail.cat !== null
-                    ? data.modmail.cat.toString()
-                    : null
-                : null,
+            category: data.modmail ? (data.modmail.cat !== null ? data.modmail.cat.toString() : null) : null,
             types: "3f",
             customTypes: null,
-            supportRole: data.modmail
-                ? data.modmail.mention !== null
-                    ? data.modmail.mention.toString()
-                    : null
-                : null,
+            supportRole: data.modmail ? (data.modmail.mention !== null ? data.modmail.mention.toString() : null) : null,
             maxTickets: data.modmail ? data.modmail.max : 5
         },
         moderation: {
@@ -145,11 +125,7 @@ for (const file of files) {
         tags: data.tags
     };
     // Insert the new data into the database
-    await collection.updateOne(
-        { id: data.guild_info.id.toString() },
-        { $set: newData },
-        { upsert: true }
-    );
+    await collection.updateOne({ id: data.guild_info.id.toString() }, { $set: newData }, { upsert: true });
     // Delete the old file
     fs.unlinkSync(`./oldData/${file}`);
     console.log(`└ Successfully migrated file ${file}`);

@@ -34,10 +34,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     let time = parseInt(interaction.options.getString("time") ?? "0");
-    if (
-        time === 0 &&
-        (interaction.channel as TextChannel).rateLimitPerUser === 0
-    ) {
+    if (time === 0 && (interaction.channel as TextChannel).rateLimitPerUser === 0) {
         time = 10;
     }
     const confirmation = await new confirmationMessage(interaction)
@@ -45,9 +42,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         .setTitle("Slowmode")
         .setDescription(
             keyValueList({
-                time: time
-                    ? humanizeDuration(time * 1000, { round: true })
-                    : "No delay"
+                time: time ? humanizeDuration(time * 1000, { round: true }) : "No delay"
             }) + "Are you sure you want to set the slowmode in this channel?"
         )
         .setColor("Danger")
@@ -62,9 +57,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.SLOWMODE.OFF")
                         .setTitle("Slowmode")
-                        .setDescription(
-                            "Something went wrong while setting the slowmode"
-                        )
+                        .setDescription("Something went wrong while setting the slowmode")
                         .setStatus("Danger")
                 ],
                 components: []
@@ -100,8 +93,7 @@ const check = (interaction: CommandInteraction) => {
     if (!interaction.guild.me.permissions.has("MANAGE_CHANNELS"))
         throw "I do not have the *Manage Channels* permission";
     // Check if the user has manage_channel permission
-    if (!member.permissions.has("MANAGE_CHANNELS"))
-        throw "You do not have the *Manage Channels* permission";
+    if (!member.permissions.has("MANAGE_CHANNELS")) throw "You do not have the *Manage Channels* permission";
     // Allow slowmode
     return true;
 };

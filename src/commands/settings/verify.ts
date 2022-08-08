@@ -24,15 +24,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("verify")
         .setDescription("Manage the role given after typing /verify")
         .addRoleOption((option) =>
-            option
-                .setName("role")
-                .setDescription("The role to give after verifying")
-                .setRequired(false)
+            option.setName("role").setDescription("The role to give after verifying").setRequired(false)
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -48,9 +43,7 @@ const callback = async (
                     new EmojiEmbed()
                         .setEmoji("GUILD.ROLES.DELETE")
                         .setTitle("Verify Role")
-                        .setDescription(
-                            "The role you provided is not a valid role"
-                        )
+                        .setDescription("The role you provided is not a valid role")
                         .setStatus("Danger")
                 ]
             });
@@ -70,9 +63,7 @@ const callback = async (
         const confirmation = await new confirmationMessage(interaction)
             .setEmoji("GUILD.ROLES.EDIT")
             .setTitle("Verify Role")
-            .setDescription(
-                `Are you sure you want to set the verify role to <@&${role.id}>?`
-            )
+            .setDescription(`Are you sure you want to set the verify role to <@&${role.id}>?`)
             .setColor("Warning")
             .setInverted(true)
             .send(true);
@@ -83,8 +74,7 @@ const callback = async (
                     "verify.role": role.id,
                     "verify.enabled": true
                 });
-                const { log, NucleusColors, entry, renderUser, renderRole } =
-                    client.logger;
+                const { log, NucleusColors, entry, renderUser, renderRole } = client.logger;
                 const data = {
                     meta: {
                         type: "verifyRoleChanged",
@@ -95,14 +85,8 @@ const callback = async (
                         timestamp: new Date().getTime()
                     },
                     list: {
-                        memberId: entry(
-                            interaction.user.id,
-                            `\`${interaction.user.id}\``
-                        ),
-                        changedBy: entry(
-                            interaction.user.id,
-                            renderUser(interaction.user)
-                        ),
+                        memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                        changedBy: entry(interaction.user.id, renderUser(interaction.user)),
                         role: entry(role.id, renderRole(role))
                     },
                     hidden: {
@@ -116,9 +100,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Verify Role")
-                            .setDescription(
-                                "Something went wrong while setting the verify role"
-                            )
+                            .setDescription("Something went wrong while setting the verify role")
                             .setStatus("Danger")
                             .setEmoji("GUILD.ROLES.DELETE")
                     ],
@@ -147,9 +129,7 @@ const callback = async (
                 new EmojiEmbed()
                     .setTitle("Verify Role")
                     .setDescription(
-                        role
-                            ? `Your verify role is currently set to <@&${role}>`
-                            : "You have not set a verify role"
+                        role ? `Your verify role is currently set to <@&${role}>` : "You have not set a verify role"
                     )
                     .setStatus("Success")
                     .setEmoji("GUILD.ROLES.CREATE")
@@ -158,15 +138,8 @@ const callback = async (
                 new MessageActionRow().addComponents([
                     new MessageButton()
                         .setCustomId("clear")
-                        .setLabel(
-                            clicks ? "Click again to confirm" : "Reset role"
-                        )
-                        .setEmoji(
-                            getEmojiByName(
-                                clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS",
-                                "id"
-                            )
-                        )
+                        .setLabel(clicks ? "Click again to confirm" : "Reset role")
+                        .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
                         .setStyle("DANGER")
                         .setDisabled(!role),
                     new MessageButton()
@@ -188,15 +161,10 @@ const callback = async (
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild.id, null, [
-                    "verify.role",
-                    "verify.enabled"
-                ]);
+                await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"]);
                 role = undefined;
             }
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "send"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "send") {
             const verifyMessages = [
                 {
                     label: "Verify",
@@ -204,8 +172,7 @@ const callback = async (
                 },
                 {
                     label: "Get verified",
-                    description:
-                        "To get access to the rest of the server, click the button below"
+                    description: "To get access to the rest of the server, click the button below"
                 },
                 {
                     label: "Ready to verify?",
@@ -217,13 +184,9 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Verify Button")
-                            .setDescription(
-                                "Select a message template to send in this channel"
-                            )
+                            .setDescription("Select a message template to send in this channel")
                             .setFooter({
-                                text: role
-                                    ? ""
-                                    : "You do no have a verify role set so the button will not work."
+                                text: role ? "" : "You do no have a verify role set so the button will not work."
                             })
                             .setStatus(role ? "Success" : "Warning")
                             .setEmoji("GUILD.ROLES.CREATE")
@@ -261,10 +224,7 @@ const callback = async (
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                                 .setStyle("DANGER"),
-                            new MessageButton()
-                                .setCustomId("blank")
-                                .setLabel("Empty")
-                                .setStyle("SECONDARY"),
+                            new MessageButton().setCustomId("blank").setLabel("Empty").setStyle("SECONDARY"),
                             new MessageButton()
                                 .setCustomId("custom")
                                 .setLabel("Custom")
@@ -279,29 +239,14 @@ const callback = async (
                 } catch (e) {
                     break;
                 }
-                if (
-                    (i.component as MessageActionRowComponent).customId ===
-                    "template"
-                ) {
+                if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
                     await interaction.channel.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(
-                                    verifyMessages[
-                                        parseInt(
-                                            (i as SelectMenuInteraction)
-                                                .values[0]
-                                        )
-                                    ].label
-                                )
+                                .setTitle(verifyMessages[parseInt((i as SelectMenuInteraction).values[0])].label)
                                 .setDescription(
-                                    verifyMessages[
-                                        parseInt(
-                                            (i as SelectMenuInteraction)
-                                                .values[0]
-                                        )
-                                    ].description
+                                    verifyMessages[parseInt((i as SelectMenuInteraction).values[0])].description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("CONTROL.BLOCKTICK")
@@ -310,38 +255,28 @@ const callback = async (
                             new MessageActionRow().addComponents([
                                 new MessageButton()
                                     .setLabel("Verify")
-                                    .setEmoji(
-                                        getEmojiByName("CONTROL.TICK", "id")
-                                    )
+                                    .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                                     .setStyle("SUCCESS")
                                     .setCustomId("verifybutton")
                             ])
                         ]
                     });
                     break;
-                } else if (
-                    (i.component as MessageActionRowComponent).customId ===
-                    "blank"
-                ) {
+                } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel.send({
                         components: [
                             new MessageActionRow().addComponents([
                                 new MessageButton()
                                     .setLabel("Verify")
-                                    .setEmoji(
-                                        getEmojiByName("CONTROL.TICK", "id")
-                                    )
+                                    .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                                     .setStyle("SUCCESS")
                                     .setCustomId("verifybutton")
                             ])
                         ]
                     });
                     break;
-                } else if (
-                    (i.component as MessageActionRowComponent).customId ===
-                    "custom"
-                ) {
+                } else if ((i.component as MessageActionRowComponent).customId === "custom") {
                     await i.showModal(
                         new Discord.Modal()
                             .setCustomId("modal")
@@ -369,9 +304,7 @@ const callback = async (
                         embeds: [
                             new EmojiEmbed()
                                 .setTitle("Verify Button")
-                                .setDescription(
-                                    "Modal opened. If you can't see it, click back and try again."
-                                )
+                                .setDescription("Modal opened. If you can't see it, click back and try again.")
                                 .setStatus("Success")
                                 .setEmoji("GUILD.TICKET.OPEN")
                         ],
@@ -379,9 +312,7 @@ const callback = async (
                             new MessageActionRow().addComponents([
                                 new MessageButton()
                                     .setLabel("Back")
-                                    .setEmoji(
-                                        getEmojiByName("CONTROL.LEFT", "id")
-                                    )
+                                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                                     .setStyle("PRIMARY")
                                     .setCustomId("back")
                             ])
@@ -399,8 +330,7 @@ const callback = async (
                     }
                     if (out.fields) {
                         const title = out.fields.getTextInputValue("title");
-                        const description =
-                            out.fields.getTextInputValue("description");
+                        const description = out.fields.getTextInputValue("description");
                         await interaction.channel.send({
                             embeds: [
                                 new EmojiEmbed()
@@ -413,9 +343,7 @@ const callback = async (
                                 new MessageActionRow().addComponents([
                                     new MessageButton()
                                         .setLabel("Verify")
-                                        .setEmoji(
-                                            getEmojiByName("CONTROL.TICK", "id")
-                                        )
+                                        .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                                         .setStyle("SUCCESS")
                                         .setCustomId("verifybutton")
                                 ])

@@ -1,12 +1,9 @@
 export const event = "stickerCreate";
 
 export async function callback(client, emoji) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } =
-        emoji.client.logger;
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = emoji.client.logger;
     const auditLog = await getAuditLog(emoji.guild, "STICKER_CREATE");
-    const audit = auditLog.entries
-        .filter((entry) => entry.target.id === emoji.id)
-        .first();
+    const audit = auditLog.entries.filter((entry) => entry.target.id === emoji.id).first();
     if (audit.executor.id === client.user.id) return;
     const data = {
         meta: {
@@ -21,10 +18,7 @@ export async function callback(client, emoji) {
             stickerId: entry(emoji.id, `\`${emoji.id}\``),
             emoji: entry(emoji.name, `\`:${emoji.name}:\``),
             createdBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(
-                emoji.createdTimestamp,
-                renderDelta(emoji.createdTimestamp)
-            )
+            created: entry(emoji.createdTimestamp, renderDelta(emoji.createdTimestamp))
         },
         hidden: {
             guild: emoji.guild.id

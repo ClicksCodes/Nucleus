@@ -1,15 +1,20 @@
+import {
+    BaseGuildTextChannel,
+    BaseGuildVoiceChannel,
+    GuildChannel,
+    StageChannel,
+    ThreadChannel,
+    VoiceChannel
+} from "discord.js";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "channelDelete";
-
-export async function callback(client, channel) {
-    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } =
-        client.logger;
+    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
 
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_DELETE");
-    const audit = auditLog.entries
-        .filter((entry) => entry.target.id === channel.id)
-        .first();
+    const audit = auditLog.entries.filter((entry) => entry.target.id === channel.id).first();
     if (audit.executor.id === client.user.id) return;
 
     let emoji;
@@ -60,27 +65,26 @@ export async function callback(client, channel) {
             channel.parent ? channel.parent.name : "Uncategorised"
         ),
         nsfw: null,
-        created: entry(
-            channel.createdTimestamp,
-            renderDelta(channel.createdTimestamp)
-        ),
+        created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp)),
         deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
         deletedBy: entry(audit.executor.id, renderUser(audit.executor))
     };
-    if (channel.topic !== null ?? false)
-        list.topic = entry(
-            channel.topic,
-            `\`\`\`\n${channel.topic.replace("`", "'")}\n\`\`\``
-        );
+    if ((channel instanceof BaseGuildTextChannel || channel instanceof StageChannel) && channel.topic !== null)
+        list.topic = entry(channel.topic, `\`\`\`\n${channel.topic.replace("`", "'")}\n\`\`\``);
     else delete list.topic;
-    if (channel.nsfw !== null ?? false)
+    if (
+        channel instanceof BaseGuildTextChannel ||
+        channel instanceof VoiceChannel ||
+        channel instanceof ThreadChannel
+    ) {
+        const nsfw = channel instanceof ThreadChannel ? (channel as ThreadChannel).parent?.nsfw ?? false : channel.nsfw;
         list.nsfw = entry(
-            channel.nsfw,
-            channel.nsfw
-                ? `${getEmojiByName("CONTROL.TICK")} Yes`
-                : `${getEmojiByName("CONTROL.CROSS")} No`
+            nsfw,
+            nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`
         );
-    else delete list.nsfw;
+    } else {
+        delete list.nsfw;
+    }
 
     const data = {
         meta: {

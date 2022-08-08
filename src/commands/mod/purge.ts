@@ -1,9 +1,4 @@
-import Discord, {
-    CommandInteraction,
-    GuildChannel,
-    GuildMember,
-    TextChannel
-} from "discord.js";
+import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -24,31 +19,19 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setMaxValue(100)
         )
         .addUserOption((option) =>
-            option
-                .setName("user")
-                .setDescription("The user to purge messages from")
-                .setRequired(false)
+            option.setName("user").setDescription("The user to purge messages from").setRequired(false)
         )
         .addStringOption((option) =>
-            option
-                .setName("reason")
-                .setDescription("The reason for the purge")
-                .setRequired(false)
+            option.setName("reason").setDescription("The reason for the purge").setRequired(false)
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const user = (interaction.options.getMember("user") as GuildMember) ?? null;
     const channel = interaction.channel as GuildChannel;
     if (
-        ![
-            "GUILD_TEXT",
-            "GUILD_NEWS",
-            "GUILD_NEWS_THREAD",
-            "GUILD_PUBLIC_THREAD",
-            "GUILD_PRIVATE_THREAD"
-        ].includes(channel.type.toString())
+        !["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(
+            channel.type.toString()
+        )
     ) {
         return await interaction.reply({
             embeds: [
@@ -90,32 +73,14 @@ const callback = async (
                 ],
                 components: [
                     new Discord.MessageActionRow().addComponents([
-                        new Discord.MessageButton()
-                            .setCustomId("1")
-                            .setLabel("1")
-                            .setStyle("SECONDARY"),
-                        new Discord.MessageButton()
-                            .setCustomId("3")
-                            .setLabel("3")
-                            .setStyle("SECONDARY"),
-                        new Discord.MessageButton()
-                            .setCustomId("5")
-                            .setLabel("5")
-                            .setStyle("SECONDARY")
+                        new Discord.MessageButton().setCustomId("1").setLabel("1").setStyle("SECONDARY"),
+                        new Discord.MessageButton().setCustomId("3").setLabel("3").setStyle("SECONDARY"),
+                        new Discord.MessageButton().setCustomId("5").setLabel("5").setStyle("SECONDARY")
                     ]),
                     new Discord.MessageActionRow().addComponents([
-                        new Discord.MessageButton()
-                            .setCustomId("10")
-                            .setLabel("10")
-                            .setStyle("SECONDARY"),
-                        new Discord.MessageButton()
-                            .setCustomId("25")
-                            .setLabel("25")
-                            .setStyle("SECONDARY"),
-                        new Discord.MessageButton()
-                            .setCustomId("50")
-                            .setLabel("50")
-                            .setStyle("SECONDARY")
+                        new Discord.MessageButton().setCustomId("10").setLabel("10").setStyle("SECONDARY"),
+                        new Discord.MessageButton().setCustomId("25").setLabel("25").setStyle("SECONDARY"),
+                        new Discord.MessageButton().setCustomId("50").setLabel("50").setStyle("SECONDARY")
                     ]),
                     new Discord.MessageActionRow().addComponents([
                         new Discord.MessageButton()
@@ -144,17 +109,12 @@ const callback = async (
                 break;
             }
             let messages;
-            await (interaction.channel as TextChannel).messages
-                .fetch({ limit: amount })
-                .then(async (ms) => {
-                    if (user) {
-                        ms = ms.filter((m) => m.author.id === user.id);
-                    }
-                    messages = await (channel as TextChannel).bulkDelete(
-                        ms,
-                        true
-                    );
-                });
+            await (interaction.channel as TextChannel).messages.fetch({ limit: amount }).then(async (ms) => {
+                if (user) {
+                    ms = ms.filter((m) => m.author.id === user.id);
+                }
+                messages = await (channel as TextChannel).bulkDelete(ms, true);
+            });
             if (messages) {
                 deleted = deleted.concat(messages.map((m) => m));
             }
@@ -181,8 +141,7 @@ const callback = async (
                 deleted.length
             );
         }
-        const { log, NucleusColors, entry, renderUser, renderChannel } =
-            client.logger;
+        const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
         const data = {
             meta: {
                 type: "channelPurge",
@@ -193,18 +152,9 @@ const callback = async (
                 timestamp: new Date().getTime()
             },
             list: {
-                memberId: entry(
-                    interaction.user.id,
-                    `\`${interaction.user.id}\``
-                ),
-                purgedBy: entry(
-                    interaction.user.id,
-                    renderUser(interaction.user)
-                ),
-                channel: entry(
-                    interaction.channel.id,
-                    renderChannel(interaction.channel)
-                ),
+                memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
                 messagesCleared: entry(deleted.length, deleted.length)
             },
             hidden: {
@@ -214,9 +164,7 @@ const callback = async (
         log(data);
         let out = "";
         deleted.reverse().forEach((message) => {
-            out += `${message.author.username}#${
-                message.author.discriminator
-            } (${message.author.id}) [${new Date(
+            out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(
                 message.createdTimestamp
             ).toISOString()}]\n`;
             const lines = message.content.split("\n");
@@ -304,29 +252,19 @@ const callback = async (
             let messages;
             try {
                 if (!user) {
-                    const toDelete = await (
-                        interaction.channel as TextChannel
-                    ).messages.fetch({
+                    const toDelete = await (interaction.channel as TextChannel).messages.fetch({
                         limit: interaction.options.getInteger("amount")
                     });
-                    messages = await (channel as TextChannel).bulkDelete(
-                        toDelete,
-                        true
-                    );
+                    messages = await (channel as TextChannel).bulkDelete(toDelete, true);
                 } else {
                     const toDelete = (
                         await (
-                            await (
-                                interaction.channel as TextChannel
-                            ).messages.fetch({
+                            await (interaction.channel as TextChannel).messages.fetch({
                                 limit: 100
                             })
                         ).filter((m) => m.author.id === user.id)
                     ).first(interaction.options.getInteger("amount"));
-                    messages = await (channel as TextChannel).bulkDelete(
-                        toDelete,
-                        true
-                    );
+                    messages = await (channel as TextChannel).bulkDelete(toDelete, true);
                 }
             } catch (e) {
                 await interaction.editReply({
@@ -334,9 +272,7 @@ const callback = async (
                         new EmojiEmbed()
                             .setEmoji("CHANNEL.PURGE.RED")
                             .setTitle("Purge")
-                            .setDescription(
-                                "Something went wrong and no messages were deleted"
-                            )
+                            .setDescription("Something went wrong and no messages were deleted")
                             .setStatus("Danger")
                     ],
                     components: []
@@ -353,8 +289,7 @@ const callback = async (
                     messages.size
                 );
             }
-            const { log, NucleusColors, entry, renderUser, renderChannel } =
-                client.logger;
+            const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
             const data = {
                 meta: {
                     type: "channelPurge",
@@ -365,18 +300,9 @@ const callback = async (
                     timestamp: new Date().getTime()
                 },
                 list: {
-                    memberId: entry(
-                        interaction.user.id,
-                        `\`${interaction.user.id}\``
-                    ),
-                    purgedBy: entry(
-                        interaction.user.id,
-                        renderUser(interaction.user)
-                    ),
-                    channel: entry(
-                        interaction.channel.id,
-                        renderChannel(interaction.channel)
-                    ),
+                    memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                    purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                    channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
                     messagesCleared: entry(messages.size, messages.size)
                 },
                 hidden: {
@@ -386,9 +312,7 @@ const callback = async (
             log(data);
             let out = "";
             messages.reverse().forEach((message) => {
-                out += `${message.author.username}#${
-                    message.author.discriminator
-                } (${message.author.id}) [${new Date(
+                out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(
                     message.createdTimestamp
                 ).toISOString()}]\n`;
                 const lines = message.content.split("\n");
@@ -472,13 +396,11 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     // Check if nucleus has the manage_messages permission
-    if (!me.permissions.has("MANAGE_MESSAGES"))
-        throw "I do not have the *Manage Messages* permission";
+    if (!me.permissions.has("MANAGE_MESSAGES")) throw "I do not have the *Manage Messages* permission";
     // Allow the owner to purge
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_messages permission
-    if (!member.permissions.has("MANAGE_MESSAGES"))
-        throw "You do not have the *Manage Messages* permission";
+    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You do not have the *Manage Messages* permission";
     // Allow purge
     return true;
 };

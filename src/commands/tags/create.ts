@@ -9,24 +9,12 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("create")
         .setDescription("Creates a tag")
+        .addStringOption((o) => o.setName("name").setRequired(true).setDescription("The name of the tag"))
         .addStringOption((o) =>
-            o
-                .setName("name")
-                .setRequired(true)
-                .setDescription("The name of the tag")
-        )
-        .addStringOption((o) =>
-            o
-                .setName("value")
-                .setRequired(true)
-                .setDescription(
-                    "The value of the tag, shown after running /tag name"
-                )
+            o.setName("value").setRequired(true).setDescription("The value of the tag, shown after running /tag name")
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const name = interaction.options.getString("name");
     const value = interaction.options.getString("value");
     if (name.length > 100)
@@ -34,9 +22,7 @@ const callback = async (
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Create")
-                    .setDescription(
-                        "Tag names cannot be longer than 100 characters"
-                    )
+                    .setDescription("Tag names cannot be longer than 100 characters")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],
@@ -47,9 +33,7 @@ const callback = async (
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Create")
-                    .setDescription(
-                        "Tag values cannot be longer than 1000 characters"
-                    )
+                    .setDescription("Tag values cannot be longer than 1000 characters")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],
@@ -110,9 +94,7 @@ const callback = async (
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Create")
-                    .setDescription(
-                        "Something went wrong and the tag was not created"
-                    )
+                    .setDescription("Something went wrong and the tag was not created")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],

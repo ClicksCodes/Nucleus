@@ -1,8 +1,11 @@
 import Discord, {
     CommandInteraction,
+    Interaction,
     Message,
     MessageActionRow,
     MessageButton,
+    MessageComponentInteraction,
+    ModalSubmitInteraction,
     TextInputComponent
 } from "discord.js";
 import { modalInteractionCollector } from "./dualCollector.js";
@@ -77,7 +80,12 @@ class confirmationMessage {
         this.reason = reason;
         return this;
     }
-    async send(editOnly?: boolean) {
+    async send(editOnly?: boolean): Promise<{
+        success?: boolean;
+        cancelled?: boolean;
+        components?: Record<string, CustomBoolean<unknown>>;
+        newReason?: string;
+    }> {
         while (true) {
             const fullComponents = [
                 new Discord.MessageButton()
@@ -97,8 +105,7 @@ class confirmationMessage {
                     .setLabel(v.title)
                     .setStyle(v.active ? "SUCCESS" : "PRIMARY")
                     .setDisabled(v.disabled);
-                if (v.emoji !== undefined)
-                    button.setEmoji(getEmojiByName(v.emoji, "id"));
+                if (v.emoji !== undefined) button.setEmoji(getEmojiByName(v.emoji, "id"));
                 fullComponents.push(button);
             });
             if (this.reason !== null)
@@ -112,11 +119,7 @@ class confirmationMessage {
                 );
             const components = [];
             for (let i = 0; i < fullComponents.length; i += 5) {
-                components.push(
-                    new MessageActionRow().addComponents(
-                        fullComponents.slice(i, i + 5)
-                    )
-                );
+                components.push(new MessageActionRow().addComponents(fullComponents.slice(i, i + 5)));
             }
             const object = {
                 embeds: [
@@ -144,9 +147,7 @@ class confirmationMessage {
                 if (editOnly) {
                     m = (await this.interaction.editReply(object)) as Message;
                 } else {
-                    m = (await this.interaction.reply(
-                        object
-                    )) as unknown as Message;
+                    m = (await this.interaction.reply(object)) as unknown as Message;
                 }
             } catch {
                 return { cancelled: true };
@@ -196,9 +197,7 @@ class confirmationMessage {
                     embeds: [
                         new EmojiEmbed()
                             .setTitle(this.title)
-                            .setDescription(
-                                "Modal opened. If you can't see it, click back and try again."
-                            )
+                            .setDescription("Modal opened. If you can't see it, click back and try again.")
                             .setStatus(this.color)
                             .setEmoji(this.emoji)
                     ],
@@ -216,23 +215,27 @@ class confirmationMessage {
                 try {
                     out = await modalInteractionCollector(
                         m,
-                        (m) => m.channel.id === this.interaction.channel.id,
+                        (m: Interaction) =>
+                            (m as MessageComponentInteraction | ModalSubmitInteraction).channelId ===
+                            this.interaction.channelId,
                         (m) => m.customId === "reason"
                     );
                 } catch (e) {
-                    return {};
+                    return { cancelled: true };
                 }
-                if (out.fields) {
+                if (out === null) {
+                    return { cancelled: true };
+                }
+                if (out instanceof ModalSubmitInteraction) {
                     return {
-                        newReason: out.fields.getTextInputValue("reason") ?? ""
+                        newReason: out.fields.getTextInputValue("reason")
                     };
                 } else {
-                    return { newReason: this.reason };
+                    return { components: this.customButtons };
                 }
             } else {
                 component.deferUpdate();
-                this.customButtons[component.customId].active =
-                    !this.customButtons[component.customId].active;
+                this.customButtons[component.customId]!.active = !this.customButtons[component.customId]!.active;
                 return { components: this.customButtons };
             }
         }

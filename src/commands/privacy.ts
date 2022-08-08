@@ -1,9 +1,5 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, {
-    CommandInteraction,
-    MessageActionRow,
-    MessageButton
-} from "discord.js";
+import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -14,9 +10,7 @@ import confirmationMessage from "../utils/confirmationMessage.js";
 
 const command = new SlashCommandBuilder()
     .setName("privacy")
-    .setDescription(
-        "Information and options for you and your server's settings"
-    );
+    .setDescription("Information and options for you and your server's settings");
 
 class Embed {
     embed: Discord.MessageEmbed;
@@ -91,22 +85,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setStatus("Danger")
             )
             .setTitle("Link scanning and Transcripts")
-            .setDescription(
-                "Regarding Facebook and AMP filter types, and ticket transcripts"
-            )
+            .setDescription("Regarding Facebook and AMP filter types, and ticket transcripts")
             .setPageId(2)
     ].concat(
-        (interaction.member as Discord.GuildMember).permissions.has(
-            "ADMINISTRATOR"
-        )
+        (interaction.member as Discord.GuildMember).permissions.has("ADMINISTRATOR")
             ? [
                   new Embed()
                       .setEmbed(
                           new EmojiEmbed()
                               .setTitle("Options")
-                              .setDescription(
-                                  "Below are buttons for controlling this servers privacy settings"
-                              )
+                              .setDescription("Below are buttons for controlling this servers privacy settings")
                               .setEmoji("NUCLEUS.LOGO")
                               .setStatus("Danger")
                       )
@@ -178,9 +166,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             ])
         ]);
         const em = new Discord.MessageEmbed(pages[page].embed);
-        em.setDescription(
-            em.description + "\n\n" + createPageIndicator(pages.length, page)
-        );
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
         em.setFooter({ text: nextFooter ?? "" });
         await interaction.editReply({
             embeds: [em],
@@ -229,20 +215,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }
         } else {
             const em = new Discord.MessageEmbed(pages[page].embed);
-            em.setDescription(
-                em.description +
-                    "\n\n" +
-                    createPageIndicator(pages.length, page)
-            );
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({ text: "Message closed" });
             interaction.editReply({ embeds: [em], components: [] });
             return;
         }
     }
     const em = new Discord.MessageEmbed(pages[page].embed);
-    em.setDescription(
-        em.description + "\n\n" + createPageIndicator(pages.length, page)
-    );
+    em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
     em.setFooter({ text: "Message timed out" });
     await interaction.editReply({
         embeds: [em],
@@ -250,10 +230,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (
-    _interaction: CommandInteraction,
-    _defaultCheck: WrappedCheck
-) => {
+const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     return true;
 };
 

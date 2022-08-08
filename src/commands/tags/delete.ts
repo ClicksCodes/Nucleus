@@ -9,16 +9,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("delete")
         .setDescription("Deletes a tag")
-        .addStringOption((o) =>
-            o
-                .setName("name")
-                .setRequired(true)
-                .setDescription("The name of the tag")
-        );
+        .addStringOption((o) => o.setName("name").setRequired(true).setDescription("The name of the tag"));
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     const name = interaction.options.getString("name");
     const data = await client.database.guilds.read(interaction.guild.id);
     if (!data.tags[name])
@@ -56,18 +49,14 @@ const callback = async (
             ]
         });
     try {
-        await client.database.guilds.write(interaction.guild.id, null, [
-            "tags." + name
-        ]);
+        await client.database.guilds.write(interaction.guild.id, null, ["tags." + name]);
     } catch (e) {
         console.log(e);
         return await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag Delete")
-                    .setDescription(
-                        "Something went wrong and the tag was not deleted"
-                    )
+                    .setDescription("Something went wrong and the tag was not deleted")
                     .setStatus("Danger")
                     .setEmoji("PUNISH.NICKNAME.RED")
             ],

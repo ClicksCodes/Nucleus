@@ -21,14 +21,7 @@ const logs = [
     "ticketUpdate"
 ];
 
-const tickets = [
-    "support",
-    "report",
-    "question",
-    "issue",
-    "suggestion",
-    "other"
-];
+const tickets = ["support", "report", "question", "issue", "suggestion", "other"];
 
 const toHexInteger = (permissions, array?) => {
     if (!array) {

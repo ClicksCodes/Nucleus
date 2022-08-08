@@ -34,9 +34,7 @@ export class Logger {
         return `${role.name} [<@&${role.id}>]`;
     }
     renderEmoji(emoji: Discord.GuildEmoji) {
-        return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}> [\`:${
-            emoji.name
-        }:\`]`;
+        return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}> [\`:${emoji.name}:\`]`;
     }
 
     public readonly NucleusColors = {
@@ -59,17 +57,11 @@ export class Logger {
         const config = await client.database.guilds.read(log.hidden.guild);
         if (!config.logging.logs.enabled) return;
         if (!(log.meta.calculateType === true)) {
-            if (
-                !toHexArray(config.logging.logs.toLog).includes(
-                    log.meta.calculateType
-                )
-            )
+            if (!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType))
                 return console.log("Not logging this type of event");
         }
         if (config.logging.logs.channel) {
-            const channel = (await client.channels.fetch(
-                config.logging.logs.channel
-            )) as Discord.TextChannel | null;
+            const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
             const description: Record<string, string> = {};
             Object.entries(log.list).map((entry) => {
                 const key: string = entry[0];
@@ -84,11 +76,7 @@ export class Logger {
             if (channel) {
                 log.separate = log.separate || {};
                 const embed = new Discord.MessageEmbed()
-                    .setTitle(
-                        `${getEmojiByName(log.meta.emoji)} ${
-                            log.meta.displayName
-                        }`
-                    )
+                    .setTitle(`${getEmojiByName(log.meta.emoji)} ${log.meta.displayName}`)
                     .setDescription(
                         (log.separate.start ? log.separate.start + "\n" : "") +
                             generateKeyValueList(description) +

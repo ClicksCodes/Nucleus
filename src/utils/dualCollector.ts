@@ -1,15 +1,9 @@
-import Discord, {
-    Interaction,
-    Message,
-    MessageComponentInteraction
-} from "discord.js";
+import Discord, { Interaction, Message, MessageComponentInteraction } from "discord.js";
 import client from "./client.js";
 
 export default async function (
     m: Message,
-    interactionFilter: (
-        i: MessageComponentInteraction
-    ) => boolean | Promise<boolean>,
+    interactionFilter: (i: MessageComponentInteraction) => boolean | Promise<boolean>,
     messageFilter: (m: Message) => boolean | Promise<boolean>
 ) {
     let out;
@@ -54,17 +48,14 @@ export default async function (
 export async function modalInteractionCollector(
     m: Message,
     modalFilter: (i: Interaction) => boolean | Promise<boolean>,
-    interactionFilter: (
-        i: MessageComponentInteraction
-    ) => boolean | Promise<boolean>
-) {
-    let out;
+    interactionFilter: (i: MessageComponentInteraction) => boolean | Promise<boolean>
+): Promise<null | Interaction> {
+    let out: Interaction;
     try {
         out = await new Promise((resolve, _reject) => {
             const int = m
                 .createMessageComponentCollector({
-                    filter: (i: MessageComponentInteraction) =>
-                        interactionFilter(i),
+                    filter: (i: MessageComponentInteraction) => interactionFilter(i),
                     time: 300000
                 })
                 .on("collect", (i: Interaction) => {

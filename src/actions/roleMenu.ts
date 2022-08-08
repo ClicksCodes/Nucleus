@@ -1,11 +1,22 @@
-import { MessageButton } from "discord.js";
+import { Interaction, MessageButton } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { MessageActionRow, MessageSelectMenu } from "discord.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { LoadingEmbed } from "../utils/defaultEmbeds.js";
+import type { GuildConfig } from "../utils/database.js";
 
-export async function callback(interaction) {
+export interface RoleMenuSchema {
+    guild: string;
+    guildName: string;
+    guildIcon: string;
+    user: string;
+    username: string;
+    data: GuildConfig["roleMenu"]["options"];
+    interaction: Interaction;
+}
+
+export async function callback(interaction: Interaction) {
     const config = await client.database.guilds.read(interaction.guild.id);
     if (!config.roleMenu.enabled)
         return await interaction.reply({
@@ -25,9 +36,7 @@ export async function callback(interaction) {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Roles")
-                    .setDescription(
-                        "There are no roles available. Please contact a staff member or try again later."
-                    )
+                    .setDescription("There are no roles available. Please contact a staff member or try again later.")
                     .setStatus("Danger")
                     .setEmoji("CONTROL.BLOCKCROSS")
             ],
@@ -39,8 +48,7 @@ export async function callback(interaction) {
         let code = "";
         let length = 5;
         let itt = 0;
-        const chars =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         let valid = false;
         while (!valid) {
             itt += 1;
@@ -66,14 +74,13 @@ export async function callback(interaction) {
             interaction: interaction
         };
         let up = true;
-        try {
-            const status = await fetch(client.config.baseUrl).then(
-                (res) => res.status
-            );
+        up = false; // FIXME: Role menu does not yet exist, so the web UI is never up
+        /*        try {
+            const status = await fetch(client.config.baseUrl).then((res) => res.status);
             if (status !== 200) up = false;
         } catch {
             up = false;
-        }
+        }*/
         m = await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -88,13 +95,8 @@ export async function callback(interaction) {
                         .setLabel("Online")
                         .setStyle("LINK")
                         .setDisabled(!up)
-                        .setURL(
-                            `${client.config.baseUrl}nucleus/rolemenu?code=${code}`
-                        ),
-                    new MessageButton()
-                        .setLabel("Manual")
-                        .setStyle("PRIMARY")
-                        .setCustomId("manual")
+                        .setURL(`${client.config.baseUrl}nucleus/rolemenu?code=${code}`),
+                    new MessageButton().setLabel("Manual").setStyle("PRIMARY").setCustomId("manual")
                 ])
             ]
         });
@@ -116,13 +118,9 @@ export async function callback(interaction) {
                     .setEmoji("GUILD.GREEN")
                     .setDescription(
                         `**${object.name}**` +
-                            (object.description
-                                ? `\n${object.description}`
-                                : "") +
+                            (object.description ? `\n${object.description}` : "") +
                             `\n\nSelect ${object.min}` +
-                            (object.min !== object.max
-                                ? ` to ${object.max}`
-                                : "") +
+                            (object.min !== object.max ? ` to ${object.max}` : "") +
                             ` role${object.max === 1 ? "" : "s"} to add.`
                     )
                     .setStatus("Success")
@@ -145,9 +143,7 @@ export async function callback(interaction) {
                                       .setLabel("Skip")
                                       .setStyle("SECONDARY")
                                       .setCustomId("skip")
-                                      .setEmoji(
-                                          getEmojiByName("CONTROL.RIGHT", "id")
-                                      )
+                                      .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                               ]
                             : []
                     )
@@ -193,13 +189,9 @@ export async function callback(interaction) {
             });
         }
     }
-    let rolesToRemove = config.roleMenu.options
-        .map((o) => o.options.map((o) => o.role))
-        .flat();
+    let rolesToRemove = config.roleMenu.options.map((o) => o.options.map((o) => o.role)).flat();
     const memberRoles = interaction.member.roles.cache.map((r) => r.id);
-    rolesToRemove = rolesToRemove
-        .filter((r) => memberRoles.includes(r))
-        .filter((r) => !rolesToAdd.includes(r));
+    rolesToRemove = rolesToRemove.filter((r) => memberRoles.includes(r)).filter((r) => !rolesToAdd.includes(r));
     rolesToAdd = rolesToAdd.filter((r) => !memberRoles.includes(r));
     try {
         await interaction.member.roles.remove(rolesToRemove);
@@ -222,9 +214,7 @@ export async function callback(interaction) {
         embeds: [
             new EmojiEmbed()
                 .setTitle("Roles")
-                .setDescription(
-                    "Roles have been added. You may close this message."
-                )
+                .setDescription("Roles have been added. You may close this message.")
                 .setStatus("Success")
                 .setEmoji("GUILD.GREEN")
         ],

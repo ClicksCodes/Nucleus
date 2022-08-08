@@ -36,11 +36,8 @@ const defaultLinkTestResult: { safe: boolean; tags: string[] } = {
     safe: true,
     tags: []
 };
-export async function testLink(
-    link: string
-): Promise<{ safe: boolean; tags: string[] }> {
-    const scanned: { safe?: boolean; tags?: string[] } | undefined =
-        await us.link.scan(link);
+export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
+    const scanned: { safe?: boolean; tags?: string[] } | undefined = await us.link.scan(link);
     if (scanned === undefined) return defaultLinkTestResult;
     return {
         safe: scanned.safe ?? defaultLinkTestResult.safe,
@@ -53,19 +50,15 @@ const linkTypes = {
     DATING: "Dating sites.",
     TRACKERS: "Websites that store or track personal information.",
     ADVERTISEMENTS: "Websites only for ads.",
-    FACEBOOK:
-        "Facebook pages. (Facebook has a number of dangerous trackers. Read more on /privacy)",
+    FACEBOOK: "Facebook pages. (Facebook has a number of dangerous trackers. Read more on /privacy)",
     AMP: "AMP pages. (AMP is a technology that allows websites to be served by Google. Read more on /privacy)",
     "FACEBOOK TRACKERS": "Websites that include trackers from Facebook.",
-    "IP GRABBERS":
-        "Websites that store your IP address, which shows your approximate location.",
+    "IP GRABBERS": "Websites that store your IP address, which shows your approximate location.",
     PORN: "Websites that include pornography.",
     GAMBLING: "Gambling sites, often scams.",
-    MALWARE:
-        "Websites which download files designed to break or slow down your device.",
+    MALWARE: "Websites which download files designed to break or slow down your device.",
     PIRACY: "Sites which include illegally downloaded material.",
-    RANSOMWARE:
-        "Websites which download a program that can steal your data and make you pay to get it back.",
+    RANSOMWARE: "Websites which download a program that can steal your data and make you pay to get it back.",
     REDIRECTS: "Sites like bit.ly which could redirect to a malicious site.",
     SCAMS: "Sites which are designed to trick you into doing something.",
     TORRENT: "Websites that download torrent files.",
@@ -83,12 +76,7 @@ export async function LinkCheck(message: Discord.Message): Promise<string[]> {
     const promises: Promise<void>[] = links.map(async (element) => {
         let returned;
         try {
-            if (
-                element.match(
-                    /https?:\/\/[a-zA-Z]+\.?discord(app)?\.(com|net)\/?/
-                )
-            )
-                return; // Also matches discord.net, not enough of a bug
+            if (element.match(/https?:\/\/[a-zA-Z]+\.?discord(app)?\.(com|net)\/?/)) return; // Also matches discord.net, not enough of a bug
             returned = await testLink(element);
         } catch {
             detections.push({ tags: [], safe: true });
@@ -99,9 +87,7 @@ export async function LinkCheck(message: Discord.Message): Promise<string[]> {
     await Promise.all(promises);
     const detectionsTypes = detections
         .map((element) => {
-            const type = Object.keys(linkTypes).find((type) =>
-                element.tags.includes(type)
-            );
+            const type = Object.keys(linkTypes).find((type) => element.tags.includes(type));
             if (type) return type;
             // if (!element.safe) return "UNSAFE"
             return undefined;
@@ -119,10 +105,7 @@ export async function NSFWCheck(element: string): Promise<boolean> {
     }
 }
 
-export async function SizeCheck(element: {
-    height: number | null;
-    width: number | null;
-}): Promise<boolean> {
+export async function SizeCheck(element: { height: number | null; width: number | null }): Promise<boolean> {
     if (element.height === null || element.width === null) return true;
     if (element.height < 20 || element.width < 20) return false;
     return true;
@@ -136,11 +119,7 @@ export async function MalwareCheck(element: string): Promise<boolean> {
     }
 }
 
-export function TestString(
-    string: string,
-    soft: string[],
-    strict: string[]
-): object | null {
+export function TestString(string: string, soft: string[], strict: string[]): object | null {
     for (const word of strict) {
         if (string.toLowerCase().includes(word)) {
             return { word: word, type: "strict" };

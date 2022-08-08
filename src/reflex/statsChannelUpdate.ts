@@ -14,13 +14,7 @@ export async function callback(_, member) {
         if ((props as PropSchema).enabled) {
             let string = (props as PropSchema).name;
             if (!string) return;
-            string = await convertCurlyBracketString(
-                string,
-                member.id,
-                member.displayName,
-                guild.name,
-                guild.members
-            );
+            string = await convertCurlyBracketString(string, member.id, member.displayName, guild.name, guild.members);
             let fetchedChannel;
             try {
                 fetchedChannel = await guild.channels.fetch(channel);
@@ -31,11 +25,7 @@ export async function callback(_, member) {
                 const deleted = config.getKey("stats")[channel];
                 console.log(`stats.${channel}`);
                 console.log(guild.id);
-                await client.database.guilds.write(
-                    guild.id,
-                    null,
-                    `stats.${channel}`
-                );
+                await client.database.guilds.write(guild.id, null, `stats.${channel}`);
                 return singleNotify(
                     "statsChannelDeleted",
                     guild.id,

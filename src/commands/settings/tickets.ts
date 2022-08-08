@@ -15,17 +15,10 @@ import Discord, {
     SelectMenuInteraction,
     TextInputComponent
 } from "discord.js";
-import {
-    SelectMenuOption,
-    SlashCommandSubcommandBuilder
-} from "@discordjs/builders";
+import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { ChannelType } from "discord-api-types/v9";
 import client from "../../utils/client.js";
-import {
-    toHexInteger,
-    toHexArray,
-    tickets as ticketTypes
-} from "../../utils/calculate.js";
+import { toHexInteger, toHexArray, tickets as ticketTypes } from "../../utils/calculate.js";
 import { capitalize } from "../../utils/generateKeyValueList.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import { GuildConfig } from "../../utils/database.js";
@@ -33,9 +26,7 @@ import { GuildConfig } from "../../utils/database.js";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("tickets")
-        .setDescription(
-            "Shows settings for tickets | Use no arguments to manage custom types"
-        )
+        .setDescription("Shows settings for tickets | Use no arguments to manage custom types")
         .addStringOption((option) =>
             option
                 .setName("enabled")
@@ -56,9 +47,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addNumberOption((option) =>
             option
                 .setName("maxticketsperuser")
-                .setDescription(
-                    "The maximum amount of tickets a user can create | Default: 5"
-                )
+                .setDescription("The maximum amount of tickets a user can create | Default: 5")
                 .setRequired(false)
                 .setMinValue(1)
         )
@@ -71,9 +60,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (
-    interaction: CommandInteraction
-): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
     let m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -85,28 +72,19 @@ const callback = async (
         maxtickets: interaction.options.getNumber("maxticketsperuser"),
         supportping: interaction.options.getRole("supportrole")
     };
-    if (
-        options.enabled !== null ||
-        options.category ||
-        options.maxtickets ||
-        options.supportping
-    ) {
+    if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         options.enabled = options.enabled === "yes" ? true : false;
         if (options.category) {
             let channel: GuildChannel;
             try {
-                channel = await interaction.guild.channels.fetch(
-                    options.category.id
-                );
+                channel = await interaction.guild.channels.fetch(options.category.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
                             .setEmoji("CHANNEL.TEXT.DELETE")
                             .setTitle("Tickets > Category")
-                            .setDescription(
-                                "The channel you provided is not a valid category"
-                            )
+                            .setDescription("The channel you provided is not a valid category")
                             .setStatus("Danger")
                     ]
                 });
@@ -117,9 +95,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Tickets > Category")
-                            .setDescription(
-                                "You must choose a category in this server"
-                            )
+                            .setDescription("You must choose a category in this server")
                             .setStatus("Danger")
                             .setEmoji("CHANNEL.TEXT.DELETE")
                     ]
@@ -131,9 +107,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Tickets > Max Tickets")
-                            .setDescription(
-                                "You must choose a number greater than 0"
-                            )
+                            .setDescription("You must choose a number greater than 0")
                             .setStatus("Danger")
                             .setEmoji("CHANNEL.TEXT.DELETE")
                     ]
@@ -142,18 +116,14 @@ const callback = async (
         let role: Role;
         if (options.supportping) {
             try {
-                role = await interaction.guild.roles.fetch(
-                    options.supportping.id
-                );
+                role = await interaction.guild.roles.fetch(options.supportping.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
                             .setEmoji("GUILD.ROLE.DELETE")
                             .setTitle("Tickets > Support Ping")
-                            .setDescription(
-                                "The role you provided is not a valid role"
-                            )
+                            .setDescription("The role you provided is not a valid role")
                             .setStatus("Danger")
                     ]
                 });
@@ -164,9 +134,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Tickets > Support Ping")
-                            .setDescription(
-                                "You must choose a role in this server"
-                            )
+                            .setDescription("You must choose a role in this server")
                             .setStatus("Danger")
                             .setEmoji("GUILD.ROLE.DELETE")
                     ]
@@ -177,15 +145,9 @@ const callback = async (
             .setEmoji("GUILD.TICKET.ARCHIVED")
             .setTitle("Tickets")
             .setDescription(
-                (options.category
-                    ? `**Category:** ${options.category.name}\n`
-                    : "") +
-                    (options.maxtickets
-                        ? `**Max Tickets:** ${options.maxtickets}\n`
-                        : "") +
-                    (options.supportping
-                        ? `**Support Ping:** ${options.supportping.name}\n`
-                        : "") +
+                (options.category ? `**Category:** ${options.category.name}\n` : "") +
+                    (options.maxtickets ? `**Max Tickets:** ${options.maxtickets}\n` : "") +
+                    (options.supportping ? `**Support Ping:** ${options.supportping.name}\n` : "") +
                     (options.enabled !== null
                         ? `**Enabled:** ${
                               options.enabled
@@ -201,27 +163,18 @@ const callback = async (
         if (confirmation.cancelled) return;
         if (confirmation.success) {
             const toUpdate = {};
-            if (options.enabled !== null)
-                toUpdate["tickets.enabled"] = options.enabled;
-            if (options.category)
-                toUpdate["tickets.category"] = options.category.id;
-            if (options.maxtickets)
-                toUpdate["tickets.maxTickets"] = options.maxtickets;
-            if (options.supportping)
-                toUpdate["tickets.supportRole"] = options.supportping.id;
+            if (options.enabled !== null) toUpdate["tickets.enabled"] = options.enabled;
+            if (options.category) toUpdate["tickets.category"] = options.category.id;
+            if (options.maxtickets) toUpdate["tickets.maxTickets"] = options.maxtickets;
+            if (options.supportping) toUpdate["tickets.supportRole"] = options.supportping.id;
             try {
-                await client.database.guilds.write(
-                    interaction.guild.id,
-                    toUpdate
-                );
+                await client.database.guilds.write(interaction.guild.id, toUpdate);
             } catch (e) {
                 return interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Tickets")
-                            .setDescription(
-                                "Something went wrong and the staff notifications channel could not be set"
-                            )
+                            .setDescription("Something went wrong and the staff notifications channel could not be set")
                             .setStatus("Danger")
                             .setEmoji("GUILD.TICKET.DELETE")
                     ],
@@ -243,8 +196,7 @@ const callback = async (
     }
     let data = await client.database.guilds.read(interaction.guild.id);
     data.tickets.customTypes = (data.tickets.customTypes || []).filter(
-        (value: string, index: number, array: string[]) =>
-            array.indexOf(value) === index
+        (value: string, index: number, array: string[]) => array.indexOf(value) === index
     );
     let lastClicked = "";
     let embed: EmojiEmbed;
@@ -261,34 +213,18 @@ const callback = async (
         embed = new EmojiEmbed()
             .setTitle("Tickets")
             .setDescription(
-                `${
-                    data.enabled ? "" : getEmojiByName("TICKETS.REPORT")
-                } **Enabled:** ${
-                    data.enabled
-                        ? `${getEmojiByName("CONTROL.TICK")} Yes`
-                        : `${getEmojiByName("CONTROL.CROSS")} No`
+                `${data.enabled ? "" : getEmojiByName("TICKETS.REPORT")} **Enabled:** ${
+                    data.enabled ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`
                 }\n` +
-                    `${
-                        data.category ? "" : getEmojiByName("TICKETS.REPORT")
-                    } **Category:** ${
+                    `${data.category ? "" : getEmojiByName("TICKETS.REPORT")} **Category:** ${
                         data.category ? `<#${data.category}>` : "*None set*"
                     }\n` +
-                    `**Max Tickets:** ${
-                        data.maxTickets ? data.maxTickets : "*No limit*"
-                    }\n` +
-                    `**Support Ping:** ${
-                        data.supportRole
-                            ? `<@&${data.supportRole}>`
-                            : "*None set*"
-                    }\n\n` +
-                    (data.useCustom && data.customTypes === null
-                        ? `${getEmojiByName("TICKETS.REPORT")} `
-                        : "") +
+                    `**Max Tickets:** ${data.maxTickets ? data.maxTickets : "*No limit*"}\n` +
+                    `**Support Ping:** ${data.supportRole ? `<@&${data.supportRole}>` : "*None set*"}\n\n` +
+                    (data.useCustom && data.customTypes === null ? `${getEmojiByName("TICKETS.REPORT")} ` : "") +
                     `${data.useCustom ? "Custom" : "Default"} types in use` +
                     "\n\n" +
-                    `${getEmojiByName(
-                        "TICKETS.REPORT"
-                    )} *Indicates a setting stopping tickets from being used*`
+                    `${getEmojiByName("TICKETS.REPORT")} *Indicates a setting stopping tickets from being used*`
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN");
@@ -297,43 +233,24 @@ const callback = async (
             components: [
                 new MessageActionRow().addComponents([
                     new MessageButton()
-                        .setLabel(
-                            "Tickets " + (data.enabled ? "enabled" : "disabled")
-                        )
-                        .setEmoji(
-                            getEmojiByName(
-                                "CONTROL." + (data.enabled ? "TICK" : "CROSS"),
-                                "id"
-                            )
-                        )
+                        .setLabel("Tickets " + (data.enabled ? "enabled" : "disabled"))
+                        .setEmoji(getEmojiByName("CONTROL." + (data.enabled ? "TICK" : "CROSS"), "id"))
                         .setStyle(data.enabled ? "SUCCESS" : "DANGER")
                         .setCustomId("enabled"),
                     new MessageButton()
-                        .setLabel(
-                            lastClicked === "cat"
-                                ? "Click again to confirm"
-                                : "Clear category"
-                        )
+                        .setLabel(lastClicked === "cat" ? "Click again to confirm" : "Clear category")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setStyle("DANGER")
                         .setCustomId("clearCategory")
                         .setDisabled(data.category === null),
                     new MessageButton()
-                        .setLabel(
-                            lastClicked === "max"
-                                ? "Click again to confirm"
-                                : "Reset max tickets"
-                        )
+                        .setLabel(lastClicked === "max" ? "Click again to confirm" : "Reset max tickets")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setStyle("DANGER")
                         .setCustomId("clearMaxTickets")
                         .setDisabled(data.maxTickets === 5),
                     new MessageButton()
-                        .setLabel(
-                            lastClicked === "sup"
-                                ? "Click again to confirm"
-                                : "Clear support ping"
-                        )
+                        .setLabel(lastClicked === "sup" ? "Click again to confirm" : "Clear support ping")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setStyle("DANGER")
                         .setCustomId("clearSupportPing")
@@ -360,42 +277,25 @@ const callback = async (
             break;
         }
         i.deferUpdate();
-        if (
-            (i.component as MessageActionRowComponent).customId ===
-            "clearCategory"
-        ) {
+        if ((i.component as MessageActionRowComponent).customId === "clearCategory") {
             if (lastClicked === "cat") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, null, [
-                    "tickets.category"
-                ]);
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.category"]);
                 data.category = undefined;
             } else lastClicked = "cat";
-        } else if (
-            (i.component as MessageActionRowComponent).customId ===
-            "clearMaxTickets"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "clearMaxTickets") {
             if (lastClicked === "max") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, null, [
-                    "tickets.maxTickets"
-                ]);
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.maxTickets"]);
                 data.maxTickets = 5;
             } else lastClicked = "max";
-        } else if (
-            (i.component as MessageActionRowComponent).customId ===
-            "clearSupportPing"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "clearSupportPing") {
             if (lastClicked === "sup") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, null, [
-                    "tickets.supportRole"
-                ]);
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.supportRole"]);
                 data.supportRole = undefined;
             } else lastClicked = "sup";
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "send"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "send") {
             const ticketMessages = [
                 {
                     label: "Create ticket",
@@ -403,13 +303,11 @@ const callback = async (
                 },
                 {
                     label: "Issues, questions or feedback?",
-                    description:
-                        "Click below to open a ticket and get help from our staff team"
+                    description: "Click below to open a ticket and get help from our staff team"
                 },
                 {
                     label: "Contact Us",
-                    description:
-                        "Click the button below to speak to us privately"
+                    description: "Click the button below to speak to us privately"
                 }
             ];
             while (true) {
@@ -418,9 +316,7 @@ const callback = async (
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Ticket Button")
-                            .setDescription(
-                                "Select a message template to send in this channel"
-                            )
+                            .setDescription("Select a message template to send in this channel")
                             .setFooter({
                                 text: enabled
                                     ? ""
@@ -462,10 +358,7 @@ const callback = async (
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                                 .setStyle("DANGER"),
-                            new MessageButton()
-                                .setCustomId("blank")
-                                .setLabel("Empty")
-                                .setStyle("SECONDARY"),
+                            new MessageButton().setCustomId("blank").setLabel("Empty").setStyle("SECONDARY"),
                             new MessageButton()
                                 .setCustomId("custom")
                                 .setLabel("Custom")
@@ -480,29 +373,14 @@ const callback = async (
                 } catch (e) {
                     break;
                 }
-                if (
-                    (i.component as MessageActionRowComponent).customId ===
-                    "template"
-                ) {
+                if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
                     await interaction.channel.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(
-                                    ticketMessages[
-                                        parseInt(
-                                            (i as SelectMenuInteraction)
-                                                .values[0]
-                                        )
-                                    ].label
-                                )
+                                .setTitle(ticketMessages[parseInt((i as SelectMenuInteraction).values[0])].label)
                                 .setDescription(
-                                    ticketMessages[
-                                        parseInt(
-                                            (i as SelectMenuInteraction)
-                                                .values[0]
-                                        )
-                                    ].description
+                                    ticketMessages[parseInt((i as SelectMenuInteraction).values[0])].description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("GUILD.TICKET.OPEN")
@@ -511,41 +389,28 @@ const callback = async (
                             new MessageActionRow().addComponents([
                                 new MessageButton()
                                     .setLabel("Create Ticket")
-                                    .setEmoji(
-                                        getEmojiByName("CONTROL.TICK", "id")
-                                    )
+                                    .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                                     .setStyle("SUCCESS")
                                     .setCustomId("createticket")
                             ])
                         ]
                     });
                     break;
-                } else if (
-                    (i.component as MessageActionRowComponent).customId ===
-                    "blank"
-                ) {
+                } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel.send({
                         components: [
                             new MessageActionRow().addComponents([
                                 new MessageButton()
                                     .setLabel("Create Ticket")
-                                    .setEmoji(
-                                        getEmojiByName(
-                                            "TICKETS.SUGGESTION",
-                                            "id"
-                                        )
-                                    )
+                                    .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
                                     .setStyle("SUCCESS")
                                     .setCustomId("createticket")
                             ])
                         ]
                     });
                     break;
-                } else if (
-                    (i.component as MessageActionRowComponent).customId ===
-                    "custom"
-                ) {
+                } else if ((i.component as MessageActionRowComponent).customId === "custom") {
                     await i.showModal(
                         new Discord.Modal()
                             .setCustomId("modal")
@@ -573,9 +438,7 @@ const callback = async (
                         embeds: [
                             new EmojiEmbed()
                                 .setTitle("Ticket Button")
-                                .setDescription(
-                                    "Modal opened. If you can't see it, click back and try again."
-                                )
+                                .setDescription("Modal opened. If you can't see it, click back and try again.")
                                 .setStatus("Success")
                                 .setEmoji("GUILD.TICKET.OPEN")
                         ],
@@ -583,9 +446,7 @@ const callback = async (
                             new MessageActionRow().addComponents([
                                 new MessageButton()
                                     .setLabel("Back")
-                                    .setEmoji(
-                                        getEmojiByName("CONTROL.LEFT", "id")
-                                    )
+                                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                                     .setStyle("PRIMARY")
                                     .setCustomId("back")
                             ])
@@ -603,8 +464,7 @@ const callback = async (
                     }
                     if (out.fields) {
                         const title = out.fields.getTextInputValue("title");
-                        const description =
-                            out.fields.getTextInputValue("description");
+                        const description = out.fields.getTextInputValue("description");
                         await interaction.channel.send({
                             embeds: [
                                 new EmojiEmbed()
@@ -617,12 +477,7 @@ const callback = async (
                                 new MessageActionRow().addComponents([
                                     new MessageButton()
                                         .setLabel("Create Ticket")
-                                        .setEmoji(
-                                            getEmojiByName(
-                                                "TICKETS.SUGGESTION",
-                                                "id"
-                                            )
-                                        )
+                                        .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
                                         .setStyle("SUCCESS")
                                         .setCustomId("createticket")
                                 ])
@@ -634,17 +489,12 @@ const callback = async (
                     }
                 }
             }
-        } else if (
-            (i.component as MessageActionRowComponent).customId === "enabled"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "enabled") {
             await client.database.guilds.write(interaction.guild.id, {
                 "tickets.enabled": !data.enabled
             });
             data.enabled = !data.enabled;
-        } else if (
-            (i.component as MessageActionRowComponent).customId ===
-            "manageTypes"
-        ) {
+        } else if ((i.component as MessageActionRowComponent).customId === "manageTypes") {
             data = await manageTypes(interaction, data, m as Message);
         } else {
             break;
@@ -656,11 +506,7 @@ const callback = async (
     });
 };
 
-async function manageTypes(
-    interaction: CommandInteraction,
-    data: GuildConfig["tickets"],
-    m: Message
-) {
+async function manageTypes(interaction: CommandInteraction, data: GuildConfig["tickets"], m: Message) {
     while (true) {
         if (data.useCustom) {
             const customTypes = data.customTypes;
@@ -671,11 +517,7 @@ async function manageTypes(
                         .setDescription(
                             "**Custom types enabled**\n\n" +
                                 "**Types in use:**\n" +
-                                (customTypes !== null
-                                    ? customTypes
-                                          .map((t) => `> ${t}`)
-                                          .join("\n")
-                                    : "*None set*") +
+                                (customTypes !== null ? customTypes.map((t) => `> ${t}`).join("\n") : "*None set*") +
                                 "\n\n" +
                                 (customTypes === null
                                     ? `${getEmojiByName(
@@ -712,14 +554,10 @@ async function manageTypes(
                             .setCustomId("back"),
                         new MessageButton()
                             .setLabel("Add new type")
-                            .setEmoji(
-                                getEmojiByName("TICKETS.SUGGESTION", "id")
-                            )
+                            .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
                             .setStyle("PRIMARY")
                             .setCustomId("addType")
-                            .setDisabled(
-                                customTypes !== null && customTypes.length >= 25
-                            ),
+                            .setDisabled(customTypes !== null && customTypes.length >= 25),
                         new MessageButton()
                             .setLabel("Switch to default types")
                             .setStyle("SECONDARY")
@@ -735,12 +573,7 @@ async function manageTypes(
                     new SelectMenuOption({
                         label: capitalize(type),
                         value: type,
-                        emoji: client.emojis.cache.get(
-                            getEmojiByName(
-                                `TICKETS.${type.toUpperCase()}`,
-                                "id"
-                            )
-                        ),
+                        emoji: client.emojis.cache.get(getEmojiByName(`TICKETS.${type.toUpperCase()}`, "id")),
                         default: inUse.includes(type)
                     })
                 );
@@ -761,12 +594,7 @@ async function manageTypes(
                             "**Default types enabled**\n\n" +
                                 "**Types in use:**\n" +
                                 inUse
-                                    .map(
-                                        (t) =>
-                                            `> ${getEmojiByName(
-                                                "TICKETS." + t.toUpperCase()
-                                            )} ${capitalize(t)}`
-                                    )
+                                    .map((t) => `> ${getEmojiByName("TICKETS." + t.toUpperCase())} ${capitalize(t)}`)
                                     .join("\n")
                         )
                         .setStatus("Success")
@@ -835,9 +663,7 @@ async function manageTypes(
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Tickets > Types")
-                        .setDescription(
-                            "Modal opened. If you can't see it, click back and try again."
-                        )
+                        .setDescription("Modal opened. If you can't see it, click back and try again.")
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
                 ],
@@ -868,11 +694,7 @@ async function manageTypes(
                 }
                 toAdd = toAdd.substring(0, 80);
                 try {
-                    await client.database.guilds.append(
-                        interaction.guild.id,
-                        "tickets.customTypes",
-                        toAdd
-                    );
+                    await client.database.guilds.append(interaction.guild.id, "tickets.customTypes", toAdd);
                 } catch {
                     continue;
                 }
@@ -885,19 +707,11 @@ async function manageTypes(
             }
         } else if (i.component.customId === "switchToDefault") {
             i.deferUpdate();
-            await client.database.guilds.write(
-                interaction.guild.id,
-                { "tickets.useCustom": false },
-                []
-            );
+            await client.database.guilds.write(interaction.guild.id, { "tickets.useCustom": false }, []);
             data.useCustom = false;
         } else if (i.component.customId === "switchToCustom") {
             i.deferUpdate();
-            await client.database.guilds.write(
-                interaction.guild.id,
-                { "tickets.useCustom": true },
-                []
-            );
+            await client.database.guilds.write(interaction.guild.id, { "tickets.useCustom": true }, []);
             data.useCustom = true;
         } else {
             i.deferUpdate();
