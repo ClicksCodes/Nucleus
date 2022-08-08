@@ -52,12 +52,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         interaction.options.getChannel("channel") ||
         interaction.options.getString("message")
     ) {
-        let role: Role;
-        let ping: Role;
-        const message = interaction.options.getString("message");
+        let role: Role | null;
+        let ping: Role | null;
+        let channel: Channel | null;
+        const message: string | null = interaction.options.getString("message");
         try {
-            role = interaction.options.getRole("role") as Role;
-            ping = interaction.options.getRole("ping") as Role;
+            role = interaction.options.getRole("role") as Role | null;
+            ping = interaction.options.getRole("ping") as Role | null;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -69,9 +70,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ]
             });
         }
-        let channel: Channel;
         try {
-            channel = interaction.options.getChannel("channel") as Channel;
+            channel = interaction.options.getChannel("channel") as Channel | null;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -83,7 +83,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ]
             });
         }
-        const options = {};
+        const options: {
+            role?: string;
+            ping?: string;
+            channel?: string;
+            message?: string;
+        } = {};
+
         if (role) options.role = renderRole(role);
         if (ping) options.ping = renderRole(ping);
         if (channel) options.channel = renderChannel(channel);
@@ -98,13 +104,25 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (confirmation.cancelled) return;
         if (confirmation.success) {
             try {
-                const toChange = {};
+                const toChange: {
+                    "welcome.role"?: string;
+                    "welcome.ping"?: string;
+                    "welcome.channel"?: string;
+                    "welcome.message"?: string;
+                } = {};
                 if (role) toChange["welcome.role"] = role.id;
                 if (ping) toChange["welcome.ping"] = ping.id;
                 if (channel) toChange["welcome.channel"] = channel.id;
                 if (message) toChange["welcome.message"] = message;
-                await client.database.guilds.write(interaction.guild.id, toChange);
-                const list = {
+                await client.database.guilds.write(interaction.guild!.id, toChange);
+                const list: {
+                    memberId: ReturnType<typeof entry>;
+                    changedBy: ReturnType<typeof entry>;
+                    role?: ReturnType<typeof entry>;
+                    ping?: ReturnType<typeof entry>;
+                    channel?: ReturnType<typeof entry>;
+                    message?: ReturnType<typeof entry>;
+                } = {
                     memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
                     changedBy: entry(interaction.user.id, renderUser(interaction.user))
                 };
@@ -123,7 +141,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     },
                     list: list,
                     hidden: {
-                        guild: interaction.guild.id
+                        guild: interaction.guild!.id
                     }
                 };
                 log(data);
@@ -155,7 +173,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
     let lastClicked = null;
     while (true) {
-        const config = await client.database.guilds.read(interaction.guild.id);
+        const config = await client.database.guilds.read(interaction.guild!.id);
         m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -164,19 +182,19 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         `**Message:** ${config.welcome.message ? `\n> ${config.welcome.message}` : "*None set*"}\n` +
                             `**Role:** ${
                                 config.welcome.role
-                                    ? renderRole(await interaction.guild.roles.fetch(config.welcome.role))
+                                    ? renderRole(await interaction.guild!.roles.fetch(config.welcome.role))
                                     : "*None set*"
                             }\n` +
                             `**Ping:** ${
                                 config.welcome.ping
-                                    ? renderRole(await interaction.guild.roles.fetch(config.welcome.ping))
+                                    ? renderRole(await interaction.guild!.roles.fetch(config.welcome.ping))
                                     : "*None set*"
                             }\n` +
                             `**Channel:** ${
                                 config.welcome.channel
                                     ? config.welcome.channel == "dm"
                                         ? "DM"
-                                        : renderChannel(await interaction.guild.channels.fetch(config.welcome.channel))
+                                        : renderChannel(await interaction.guild!.channels.fetch(config.welcome.channel))
                                     : "*None set*"
                             }`
                     )
@@ -226,7 +244,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         i.deferUpdate();
         if (i.customId == "clear-message") {
             if (lastClicked == "clear-message") {
-                await client.database.guilds.write(interaction.guild.id, {
+                await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.message": null
                 });
                 lastClicked = null;
@@ -235,7 +253,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         } else if (i.customId == "clear-role") {
             if (lastClicked == "clear-role") {
-                await client.database.guilds.write(interaction.guild.id, {
+                await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.role": null
                 });
                 lastClicked = null;
@@ -244,7 +262,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         } else if (i.customId == "clear-ping") {
             if (lastClicked == "clear-ping") {
-                await client.database.guilds.write(interaction.guild.id, {
+                await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.ping": null
                 });
                 lastClicked = null;
@@ -253,7 +271,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         } else if (i.customId == "clear-channel") {
             if (lastClicked == "clear-channel") {
-                await client.database.guilds.write(interaction.guild.id, {
+                await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.channel": null
                 });
                 lastClicked = null;
@@ -261,14 +279,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 lastClicked = "clear-channel";
             }
         } else if (i.customId == "set-channel-dm") {
-            await client.database.guilds.write(interaction.guild.id, {
+            await client.database.guilds.write(interaction.guild!.id, {
                 "welcome.channel": "dm"
             });
             lastClicked = null;
         }
     }
     await interaction.editReply({
-        embeds: [m.embeds[0].setFooter({ text: "Message closed" })],
+        embeds: [m.embeds[0]!.setFooter({ text: "Message closed" })],
         components: []
     });
 };

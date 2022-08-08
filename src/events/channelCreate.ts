@@ -1,9 +1,13 @@
+import type { GuildAuditLogsEntry } from "discord.js";
+import type { GuildBasedChannel } from "discord.js";
+// @ts-expect-error
+import { HaikuClient } from "jshaiku";
 export const event = "channelCreate";
 
-export async function callback(client, channel) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = channel.client.logger;
+export async function callback(client: HaikuClient, channel: GuildBasedChannel) {
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_CREATE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === channel.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();
     if (audit.executor.id === client.user.id) return;
     let emoji;
     let readableType;
@@ -27,7 +31,7 @@ export async function callback(client, channel) {
             displayName = "Voice Channel";
             break;
         }
-        case "GUILD_STAGE": {
+        case "GUILD_STAGE_VOICE": {
             emoji = "CHANNEL.VOICE.CREATE";
             readableType = "Stage";
             displayName = "Stage Channel";

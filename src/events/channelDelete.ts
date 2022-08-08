@@ -1,7 +1,7 @@
 import {
     BaseGuildTextChannel,
-    BaseGuildVoiceChannel,
-    GuildChannel,
+    GuildAuditLogsEntry,
+    GuildBasedChannel,
     StageChannel,
     ThreadChannel,
     VoiceChannel
@@ -11,10 +11,12 @@ import type { HaikuClient } from "jshaiku";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "channelDelete";
+
+export async function callback(client: HaikuClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
 
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_DELETE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === channel.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();
     if (audit.executor.id === client.user.id) return;
 
     let emoji;
@@ -46,15 +48,15 @@ export const event = "channelDelete";
         }
     }
     const list: {
-        channelId: string;
-        name: string;
-        topic?: string | null;
-        type: any;
-        category: any;
-        nsfw?: boolean | null;
-        created: any;
-        deleted: any;
-        deletedBy: any;
+        channelId: { value: string; displayValue: string };
+        name: { value: string; displayValue: string };
+        topic?: { value: string; displayValue: string } | null;
+        type: { value: string; displayValue: string };
+        category: { value: string; displayValue: string };
+        nsfw?: { value: string; displayValue: string } | null;
+        created: { value: string; displayValue: string };
+        deleted: { value: string; displayValue: string };
+        deletedBy: { value: string; displayValue: string };
     } = {
         channelId: entry(channel.id, `\`${channel.id}\``),
         name: entry(channel.id, `${channel.name}`),

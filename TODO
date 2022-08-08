@@ -1,6 +1,7 @@
 Role all
 Server rules
 verificationRequired on welcome
+// TODO !IMPORTANT! URL + image hash + file hash database
 
 ROLE MENU SETTINGS
 

@@ -4,7 +4,6 @@ import {
     Message,
     MessageActionRow,
     MessageButton,
-    PartialGroupDMChannel,
     TextChannel
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -17,7 +16,7 @@ const pbClient = new PasteClient(config.pastebinApiKey);
 
 export default async function (interaction: CommandInteraction) {
     if (interaction.channel === null) return;
-    if (interaction.channel instanceof DMChannel) return;
+    if (!(interaction.channel instanceof TextChannel)) return;
     const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
 
     let messages: Message[] = [];
@@ -44,18 +43,19 @@ export default async function (interaction: CommandInteraction) {
             out += "\n\n";
         }
     });
-    const member = interaction.channel.guild.members.cache.get(interaction.channel.topic.split(" ")[0]);
+    const member = interaction.guild!.members.cache.get(interaction.channel.topic.split(" ")[0]);
     let m;
     if (out !== "") {
         const url = await pbClient.createPaste({
             code: out,
             expireDate: ExpireDate.Never,
-            name: `Ticket Transcript for ${member.user.username}#${member.user.discriminator} (Created at ${new Date(
+            name: `Ticket Transcript ${member ? ("for " + member.user.username + "#" + member.user.discriminator + " ") : ""}` +
+                `(Created at ${new Date(
                 interaction.channel.createdTimestamp
             ).toDateString()})`,
             publicity: Publicity.Unlisted
         });
-        const guildConfig = await client.database.guilds.read(interaction.guild.id);
+        const guildConfig = await client.database.guilds.read(interaction.guild!.id);
         m = await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -121,15 +121,15 @@ export default async function (interaction: CommandInteraction) {
             timestamp: new Date().getTime()
         },
         list: {
-            ticketFor: entry(
-                interaction.channel.topic.split(" ")[0],
-                renderUser((await interaction.guild.members.fetch(interaction.channel.topic.split(" ")[0])).user)
-            ),
-            deletedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+            ticketFor: member ? entry(
+                member.id,
+                renderUser(member.user)
+            ) : entry(null, "*Unknown*"),
+            deletedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user)),
             deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
         },
         hidden: {
-            guild: interaction.guild.id
+            guild: interaction.guild!.id
         }
     };
     log(data);
