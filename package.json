@@ -12,7 +12,7 @@
         "fuse.js": "^6.6.2",
         "humanize-duration": "^3.27.1",
         "immutable": "^4.1.0",
-        "jshaiku": "file:../haiku",
+        "jshaiku": "git+https://github.com/ClicksMinutePer/haiku.git#nucleus",
         "mongodb": "^4.7.0",
         "node-tesseract-ocr": "^2.2.1",
         "pastebin-api": "^5.1.1",
