@@ -157,7 +157,7 @@ const filterList = {
     }
 };
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -259,11 +259,11 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
 const check = async (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
-    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the *Manage Roles* permission";
+    if (!me.permissions.has("MANAGE_ROLES")) throw new Error("I do not have the *Manage Roles* permission");
     // Allow the owner to role anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_roles permission
-    if (!member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
+    if (!member.permissions.has("MANAGE_ROLES")) throw new Error("You do not have the *Manage Roles* permission");
     // Allow role
     return true;
 };

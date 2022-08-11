@@ -91,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         .setInverted(true)
         .send();
     if (confirmation.cancelled) return;
-    if (!confirmation)
+    if (!confirmation.success)
         return await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -102,8 +102,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ]
         });
     try {
-        const toSet = {};
-        const toUnset = [];
+        const toSet: Record<string, string> = {};
+        const toUnset: string[] = [];
         if (value) toSet[`tags.${name}`] = value;
         if (newname) {
             toUnset.push(`tags.${name}`);

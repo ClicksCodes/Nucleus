@@ -11,7 +11,7 @@ const callback = async (_interaction: CommandInteraction): Promise<void> => {
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_MESSAGES"))
-        throw "You must have the *Manage Messages* permission to use this command";
+        throw new Error("You must have the *Manage Messages* permission to use this command");
     return true;
 };
 

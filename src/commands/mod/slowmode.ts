@@ -1,6 +1,7 @@
+// @ts-expect-error
 import humanizeDuration from "humanize-duration";
-import { CommandInteraction, GuildMember, TextChannel } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { CommandInteraction, GuildMember, TextChannel } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -91,9 +92,9 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     // Check if Nucleus can set the slowmode
     if (!interaction.guild.me.permissions.has("MANAGE_CHANNELS"))
-        throw "I do not have the *Manage Channels* permission";
+        throw new Error("I do not have the *Manage Channels* permission");
     // Check if the user has manage_channel permission
-    if (!member.permissions.has("MANAGE_CHANNELS")) throw "You do not have the *Manage Channels* permission";
+    if (!member.permissions.has("MANAGE_CHANNELS")) throw new Error("You do not have the *Manage Channels* permission");
     // Allow slowmode
     return true;
 };

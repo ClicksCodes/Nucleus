@@ -1,3 +1,4 @@
+// @ts-expect-error
 import { HaikuClient } from "jshaiku";
 import { Intents } from "discord.js";
 import config from "../config/main.json" assert { type: "json" };

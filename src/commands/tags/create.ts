@@ -1,5 +1,6 @@
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type Discord from "discord.js";
+import type { CommandInteraction } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -14,10 +15,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             o.setName("value").setRequired(true).setDescription("The value of the tag, shown after running /tag name")
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const name = interaction.options.getString("name");
     const value = interaction.options.getString("value");
-    if (name.length > 100)
+    if (name!.length > 100)
         return await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -28,7 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             ],
             ephemeral: true
         });
-    if (value.length > 1000)
+    if (value!.length > 1000)
         return await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -39,7 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             ],
             ephemeral: true
         });
-    const data = await client.database.guilds.read(interaction.guild.id);
+    const data = await client.database.guilds.read(interaction.guild!.id);
     if (data.tags.length >= 100)
         return await interaction.reply({
             embeds: [
@@ -75,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
         .setInverted(true)
         .send();
     if (confirmation.cancelled) return;
-    if (!confirmation)
+    if (!confirmation.success)
         return await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -86,7 +87,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             ]
         });
     try {
-        await client.database.guilds.write(interaction.guild.id, {
+        await client.database.guilds.write(interaction.guild!.id, {
             [`tags.${name}`]: value
         });
     } catch (e) {
@@ -116,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_MESSAGES"))
-        throw "You must have the *Manage Messages* permission to use this command";
+        throw new Error("You must have the *Manage Messages* permission to use this command");
     return true;
 };
 

@@ -1,5 +1,5 @@
 import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -25,7 +25,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option.setName("reason").setDescription("The reason for the purge").setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const user = (interaction.options.getMember("user") as GuildMember) ?? null;
     const channel = interaction.channel as GuildChannel;
     if (
@@ -396,11 +396,11 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     // Check if nucleus has the manage_messages permission
-    if (!me.permissions.has("MANAGE_MESSAGES")) throw "I do not have the *Manage Messages* permission";
+    if (!me.permissions.has("MANAGE_MESSAGES")) throw new Error("I do not have the *Manage Messages* permission");
     // Allow the owner to purge
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_messages permission
-    if (!member.permissions.has("MANAGE_MESSAGES")) throw "You do not have the *Manage Messages* permission";
+    if (!member.permissions.has("MANAGE_MESSAGES")) throw new Error("You do not have the *Manage Messages* permission");
     // Allow purge
     return true;
 };

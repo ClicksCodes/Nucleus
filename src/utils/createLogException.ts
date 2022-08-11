@@ -3,7 +3,7 @@ import client from "./client.js";
 export default function (guild: string, channel: string, message: string) {
     client.noLog.push(`${guild}/${channel}/${message}`);
     setTimeout(() => {
-        client.noLog = client.noLog.filter((i) => {
+        client.noLog = client.noLog.filter((i: string) => {
             return i !== `${guild}/${channel}/${message}`;
         });
     }, 500);

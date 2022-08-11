@@ -14,8 +14,8 @@ export function capitalize(s: string) {
 }
 
 export function toCapitals(s: string) {
-    if (s.startsWith(undefined)) return "";
-    return s[0].toUpperCase() + s.slice(1).toLowerCase();
+    if (s === "") return "";
+    return s[0]!.toUpperCase() + s.slice(1).toLowerCase();
 }
 
 function keyValueList(data: Record<string, string>) {

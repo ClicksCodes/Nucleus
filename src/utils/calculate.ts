@@ -23,7 +23,7 @@ const logs = [
 
 const tickets = ["support", "report", "question", "issue", "suggestion", "other"];
 
-const toHexInteger = (permissions, array?) => {
+const toHexInteger = (permissions: string[], array?: string[]) => {
     if (!array) {
         array = logs;
     }
@@ -35,7 +35,7 @@ const toHexInteger = (permissions, array?) => {
     return int.toString(16);
 };
 
-const toHexArray = (permissionsHex, array?) => {
+const toHexArray = (permissionsHex: string, array?: string[]) => {
     if (!array) {
         array = logs;
     }
@@ -45,7 +45,7 @@ const toHexArray = (permissionsHex, array?) => {
         .split("")
         .reverse();
     for (const index in int) {
-        if (int[index] === "1" && array.length > index) {
+        if (int[index] === "1" && array.length > parseInt(index)) {
             permissions.push(array[index]);
         }
     }

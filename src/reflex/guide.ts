@@ -1,6 +1,15 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import { SelectMenuOption } from "@discordjs/builders";
-import Discord, { MessageActionRow, MessageButton } from "discord.js";
+import Discord, {
+    MessageActionRow,
+    MessageButton,
+    MessageComponentInteraction,
+    MessageSelectOptionData,
+    Guild,
+    CommandInteraction,
+    GuildTextBasedChannel,
+    Message,
+    SelectMenuInteraction
+} from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
@@ -10,6 +19,11 @@ class Embed {
     title: string;
     description = "";
     pageId = 0;
+
+    constructor() {
+        this.embed = new Discord.MessageEmbed();
+        this.title = "";
+    }
     setEmbed(embed: Discord.MessageEmbed) {
         this.embed = embed;
         return this;
@@ -28,16 +42,26 @@ class Embed {
     }
 }
 
-export default async (guild, interaction?) => {
-    let c = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
+export default async (guild: Guild, interaction?: CommandInteraction) => {
+    let c: GuildTextBasedChannel | null = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
     c = c
         ? c
-        : guild.channels.cache.find(
+        : (guild.channels.cache.find(
               (ch) =>
-                  ch.type === "GUILD_TEXT" &&
+                  [
+                      "GUILD_TEXT",
+                      "GUILD_NEWS",
+                      "GUILD_NEWS_THREAD",
+                      "GUILD_PRIVATE_THREAD",
+                      "GUILD_PUBLIC_THREAD"
+                  ].includes(ch.type) &&
                   ch.permissionsFor(guild.roles.everyone).has("SEND_MESSAGES") &&
-                  ch.permissionsFor(guild.me).has("EMBED_LINKS")
-          );
+                  ch.permissionsFor(guild.me!).has("EMBED_LINKS")
+          ) as GuildTextBasedChannel | undefined) ?? null;
+    if (interaction) c = interaction.channel as GuildTextBasedChannel;
+    if (!c) {
+        return;
+    }
     const pages = [
         new Embed()
             .setEmbed(
@@ -188,37 +212,35 @@ export default async (guild, interaction?) => {
             .setDescription("Premium features")
             .setPageId(7)
     ];
-    let m;
+    let m: Message;
     if (interaction) {
-        m = await interaction.reply({
+        m = (await interaction.reply({
             embeds: LoadingEmbed,
             fetchReply: true,
             ephemeral: true
-        });
+        })) as Message;
     } else {
         m = await c.send({ embeds: LoadingEmbed });
     }
     let page = 0;
 
-    const f = async (component) => {
+    const f = async (component: MessageComponentInteraction) => {
         return (component.member as Discord.GuildMember).permissions.has("MANAGE_GUILD");
     };
 
     let selectPaneOpen = false;
 
     while (true) {
-        let selectPane = [];
+        let selectPane: MessageActionRow[] = [];
 
         if (selectPaneOpen) {
-            const options = [];
+            const options: MessageSelectOptionData[] = [];
             pages.forEach((embed) => {
-                options.push(
-                    new SelectMenuOption({
-                        label: embed.title,
-                        value: embed.pageId.toString(),
-                        description: embed.description || ""
-                    })
-                );
+                options.push({
+                    label: embed.title,
+                    value: embed.pageId.toString(),
+                    description: embed.description || ""
+                });
             });
             selectPane = [
                 new MessageActionRow().addComponents([
@@ -250,20 +272,19 @@ export default async (guild, interaction?) => {
             ])
         ]);
         if (interaction) {
-            const em = new Discord.MessageEmbed(pages[page].embed);
+            const em = new Discord.MessageEmbed(pages[page]!.embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             await interaction.editReply({
                 embeds: [em],
                 components: components
             });
         } else {
-            const em = new Discord.MessageEmbed(pages[page].embed);
+            const em = new Discord.MessageEmbed(pages[page]!.embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
-            await m.edit({
+            (await m.edit({
                 embeds: [em],
-                components: components,
-                fetchReply: true
-            });
+                components: components
+            })) as Message;
         }
         let i;
         try {
@@ -279,7 +300,9 @@ export default async (guild, interaction?) => {
             break;
         }
         i.deferUpdate();
-        if (i.component.customId === "left") {
+        if (!("customId" in i.component)) {
+            continue;
+        } else if (i.component.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
         } else if (i.component.customId === "right") {
@@ -288,11 +311,11 @@ export default async (guild, interaction?) => {
         } else if (i.component.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
         } else if (i.component.customId === "page") {
-            page = parseInt(i.values[0]);
+            page = parseInt((i as SelectMenuInteraction).values[0]!);
             selectPaneOpen = false;
         } else {
             if (interaction) {
-                const em = new Discord.MessageEmbed(pages[page].embed);
+                const em = new Discord.MessageEmbed(pages[page]!.embed);
                 em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
                 em.setFooter({ text: "Message closed" });
                 interaction.editReply({
@@ -324,7 +347,7 @@ export default async (guild, interaction?) => {
         }
     }
     if (interaction) {
-        const em = new Discord.MessageEmbed(pages[page].embed);
+        const em = new Discord.MessageEmbed(pages[page]!.embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
             text: "Message timed out"
         });
@@ -351,7 +374,7 @@ export default async (guild, interaction?) => {
             ]
         });
     } else {
-        const em = new Discord.MessageEmbed(pages[page].embed);
+        const em = new Discord.MessageEmbed(pages[page]!.embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
             text: "Message timed out"
         });

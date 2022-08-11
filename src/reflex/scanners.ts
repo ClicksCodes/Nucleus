@@ -1,10 +1,10 @@
-// @ts-expect-error
-import * as us from "unscan";
 import fetch from "node-fetch";
-import { writeFileSync } from "fs";
+import FormData from "form-data";
+import { writeFileSync, createReadStream } from "fs";
 import generateFileName from "../utils/temp/generateFileName.js";
 import Tesseract from "node-tesseract-ocr";
 import type Discord from "discord.js";
+import client from "../utils/client.js";
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -15,14 +15,68 @@ interface MalwareSchema {
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const p = await saveAttachment(link);
-    const result = await us.nsfw.file(p);
-    return { nsfw: result.nsfw ?? false };
+    const data = new FormData();
+    console.log(link);
+    data.append("file", createReadStream(p));
+    const result = await fetch("https://unscan.p.rapidapi.com/", {
+        method: "POST",
+        headers: {
+            "X-RapidAPI-Key": client.config.rapidApiKey,
+            "X-RapidAPI-Host": "unscan.p.rapidapi.com"
+        },
+        body: data
+    })
+        .then((response) => response.json() as Promise<NSFWSchema>)
+        .catch((err) => {
+            console.error(err);
+            return { nsfw: false };
+        });
+    console.log(result);
+    return { nsfw: result.nsfw };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
     const p = await saveAttachment(link);
-    const result = await us.malware.file(p);
-    return { safe: result.safe ?? true };
+    const data = new FormData();
+    data.append("file", createReadStream(p));
+    console.log(link);
+    const result = await fetch("https://unscan.p.rapidapi.com/malware", {
+        method: "POST",
+        headers: {
+            "X-RapidAPI-Key": client.config.rapidApiKey,
+            "X-RapidAPI-Host": "unscan.p.rapidapi.com"
+        },
+        body: data
+    })
+        .then((response) => response.json() as Promise<MalwareSchema>)
+        .catch((err) => {
+            console.error(err);
+            return { safe: true };
+        });
+    console.log(result);
+    return { safe: result.safe };
+}
+
+export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
+    console.log(link);
+    const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/malware", {
+        method: "POST",
+        headers: {
+            "X-RapidAPI-Key": client.config.rapidApiKey,
+            "X-RapidAPI-Host": "unscan.p.rapidapi.com"
+        },
+        body: `{"link":"${link}"}`
+    })
+        .then((response) => response.json() as Promise<MalwareSchema>)
+        .catch((err) => {
+            console.error(err);
+            return { safe: true, tags: [] };
+        });
+    console.log(scanned);
+    return {
+        safe: scanned.safe ?? true,
+        tags: scanned.tags ?? []
+    };
 }
 
 export async function saveAttachment(link: string): Promise<string> {
@@ -30,19 +84,6 @@ export async function saveAttachment(link: string): Promise<string> {
     const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
     writeFileSync(fileName, image, "base64");
     return fileName;
-}
-
-const defaultLinkTestResult: { safe: boolean; tags: string[] } = {
-    safe: true,
-    tags: []
-};
-export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
-    const scanned: { safe?: boolean; tags?: string[] } | undefined = await us.link.scan(link);
-    if (scanned === undefined) return defaultLinkTestResult;
-    return {
-        safe: scanned.safe ?? defaultLinkTestResult.safe,
-        tags: scanned.tags ?? defaultLinkTestResult.tags
-    };
 }
 
 const linkTypes = {

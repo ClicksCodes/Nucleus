@@ -12,7 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Warns a user")
         .addUserOption((option) => option.setName("user").setDescription("The user to warn").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { log, NucleusColors, renderUser, entry } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -286,17 +286,18 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     const memberPos = member.roles ? member.roles.highest.position : 0;
     const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow warning bots
-    if (member.user.bot) throw "I cannot warn bots";
+    if (member.user.bot) throw new Error("I cannot warn bots");
     // Allow the owner to warn anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
-    if (!member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("MODERATE_MEMBERS"))
+        throw new Error("You do not have the *Moderate Members* permission");
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
     // Allow warn
     return true;
 };

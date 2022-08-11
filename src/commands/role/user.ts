@@ -27,7 +27,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 ])
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { renderUser, renderRole } = client.logger;
     const action = interaction.options.getString("action");
     // TODO:[Modals] Replace this with a modal
@@ -95,13 +95,13 @@ const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => 
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     // Check if Nucleus has permission to role
-    if (!me.permissions.has("MANAGE_ROLES")) throw "I do not have the *Manage Roles* permission";
+    if (!me.permissions.has("MANAGE_ROLES")) throw new Error("I do not have the *Manage Roles* permission");
     // Allow the owner to role anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_roles permission
-    if (!member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
+    if (!member.permissions.has("MANAGE_ROLES")) throw new Error("You do not have the *Manage Roles* permission");
     // Allow role
     return true;
 };

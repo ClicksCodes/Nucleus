@@ -365,24 +365,25 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     const memberPos = member.roles ? member.roles.highest.position : 0;
     const mePos = me.roles ? me.roles.highest.position : 0;
     const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow muting the owner
-    if (member.id === interaction.guild.ownerId) throw "You cannot mute the owner of the server";
+    if (member.id === interaction.guild.ownerId) throw new Error("You cannot mute the owner of the server");
     // Check if Nucleus can mute the member
-    if (!(mePos > applyPos)) throw "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to mute
-    if (!me.permissions.has("MODERATE_MEMBERS")) throw "I do not have the *Moderate Members* permission";
+    if (!me.permissions.has("MODERATE_MEMBERS")) throw new Error("I do not have the *Moderate Members* permission");
     // Do not allow muting Nucleus
-    if (member.id === me.id) throw "I cannot mute myself";
+    if (member.id === me.id) throw new Error("I cannot mute myself");
     // Allow the owner to mute anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
-    if (!member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("MODERATE_MEMBERS"))
+        throw new Error("You do not have the *Moderate Members* permission");
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
     // Allow mute
     return true;
 };

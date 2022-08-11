@@ -32,7 +32,6 @@ export class Guilds {
     constructor() {
         this.guilds = database.collection<GuildConfig>("guilds");
         this.defaultData = null;
-        return this;
     }
 
     async setup() {
@@ -122,11 +121,9 @@ export class Guilds {
 
 export class History {
     histories: Collection<HistorySchema>;
-    defaultData: GuildConfig;
 
-    async setup() {
+    constructor() {
         this.histories = database.collection<HistorySchema>("history");
-        return this;
     }
 
     async create(
@@ -135,20 +132,20 @@ export class History {
         user: Discord.User,
         moderator: Discord.User | null,
         reason: string | null,
-        before?: null,
-        after?: null,
-        amount?: null
+        before?: string | null,
+        after?: string | null,
+        amount?: string | null
     ) {
         await this.histories.insertOne({
             type: type,
             guild: guild,
             user: user.id,
-            moderator: moderator.id,
+            moderator: moderator ? moderator.id : null,
             reason: reason,
             occurredAt: new Date(),
-            before: before,
-            after: after,
-            amount: amount
+            before: before ?? null,
+            after: after ?? null,
+            amount: amount ?? null
         });
     }
 
@@ -173,11 +170,9 @@ export class History {
 
 export class ModNotes {
     modNotes: Collection<ModNoteSchema>;
-    defaultData: GuildConfig;
 
-    async setup() {
+    constructor() {
         this.modNotes = database.collection<ModNoteSchema>("modNotes");
-        return this;
     }
 
     async create(guild: string, user: string, note: string | null) {
@@ -193,9 +188,8 @@ export class ModNotes {
 export class Premium {
     premium: Collection<PremiumSchema>;
 
-    async setup() {
+    constructor() {
         this.premium = database.collection<PremiumSchema>("premium");
-        return this;
     }
 
     async hasPremium(guild: string) {
@@ -342,7 +336,7 @@ export interface HistorySchema {
     guild: string;
     user: string;
     moderator: string | null;
-    reason: string;
+    reason: string | null;
     occurredAt: Date;
     before: string | null;
     after: string | null;
@@ -352,7 +346,7 @@ export interface HistorySchema {
 export interface ModNoteSchema {
     guild: string;
     user: string;
-    note: string;
+    note: string | null;
 }
 
 export interface PremiumSchema {

@@ -23,9 +23,9 @@ client.memory = new Memory() as Memory;
 client.noLog = [] as string[];
 client.database = {
     guilds: await new Guilds().setup(),
-    history: await new History().setup(),
-    notes: await new ModNotes().setup(),
-    premium: await new Premium().setup(),
+    history: new History(),
+    notes: new ModNotes(),
+    premium: new Premium(),
     eventScheduler: await new EventScheduler().start()
 } as {
     guilds: Guilds;

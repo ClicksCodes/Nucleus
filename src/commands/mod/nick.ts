@@ -14,7 +14,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let notify = true;
@@ -167,24 +167,25 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     const memberPos = member.roles ? member.roles.highest.position : 0;
     const mePos = me.roles ? me.roles.highest.position : 0;
     const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow any changing of the owner
-    if (member.id === interaction.guild.ownerId) throw "You cannot change the owner's nickname";
+    if (member.id === interaction.guild.ownerId) throw new Error("You cannot change the owner's nickname");
     // Check if Nucleus can change the nickname
-    if (!(mePos > applyPos)) throw "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to change the nickname
-    if (!me.permissions.has("MANAGE_NICKNAMES")) throw "I do not have the *Manage Nicknames* permission";
+    if (!me.permissions.has("MANAGE_NICKNAMES")) throw new Error("I do not have the *Manage Nicknames* permission");
     // Allow the owner to change anyone's nickname
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_nicknames permission
-    if (!member.permissions.has("MANAGE_NICKNAMES")) throw "You do not have the *Manage Nicknames* permission";
+    if (!member.permissions.has("MANAGE_NICKNAMES"))
+        throw new Error("You do not have the *Manage Nicknames* permission");
     // Allow changing your own nickname
     if (member === apply) return true;
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
     // Allow change
     return true;
 };

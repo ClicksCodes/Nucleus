@@ -1,12 +1,16 @@
-import { HistorySchema } from "../../utils/database.js";
+import type { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
+    Interaction,
+    Message,
     MessageActionRow,
     MessageButton,
+    MessageComponentInteraction,
+    ModalSubmitInteraction,
     TextInputComponent
 } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";
@@ -21,7 +25,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option.setName("user").setDescription("The user to get information about").setRequired(true)
         );
 
-const types = {
+const types: Record<string, { emoji: string; text: string }> = {
     warn: { emoji: "PUNISH.WARN.YELLOW", text: "Warned" },
     mute: { emoji: "PUNISH.MUTE.YELLOW", text: "Muted" },
     unmute: { emoji: "PUNISH.MUTE.GREEN", text: "Unmuted" },
@@ -36,8 +40,9 @@ const types = {
 };
 
 function historyToString(history: HistorySchema) {
-    let s = `${getEmojiByName(types[history.type].emoji)} ${history.amount ? history.amount + " " : ""}${
-        types[history.type].text
+    if (!Object.keys(types).includes(history.type)) throw new Error("Invalid history type");
+    let s = `${getEmojiByName(types[history.type]!.emoji)} ${history.amount ? history.amount + " " : ""}${
+        types[history.type]!.text
     } on <t:${Math.round(history.occurredAt.getTime() / 1000)}:F>`;
     if (history.moderator) {
         s += ` by <@${history.moderator}>`;
@@ -55,7 +60,7 @@ function historyToString(history: HistorySchema) {
 }
 
 class TimelineSection {
-    name: string;
+    name: string = "";
     content: { data: HistorySchema; rendered: string }[] = [];
 
     addContent = (content: { data: HistorySchema; rendered: string }) => {
@@ -66,8 +71,8 @@ class TimelineSection {
         return this.content.reduce((acc, cur) => acc + cur.rendered.length, 0);
     };
     generateName = () => {
-        const first = Math.round(this.content[0].data.occurredAt.getTime() / 1000);
-        const last = Math.round(this.content[this.content.length - 1].data.occurredAt.getTime() / 1000);
+        const first = Math.round(this.content[0]!.data.occurredAt.getTime() / 1000);
+        const last = Math.round(this.content[this.content.length - 1]!.data.occurredAt.getTime() / 1000);
         if (first === last) {
             return (this.name = `<t:${first}:F>`);
         }
@@ -90,30 +95,36 @@ const monthNames = [
     "December"
 ];
 
-async function showHistory(member, interaction: CommandInteraction) {
+async function showHistory(member: Discord.GuildMember, interaction: CommandInteraction) {
     let currentYear = new Date().getFullYear();
-    let pageIndex = null;
-    let m, history, current;
+    let pageIndex: number | null = null;
+    let history, current: TimelineSection;
+    let m: Message;
     let refresh = true;
-    let filteredTypes = [];
+    let filteredTypes: string[] = [];
     let openFilterPane = false;
     while (true) {
         if (refresh) {
             history = await client.database.history.read(member.guild.id, member.id, currentYear);
-            history = history.sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime()).reverse();
+            history = history
+                .sort(
+                    (a: { occurredAt: Date }, b: { occurredAt: Date }) =>
+                        b.occurredAt.getTime() - a.occurredAt.getTime()
+                )
+                .reverse();
             if (openFilterPane) {
                 let tempFilteredTypes = filteredTypes;
                 if (filteredTypes.length === 0) {
                     tempFilteredTypes = Object.keys(types);
                 }
-                history = history.filter((h) => tempFilteredTypes.includes(h.type));
+                history = history.filter((h: { type: string }) => tempFilteredTypes.includes(h.type));
             }
             refresh = false;
         }
         const groups: TimelineSection[] = [];
         if (history.length > 0) {
             current = new TimelineSection();
-            history.forEach((event) => {
+            history.forEach((event: HistorySchema) => {
                 if (current.contentLength() + historyToString(event).length > 2000 || current.content.length === 5) {
                     groups.push(current);
                     current.generateName();
@@ -130,6 +141,7 @@ async function showHistory(member, interaction: CommandInteraction) {
                 pageIndex = groups.length - 1;
             }
         }
+        if (pageIndex === null) pageIndex = 0;
         const components = (
             openFilterPane
                 ? [
@@ -192,8 +204,8 @@ async function showHistory(member, interaction: CommandInteraction) {
             " " +
             currentYear.toString();
         if (groups.length > 0) {
-            const toRender = groups[Math.min(pageIndex, groups.length - 1)];
-            m = await interaction.editReply({
+            const toRender = groups[Math.min(pageIndex, groups.length - 1)]!;
+            m = (await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
@@ -207,9 +219,9 @@ async function showHistory(member, interaction: CommandInteraction) {
                         })
                 ],
                 components: components
-            });
+            })) as Message;
         } else {
-            m = await interaction.editReply({
+            m = (await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
@@ -221,9 +233,9 @@ async function showHistory(member, interaction: CommandInteraction) {
                         })
                 ],
                 components: components
-            });
+            })) as Message;
         }
-        let i;
+        let i: MessageComponentInteraction;
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
@@ -232,7 +244,7 @@ async function showHistory(member, interaction: CommandInteraction) {
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
                         .setTitle("Moderation history for " + member.user.username)
-                        .setDescription(m.embeds[0].description)
+                        .setDescription(m.embeds[0]!.description!)
                         .setStatus("Danger")
                         .setFooter({ text: "Message timed out" })
                 ]
@@ -256,16 +268,16 @@ async function showHistory(member, interaction: CommandInteraction) {
             refresh = true;
         }
         if (i.customId === "prevPage") {
-            pageIndex--;
-            if (pageIndex < 0) {
+            pageIndex!--;
+            if (pageIndex! < 0) {
                 pageIndex = null;
                 currentYear--;
                 refresh = true;
             }
         }
         if (i.customId === "nextPage") {
-            pageIndex++;
-            if (pageIndex >= groups.length) {
+            pageIndex!++;
+            if (pageIndex! >= groups.length) {
                 pageIndex = 0;
                 currentYear++;
                 refresh = true;
@@ -286,8 +298,8 @@ async function showHistory(member, interaction: CommandInteraction) {
     }
 }
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
-    let m;
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    let m: Message;
     const member = interaction.options.getMember("user") as Discord.GuildMember;
     await interaction.reply({
         embeds: [new EmojiEmbed().setEmoji("NUCLEUS.LOADING").setTitle("Downloading Data").setStatus("Danger")],
@@ -302,7 +314,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             await showHistory(member, interaction);
         }
         firstLoad = false;
-        m = await interaction.editReply({
+        m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setEmoji("MEMBER.JOIN")
@@ -324,8 +336,8 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                         .setEmoji(getEmojiByName("ICONS.HISTORY", "id"))
                 ])
             ]
-        });
-        let i;
+        })) as Message;
+        let i: MessageComponentInteraction;
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
@@ -370,13 +382,16 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             try {
                 out = await modalInteractionCollector(
                     m,
-                    (m) => m.channel.id === interaction.channel.id,
+                    (m: Interaction) =>
+                        (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
                     (m) => m.customId === "modify"
                 );
             } catch (e) {
-                continue;
+                break;
             }
-            if (out.fields) {
+            if (out === null) {
+                continue;
+            } else if (out instanceof ModalSubmitInteraction) {
                 const toAdd = out.fields.getTextInputValue("note") || null;
                 await client.database.notes.create(member.guild.id, member.id, toAdd);
             } else {
@@ -391,7 +406,8 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("MODERATE_MEMBERS")) throw "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("MODERATE_MEMBERS"))
+        throw new Error("You do not have the *Moderate Members* permission");
     return true;
 };
 

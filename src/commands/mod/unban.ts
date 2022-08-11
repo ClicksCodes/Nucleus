@@ -13,7 +13,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option.setName("user").setDescription("The user to unban (Username or ID)").setRequired(true)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const bans = await interaction.guild.bans.fetch();
     const user = interaction.options.getString("user");
     let resolved = bans.find((ban) => ban.user.id === user);
@@ -110,11 +110,11 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     // Check if Nucleus can unban members
-    if (!me.permissions.has("BAN_MEMBERS")) throw "I do not have the *Ban Members* permission";
+    if (!me.permissions.has("BAN_MEMBERS")) throw new Error("I do not have the *Ban Members* permission");
     // Allow the owner to unban anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has ban_members permission
-    if (!member.permissions.has("BAN_MEMBERS")) throw "You do not have the *Ban Members* permission";
+    if (!member.permissions.has("BAN_MEMBERS")) throw new Error("You do not have the *Ban Members* permission");
     // Allow unban
     return true;
 };

@@ -161,7 +161,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             "\n\n" +
                             generateKeyValueList({
                                 member: renderUser(member.user),
-                                nickname: member.nickname || "*None set*",
+                                nickname: member.nickname ?? "*None set*",
                                 id: `\`${member.id}\``,
                                 "joined the server": renderDelta(member.joinedTimestamp),
                                 "joined discord": renderDelta(member.user.createdTimestamp),

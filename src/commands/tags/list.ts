@@ -6,18 +6,19 @@ import Discord, {
     MessageActionRowComponent,
     MessageButton,
     MessageComponentInteraction,
-    SelectMenuInteraction
+    MessageEmbed,
+    SelectMenuInteraction,
+    MessageSelectOptionData
 } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
-import { SelectMenuOption } from "@discordjs/builders";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
 
 class Embed {
-    embed: Discord.MessageEmbed;
-    title: string;
+    embed: Discord.MessageEmbed = new MessageEmbed();
+    title: string = "";
     description = "";
     pageId = 0;
     setEmbed(embed: Discord.MessageEmbed) {
@@ -42,7 +43,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("list").setDescription("Lists all tags in the server");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    const data = await client.database.guilds.read(interaction.guild.id);
+    const data = await client.database.guilds.read(interaction.guild!.id);
     const tags = data.getKey("tags");
     let strings = [];
     if (data === {}) strings = ["*No tags exist*"];
@@ -82,18 +83,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let page = 0;
     let selectPaneOpen = false;
     while (true) {
-        let selectPane = [];
+        let selectPane: MessageActionRow[] = [];
 
         if (selectPaneOpen) {
-            const options = [];
+            const options: MessageSelectOptionData[] = [];
             pages.forEach((embed) => {
-                options.push(
-                    new SelectMenuOption({
-                        label: embed.title,
-                        value: embed.pageId.toString(),
-                        description: embed.description || ""
-                    })
-                );
+                options.push({
+                    label: embed.title,
+                    value: embed.pageId.toString(),
+                    description: embed.description || ""
+                });
             });
             selectPane = [
                 new MessageActionRow().addComponents([
@@ -105,7 +104,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 ])
             ];
         }
-        const em = new Discord.MessageEmbed(pages[page].embed);
+        const em = new Discord.MessageEmbed(pages[page]!.embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
         await interaction.editReply({
             embeds: [em],
@@ -149,10 +148,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } else if ((i.component as MessageActionRowComponent).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
         } else if ((i.component as MessageActionRowComponent).customId === "page") {
-            page = parseInt((i as SelectMenuInteraction).values[0]);
+            page = parseInt((i as SelectMenuInteraction).values[0]!);
             selectPaneOpen = false;
         } else {
-            const em = new Discord.MessageEmbed(pages[page].embed);
+            const em = new Discord.MessageEmbed(pages[page]!.embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
             await interaction.editReply({
                 embeds: [em],
@@ -184,7 +183,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             return;
         }
     }
-    const em = new Discord.MessageEmbed(pages[page].embed);
+    const em = new Discord.MessageEmbed(pages[page]!.embed);
     em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
     await interaction.editReply({
         embeds: [em],

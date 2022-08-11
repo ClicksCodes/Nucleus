@@ -48,15 +48,15 @@ export async function callback(client: HaikuClient, channel: GuildBasedChannel) 
         }
     }
     const list: {
-        channelId: { value: string; displayValue: string };
-        name: { value: string; displayValue: string };
-        topic?: { value: string; displayValue: string } | null;
-        type: { value: string; displayValue: string };
-        category: { value: string; displayValue: string };
-        nsfw?: { value: string; displayValue: string } | null;
-        created: { value: string; displayValue: string };
-        deleted: { value: string; displayValue: string };
-        deletedBy: { value: string; displayValue: string };
+        channelId: ReturnType<typeof entry>;
+        name: ReturnType<typeof entry>;
+        topic?: ReturnType<typeof entry> | null;
+        type: ReturnType<typeof entry>;
+        category: ReturnType<typeof entry>;
+        nsfw?: ReturnType<typeof entry> | null;
+        created: ReturnType<typeof entry>;
+        deleted: ReturnType<typeof entry>;
+        deletedBy: ReturnType<typeof entry>;
     } = {
         channelId: entry(channel.id, `\`${channel.id}\``),
         name: entry(channel.id, `${channel.name}`),

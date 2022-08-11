@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember, Interaction } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Interaction, Permissions, Role } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "./scanners.js";
@@ -28,7 +28,7 @@ export default async function (interaction: CommandInteraction) {
         ephemeral: true,
         fetchReply: true
     });
-    const config = await client.database.guilds.read(interaction.guild.id);
+    const config = await client.database.guilds.read(interaction.guild!.id);
     if (!config.verify.enabled || !config.verify.role)
         return interaction.editReply({
             embeds: [
@@ -36,15 +36,13 @@ export default async function (interaction: CommandInteraction) {
                     .setTitle("Verify")
                     .setDescription("Verify is not enabled on this server")
                     .setFooter({
-                        text: interaction.member.permissions.has("MANAGE_GUILD")
+                        text: (interaction.member!.permissions as Permissions).has("MANAGE_GUILD")
                             ? "You can enable it by running /settings verify"
                             : ""
                     })
                     .setStatus("Danger")
                     .setEmoji("CONTROL.BLOCKCROSS")
-            ],
-            ephemeral: true,
-            fetchReply: true
+            ]
         });
     if ((interaction.member as GuildMember).roles.cache.has(config.verify.role)) {
         return await interaction.editReply({
@@ -114,7 +112,7 @@ export default async function (interaction: CommandInteraction) {
         });
         if (
             await NSFWCheck(
-                (interaction.member as GuildMember).user.avatarURL({
+                (interaction.member as GuildMember).user.displayAvatarURL({
                     format: "png"
                 })
             )
@@ -191,21 +189,37 @@ export default async function (interaction: CommandInteraction) {
         }
         break;
     }
+    const role: Role | null = await interaction.guild!.roles.fetch(config.verify.role);
+    if (!role) {
+        await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setTitle("Verify")
+                    .setDescription(
+                        "The server's verify role was deleted, or could not be found. Please contact a staff member to fix this issue." +
+                            step(4)
+                    )
+                    .setStatus("Danger")
+                    .setEmoji("CONTROL.BLOCKCROSS")
+            ]
+        });
+        return; // TODO: SEN
+    }
     verify[code] = {
-        uID: interaction.member.user.id,
-        gID: interaction.guild.id,
+        uID: interaction.member!.user.id,
+        gID: interaction.guild!.id,
         rID: config.verify.role,
-        rName: (await interaction.guild.roles.fetch(config.verify.role)).name,
-        uName: interaction.member.user.username,
-        gName: interaction.guild.name,
-        gIcon: interaction.guild.iconURL({ format: "png" }),
+        rName: role.name,
+        uName: interaction.member!.user.username,
+        gName: interaction.guild!.name,
+        gIcon: interaction.guild!.iconURL({ format: "png" }),
         interaction: interaction
     };
     await interaction.editReply({
         embeds: [
             new EmojiEmbed()
                 .setTitle("Verify")
-                .setDescription("Looking good!\nClick the button below to get verified" + step(4))
+                .setDescription("Looking good!\nClick the button below to get verified." + step(4))
                 .setStatus("Success")
                 .setEmoji("MEMBER.JOIN")
         ],

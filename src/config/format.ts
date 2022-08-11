@@ -15,7 +15,8 @@ const defaultDict = {
     baseUrl: "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com",
     pastebinApiKey: "An API key for pastebin (optional)",
     pastebinUsername: "Your pastebin username (optional)",
-    pastebinPassword: "Your pastebin password (optional)"
+    pastebinPassword: "Your pastebin password (optional)",
+    rapidApiKey: "Your RapidAPI key (optional), used for Unscan"
 };
 
 const readline = readLine.createInterface({

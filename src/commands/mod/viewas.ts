@@ -159,7 +159,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("MANAGE_ROLES")) throw "You do not have the *Manage Roles* permission";
+    if (!member.permissions.has("MANAGE_ROLES")) throw new Error("You do not have the *Manage Roles* permission");
     return true;
 };
 

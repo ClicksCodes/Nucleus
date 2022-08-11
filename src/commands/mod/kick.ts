@@ -12,7 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Kicks a user from the server")
         .addUserOption((option) => option.setName("user").setDescription("The user to kick").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -154,24 +154,24 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw "That member is not in the server";
+    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     const memberPos = member.roles ? member.roles.highest.position : 0;
     const mePos = me.roles ? me.roles.highest.position : 0;
     const applyPos = apply.roles ? apply.roles.highest.position : 0;
     // Do not allow kicking the owner
-    if (member.id === interaction.guild.ownerId) throw "You cannot kick the owner of the server";
+    if (member.id === interaction.guild.ownerId) throw new Error("You cannot kick the owner of the server");
     // Check if Nucleus can kick the member
-    if (!(mePos > applyPos)) throw "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to kick
-    if (!me.permissions.has("KICK_MEMBERS")) throw "I do not have the *Kick Members* permission";
+    if (!me.permissions.has("KICK_MEMBERS")) throw new Error("I do not have the *Kick Members* permission");
     // Do not allow kicking Nucleus
-    if (member.id === interaction.guild.me.id) throw "I cannot kick myself";
+    if (member.id === interaction.guild.me.id) throw new Error("I cannot kick myself");
     // Allow the owner to kick anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has kick_members permission
-    if (!member.permissions.has("KICK_MEMBERS")) throw "You do not have the *Kick Members* permission";
+    if (!member.permissions.has("KICK_MEMBERS")) throw new Error("You do not have the *Kick Members* permission");
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
     // Allow kick
     return true;
 };

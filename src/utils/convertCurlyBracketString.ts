@@ -1,6 +1,14 @@
-async function convertCurlyBracketString(str, memberID, memberName, serverName, members): Promise<string> {
+import type { GuildMember, GuildMemberManager } from "discord.js";
+
+async function convertCurlyBracketString(
+    str: string,
+    memberID: string,
+    memberName: string,
+    serverName: string,
+    members: GuildMemberManager
+): Promise<string> {
     const memberCount = (await members.fetch()).size;
-    const bots = (await members.fetch()).filter((m) => m.user.bot).size;
+    const bots = (await members.fetch()).filter((m: GuildMember) => m.user.bot).size;
     str = str
         .replace("{member:mention}", memberID ? `<@${memberID}>` : "{member:mention}")
         .replace("{member:name}", memberName ? `${memberName}` : "{member:name}")

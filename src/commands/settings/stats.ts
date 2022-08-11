@@ -21,7 +21,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setAutocomplete(true)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     singleNotify("statsChannelDeleted", interaction.guild.id, true);
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
@@ -219,7 +219,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
 const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_CHANNELS"))
-        throw "You must have the *Manage Channels* permission to use this command";
+        throw new Error("You must have the *Manage Channels* permission to use this command");
     return true;
 };
 

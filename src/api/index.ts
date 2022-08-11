@@ -43,7 +43,7 @@ const runServer = (client: HaikuClient) => {
                     components: []
                 });
             }
-            delete client.verify[code];
+            client.verify = client.verify.filter((v) => v.code !== code);
             const { log, NucleusColors, entry, renderUser } = client.logger;
             try {
                 const data = {

@@ -1,11 +1,4 @@
-import {
-    CommandInteraction,
-    DMChannel,
-    Message,
-    MessageActionRow,
-    MessageButton,
-    TextChannel
-} from "discord.js";
+import { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton, TextChannel } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
@@ -43,20 +36,25 @@ export default async function (interaction: CommandInteraction) {
             out += "\n\n";
         }
     });
-    const member = interaction.guild!.members.cache.get(interaction.channel.topic.split(" ")[0]);
-    let m;
+    const topic = interaction.channel.topic;
+    let member: GuildMember | null = null;
+    if (topic !== null) {
+        const part = topic.split(" ")[0] ?? null;
+        if (part !== null) member = interaction.guild!.members.cache.get(part) ?? null;
+    }
+    let m: Message;
     if (out !== "") {
         const url = await pbClient.createPaste({
             code: out,
             expireDate: ExpireDate.Never,
-            name: `Ticket Transcript ${member ? ("for " + member.user.username + "#" + member.user.discriminator + " ") : ""}` +
-                `(Created at ${new Date(
-                interaction.channel.createdTimestamp
-            ).toDateString()})`,
+            name:
+                `Ticket Transcript ${
+                    member ? "for " + member.user.username + "#" + member.user.discriminator + " " : ""
+                }` + `(Created at ${new Date(interaction.channel.createdTimestamp).toDateString()})`,
             publicity: Publicity.Unlisted
         });
         const guildConfig = await client.database.guilds.read(interaction.guild!.id);
-        m = await interaction.reply({
+        m = (await interaction.reply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Transcript")
@@ -80,9 +78,9 @@ export default async function (interaction: CommandInteraction) {
                 ])
             ],
             fetchReply: true
-        });
+        })) as Message;
     } else {
-        m = await interaction.reply({
+        m = (await interaction.reply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Transcript")
@@ -102,7 +100,7 @@ export default async function (interaction: CommandInteraction) {
                 ])
             ],
             fetchReply: true
-        });
+        })) as Message;
     }
     let i;
     try {
@@ -121,10 +119,7 @@ export default async function (interaction: CommandInteraction) {
             timestamp: new Date().getTime()
         },
         list: {
-            ticketFor: member ? entry(
-                member.id,
-                renderUser(member.user)
-            ) : entry(null, "*Unknown*"),
+            ticketFor: member ? entry(member.id, renderUser(member.user)) : entry(null, "*Unknown*"),
             deletedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user)),
             deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
         },

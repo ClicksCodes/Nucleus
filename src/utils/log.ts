@@ -37,7 +37,7 @@ export class Logger {
         return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}> [\`:${emoji.name}:\`]`;
     }
 
-    public readonly NucleusColors = {
+    public readonly NucleusColors: Record<string, number> = {
         red: 0xf27878,
         yellow: 0xf2d478,
         green: 0x68d49e

@@ -63,7 +63,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Scanners")
                     .setDescription(
-                        "Nucleus uses [unscan](https://unscan.co) to scan links, images and files for malware and other threats.\n" +
+                        "Nucleus uses [unscan](https://rapidapi.com/abcdan/api/unscan/) to scan links, images and files for malware and other threats.\n" +
                             'This service\'s [privacy policy](https://unscan.co/policies) is public, and they "do not store or sell your data."'
                     )
                     .setEmoji("NUCLEUS.LOGO")

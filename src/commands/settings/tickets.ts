@@ -21,7 +21,7 @@ import client from "../../utils/client.js";
 import { toHexInteger, toHexArray, tickets as ticketTypes } from "../../utils/calculate.js";
 import { capitalize } from "../../utils/generateKeyValueList.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
-import { GuildConfig } from "../../utils/database.js";
+import type { GuildConfig } from "../../utils/database.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -60,7 +60,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void | unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -75,9 +75,9 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         options.enabled = options.enabled === "yes" ? true : false;
         if (options.category) {
-            let channel: GuildChannel;
+            let channel: GuildChannel | null;
             try {
-                channel = await interaction.guild.channels.fetch(options.category.id);
+                channel = await interaction.guild!.channels.fetch(options.category.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [
@@ -89,8 +89,9 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                     ]
                 });
             }
+            if (!channel) return;
             channel = channel as Discord.CategoryChannel;
-            if (channel.guild.id !== interaction.guild.id)
+            if (channel.guild.id !== interaction.guild!.id)
                 return interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
@@ -113,10 +114,10 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                     ]
                 });
         }
-        let role: Role;
+        let role: Role | null;
         if (options.supportping) {
             try {
-                role = await interaction.guild.roles.fetch(options.supportping.id);
+                role = await interaction.guild!.roles.fetch(options.supportping.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [
@@ -128,8 +129,9 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                     ]
                 });
             }
+            if (!role) return;
             role = role as Discord.Role;
-            if (role.guild.id !== interaction.guild.id)
+            if (role.guild.id !== interaction.guild!.id)
                 return interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
@@ -162,13 +164,13 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             .send(true);
         if (confirmation.cancelled) return;
         if (confirmation.success) {
-            const toUpdate = {};
+            const toUpdate: Record<string, string | boolean | number> = {};
             if (options.enabled !== null) toUpdate["tickets.enabled"] = options.enabled;
             if (options.category) toUpdate["tickets.category"] = options.category.id;
             if (options.maxtickets) toUpdate["tickets.maxTickets"] = options.maxtickets;
             if (options.supportping) toUpdate["tickets.supportRole"] = options.supportping.id;
             try {
-                await client.database.guilds.write(interaction.guild.id, toUpdate);
+                await client.database.guilds.write(interaction.guild!.id, toUpdate);
             } catch (e) {
                 return interaction.editReply({
                     embeds: [
@@ -194,7 +196,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
             });
         }
     }
-    let data = await client.database.guilds.read(interaction.guild.id);
+    let data = await client.database.guilds.read(interaction.guild!.id);
     data.tickets.customTypes = (data.tickets.customTypes || []).filter(
         (value: string, index: number, array: string[]) => array.indexOf(value) === index
     );
@@ -280,19 +282,19 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
         if ((i.component as MessageActionRowComponent).customId === "clearCategory") {
             if (lastClicked === "cat") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, null, ["tickets.category"]);
+                await client.database.guilds.write(interaction.guild!.id, null, ["tickets.category"]);
                 data.category = undefined;
             } else lastClicked = "cat";
         } else if ((i.component as MessageActionRowComponent).customId === "clearMaxTickets") {
             if (lastClicked === "max") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, null, ["tickets.maxTickets"]);
+                await client.database.guilds.write(interaction.guild!.id, null, ["tickets.maxTickets"]);
                 data.maxTickets = 5;
             } else lastClicked = "max";
         } else if ((i.component as MessageActionRowComponent).customId === "clearSupportPing") {
             if (lastClicked === "sup") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild.id, null, ["tickets.supportRole"]);
+                await client.database.guilds.write(interaction.guild!.id, null, ["tickets.supportRole"]);
                 data.supportRole = undefined;
             } else lastClicked = "sup";
         } else if ((i.component as MessageActionRowComponent).customId === "send") {
@@ -375,12 +377,12 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                 }
                 if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
-                    await interaction.channel.send({
+                    await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(ticketMessages[parseInt((i as SelectMenuInteraction).values[0])].label)
+                                .setTitle(ticketMessages[parseInt((i as SelectMenuInteraction).values[0]!)]!.label)
                                 .setDescription(
-                                    ticketMessages[parseInt((i as SelectMenuInteraction).values[0])].description
+                                    ticketMessages[parseInt((i as SelectMenuInteraction).values[0]!)]!.description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("GUILD.TICKET.OPEN")
@@ -398,7 +400,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                     break;
                 } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
-                    await interaction.channel.send({
+                    await interaction.channel!.send({
                         components: [
                             new MessageActionRow().addComponents([
                                 new MessageButton()
@@ -456,7 +458,7 @@ const callback = async (interaction: CommandInteraction): Promise<void | unknown
                     try {
                         out = await modalInteractionCollector(
                             m,
-                            (m) => m.channel.id === interaction.channel.id,
+                            (m) => m.channel!.id === interaction.channel!.id,
                             (m) => m.customId === "modify"
                         );
                     } catch (e) {
@@ -724,7 +726,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
-        throw "You must have the *Manage Server* permission to use this command";
+        throw new Error("You must have the *Manage Server* permission to use this command");
     return true;
 };
 

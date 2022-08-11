@@ -1,13 +1,15 @@
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
+import type { GuildMember } from "discord.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import singleNotify from "../utils/singleNotify.js";
-import client from "../utils/client.js";
 
 interface PropSchema {
     enabled: boolean;
     name: string;
 }
 
-export async function callback(_, member) {
+export async function callback(client: HaikuClient, member: GuildMember) {
     const guild = await client.guilds.fetch(member.guild.id);
     const config = await client.database.guilds.read(guild.id);
     Object.entries(config.getKey("stats")).forEach(async ([channel, props]) => {
