@@ -13,6 +13,6 @@
         "skipLibCheck": true,
         "noImplicitReturns": false
     },
-    "include": ["src/**/*", "*.js"],
+    "include": ["src/**/*"],
     "exclude": []
 }
