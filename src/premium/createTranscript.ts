@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton, TextChannel } from "discord.js";
+import { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton, MessageComponentInteraction, TextChannel } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
@@ -7,7 +7,7 @@ import client from "../utils/client.js";
 
 const pbClient = new PasteClient(config.pastebinApiKey);
 
-export default async function (interaction: CommandInteraction) {
+export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
     if (interaction.channel === null) return;
     if (!(interaction.channel instanceof TextChannel)) return;
     const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;

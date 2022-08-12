@@ -5,10 +5,13 @@ import close from "../actions/tickets/delete.js";
 import createTranscript from "../premium/createTranscript.js";
 import Fuse from "fuse.js";
 import { autocomplete as tagAutocomplete } from "../commands/tag.js";
+import type { AutocompleteInteraction, Interaction, MessageComponentInteraction } from "discord.js";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
 
 export const event = "interactionCreate";
 
-function getAutocomplete(typed: string, options: string[]): object[] {
+function getAutocomplete(typed: string, options: string[]): {name: string, value: string}[] {
     options = options.filter((option) => option.length <= 100); // thanks discord. 6000 character limit on slash command inputs but only 100 for autocomplete.
     if (!typed)
         return options
@@ -23,7 +26,7 @@ function getAutocomplete(typed: string, options: string[]): object[] {
     return fuse.slice(0, 25).map((option) => ({ name: option.item, value: option.item }));
 }
 
-function generateStatsChannelAutocomplete(typed) {
+function generateStatsChannelAutocomplete(typed: string) {
     const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"];
     const autocompletions = [];
     const beforeLastOpenBracket = typed.match(/(.*){[^{}]{0,15}$/);
@@ -38,7 +41,7 @@ function generateStatsChannelAutocomplete(typed) {
     }
     return getAutocomplete(typed, autocompletions);
 }
-function generateWelcomeMessageAutocomplete(typed) {
+function generateWelcomeMessageAutocomplete(typed: string) {
     const validReplacements = [
         "serverName",
         "memberCount",
@@ -61,14 +64,15 @@ function generateWelcomeMessageAutocomplete(typed) {
     return getAutocomplete(typed, autocompletions);
 }
 
-async function interactionCreate(interaction) {
-    if (interaction.componentType === "BUTTON") {
-        switch (interaction.customId) {
+async function interactionCreate(interaction: Interaction) {
+    if (interaction.type === "MESSAGE_COMPONENT" && (interaction as MessageComponentInteraction).componentType === "BUTTON") {
+        const int = (interaction as MessageComponentInteraction)
+        switch (int.customId) {
             case "rolemenu": {
                 return await roleMenu(interaction);
             }
             case "verifybutton": {
-                return verify(interaction);
+                return verify(int);
             }
             case "createticket": {
                 return create(interaction);
@@ -77,32 +81,33 @@ async function interactionCreate(interaction) {
                 return close(interaction);
             }
             case "createtranscript": {
-                return createTranscript(interaction);
+                return createTranscript(int);
             }
         }
     } else if (interaction.type === "APPLICATION_COMMAND_AUTOCOMPLETE") {
+        const int = (interaction as AutocompleteInteraction)
         switch (
-            `${interaction.commandName} ${interaction.options.getSubcommandGroup(
+            `${int.commandName} ${int.options.getSubcommandGroup(
                 false
-            )} ${interaction.options.getSubcommand(false)}`
+            )} ${int.options.getSubcommand(false)}`
         ) {
             case "tag null null": {
-                return interaction.respond(
-                    getAutocomplete(interaction.options.getString("tag"), await tagAutocomplete(interaction))
+                return int.respond(
+                    getAutocomplete(int.options.getString("tag") ?? "", await tagAutocomplete(int))
                 );
             }
             case "settings null stats": {
-                return interaction.respond(generateStatsChannelAutocomplete(interaction.options.getString("name")));
+                return int.respond(generateStatsChannelAutocomplete(int.options.getString("name") ?? ""));
             }
             case "settings null welcome": {
-                return interaction.respond(
-                    generateWelcomeMessageAutocomplete(interaction.options.getString("message"))
+                return int.respond(
+                    generateWelcomeMessageAutocomplete(int.options.getString("message") ?? "")
                 );
             }
         }
     }
 }
 
-export async function callback(client, interaction) {
+export async function callback(_client: HaikuClient, interaction: Interaction) {
     await interactionCreate(interaction);
 }

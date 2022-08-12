@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember, Interaction, Permissions, Role } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Interaction, MessageComponentInteraction, Permissions, Role } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "./scanners.js";
@@ -21,7 +21,7 @@ function step(i: number) {
     return "\n\n" + createPageIndicator(5, i);
 }
 
-export default async function (interaction: CommandInteraction) {
+export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
     const verify = client.verify;
     await interaction.reply({
         embeds: LoadingEmbed,

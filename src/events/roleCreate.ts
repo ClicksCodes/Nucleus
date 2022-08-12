@@ -1,10 +1,14 @@
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
+import type { GuildAuditLogsEntry, Role } from "discord.js";
+
 export const event = "roleCreate";
 
-export async function callback(client, role) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = role.client.logger;
+export async function callback(client: HaikuClient, role: Role) {
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = client.logger;
     if (role.managed) return;
     const auditLog = await getAuditLog(role.guild, "ROLE_CREATE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === role.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === role.id).first();
     if (audit.executor.id === client.user.id) return;
     const data = {
         meta: {

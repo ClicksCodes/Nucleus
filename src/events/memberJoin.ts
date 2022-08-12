@@ -1,13 +1,15 @@
+import type { GuildMember } from "discord.js";
 import { callback as statsChannelAdd } from "../reflex/statsChannelUpdate.js";
 import { callback as welcome } from "../reflex/welcome.js";
-import client from "../utils/client.js";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
 
 export const event = "guildMemberAdd";
 
-export async function callback(_, member) {
-    welcome(_, member);
-    statsChannelAdd(_, member);
-    const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger;
+export async function callback(client: HaikuClient, member: GuildMember) {
+    welcome(client, member);
+    statsChannelAdd(client, member);
+    const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     await client.database.history.create("join", member.guild.id, member.user, null, null);
     const data = {
         meta: {

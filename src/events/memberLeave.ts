@@ -1,14 +1,18 @@
+import type { GuildAuditLogsEntry, GuildMember } from "discord.js";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
+
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";
 
 export const event = "guildMemberRemove";
 
-export async function callback(client, member) {
+export async function callback(client: HaikuClient, member: GuildMember) {
     purgeByUser(member.id, member.guild);
     await statsChannelRemove(client, member);
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger;
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     const auditLog = await getAuditLog(member.guild, "MEMBER_KICK");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === member.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === member.id).first();
     let type = "leave";
     if (audit) {
         if (audit.executor.id === client.user.id) return;
@@ -50,7 +54,7 @@ export async function callback(client, member) {
                 displayName: "Member Left",
                 calculateType: "guildMemberUpdate",
                 color: NucleusColors.red,
-                emoji: "MEMBER." + (member.bot ? "BOT." : "") + "LEAVE",
+                emoji: "MEMBER." + (member.user.bot ? "BOT." : "") + "LEAVE",
                 timestamp: new Date().getTime()
             },
             list: {

@@ -1,10 +1,14 @@
+import type { GuildAuditLogsEntry, GuildMember } from "discord.js";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
+
 export const event = "guildMemberUpdate";
 
-export async function callback(client, before, after) {
+export async function callback(client: HaikuClient, before: GuildMember, after: GuildMember) {
     try {
-        const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = after.client.logger;
+        const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
         const auditLog = await getAuditLog(after.guild, "MEMBER_UPDATE");
-        const audit = auditLog.entries.filter((entry) => entry.target.id === after.id).first();
+        const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === after.id).first();
         if (audit.executor.id === client.user.id) return;
         if (before.nickname !== after.nickname) {
             await client.database.history.create(
@@ -13,8 +17,8 @@ export async function callback(client, before, after) {
                 after.user,
                 audit.executor,
                 null,
-                before.nickname || before.user.username,
-                after.nickname || after.user.username
+                before.nickname ?? before.user.username,
+                after.nickname ?? after.user.username
             );
             const data = {
                 meta: {
@@ -39,8 +43,8 @@ export async function callback(client, before, after) {
             };
             log(data);
         } else if (
-            before.communicationDisabledUntilTimestamp < new Date().getTime() &&
-            after.communicationDisabledUntil > new Date().getTime()
+            (before.communicationDisabledUntilTimestamp ?? 0) < new Date().getTime() &&
+            (after.communicationDisabledUntil ?? 0) > new Date().getTime() // TODO: test this
         ) {
             await client.database.history.create(
                 "mute",

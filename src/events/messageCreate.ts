@@ -5,7 +5,7 @@ import logAttachment from "../premium/attachmentLogs.js";
 import createLogException from "../utils/createLogException.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
-import { callback as a } from "../reflex/statsChannelUpdate.js";
+import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
 import { Message, ThreadChannel } from "discord.js";
 
 export const event = "messageCreate";
@@ -15,7 +15,7 @@ export async function callback(_client: HaikuClient, message: Message) {
     if (message.author.bot) return;
     if (message.channel.type === "DM") return;
     try {
-        await a(client, await message.guild.members.fetch(message.author.id));
+        await statsChannelUpdate(client, await message.guild.members.fetch(message.author.id));
     } catch (e) {
         console.log(e);
     }

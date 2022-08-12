@@ -1,9 +1,13 @@
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku"
+import type { GuildAuditLogsEntry, Sticker } from "discord.js";
+
 export const event = "stickerDelete";
 
-export async function callback(client, emoji) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = emoji.client.logger;
+export async function callback(client: HaikuClient, emoji: Sticker) {
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     const auditLog = await getAuditLog(emoji.guild, "STICKER_DELETE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === emoji.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === emoji.id).first();
     if (audit.executor.id === client.user.id) return;
     const data = {
         meta: {
@@ -22,7 +26,7 @@ export async function callback(client, emoji) {
             deleted: entry(audit.createdTimestamp, renderDelta(audit.createdTimestamp))
         },
         hidden: {
-            guild: emoji.guild.id
+            guild: emoji.guild!.id
         }
     };
     log(data);

@@ -1,3 +1,4 @@
+import type { Guild, User } from 'discord.js';
 // @ts-expect-error
 import type { HaikuClient } from "jshaiku";
 import type { GuildMember } from "discord.js";
@@ -9,28 +10,29 @@ interface PropSchema {
     name: string;
 }
 
-export async function callback(client: HaikuClient, member: GuildMember) {
-    const guild = await client.guilds.fetch(member.guild.id);
+export async function callback(client: HaikuClient, member?: GuildMember, guild?: Guild, user?: User) {
+    if (!member && !guild) return;
+    guild = await client.guilds.fetch(member ? member.guild.id : guild!.id);
+    if (!guild) return;
+    user = user ?? member!.user
     const config = await client.database.guilds.read(guild.id);
     Object.entries(config.getKey("stats")).forEach(async ([channel, props]) => {
         if ((props as PropSchema).enabled) {
             let string = (props as PropSchema).name;
             if (!string) return;
-            string = await convertCurlyBracketString(string, member.id, member.displayName, guild.name, guild.members);
+            string = await convertCurlyBracketString(string, user!.id, user!.username, guild!.name, guild!.members);
             let fetchedChannel;
             try {
-                fetchedChannel = await guild.channels.fetch(channel);
+                fetchedChannel = await guild!.channels.fetch(channel);
             } catch (e) {
                 fetchedChannel = null;
             }
             if (!fetchedChannel) {
                 const deleted = config.getKey("stats")[channel];
-                console.log(`stats.${channel}`);
-                console.log(guild.id);
-                await client.database.guilds.write(guild.id, null, `stats.${channel}`);
+                await client.database.guilds.write(guild!.id, null, `stats.${channel}`);
                 return singleNotify(
                     "statsChannelDeleted",
-                    guild.id,
+                    guild!.id,
                     "One or more of your stats channels have been deleted. Please use `/settings stats` if you wish to add the channel again.\n" +
                         `The channels name was: ${deleted.name}`,
                     "Critical"

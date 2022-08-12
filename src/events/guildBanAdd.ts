@@ -1,14 +1,17 @@
+import type { GuildAuditLogsEntry, GuildBan } from 'discord.js';
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
 
 export const event = "guildBanAdd";
 
-export async function callback(client, ban) {
-    await statsChannelRemove(client, ban.user);
+export async function callback(client: HaikuClient, ban: GuildBan) {
+    await statsChannelRemove(client, undefined, ban.guild, ban.user);
     purgeByUser(ban.user.id, ban.guild);
-    const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = ban.user.client.logger;
+    const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
     const auditLog = await getAuditLog(ban.guild, "MEMBER_BAN_ADD");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === ban.user.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === ban.user.id).first();
     if (audit.executor.id === client.user.id) return;
     await client.database.history.create("ban", ban.guild.id, ban.user, audit.executor, audit.reason);
     const data = {

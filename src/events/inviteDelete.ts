@@ -1,10 +1,15 @@
+import type { GuildAuditLogsEntry, Invite } from "discord.js";
+// @ts-expect-error
 import humanizeDuration from "humanize-duration";
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
+
 export const event = "inviteDelete";
 
-export async function callback(client, invite) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = invite.client.logger;
+export async function callback(client: HaikuClient, invite: Invite) {
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = await getAuditLog(invite.guild, "INVITE_DELETE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === invite.id).first();
+    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === invite.inviterId).first();
     if (audit.executor.id === client.user.id) return;
     const data = {
         meta: {
@@ -23,7 +28,7 @@ export async function callback(client, invite) {
             deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
         },
         hidden: {
-            guild: invite.guild.id
+            guild: invite.guild!.id
         }
     };
     log(data);

@@ -1,10 +1,14 @@
+// @ts-expect-error
+import type { HaikuClient } from "jshaiku";
+import type { Message, MessageReference } from "discord.js";
+
 export const event = "messageUpdate";
 
-export async function callback(client, oldMessage, newMessage) {
+export async function callback(client: HaikuClient, oldMessage: Message, newMessage: Message) {
     if (newMessage.author.id === client.user.id) return;
-    const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } =
-        newMessage.channel.client.logger;
-    newMessage.reference = newMessage.reference || {};
+    if (!newMessage.guild) return;
+    const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;
+    const replyTo: MessageReference | null = newMessage.reference;
     let newContent = newMessage.cleanContent.replaceAll("`", "‘");
     let oldContent = oldMessage.cleanContent.replaceAll("`", "‘");
     let attachmentJump = "";
@@ -37,8 +41,8 @@ export async function callback(client, oldMessage, newMessage) {
                         renderDelta(new Date(newMessage.createdTimestamp))
                     ),
                     published: entry(
-                        new Date(newMessage.editedTimestamp),
-                        renderDelta(new Date(newMessage.editedTimestamp))
+                        new Date(newMessage.editedTimestamp!),
+                        renderDelta(new Date(newMessage.editedTimestamp!))
                     ),
                     mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
                     attachments: entry(
@@ -47,7 +51,7 @@ export async function callback(client, oldMessage, newMessage) {
                     )
                 },
                 hidden: {
-                    guild: newMessage.channel.guild.id
+                    guild: newMessage.guild.id
                 }
             };
             return log(data);
@@ -87,14 +91,14 @@ export async function callback(client, oldMessage, newMessage) {
                 renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size) + attachmentJump
             ),
             repliedTo: entry(
-                newMessage.reference.messageId || null,
-                newMessage.reference.messageId
-                    ? `[[Jump to message]](https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${newMessage.reference.messageId})`
+                replyTo,
+                replyTo
+                    ? `[[Jump to message]](https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${replyTo.messageId})`
                     : "None"
             )
         },
         hidden: {
-            guild: newMessage.channel.guild.id
+            guild: newMessage.guild.id
         }
     };
     log(data);
