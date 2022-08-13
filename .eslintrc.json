@@ -4,7 +4,7 @@
         "es2020": true,
         "node": true
     },
-    "ignorePatterns": ["dist/"],
+    "ignorePatterns": ["dist/", "src/Unfinished/"],
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/strict", "prettier"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -23,8 +23,6 @@
                 "caughtErrorsIgnorePattern": "^_"
             }
         ],
-        "@typescript-eslint/no-explicit-any": "error",
-        "@typescript-eslint/no-unnecessary-condition": "off", // TODO: remove this rule
-        "no-constant-condition": "off"
+        "@typescript-eslint/no-explicit-any": "error"
     }
 }

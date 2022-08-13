@@ -1,4 +1,12 @@
-import { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton, MessageComponentInteraction, TextChannel } from "discord.js";
+import {
+    CommandInteraction,
+    GuildMember,
+    Message,
+    MessageActionRow,
+    MessageButton,
+    MessageComponentInteraction,
+    TextChannel
+} from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";

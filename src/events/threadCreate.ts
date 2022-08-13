@@ -2,7 +2,7 @@ import type { GuildAuditLogsEntry, ThreadChannel } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
 // @ts-expect-error
-import type { HaikuClient } from "jshaiku"
+import type { HaikuClient } from "jshaiku";
 export const event = "threadCreate";
 
 export async function callback(client: HaikuClient, thread: ThreadChannel) {
@@ -10,10 +10,12 @@ export async function callback(client: HaikuClient, thread: ThreadChannel) {
     const auditLog = await getAuditLog(thread.guild, "THREAD_CREATE");
     const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === thread.id).first();
     if (audit.executor.id === client.user.id) return;
-    const category = thread.parent ? entry(
-        thread.parent.parent ? thread.parent.parent.name : "None",
-        thread.parent.parent ? renderChannel(thread.parent.parent) : "None"
-    ) : entry(null, "Uncategorised")
+    const category = thread.parent
+        ? entry(
+              thread.parent.parent ? thread.parent.parent.name : "None",
+              thread.parent.parent ? renderChannel(thread.parent.parent) : "None"
+          )
+        : entry(null, "Uncategorised");
     const data = {
         meta: {
             type: "channelCreate",

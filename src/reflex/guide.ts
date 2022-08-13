@@ -230,7 +230,9 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
 
     let selectPaneOpen = false;
 
-    while (true) {
+    let cancelled = false;
+    let timedOut = false;
+    while (!cancelled && !timedOut) {
         let selectPane: MessageActionRow[] = [];
 
         if (selectPaneOpen) {
@@ -297,7 +299,8 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                 time: 300000
             });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if (!("customId" in i.component)) {
@@ -314,91 +317,40 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
             page = parseInt((i as SelectMenuInteraction).values[0]!);
             selectPaneOpen = false;
         } else {
-            if (interaction) {
-                const em = new Discord.MessageEmbed(pages[page]!.embed);
-                em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
-                em.setFooter({ text: "Message closed" });
-                interaction.editReply({
-                    embeds: [em],
-                    components: [
-                        new MessageActionRow().addComponents([
-                            new MessageButton()
-                                .setCustomId("left")
-                                .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                                .setStyle("SECONDARY")
-                                .setDisabled(true),
-                            new MessageButton()
-                                .setCustomId("select")
-                                .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                                .setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY")
-                                .setDisabled(true),
-                            new MessageButton()
-                                .setCustomId("right")
-                                .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                                .setStyle("SECONDARY")
-                                .setDisabled(true)
-                        ])
-                    ]
-                });
-            } else {
-                m.delete();
-            }
-            return;
+            cancelled = true;
         }
     }
-    if (interaction) {
-        const em = new Discord.MessageEmbed(pages[page]!.embed);
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
-            text: "Message timed out"
-        });
-        await interaction.editReply({
-            embeds: [em],
-            components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
-                        .setCustomId("left")
-                        .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                        .setStyle("SECONDARY")
-                        .setDisabled(true),
-                    new MessageButton()
-                        .setCustomId("select")
-                        .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                        .setStyle("SECONDARY")
-                        .setDisabled(true),
-                    new MessageButton()
-                        .setCustomId("right")
-                        .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                        .setStyle("SECONDARY")
-                        .setDisabled(true)
-                ])
-            ]
-        });
+    if (timedOut) {
+        if (interaction) {
+            const em = new Discord.MessageEmbed(pages[page]!.embed);
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
+                text: "Message timed out"
+            });
+            await interaction.editReply({
+                embeds: [em],
+                components: []
+            });
+        } else {
+            const em = new Discord.MessageEmbed(pages[page]!.embed);
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
+                text: "Message timed out"
+            });
+            await m.edit({
+                embeds: [em],
+                components: []
+            });
+        }
     } else {
-        const em = new Discord.MessageEmbed(pages[page]!.embed);
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
-            text: "Message timed out"
-        });
-        await m.edit({
-            embeds: [em],
-            components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
-                        .setCustomId("left")
-                        .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                        .setStyle("SECONDARY")
-                        .setDisabled(true),
-                    new MessageButton()
-                        .setCustomId("select")
-                        .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                        .setStyle("SECONDARY")
-                        .setDisabled(true),
-                    new MessageButton()
-                        .setCustomId("right")
-                        .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                        .setStyle("SECONDARY")
-                        .setDisabled(true)
-                ])
-            ]
-        });
+        if (interaction) {
+            const em = new Discord.MessageEmbed(pages[page]!.embed);
+            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+            em.setFooter({ text: "Message closed" });
+            interaction.editReply({
+                embeds: [em],
+                components: []
+            });
+        } else {
+            m.delete();
+        }
     }
 };

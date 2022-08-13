@@ -176,11 +176,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (all) {
             members.forEach((member) => {
                 let applies = true;
-                filters.forEach((filter) => {
+                for (const filter of filters) {
                     if (!filter.check(member)) {
                         applies = false;
+                        break;
                     }
-                });
+                }
                 if (applies) {
                     affected.push(member);
                 }
@@ -188,11 +189,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         } else {
             members.forEach((member) => {
                 let applies = false;
-                filters.forEach((filter) => {
+                for (const filter of filters) {
                     if (filter.check(member)) {
                         applies = true;
+                        break;
                     }
-                });
+                }
                 if (applies) {
                     affected.push(member);
                 }

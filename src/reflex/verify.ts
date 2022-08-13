@@ -1,5 +1,12 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember, Interaction, MessageComponentInteraction, Permissions, Role } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildMember,
+    Interaction,
+    MessageComponentInteraction,
+    Permissions,
+    Role
+} from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "./scanners.js";
@@ -175,20 +182,17 @@ export default async function (interaction: CommandInteraction | MessageComponen
     let length = 5;
     let itt = 0;
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    while (true) {
+    do {
         itt += 1;
         code = "";
         for (let i = 0; i < length; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        if (code in verify) continue;
         if (itt > 1000) {
             itt = 0;
             length += 1;
-            continue;
         }
-        break;
-    }
+    } while (code in verify);
     const role: Role | null = await interaction.guild!.roles.fetch(config.verify.role);
     if (!role) {
         await interaction.editReply({

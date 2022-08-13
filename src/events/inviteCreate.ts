@@ -9,7 +9,9 @@ export const event = "inviteCreate";
 export async function callback(client: HaikuClient, invite: Invite) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = await getAuditLog(invite.guild, "INVITE_CREATE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === invite.inviterId).first();
+    const audit = auditLog.entries
+        .filter((entry: GuildAuditLogsEntry) => entry.target!.id === invite.inviterId)
+        .first();
     if (audit.executor.id === client.user.id) return;
     const data = {
         meta: {

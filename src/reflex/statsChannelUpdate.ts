@@ -1,4 +1,4 @@
-import type { Guild, User } from 'discord.js';
+import type { Guild, User } from "discord.js";
 // @ts-expect-error
 import type { HaikuClient } from "jshaiku";
 import type { GuildMember } from "discord.js";
@@ -14,7 +14,7 @@ export async function callback(client: HaikuClient, member?: GuildMember, guild?
     if (!member && !guild) return;
     guild = await client.guilds.fetch(member ? member.guild.id : guild!.id);
     if (!guild) return;
-    user = user ?? member!.user
+    user = user ?? member!.user;
     const config = await client.database.guilds.read(guild.id);
     Object.entries(config.getKey("stats")).forEach(async ([channel, props]) => {
         if ((props as PropSchema).enabled) {

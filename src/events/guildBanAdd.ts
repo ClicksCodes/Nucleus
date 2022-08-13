@@ -1,4 +1,4 @@
-import type { GuildAuditLogsEntry, GuildBan } from 'discord.js';
+import type { GuildAuditLogsEntry, GuildBan } from "discord.js";
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";
 // @ts-expect-error

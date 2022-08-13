@@ -10,7 +10,9 @@ export async function callback(client: HaikuClient, message: Message) {
         if (client.noLog.includes(`${message.id}/${message.channel.id}/${message.id}`)) return;
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
         const auditLog = await getAuditLog(message.guild, "MEMBER_BAN_ADD");
-        const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === message.author.id).first();
+        const audit = auditLog.entries
+            .filter((entry: GuildAuditLogsEntry) => entry.target!.id === message.author.id)
+            .first();
         if (audit) {
             if (audit.createdAt - 100 < new Date().getTime()) return;
         }
@@ -54,7 +56,9 @@ export async function callback(client: HaikuClient, message: Message) {
                 repliedTo: entry(
                     replyTo,
                     replyTo
-                        ? `[[Jump to message]](https://discord.com/channels/${message.guild!.id}/${message.channel.id}/${replyTo.messageId})`
+                        ? `[[Jump to message]](https://discord.com/channels/${message.guild!.id}/${
+                              message.channel.id
+                          }/${replyTo.messageId})`
                         : "None"
                 )
             },

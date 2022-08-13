@@ -15,25 +15,34 @@ export async function callback(client: HaikuClient, channel: Discord.GuildChanne
             auditLogUpdate,
             auditLogDelete
         ]);
-        const auditCreate = auditLogCreate.entries.filter((entry: GuildAuditLogsEntry | null) => {
-            if (entry === null) return false
-            return (entry.target! as Webhook).channelId === channel.id}
-        ).first();
-        const auditUpdate = auditLogUpdate.entries.filter((entry: GuildAuditLogsEntry | null) => {
-            if (entry === null) return false
-            return (entry.target! as Webhook).channelId === channel.id}
-        ).first();
-        const auditDelete = auditLogDelete.entries.filter((entry: GuildAuditLogsEntry | null) => {
-            if (entry === null) return false
-            return (entry.target! as Webhook).channelId === channel.id}
-        ).first();
+        const auditCreate = auditLogCreate.entries
+            .filter((entry: GuildAuditLogsEntry | null) => {
+                if (entry === null) return false;
+                return (entry.target! as Webhook).channelId === channel.id;
+            })
+            .first();
+        const auditUpdate = auditLogUpdate.entries
+            .filter((entry: GuildAuditLogsEntry | null) => {
+                if (entry === null) return false;
+                return (entry.target! as Webhook).channelId === channel.id;
+            })
+            .first();
+        const auditDelete = auditLogDelete.entries
+            .filter((entry: GuildAuditLogsEntry | null) => {
+                if (entry === null) return false;
+                return (entry.target! as Webhook).channelId === channel.id;
+            })
+            .first();
         if (!auditCreate && !auditUpdate && !auditDelete) return;
         let audit = auditCreate;
         let action: "Create" | "Update" | "Delete" = "Create";
         let list: Record<string, ReturnType<typeof entry> | string> = {};
         if (auditUpdate && auditUpdate.createdTimestamp > audit.createdTimestamp) {
             const { before, after } = auditUpdate.changes.reduce(
-                (acc: {before: Record<string, string>, after: Record<string, string>}, change: {key: string, new: string, old: string}) => {
+                (
+                    acc: { before: Record<string, string>; after: Record<string, string> },
+                    change: { key: string; new: string; old: string }
+                ) => {
                     acc.before[change.key] = change.old;
                     acc.after[change.key] = change.new;
                     return acc;
@@ -50,14 +59,20 @@ export async function callback(client: HaikuClient, channel: Discord.GuildChanne
                         renderChannel(await client.channels.fetch(after.channel_id))
                 );
             if (!Object.keys(list).length) return;
-            list["created"] = entry(auditUpdate.target.createdTimestamp, renderDelta(auditUpdate.target.createdTimestamp));
+            list["created"] = entry(
+                auditUpdate.target.createdTimestamp,
+                renderDelta(auditUpdate.target.createdTimestamp)
+            );
             list["edited"] = entry(after.editedTimestamp, renderDelta(new Date().getTime()));
             list["editedBy"] = entry(auditUpdate.executor.id, renderUser(auditUpdate.executor));
             audit = auditUpdate;
             action = "Update";
         } else if (auditDelete && auditDelete.createdTimestamp > audit.createdTimestamp) {
             const { before } = auditDelete.changes.reduce(
-                (acc: {before: Record<string, string>, after: Record<string, string>}, change: {key: string, new: string, old: string}) => {
+                (
+                    acc: { before: Record<string, string>; after: Record<string, string> },
+                    change: { key: string; new: string; old: string }
+                ) => {
                     acc.before[change.key] = change.old;
                     acc.after[change.key] = change.new;
                     return acc;
@@ -78,7 +93,10 @@ export async function callback(client: HaikuClient, channel: Discord.GuildChanne
             action = "Delete";
         } else {
             const { before } = auditDelete.changes.reduce(
-                (acc: {before: Record<string, string>, after: Record<string, string>}, change: {key: string, new: string, old: string}) => {
+                (
+                    acc: { before: Record<string, string>; after: Record<string, string> },
+                    change: { key: string; new: string; old: string }
+                ) => {
                     acc.before[change.key] = change.old;
                     acc.after[change.key] = change.new;
                     return acc;

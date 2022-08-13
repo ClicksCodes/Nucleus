@@ -1,4 +1,4 @@
-import type { GuildAuditLogsEntry, GuildBan } from 'discord.js';
+import type { GuildAuditLogsEntry, GuildBan } from "discord.js";
 import { purgeByUser } from "../actions/tickets/delete.js";
 // @ts-expect-error
 import type { HaikuClient } from "jshaiku";

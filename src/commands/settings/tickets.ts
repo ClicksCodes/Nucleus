@@ -67,7 +67,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         fetchReply: true
     })) as Message;
     const options = {
-        enabled: interaction.options.getString("enabled") as string | boolean,
+        enabled: interaction.options.getString("enabled") as string | boolean | null,
         category: interaction.options.getChannel("category"),
         maxtickets: interaction.options.getNumber("maxticketsperuser"),
         supportping: interaction.options.getRole("supportrole")

@@ -82,7 +82,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     })) as Message;
     let page = 0;
     let selectPaneOpen = false;
-    while (true) {
+    let cancelled = false;
+    let timedOut = false;
+    while (!cancelled && !timedOut) {
         let selectPane: MessageActionRow[] = [];
 
         if (selectPaneOpen) {
@@ -136,7 +138,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "left") {
@@ -151,66 +154,18 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             page = parseInt((i as SelectMenuInteraction).values[0]!);
             selectPaneOpen = false;
         } else {
-            const em = new Discord.MessageEmbed(pages[page]!.embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
-            await interaction.editReply({
-                embeds: [em],
-                components: [
-                    new MessageActionRow().addComponents([
-                        new MessageButton()
-                            .setCustomId("left")
-                            .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                            .setStyle("SECONDARY")
-                            .setDisabled(true),
-                        new MessageButton()
-                            .setCustomId("select")
-                            .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                            .setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY")
-                            .setDisabled(true),
-                        new MessageButton()
-                            .setCustomId("right")
-                            .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                            .setStyle("SECONDARY")
-                            .setDisabled(true),
-                        new MessageButton()
-                            .setCustomId("close")
-                            .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                            .setStyle("DANGER")
-                            .setDisabled(true)
-                    ])
-                ]
-            });
-            return;
+            cancelled = true;
         }
     }
     const em = new Discord.MessageEmbed(pages[page]!.embed);
-    em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
+    if (timedOut) {
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
+    } else {
+        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
+    }
     await interaction.editReply({
         embeds: [em],
-        components: [
-            new MessageActionRow().addComponents([
-                new MessageButton()
-                    .setCustomId("left")
-                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                    .setStyle("SECONDARY")
-                    .setDisabled(true),
-                new MessageButton()
-                    .setCustomId("select")
-                    .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                    .setStyle("SECONDARY")
-                    .setDisabled(true),
-                new MessageButton()
-                    .setCustomId("right")
-                    .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                    .setStyle("SECONDARY")
-                    .setDisabled(true),
-                new MessageButton()
-                    .setCustomId("close")
-                    .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                    .setStyle("DANGER")
-                    .setDisabled(true)
-            ])
-        ]
+        components: []
     });
 };
 

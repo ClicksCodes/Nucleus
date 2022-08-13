@@ -32,7 +32,9 @@ export async function callback(client: HaikuClient, before: ThreadChannel, after
     if (before.rateLimitPerUser !== after.rateLimitPerUser) {
         list["slowmode"] = entry(
             [before.rateLimitPerUser, after.rateLimitPerUser],
-            `${humanizeDuration((before.rateLimitPerUser ?? 0) * 1000)} -> ${humanizeDuration((after.rateLimitPerUser ?? 0) * 1000)}`
+            `${humanizeDuration((before.rateLimitPerUser ?? 0) * 1000)} -> ${humanizeDuration(
+                (after.rateLimitPerUser ?? 0) * 1000
+            )}`
         );
     }
     if (!(Object.keys(list).length - 3)) return;

@@ -11,7 +11,7 @@ import type { HaikuClient } from "jshaiku";
 
 export const event = "interactionCreate";
 
-function getAutocomplete(typed: string, options: string[]): {name: string, value: string}[] {
+function getAutocomplete(typed: string, options: string[]): { name: string; value: string }[] {
     options = options.filter((option) => option.length <= 100); // thanks discord. 6000 character limit on slash command inputs but only 100 for autocomplete.
     if (!typed)
         return options
@@ -65,8 +65,11 @@ function generateWelcomeMessageAutocomplete(typed: string) {
 }
 
 async function interactionCreate(interaction: Interaction) {
-    if (interaction.type === "MESSAGE_COMPONENT" && (interaction as MessageComponentInteraction).componentType === "BUTTON") {
-        const int = (interaction as MessageComponentInteraction)
+    if (
+        interaction.type === "MESSAGE_COMPONENT" &&
+        (interaction as MessageComponentInteraction).componentType === "BUTTON"
+    ) {
+        const int = interaction as MessageComponentInteraction;
         switch (int.customId) {
             case "rolemenu": {
                 return await roleMenu(interaction);
@@ -85,24 +88,16 @@ async function interactionCreate(interaction: Interaction) {
             }
         }
     } else if (interaction.type === "APPLICATION_COMMAND_AUTOCOMPLETE") {
-        const int = (interaction as AutocompleteInteraction)
-        switch (
-            `${int.commandName} ${int.options.getSubcommandGroup(
-                false
-            )} ${int.options.getSubcommand(false)}`
-        ) {
+        const int = interaction as AutocompleteInteraction;
+        switch (`${int.commandName} ${int.options.getSubcommandGroup(false)} ${int.options.getSubcommand(false)}`) {
             case "tag null null": {
-                return int.respond(
-                    getAutocomplete(int.options.getString("tag") ?? "", await tagAutocomplete(int))
-                );
+                return int.respond(getAutocomplete(int.options.getString("tag") ?? "", await tagAutocomplete(int)));
             }
             case "settings null stats": {
                 return int.respond(generateStatsChannelAutocomplete(int.options.getString("name") ?? ""));
             }
             case "settings null welcome": {
-                return int.respond(
-                    generateWelcomeMessageAutocomplete(int.options.getString("message") ?? "")
-                );
+                return int.respond(generateWelcomeMessageAutocomplete(int.options.getString("message") ?? ""));
             }
         }
     }

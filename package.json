@@ -28,11 +28,11 @@
     "scripts": {
         "build": "tsc",
         "start": "node --experimental-json-modules --enable-source-maps dist/index.js",
-        "dev": "rm -rf dist && eslint . --fix && tsc && node --experimental-json-modules --enable-source-maps dist/index.js",
-        "force-dev": "rm -rf dist && eslint . --fix; tsc-suppress && node --experimental-json-modules --enable-source-maps dist/index.js",
-        "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint .; echo 'To auto-fix everything possible, please run `yarn lint-fix`'; true",
-        "lint-fix": "echo 'Fixing eslint issues...'; eslint . --fix; echo 'Reformatting...'; prettier --write --loglevel warn --cache .; true",
-        "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint .; echo 'To view errors in more detail, please run `yarn lint`'; true",
+        "dev": "rm -rf dist && eslint src --fix && tsc && node --experimental-json-modules --enable-source-maps dist/index.js",
+        "force-dev": "rm -rf dist && eslint src --fix; tsc-suppress && node --experimental-json-modules --enable-source-maps dist/index.js",
+        "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To auto-fix everything possible, please run `yarn lint-fix`'; true",
+        "lint-fix": "echo 'Fixing eslint issues...'; eslint src --fix; echo 'Reformatting...'; prettier --write --loglevel warn --cache .; true",
+        "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To view errors in more detail, please run `yarn lint`'; true",
         "setup": "node Installer.js"
     },
     "repository": {
@@ -56,6 +56,7 @@
         "@typescript-eslint/parser": "^5.32.0",
         "eslint-config-prettier": "^8.5.0",
         "prettier": "^2.7.1",
+        "prettier-eslint": "^15.0.1",
         "tsc-suppress": "^1.0.7"
     }
 }

@@ -1,6 +1,6 @@
 // @ts-expect-error
 import type { HaikuClient } from "jshaiku";
-import type { Guild, GuildAuditLogsEntry } from 'discord.js';
+import type { Guild, GuildAuditLogsEntry } from "discord.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
 
 export const event = "guildUpdate";
@@ -31,8 +31,8 @@ export async function callback(client: HaikuClient, before: Guild, after: Guild)
         NONE: "None",
         ELEVATED: "Enabled"
     };
-    const beforeOwner = await before.fetchOwner()
-    const afterOwner = await after.fetchOwner()
+    const beforeOwner = await before.fetchOwner();
+    const afterOwner = await after.fetchOwner();
 
     if (before.name !== after.name) list["name"] = entry([before.name, after.name], `${before.name} -> ${after.name}`);
     if (before.icon !== after.icon)

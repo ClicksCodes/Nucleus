@@ -1,5 +1,5 @@
 // @ts-expect-error
-import type { HaikuClient } from "jshaiku"
+import type { HaikuClient } from "jshaiku";
 import type { GuildAuditLogsEntry, Sticker } from "discord.js";
 
 export const event = "stickerDelete";
