@@ -86,7 +86,12 @@ class confirmationMessage {
         components?: Record<string, CustomBoolean<unknown>>;
         newReason?: string;
     }> {
-        while (true) {
+        let cancelled = false;
+        let success: boolean | undefined = undefined;
+        let returnComponents = false;
+        let newReason = undefined;
+
+        while (!cancelled && success === undefined && !returnComponents && !newReason) {
             const fullComponents = [
                 new Discord.MessageButton()
                     .setCustomId("yes")
@@ -150,7 +155,8 @@ class confirmationMessage {
                     m = (await this.interaction.reply(object)) as unknown as Message;
                 }
             } catch {
-                return { cancelled: true };
+                cancelled = true;
+                continue;
             }
             let component;
             try {
@@ -159,7 +165,9 @@ class confirmationMessage {
                     time: 300000
                 });
             } catch (e) {
-                return { success: false, components: this.customButtons };
+                success = false;
+                returnComponents = true;
+                continue;
             }
             if (component.customId === "yes") {
                 component.deferUpdate();
@@ -171,10 +179,14 @@ class confirmationMessage {
                         console.log(e);
                     }
                 }
-                return { success: true, components: this.customButtons };
+                success = true;
+                returnComponents = true;
+                continue;
             } else if (component.customId === "no") {
                 component.deferUpdate();
-                return { success: false, components: this.customButtons };
+                success = false;
+                returnComponents = true;
+                continue;
             } else if (component.customId === "reason") {
                 await component.showModal(
                     new Discord.Modal()
@@ -221,24 +233,35 @@ class confirmationMessage {
                         (m) => m.customId === "reason"
                     );
                 } catch (e) {
-                    return { cancelled: true };
+                    cancelled = true;
+                    continue;
                 }
                 if (out === null) {
-                    return { cancelled: true };
+                    cancelled = true;
+                    continue;
                 }
                 if (out instanceof ModalSubmitInteraction) {
-                    return {
-                        newReason: out.fields.getTextInputValue("reason")
-                    };
+                    newReason = out.fields.getTextInputValue("reason");
+                    continue;
                 } else {
-                    return { components: this.customButtons };
+                    returnComponents = true;
+                    continue;
                 }
             } else {
                 component.deferUpdate();
                 this.customButtons[component.customId]!.active = !this.customButtons[component.customId]!.active;
-                return { components: this.customButtons };
+                returnComponents = true;
+                continue;
             }
         }
+        const returnValue: Awaited<ReturnType<typeof this.send>> = {};
+
+        if (returnComponents) returnValue.components = this.customButtons;
+        if (success !== undefined) returnValue.success = success;
+        if (cancelled) returnValue.cancelled = true;
+        if (newReason) returnValue.newReason = newReason;
+
+        return returnValue;
     }
 }
 
