@@ -53,7 +53,7 @@
         "role": null
     },
     "tickets": {
-        "enabled": false,
+        "enabled": true,
         "category": null,
         "types": "3f",
         "customTypes": null,
