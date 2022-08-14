@@ -28,11 +28,9 @@
     "scripts": {
         "build": "tsc",
         "start": "node --experimental-json-modules --enable-source-maps dist/index.js",
-        "dev": "rm -rf dist && eslint . --fix && tsc && node --experimental-json-modules --enable-source-maps dist/index.js",
-        "force-dev": "rm -rf dist && eslint . --fix; tsc-suppress && node --experimental-json-modules --enable-source-maps dist/index.js",
-        "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint .; echo 'To auto-fix everything possible, please run `yarn lint-fix`'; true",
-        "lint-fix": "echo 'Fixing eslint issues...'; eslint . --fix; echo 'Reformatting...'; prettier --write --loglevel warn --cache .; true",
-        "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint .; echo 'To view errors in more detail, please run `yarn lint`'; true",
+        "dev": "rm -rf dist && eslint src --fix && tsc && node --experimental-json-modules --enable-source-maps dist/index.js",
+        "force-dev": "rm -rf dist && eslint src --fix; tsc-suppress && node --experimental-json-modules --enable-source-maps dist/index.js",
+        "lint": "echo 'Reformatting...'; prettier --write --loglevel warn --cache src; echo 'Fixing eslint issues...'; eslint src --fix; true",
         "setup": "node Installer.js"
     },
     "repository": {

@@ -23,6 +23,7 @@
                 "caughtErrorsIgnorePattern": "^_"
             }
         ],
+        "indent": "warn",
         "@typescript-eslint/no-explicit-any": "error",
         "@typescript-eslint/no-unnecessary-condition": "off", // TODO: remove this rule
         "no-constant-condition": "off"

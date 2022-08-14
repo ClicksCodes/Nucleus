@@ -18,9 +18,15 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - run: yarn install --immutable
-            - name: Compile
-              run: yarn build
+            - name: Restyle with prettier
+              uses: actionsx/prettier@v2
+              with:
+                  args: --write src/
+            - name: Fix low-hanging esling errors
+              run: eslint --fix src/ || true
             - name: Run eslint
               uses: mrdivyansh/eslint-action@v1.0.7
-            - name: Run prettier
-              uses: actionsx/prettier@v2
+              with:
+                  execute-on-files: src/
+            - name: Compile
+              run: yarn build
