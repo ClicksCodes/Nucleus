@@ -7,9 +7,10 @@ import Discord, {
     MessageActionRowComponent,
     MessageButton,
     MessageComponentInteraction,
+    MessageSelectOptionData,
     SelectMenuInteraction
 } from "discord.js";
-import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
@@ -224,22 +225,20 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         ephemeral: true
     })) as Message;
     let page = 0;
-    let breakReason = "";
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         const em = new Discord.MessageEmbed(embeds[page].embed);
         em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
         let selectPane = [];
 
         if (selectPaneOpen) {
-            const options = [];
+            const options: MessageSelectOptionData[] = [];
             embeds.forEach((embed) => {
-                options.push(
-                    new SelectMenuOption({
-                        label: embed.title,
-                        value: embed.pageId.toString(),
-                        description: embed.description || ""
-                    })
-                );
+                options.push({
+                    label: embed.title,
+                    value: embed.pageId.toString(),
+                    description: embed.description || ""
+                });
             });
             selectPane = [
                 new MessageActionRow().addComponents([
@@ -269,11 +268,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                         .setCustomId("right")
                         .setStyle("SECONDARY")
-                        .setDisabled(page === embeds.length - 1),
-                    new MessageButton()
-                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setCustomId("close")
-                        .setStyle("DANGER")
+                        .setDisabled(page === embeds.length - 1)
                 ])
             ])
         });
@@ -281,8 +276,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch {
-            breakReason = "Message timed out";
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "left") {
@@ -293,45 +288,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             selectPaneOpen = false;
         } else if ((i.component as MessageActionRowComponent).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if ((i.component as MessageActionRowComponent).customId === "close") {
-            breakReason = "Message closed";
-            break;
         } else if ((i.component as MessageActionRowComponent).customId === "page") {
             page = parseInt((i as SelectMenuInteraction).values[0]);
             selectPaneOpen = false;
-        } else {
-            breakReason = "Message closed";
-            break;
         }
     }
     const em = new Discord.MessageEmbed(embeds[page].embed);
-    em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page) + " | " + breakReason);
+    em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page) + " | Message closed");
     await interaction.editReply({
         embeds: [em],
-        components: [
-            new MessageActionRow().addComponents([
-                new MessageButton()
-                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                    .setStyle("SECONDARY")
-                    .setCustomId("left")
-                    .setDisabled(true),
-                new MessageButton()
-                    .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                    .setStyle("SECONDARY")
-                    .setCustomId("select")
-                    .setDisabled(true),
-                new MessageButton()
-                    .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                    .setCustomId("right")
-                    .setStyle("SECONDARY")
-                    .setDisabled(true),
-                new MessageButton()
-                    .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                    .setCustomId("close")
-                    .setStyle("DANGER")
-                    .setDisabled(true)
-            ])
-        ]
+        components: []
     });
 };
 

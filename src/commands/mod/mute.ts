@@ -162,7 +162,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let notify = true;
     let createAppealTicket = false;
     let confirmation;
-    while (true) {
+    let timedOut = false;
+    let success = false;
+    while (!timedOut && !success) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.MUTE.RED")
             .setTitle("Mute")
@@ -203,162 +205,146 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .addReasonButton(reason ?? "")
             .send(true);
         reason = reason ?? "";
-        if (confirmation.cancelled) return;
-        if (confirmation.success) break;
+        if (confirmation.cancelled) timedOut = true;
+        if (confirmation.success) success = true;
         if (confirmation.newReason) reason = confirmation.newReason;
         if (confirmation.components) {
             notify = confirmation.components.notify.active;
             createAppealTicket = confirmation.components.appeal.active;
         }
     }
-    if (confirmation.success) {
-        let dmd = false;
-        let dm;
-        const config = await client.database.guilds.read(interaction.guild.id);
-        try {
-            if (notify) {
-                dm = await user.send({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("PUNISH.MUTE.RED")
-                            .setTitle("Muted")
-                            .setDescription(
-                                `You have been muted in ${interaction.guild.name}` +
-                                    (reason
-                                        ? ` for:\n> ${reason}`
-                                        : ".\n\n" +
-                                          `You will be unmuted at: <t:${
-                                              Math.round(new Date().getTime() / 1000) + muteTime
-                                          }:D> at <t:${Math.round(new Date().getTime() / 1000) + muteTime}:T> (<t:${
-                                              Math.round(new Date().getTime() / 1000) + muteTime
-                                          }:R>)`) +
-                                    (confirmation.components.appeal.response
-                                        ? `You can appeal this here: <#${confirmation.components.appeal.response}>`
-                                        : "")
-                            )
-                            .setStatus("Danger")
-                    ],
-                    components: [
-                        new MessageActionRow().addComponents(
-                            config.moderation.mute.text
-                                ? [
-                                      new MessageButton()
-                                          .setStyle("LINK")
-                                          .setLabel(config.moderation.mute.text)
-                                          .setURL(config.moderation.mute.link)
-                                  ]
-                                : []
-                        )
-                    ]
-                });
-                dmd = true;
-            }
-        } catch {
-            dmd = false;
-        }
-        const member = user;
-        let errors = 0;
-        try {
-            if (config.moderation.mute.timeout) {
-                await member.timeout(muteTime * 1000, reason || "No reason provided");
-                if (config.moderation.mute.role !== null) {
-                    await member.roles.add(config.moderation.mute.role);
-                    await client.database.eventScheduler.schedule(
-                        "naturalUnmute",
-                        new Date().getTime() + muteTime * 1000,
-                        {
-                            guild: interaction.guild.id,
-                            user: user.id,
-                            expires: new Date().getTime() + muteTime * 1000
-                        }
-                    );
-                }
-            }
-        } catch {
-            errors++;
-        }
-        try {
-            if (config.moderation.mute.role !== null) {
-                await member.roles.add(config.moderation.mute.role);
-                await client.database.eventScheduler.schedule("unmuteRole", new Date().getTime() + muteTime * 1000, {
-                    guild: interaction.guild.id,
-                    user: user.id,
-                    role: config.moderation.mute.role
-                });
-            }
-        } catch (e) {
-            console.log(e);
-            errors++;
-        }
-        if (errors === 2) {
-            await interaction.editReply({
+    if (timedOut) return;
+    let dmd = false;
+    let dm;
+    const config = await client.database.guilds.read(interaction.guild.id);
+    try {
+        if (notify) {
+            dm = await user.send({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("PUNISH.MUTE.RED")
-                        .setTitle("Mute")
-                        .setDescription("Something went wrong and the user was not muted")
+                        .setTitle("Muted")
+                        .setDescription(
+                            `You have been muted in ${interaction.guild.name}` +
+                                (reason
+                                    ? ` for:\n> ${reason}`
+                                    : ".\n\n" +
+                                      `You will be unmuted at: <t:${
+                                          Math.round(new Date().getTime() / 1000) + muteTime
+                                      }:D> at <t:${Math.round(new Date().getTime() / 1000) + muteTime}:T> (<t:${
+                                          Math.round(new Date().getTime() / 1000) + muteTime
+                                      }:R>)`) +
+                                (confirmation.components.appeal.response
+                                    ? `You can appeal this here: <#${confirmation.components.appeal.response}>`
+                                    : "")
+                        )
                         .setStatus("Danger")
                 ],
-                components: []
-            }); // TODO: make this clearer
-            if (dmd) await dm.delete();
-            return;
-        }
-        await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason);
-        const failed = !dmd && notify;
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
-                    .setTitle("Mute")
-                    .setDescription(
-                        "The member was muted" +
-                            (failed ? ", but could not be notified" : "") +
-                            (confirmation.components.appeal.response
-                                ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>`
-                                : "")
+                components: [
+                    new MessageActionRow().addComponents(
+                        config.moderation.mute.text
+                            ? [
+                                  new MessageButton()
+                                      .setStyle("LINK")
+                                      .setLabel(config.moderation.mute.text)
+                                      .setURL(config.moderation.mute.link)
+                              ]
+                            : []
                     )
-                    .setStatus(failed ? "Warning" : "Success")
-            ],
-            components: []
-        });
-        const data = {
-            meta: {
-                type: "memberMute",
-                displayName: "Member Muted",
-                calculateType: "guildMemberPunish",
-                color: NucleusColors.yellow,
-                emoji: "PUNISH.WARN.YELLOW",
-                timestamp: new Date().getTime()
-            },
-            list: {
-                memberId: entry(member.user.id, `\`${member.user.id}\``),
-                name: entry(member.user.id, renderUser(member.user)),
-                mutedUntil: entry(
-                    new Date().getTime() + muteTime * 1000,
-                    renderDelta(new Date().getTime() + muteTime * 1000)
-                ),
-                muted: entry(new Date().getTime(), renderDelta(new Date().getTime() - 1000)),
-                mutedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
-                reason: entry(reason, reason ? reason : "*No reason provided*")
-            },
-            hidden: {
-                guild: interaction.guild.id
+                ]
+            });
+            dmd = true;
+        }
+    } catch {
+        dmd = false;
+    }
+    const member = user;
+    let errors = 0;
+    try {
+        if (config.moderation.mute.timeout) {
+            await member.timeout(muteTime * 1000, reason || "No reason provided");
+            if (config.moderation.mute.role !== null) {
+                await member.roles.add(config.moderation.mute.role);
+                await client.database.eventScheduler.schedule("naturalUnmute", new Date().getTime() + muteTime * 1000, {
+                    guild: interaction.guild.id,
+                    user: user.id,
+                    expires: new Date().getTime() + muteTime * 1000
+                });
             }
-        };
-        log(data);
-    } else {
+        }
+    } catch {
+        errors++;
+    }
+    try {
+        if (config.moderation.mute.role !== null) {
+            await member.roles.add(config.moderation.mute.role);
+            await client.database.eventScheduler.schedule("unmuteRole", new Date().getTime() + muteTime * 1000, {
+                guild: interaction.guild.id,
+                user: user.id,
+                role: config.moderation.mute.role
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        errors++;
+    }
+    if (errors === 2) {
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
-                    .setEmoji("PUNISH.MUTE.GREEN")
+                    .setEmoji("PUNISH.MUTE.RED")
                     .setTitle("Mute")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
+                    .setDescription("Something went wrong and the user was not muted")
+                    .setStatus("Danger")
             ],
             components: []
-        });
+        }); // TODO: make this clearer
+        if (dmd) await dm.delete();
+        return;
     }
+    await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason);
+    const failed = !dmd && notify;
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
+                .setTitle("Mute")
+                .setDescription(
+                    "The member was muted" +
+                        (failed ? ", but could not be notified" : "") +
+                        (confirmation.components.appeal.response
+                            ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>`
+                            : "")
+                )
+                .setStatus(failed ? "Warning" : "Success")
+        ],
+        components: []
+    });
+    const data = {
+        meta: {
+            type: "memberMute",
+            displayName: "Member Muted",
+            calculateType: "guildMemberPunish",
+            color: NucleusColors.yellow,
+            emoji: "PUNISH.WARN.YELLOW",
+            timestamp: new Date().getTime()
+        },
+        list: {
+            memberId: entry(member.user.id, `\`${member.user.id}\``),
+            name: entry(member.user.id, renderUser(member.user)),
+            mutedUntil: entry(
+                new Date().getTime() + muteTime * 1000,
+                renderDelta(new Date().getTime() + muteTime * 1000)
+            ),
+            muted: entry(new Date().getTime(), renderDelta(new Date().getTime() - 1000)),
+            mutedBy: entry(interaction.member.user.id, renderUser(interaction.member.user)),
+            reason: entry(reason, reason ? reason : "*No reason provided*")
+        },
+        hidden: {
+            guild: interaction.guild.id
+        }
+    };
+    log(data);
 };
 
 const check = (interaction: CommandInteraction) => {

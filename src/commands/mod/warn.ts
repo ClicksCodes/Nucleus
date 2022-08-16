@@ -19,14 +19,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let notify = true;
     let createAppealTicket = false;
     let confirmation;
-    while (true) {
+    let timedOut = false;
+    let success = false;
+    while (!timedOut && !success) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.WARN.RED")
             .setTitle("Warn")
             .setDescription(
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")),
-                    reason: reason ? "\n> " + (reason ?? "").replaceAll("\n", "\n> ") : "*No reason provided*"
+                    reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n\n` +
                     `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
@@ -54,14 +56,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .addReasonButton(reason ?? "")
             .send(reason !== null);
         reason = reason ?? "";
-        if (confirmation.cancelled) return;
-        if (confirmation.success) break;
-        if (confirmation.newReason) reason = confirmation.newReason;
-        if (confirmation.components) {
+        if (confirmation.cancelled) timedOut = true;
+        else if (confirmation.success) success = true;
+        else if (confirmation.newReason) reason = confirmation.newReason;
+        else if (confirmation.components) {
             notify = confirmation.components.notify.active;
             createAppealTicket = confirmation.components.appeal.active;
         }
     }
+    if (timedOut) return;
     if (confirmation.success) {
         let dmd = false;
         try {
@@ -284,11 +287,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
-    const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
-    const memberPos = member.roles ? member.roles.highest.position : 0;
-    const applyPos = apply.roles ? apply.roles.highest.position : 0;
+    const apply = interaction.options.getMember("user") as GuildMember | null;
+    if (apply === null) throw new Error("That member is not in the server");
+    const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
+    const applyPos = apply.roles.cache.size ? apply.roles.highest.position : 0;
     // Do not allow warning bots
     if (member.user.bot) throw new Error("I cannot warn bots");
     // Allow the owner to warn anyone

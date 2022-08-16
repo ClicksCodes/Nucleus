@@ -56,7 +56,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         fetchReply: true
     });
     let page = 0;
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         m = await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -144,7 +145,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            return;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if (i.customId === "next") {

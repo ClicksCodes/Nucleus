@@ -26,7 +26,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let reason = null;
     let notify = true;
     let confirmation;
-    while (true) {
+    let timedOut = false;
+    let success = false;
+    while (!timedOut && !success) {
         const confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.BAN.RED")
             .setTitle("Softban")
@@ -55,13 +57,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .addReasonButton(reason ?? "")
             .send(reason !== null);
         reason = reason ?? "";
-        if (confirmation.cancelled) return;
-        if (confirmation.success) break;
-        if (confirmation.newReason) reason = confirmation.newReason;
-        if (confirmation.components) {
+        if (confirmation.cancelled) timedOut = true;
+        else if (confirmation.success) success = true;
+        else if (confirmation.newReason) reason = confirmation.newReason;
+        else if (confirmation.components) {
             notify = confirmation.components.notify.active;
         }
     }
+    if (timedOut) return;
     if (confirmation.success) {
         let dmd = false;
         const config = await client.database.guilds.read(interaction.guild.id);

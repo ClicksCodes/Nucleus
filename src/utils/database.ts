@@ -34,13 +34,13 @@ export class Guilds {
         this.defaultData = null;
     }
 
-    async setup() {
+    async setup(): Promise<Guilds> {
         this.defaultData = (await import("../config/default.json", { assert: { type: "json" } }))
             .default as unknown as GuildConfig;
         return this;
     }
 
-    async read(guild: string) {
+    async read(guild: string): Promise<GuildConfig> {
         const entry = await this.guilds.findOne({ id: guild });
         return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig;
     }
@@ -242,10 +242,6 @@ export interface GuildConfig {
     };
     welcome: {
         enabled: boolean;
-        verificationRequired: {
-            message: boolean;
-            role: string | null;
-        };
         role: string | null;
         ping: string | null;
         channel: string | null;
@@ -256,7 +252,7 @@ export interface GuildConfig {
         logs: {
             enabled: boolean;
             channel: string | null;
-            toLog: string | null;
+            toLog: string;
         };
         staff: {
             channel: string | null;
@@ -267,14 +263,13 @@ export interface GuildConfig {
         };
     };
     verify: {
-        enabled: boolean;
         role: string | null;
     };
     tickets: {
         enabled: boolean;
         category: string | null;
-        types: string | null;
-        customTypes: string[];
+        types: string;
+        customTypes: string[] | null;
         useCustom: boolean;
         supportRole: string | null;
         maxTickets: number;

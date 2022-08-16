@@ -18,7 +18,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let reason = null;
     let notify = true;
     let confirmation;
-    while (true) {
+    let timedOut = false;
+    let success = false;
+    while (!timedOut && !success) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.KICK.RED")
             .setTitle("Kick")
@@ -34,120 +36,107 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .addReasonButton(reason ?? "")
             .send(reason !== null);
         reason = reason ?? "";
-        if (confirmation.cancelled) return;
-        if (confirmation.success) break;
-        if (confirmation.newReason) reason = confirmation.newReason;
-        if (confirmation.components) {
+        if (confirmation.cancelled) timedOut = true;
+        else if (confirmation.success) success = true;
+        else if (confirmation.newReason) reason = confirmation.newReason;
+        else if (confirmation.components) {
             notify = confirmation.components.notify.active;
         }
     }
-    if (confirmation.success) {
-        let dmd = false;
-        let dm;
-        const config = await client.database.guilds.read(interaction.guild.id);
-        try {
-            if (notify) {
-                dm = await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("PUNISH.KICK.RED")
-                            .setTitle("Kicked")
-                            .setDescription(
-                                `You have been kicked in ${interaction.guild.name}` +
-                                    (reason ? ` for:\n> ${reason}` : ".")
-                            )
-                            .setStatus("Danger")
-                    ],
-                    components: [
-                        new MessageActionRow().addComponents(
-                            config.moderation.kick.text
-                                ? [
-                                      new MessageButton()
-                                          .setStyle("LINK")
-                                          .setLabel(config.moderation.kick.text)
-                                          .setURL(config.moderation.kick.link)
-                                  ]
-                                : []
-                        )
-                    ]
-                });
-                dmd = true;
-            }
-        } catch {
-            dmd = false;
-        }
-        try {
-            (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.");
-            const member = interaction.options.getMember("user") as GuildMember;
-            await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
-            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-            const data = {
-                meta: {
-                    type: "memberKick",
-                    displayName: "Member Kicked",
-                    calculateType: "guildMemberPunish",
-                    color: NucleusColors.red,
-                    emoji: "PUNISH.KICK.RED",
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    memberId: entry(member.id, `\`${member.id}\``),
-                    name: entry(member.id, renderUser(member.user)),
-                    joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
-                    kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                    kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                    reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
-                    timeInServer: entry(
-                        new Date().getTime() - member.joinedTimestamp,
-                        humanizeDuration(new Date().getTime() - member.joinedTimestamp, {
-                            round: true
-                        })
-                    ),
-                    accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
-                    serverMemberCount: member.guild.memberCount
-                },
-                hidden: {
-                    guild: member.guild.id
-                }
-            };
-            log(data);
-        } catch {
-            await interaction.editReply({
+    if (timedOut) return;
+    let dmd = false;
+    let dm;
+    const config = await client.database.guilds.read(interaction.guild.id);
+    try {
+        if (notify) {
+            dm = await (interaction.options.getMember("user") as GuildMember).send({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("PUNISH.KICK.RED")
-                        .setTitle("Kick")
-                        .setDescription("Something went wrong and the user was not kicked")
+                        .setTitle("Kicked")
+                        .setDescription(
+                            `You have been kicked in ${interaction.guild.name}` + (reason ? ` for:\n> ${reason}` : ".")
+                        )
                         .setStatus("Danger")
                 ],
-                components: []
+                components: [
+                    new MessageActionRow().addComponents(
+                        config.moderation.kick.text
+                            ? [
+                                  new MessageButton()
+                                      .setStyle("LINK")
+                                      .setLabel(config.moderation.kick.text)
+                                      .setURL(config.moderation.kick.link)
+                              ]
+                            : []
+                    )
+                ]
             });
-            if (dmd) await dm.delete();
-            return;
+            dmd = true;
         }
-        const failed = !dmd && notify;
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji(`PUNISH.KICK.${failed ? "YELLOW" : "GREEN"}`)
-                    .setTitle("Kick")
-                    .setDescription("The member was kicked" + (failed ? ", but could not be notified" : ""))
-                    .setStatus(failed ? "Warning" : "Success")
-            ],
-            components: []
-        });
-    } else {
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("PUNISH.KICK.GREEN")
-                    .setTitle("Kick")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
+    } catch {
+        dmd = false;
     }
+    try {
+        (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.");
+        const member = interaction.options.getMember("user") as GuildMember;
+        await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
+        const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+        const data = {
+            meta: {
+                type: "memberKick",
+                displayName: "Member Kicked",
+                calculateType: "guildMemberPunish",
+                color: NucleusColors.red,
+                emoji: "PUNISH.KICK.RED",
+                timestamp: new Date().getTime()
+            },
+            list: {
+                memberId: entry(member.id, `\`${member.id}\``),
+                name: entry(member.id, renderUser(member.user)),
+                joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
+                kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
+                timeInServer: entry(
+                    new Date().getTime() - member.joinedTimestamp,
+                    humanizeDuration(new Date().getTime() - member.joinedTimestamp, {
+                        round: true
+                    })
+                ),
+                accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+                serverMemberCount: member.guild.memberCount
+            },
+            hidden: {
+                guild: member.guild.id
+            }
+        };
+        log(data);
+    } catch {
+        await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("PUNISH.KICK.RED")
+                    .setTitle("Kick")
+                    .setDescription("Something went wrong and the user was not kicked")
+                    .setStatus("Danger")
+            ],
+            components: []
+        });
+        if (dmd) await dm.delete();
+        return;
+    }
+    const failed = !dmd && notify;
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji(`PUNISH.KICK.${failed ? "YELLOW" : "GREEN"}`)
+                .setTitle("Kick")
+                .setDescription("The member was kicked" + (failed ? ", but could not be notified" : ""))
+                .setStatus(failed ? "Warning" : "Success")
+        ],
+        components: []
+    });
 };
 
 const check = (interaction: CommandInteraction) => {

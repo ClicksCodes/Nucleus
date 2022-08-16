@@ -94,8 +94,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
-    const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
+    const apply = interaction.options.getMember("user") as GuildMember | null;
+    if (apply === null) throw new Error("That member is not in the server");
     // Check if Nucleus has permission to role
     if (!me.permissions.has("MANAGE_ROLES")) throw new Error("I do not have the *Manage Roles* permission");
     // Allow the owner to role anyone

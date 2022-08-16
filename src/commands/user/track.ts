@@ -35,7 +35,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const roles = await guild.roles.fetch();
     const memberRoles = member.roles;
     let managed: boolean;
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         const data = config.tracks[track];
         if (data.manageableBy !== undefined)
             managed = data.manageableBy.some((element: string) => {
@@ -169,7 +170,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             component = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            return;
+            timedOut = true;
+            continue;
         }
         component.deferUpdate();
         if (component.customId === "conflict") {

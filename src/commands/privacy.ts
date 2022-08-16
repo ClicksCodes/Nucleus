@@ -122,7 +122,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let selectPaneOpen = false;
     let nextFooter = null;
 
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         let selectPane = [];
 
         if (selectPaneOpen) {
@@ -176,7 +177,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         nextFooter = null;
         i.deferUpdate();

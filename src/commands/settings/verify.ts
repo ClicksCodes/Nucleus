@@ -124,7 +124,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let clicks = 0;
     const data = await client.database.guilds.read(interaction.guild!.id);
     let role = data.verify.role;
-    while (true) {
+
+    let timedOut = false;
+    while (!timedOut) {
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -155,7 +157,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "clear") {
@@ -180,7 +183,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     description: "Click the button below to verify yourself"
                 }
             ];
-            while (true) {
+            let innerTimedOut = false;
+            let templateSelected = false;
+            while (!innerTimedOut && !templateSelected) {
                 await interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
@@ -238,7 +243,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 try {
                     i = await m.awaitMessageComponent({ time: 300000 });
                 } catch (e) {
-                    break;
+                    innerTimedOut = true;
+                    continue;
                 }
                 if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
@@ -262,7 +268,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             ])
                         ]
                     });
-                    break;
+                    templateSelected = true;
+                    continue;
                 } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel!.send({
@@ -276,7 +283,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             ])
                         ]
                     });
-                    break;
+                    templateSelected = true;
+                    continue;
                 } else if ((i.component as MessageActionRowComponent).customId === "custom") {
                     await i.showModal(
                         new Discord.Modal()
@@ -329,11 +337,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             (m) => m.customId === "modify"
                         );
                     } catch (e) {
-                        break;
-                    }
-                    if (out === null) {
+                        innerTimedOut = true;
                         continue;
-                    } else if (out instanceof ModalSubmitInteraction) {
+                    }
+                    if (out !== null && out instanceof ModalSubmitInteraction) {
                         const title = out.fields.getTextInputValue("title");
                         const description = out.fields.getTextInputValue("description");
                         await interaction.channel!.send({
@@ -354,9 +361,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 ])
                             ]
                         });
-                        break;
-                    } else {
-                        continue;
+                        templateSelected = true;
                     }
                 }
             }

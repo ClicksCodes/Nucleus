@@ -172,7 +172,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     }
     let lastClicked = null;
-    while (true) {
+    let timedOut = false;
+    do {
         const config = await client.database.guilds.read(interaction.guild!.id);
         m = (await interaction.editReply({
             embeds: [
@@ -239,7 +240,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if (i.customId == "clear-message") {
@@ -284,9 +286,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
             lastClicked = null;
         }
-    }
+    } while (!timedOut);
     await interaction.editReply({
-        embeds: [m.embeds[0]!.setFooter({ text: "Message closed" })],
+        embeds: [m.embeds[0]!.setFooter({ text: "Message timed out" })],
         components: []
     });
 };

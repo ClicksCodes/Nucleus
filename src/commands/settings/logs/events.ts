@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import Discord, { CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
@@ -38,11 +38,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         fetchReply: true,
         ephemeral: true
     });
-    let m;
-    while (true) {
+    let m: Message;
+    let timedOut = false;
+    do {
         const config = await client.database.guilds.read(interaction.guild.id);
         const converted = toHexArray(config.logging.logs.toLog);
-        m = await interaction.editReply({
+        m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Logging Events")
@@ -72,12 +73,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     new MessageButton().setLabel("Select none").setStyle("DANGER").setCustomId("none")
                 ])
             ]
-        });
+        })) as Message;
         let i;
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if (i.customId === "logs") {
@@ -95,22 +97,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             await client.database.guilds.write(interaction.guild.id, {
                 "logging.logs.toLog": 0
             });
-        } else {
-            break;
         }
-    }
-    m = await interaction.editReply({
-        embeds: [
-            new EmojiEmbed()
-                .setTitle("Logging Events")
-                .setDescription(
-                    "Below are the events being logged in the server. You can toggle them on and off in the dropdown"
-                )
-                .setFooter({ text: "Message timed out" })
-                .setStatus("Success")
-                .setEmoji("CHANNEL.TEXT.CREATE")
-        ]
-    });
+    } while (!timedOut);
+
+    await interaction.editReply({ embeds: [m.embeds[0]!.setFooter({ text: "Message timed out" })] });
     return;
 };
 

@@ -148,7 +148,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         await statsChannelAddCallback(client, interaction.member);
     }
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         config = await client.database.guilds.read(interaction.guild.id);
         const stats = config.getKey("stats");
         const selectMenu = new MessageSelectMenu()
@@ -198,7 +199,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if (i.customId === "remove") {
@@ -211,7 +213,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     }
     await interaction.editReply({
-        embeds: [m.embeds[0]!.setFooter({ text: "Message closed" })],
+        embeds: [m.embeds[0]!.setFooter({ text: "Message timed out" })],
         components: []
     });
 };

@@ -50,7 +50,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
     }
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         const config = await client.database.guilds.read(interaction.guild.id);
         const moderation = config.getKey("moderation");
         m = await interaction.editReply({
@@ -119,7 +120,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            return;
+            timedOut = true;
+            continue;
         }
         let chosen = moderation[i.customId] ?? { text: null, url: null };
         if (i.component.customId === "clearMuteRole") {

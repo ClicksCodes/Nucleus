@@ -119,7 +119,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let clicks = 0;
     const data = await client.database.guilds.read(interaction.guild.id);
     let channel = data.logging.staff.channel;
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -147,7 +148,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if ((i.component as MessageButton).customId === "clear") {
@@ -157,8 +159,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 await client.database.guilds.write(interaction.guild.id, null, ["logging.staff.channel"]);
                 channel = undefined;
             }
-        } else {
-            break;
         }
     }
     await interaction.editReply({

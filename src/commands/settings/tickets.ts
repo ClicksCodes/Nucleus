@@ -67,13 +67,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         fetchReply: true
     })) as Message;
     const options = {
-        enabled: interaction.options.getString("enabled") as string | boolean | null,
+        enabled: interaction.options.getString("enabled")?.startsWith("yes") as boolean | null,
         category: interaction.options.getChannel("category"),
         maxtickets: interaction.options.getNumber("maxticketsperuser"),
         supportping: interaction.options.getRole("supportrole")
     };
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
-        options.enabled = options.enabled === "yes" ? true : false;
         if (options.category) {
             let channel: GuildChannel | null;
             try {
@@ -211,7 +210,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         types: data.tickets.types,
         customTypes: data.tickets.customTypes
     };
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         embed = new EmojiEmbed()
             .setTitle("Tickets")
             .setDescription(
@@ -276,7 +276,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if ((i.component as MessageActionRowComponent).customId === "clearCategory") {
@@ -312,7 +313,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     description: "Click the button below to speak to us privately"
                 }
             ];
-            while (true) {
+            let innerTimedOut = false;
+            let templateSelected = false;
+            while (!innerTimedOut && !templateSelected) {
                 const enabled = data.enabled && data.category !== null;
                 await interaction.editReply({
                     embeds: [
@@ -373,7 +376,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 try {
                     i = await m.awaitMessageComponent({ time: 300000 });
                 } catch (e) {
-                    break;
+                    innerTimedOut = true;
+                    continue;
                 }
                 if ((i.component as MessageActionRowComponent).customId === "template") {
                     i.deferUpdate();
@@ -397,7 +401,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             ])
                         ]
                     });
-                    break;
+                    templateSelected = true;
+                    continue;
                 } else if ((i.component as MessageActionRowComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel!.send({
@@ -411,7 +416,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             ])
                         ]
                     });
-                    break;
+                    templateSelected = true;
+                    continue;
                 } else if ((i.component as MessageActionRowComponent).customId === "custom") {
                     await i.showModal(
                         new Discord.Modal()
@@ -462,7 +468,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             (m) => m.customId === "modify"
                         );
                     } catch (e) {
-                        break;
+                        innerTimedOut = true;
+                        continue;
                     }
                     if (out.fields) {
                         const title = out.fields.getTextInputValue("title");
@@ -485,9 +492,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 ])
                             ]
                         });
-                        break;
-                    } else {
-                        continue;
+                        templateSelected = true;
                     }
                 }
             }
@@ -498,18 +503,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             data.enabled = !data.enabled;
         } else if ((i.component as MessageActionRowComponent).customId === "manageTypes") {
             data = await manageTypes(interaction, data, m as Message);
-        } else {
-            break;
         }
     }
     await interaction.editReply({
-        embeds: [embed.setFooter({ text: "Message closed" })],
+        embeds: [embed.setFooter({ text: "Message timed out" })],
         components: []
     });
 };
 
 async function manageTypes(interaction: CommandInteraction, data: GuildConfig["tickets"], m: Message) {
-    while (true) {
+    let timedOut = false;
+    let backPressed = false;
+    while (!timedOut && !backPressed) {
         if (data.useCustom) {
             const customTypes = data.customTypes;
             await interaction.editReply({
@@ -622,7 +627,8 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            break;
+            timedOut = true;
+            continue;
         }
         if (i.component.customId === "types") {
             i.deferUpdate();
@@ -700,7 +706,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                 } catch {
                     continue;
                 }
-                data.customTypes = data.customTypes || [];
+                data.customTypes = data.customTypes ?? [];
                 if (!data.customTypes.includes(toAdd)) {
                     data.customTypes.push(toAdd);
                 }
@@ -717,7 +723,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             data.useCustom = true;
         } else {
             i.deferUpdate();
-            break;
+            backPressed = true;
         }
     }
     return data;

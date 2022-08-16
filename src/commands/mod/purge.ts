@@ -60,7 +60,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             fetchReply: true
         });
         let deleted = [] as Discord.Message[];
-        while (true) {
+        let timedOut = false;
+        let amountSelected = false;
+        while (!timedOut && !amountSelected) {
             const m = (await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -98,16 +100,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     time: 300000
                 });
             } catch (e) {
-                break;
+                timedOut = true;
+                continue;
             }
             component.deferUpdate();
-            if (component.customId === "done") break;
-            let amount;
-            try {
-                amount = parseInt(component.customId);
-            } catch {
-                break;
+            if (component.customId === "done") {
+                amountSelected = true;
+                continue;
             }
+            const amount = parseInt(component.customId);
+
             let messages;
             await (interaction.channel as TextChannel).messages.fetch({ limit: amount }).then(async (ms) => {
                 if (user) {

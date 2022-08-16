@@ -103,7 +103,9 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
     let refresh = true;
     let filteredTypes: string[] = [];
     let openFilterPane = false;
-    while (true) {
+    let timedOut = false;
+    let showHistorySelected = false;
+    while (!timedOut && !showHistorySelected) {
         if (refresh) {
             history = await client.database.history.read(member.guild.id, member.id, currentYear);
             history = history
@@ -249,7 +251,8 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                         .setFooter({ text: "Message timed out" })
                 ]
             });
-            return 0;
+            timedOut = true;
+            continue;
         }
         i.deferUpdate();
         if (i.customId === "filter") {
@@ -289,13 +292,14 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
             refresh = true;
         }
         if (i.customId === "modNotes") {
-            return 1;
+            showHistorySelected = true;
         }
         if (i.customId === "openFilter") {
             openFilterPane = !openFilterPane;
             refresh = true;
         }
     }
+    return timedOut ? 0 : 1;
 }
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
@@ -308,7 +312,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
     let note;
     let firstLoad = true;
-    while (true) {
+    let timedOut = false;
+    while (!timedOut) {
         note = await client.database.notes.read(member.guild.id, member.id);
         if (firstLoad && !note) {
             await showHistory(member, interaction);
@@ -341,7 +346,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ time: 300000 });
         } catch (e) {
-            return;
+            timedOut = true;
+            continue;
         }
         if (i.customId === "modify") {
             await i.showModal(
@@ -387,7 +393,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     (m) => m.customId === "modify"
                 );
             } catch (e) {
-                break;
+                timedOut = true;
+                continue;
             }
             if (out === null) {
                 continue;

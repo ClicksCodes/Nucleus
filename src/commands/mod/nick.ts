@@ -19,7 +19,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     // TODO:[Modals] Replace this with a modal
     let notify = true;
     let confirmation;
-    while (true) {
+    let timedOut = false;
+    let success = false;
+    while (!timedOut && !success) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.NICKNAME.RED")
             .setTitle("Nickname")
@@ -46,111 +48,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 notify
             )
             .send(interaction.options.getString("name") !== null);
-        if (confirmation.cancelled) return;
-        if (confirmation.success) break;
-        if (confirmation.components) {
+        if (confirmation.cancelled) timedOut = true;
+        else if (confirmation.success) success = true;
+        else if (confirmation.components) {
             notify = confirmation.components.notify.active;
         }
     }
-    if (confirmation.success) {
-        let dmd = false;
-        let dm;
-        try {
-            if (notify) {
-                dm = await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("PUNISH.NICKNAME.RED")
-                            .setTitle("Nickname changed")
-                            .setDescription(
-                                `Your nickname was ${
-                                    interaction.options.getString("name") ? "changed" : "cleared"
-                                } in ${interaction.guild.name}.` +
-                                    (interaction.options.getString("name")
-                                        ? ` it is now: ${interaction.options.getString("name")}`
-                                        : "") +
-                                    "\n\n" +
-                                    (confirmation.components.appeal.response
-                                        ? `You can appeal this here: <#${confirmation.components.appeal.response}>`
-                                        : "")
-                            )
-                            .setStatus("Danger")
-                    ]
-                });
-                dmd = true;
-            }
-        } catch {
-            dmd = false;
-        }
-        try {
-            const member = interaction.options.getMember("user") as GuildMember;
-            const before = member.nickname;
-            const nickname = interaction.options.getString("name");
-            member.setNickname(nickname ?? null, "Nucleus Nickname command");
-            await client.database.history.create(
-                "nickname",
-                interaction.guild.id,
-                member.user,
-                interaction.user,
-                null,
-                before,
-                nickname
-            );
-            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-            const data = {
-                meta: {
-                    type: "memberUpdate",
-                    displayName: "Member Updated",
-                    calculateType: "guildMemberUpdate",
-                    color: NucleusColors.yellow,
-                    emoji: "PUNISH.NICKNAME.YELLOW",
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    memberId: entry(member.id, `\`${member.id}\``),
-                    before: entry(before, before ? before : "*None*"),
-                    after: entry(nickname, nickname ? nickname : "*None*"),
-                    updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                    updatedBy: entry(interaction.user.id, renderUser(interaction.user))
-                },
-                hidden: {
-                    guild: interaction.guild.id
-                }
-            };
-            log(data);
-        } catch {
-            await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("PUNISH.NICKNAME.RED")
-                        .setTitle("Nickname")
-                        .setDescription("Something went wrong and the users nickname could not be changed.")
-                        .setStatus("Danger")
-                ],
-                components: []
-            });
-            if (dmd) await dm.delete();
-            return;
-        }
-        const failed = !dmd && notify;
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji(`PUNISH.NICKNAME.${failed ? "YELLOW" : "GREEN"}`)
-                    .setTitle("Nickname")
-                    .setDescription(
-                        "The members nickname was changed" +
-                            (failed ? ", but was not notified" : "") +
-                            (confirmation.components.appeal.response
-                                ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>`
-                                : "")
-                    )
-                    .setStatus(failed ? "Warning" : "Success")
-            ],
-            components: []
-        });
-    } else {
-        await interaction.editReply({
+    if (timedOut) {
+        return await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setEmoji("PUNISH.NICKNAME.GREEN")
@@ -161,6 +66,102 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             components: []
         });
     }
+    let dmd = false;
+    let dm;
+    try {
+        if (notify) {
+            dm = await (interaction.options.getMember("user") as GuildMember).send({
+                embeds: [
+                    new EmojiEmbed()
+                        .setEmoji("PUNISH.NICKNAME.RED")
+                        .setTitle("Nickname changed")
+                        .setDescription(
+                            `Your nickname was ${interaction.options.getString("name") ? "changed" : "cleared"} in ${
+                                interaction.guild.name
+                            }.` +
+                                (interaction.options.getString("name")
+                                    ? ` it is now: ${interaction.options.getString("name")}`
+                                    : "") +
+                                "\n\n" +
+                                (confirmation.components.appeal.response
+                                    ? `You can appeal this here: <#${confirmation.components.appeal.response}>`
+                                    : "")
+                        )
+                        .setStatus("Danger")
+                ]
+            });
+            dmd = true;
+        }
+    } catch {
+        dmd = false;
+    }
+    try {
+        const member = interaction.options.getMember("user") as GuildMember;
+        const before = member.nickname;
+        const nickname = interaction.options.getString("name");
+        member.setNickname(nickname ?? null, "Nucleus Nickname command");
+        await client.database.history.create(
+            "nickname",
+            interaction.guild.id,
+            member.user,
+            interaction.user,
+            null,
+            before,
+            nickname
+        );
+        const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+        const data = {
+            meta: {
+                type: "memberUpdate",
+                displayName: "Member Updated",
+                calculateType: "guildMemberUpdate",
+                color: NucleusColors.yellow,
+                emoji: "PUNISH.NICKNAME.YELLOW",
+                timestamp: new Date().getTime()
+            },
+            list: {
+                memberId: entry(member.id, `\`${member.id}\``),
+                before: entry(before, before ? before : "*None*"),
+                after: entry(nickname, nickname ? nickname : "*None*"),
+                updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                updatedBy: entry(interaction.user.id, renderUser(interaction.user))
+            },
+            hidden: {
+                guild: interaction.guild.id
+            }
+        };
+        log(data);
+    } catch {
+        await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("PUNISH.NICKNAME.RED")
+                    .setTitle("Nickname")
+                    .setDescription("Something went wrong and the users nickname could not be changed.")
+                    .setStatus("Danger")
+            ],
+            components: []
+        });
+        if (dmd) await dm.delete();
+        return;
+    }
+    const failed = !dmd && notify;
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji(`PUNISH.NICKNAME.${failed ? "YELLOW" : "GREEN"}`)
+                .setTitle("Nickname")
+                .setDescription(
+                    "The members nickname was changed" +
+                        (failed ? ", but was not notified" : "") +
+                        (confirmation.components.appeal.response
+                            ? ` and an appeal ticket was opened in <#${confirmation.components.appeal.response}>`
+                            : "")
+                )
+                .setStatus(failed ? "Warning" : "Success")
+        ],
+        components: []
+    });
 };
 
 const check = (interaction: CommandInteraction) => {

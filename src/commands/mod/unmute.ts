@@ -17,7 +17,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let reason = null;
     let notify = false;
     let confirmation;
-    while (true) {
+    let success = false;
+    while (!success) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.MUTE.RED")
             .setTitle("Unmute")
@@ -32,9 +33,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setColor("Danger")
             .addReasonButton(reason ?? "")
             .send(reason !== null);
-        if (confirmation.success) break;
-        if (confirmation.newReason) reason = confirmation.newReason;
-        if (confirmation.components) {
+        if (confirmation.success) success = true;
+        else if (confirmation.newReason) reason = confirmation.newReason;
+        else if (confirmation.components) {
             notify = confirmation.components.notify.active;
         }
     }
