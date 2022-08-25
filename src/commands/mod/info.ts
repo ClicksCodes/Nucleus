@@ -8,6 +8,7 @@ import Discord, {
     MessageButton,
     MessageComponentInteraction,
     ModalSubmitInteraction,
+    SelectMenuInteraction,
     TextInputComponent
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -256,7 +257,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         }
         i.deferUpdate();
         if (i.customId === "filter") {
-            filteredTypes = i.values;
+            filteredTypes = (i as SelectMenuInteraction).values;
             pageIndex = null;
             refresh = true;
         }

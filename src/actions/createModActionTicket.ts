@@ -7,7 +7,7 @@ export async function create(
     guild: Discord.Guild,
     member: Discord.User,
     createdBy: Discord.User,
-    reason: string,
+    reason: string | null,
     customReason?: string
 ) {
     const config = await client.database.guilds.read(guild.id);
@@ -26,7 +26,7 @@ export async function create(
     });
     if (config.tickets.supportRole !== null) {
         overwrites.push({
-            id: guild.roles.cache.get(config.tickets.supportRole),
+            id: guild.roles.cache.get(config.tickets.supportRole)!,
             allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
             type: "role"
         });

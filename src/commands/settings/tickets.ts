@@ -143,7 +143,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
 
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.TICKET.ARCHIVED")
+            .setEmoji("GUILD.TICKET.ARCHIVED", "GUILD.TICKET.CLOSE")
             .setTitle("Tickets")
             .setDescription(
                 (options.category ? `**Category:** ${options.category.name}\n` : "") +
@@ -151,10 +151,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     (options.supportping ? `**Support Ping:** ${options.supportping.name}\n` : "") +
                     (options.enabled !== null
                         ? `**Enabled:** ${
-                              options.enabled
-                                  ? `${getEmojiByName("CONTROL.TICK")} Yes`
-                                  : `${getEmojiByName("CONTROL.CROSS")} No`
-                          }\n`
+                            options.enabled
+                                ? `${getEmojiByName("CONTROL.TICK")} Yes`
+                                : `${getEmojiByName("CONTROL.CROSS")} No`
+                        }\n`
                         : "") +
                     "\nAre you sure you want to apply these settings?"
             )

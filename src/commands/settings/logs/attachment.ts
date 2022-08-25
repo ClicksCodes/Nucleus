@@ -54,7 +54,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT")
+            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
             .setTitle("Attachment Log Channel")
             .setDescription(
                 "This will be the channel all attachments will be sent to.\n\n" +

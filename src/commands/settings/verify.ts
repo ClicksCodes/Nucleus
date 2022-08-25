@@ -62,7 +62,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.EDIT")
+            .setEmoji("GUILD.ROLES.EDIT", "GUILD.ROLES.DELETE")
             .setTitle("Verify Role")
             .setDescription(`Are you sure you want to set the verify role to <@&${role.id}>?`)
             .setColor("Warning")

@@ -78,7 +78,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             newName = newName.toLowerCase().replace(/[\s]/g, "-");
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT")
+            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
             .setTitle("Stats Channel")
             .setDescription(
                 `Are you sure you want to set <#${channel.id}> to a stats channel?\n\n*Preview: ${newName.replace(

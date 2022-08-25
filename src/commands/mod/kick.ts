@@ -1,6 +1,7 @@
 import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
+// @ts-expect-error
 import humanizeDuration from "humanize-duration";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -19,15 +20,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let notify = true;
     let confirmation;
     let timedOut = false;
-    let success = false;
-    while (!timedOut && !success) {
+    let chosen = false;
+    while (!timedOut && !chosen) {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.KICK.RED")
             .setTitle("Kick")
             .setDescription(
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")),
-                    reason: reason ? "\n> " + (reason ?? "").replaceAll("\n", "\n> ") : "*No reason provided*"
+                    reason: reason ? "\n> " + (reason).replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n\n` +
                     `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
@@ -37,16 +38,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .send(reason !== null);
         reason = reason ?? "";
         if (confirmation.cancelled) timedOut = true;
-        else if (confirmation.success) success = true;
+        else if (confirmation.success !== undefined) chosen = true;
         else if (confirmation.newReason) reason = confirmation.newReason;
         else if (confirmation.components) {
-            notify = confirmation.components.notify.active;
+            notify = confirmation.components["notify"]!.active;
         }
     }
     if (timedOut) return;
     let dmd = false;
     let dm;
-    const config = await client.database.guilds.read(interaction.guild.id);
+    const config = await client.database.guilds.read(interaction.guild!.id);
     try {
         if (notify) {
             dm = await (interaction.options.getMember("user") as GuildMember).send({
@@ -55,7 +56,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("PUNISH.KICK.RED")
                         .setTitle("Kicked")
                         .setDescription(
-                            `You have been kicked in ${interaction.guild.name}` + (reason ? ` for:\n> ${reason}` : ".")
+                            `You have been kicked in ${interaction.guild!.name}` + (reason ? ` for:\n> ${reason}` : ".")
                         )
                         .setStatus("Danger")
                 ],
@@ -80,8 +81,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     try {
         (interaction.options.getMember("user") as GuildMember).kick(reason ?? "No reason provided.");
         const member = interaction.options.getMember("user") as GuildMember;
-        await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
+        await client.database.history.create("kick", interaction.guild!.id, member.user, interaction.user, reason);
         const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+        const timeInServer = member.joinedTimestamp ? entry(
+            new Date().getTime() - member.joinedTimestamp,
+            humanizeDuration(new Date().getTime() - member.joinedTimestamp, {
+                round: true
+            })
+        ) : entry(null, "*Unknown*")
         const data = {
             meta: {
                 type: "memberKick",
@@ -98,12 +105,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 kicked: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
-                timeInServer: entry(
-                    new Date().getTime() - member.joinedTimestamp,
-                    humanizeDuration(new Date().getTime() - member.joinedTimestamp, {
-                        round: true
-                    })
-                ),
+                timeInServer: timeInServer,
                 accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
                 serverMemberCount: member.guild.memberCount
             },
@@ -123,7 +125,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ],
             components: []
         });
-        if (dmd) await dm.delete();
+        if (dmd && dm) await dm.delete();
         return;
     }
     const failed = !dmd && notify;
@@ -141,22 +143,21 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
+    const me = interaction.guild!.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
-    const memberPos = member.roles ? member.roles.highest.position : 0;
-    const mePos = me.roles ? me.roles.highest.position : 0;
-    const applyPos = apply.roles ? apply.roles.highest.position : 0;
+    const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
+    const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
+    const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     // Do not allow kicking the owner
-    if (member.id === interaction.guild.ownerId) throw new Error("You cannot kick the owner of the server");
+    if (member.id === interaction.guild!.ownerId) throw new Error("You cannot kick the owner of the server");
     // Check if Nucleus can kick the member
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to kick
     if (!me.permissions.has("KICK_MEMBERS")) throw new Error("I do not have the *Kick Members* permission");
     // Do not allow kicking Nucleus
-    if (member.id === interaction.guild.me.id) throw new Error("I cannot kick myself");
+    if (member.id === interaction.guild!.me!.id) throw new Error("I cannot kick myself");
     // Allow the owner to kick anyone
-    if (member.id === interaction.guild.ownerId) return true;
+    if (member.id === interaction.guild!.ownerId) return true;
     // Check if the user has kick_members permission
     if (!member.permissions.has("KICK_MEMBERS")) throw new Error("You do not have the *Kick Members* permission");
     // Check if the user is below on the role list

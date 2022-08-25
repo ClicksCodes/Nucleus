@@ -21,7 +21,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let confirmation;
     let timedOut = false;
     let success = false;
-    while (!timedOut && !success) {
+    do {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.WARN.RED")
             .setTitle("Warn")
@@ -57,13 +57,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .send(reason !== null);
         reason = reason ?? "";
         if (confirmation.cancelled) timedOut = true;
-        else if (confirmation.success) success = true;
+        else if (confirmation.success !== undefined) success = true;
         else if (confirmation.newReason) reason = confirmation.newReason;
         else if (confirmation.components) {
             notify = confirmation.components.notify.active;
             createAppealTicket = confirmation.components.appeal.active;
         }
-    }
+    } while (!timedOut && !success)
     if (timedOut) return;
     if (confirmation.success) {
         let dmd = false;
@@ -294,7 +294,7 @@ const check = (interaction: CommandInteraction) => {
     // Do not allow warning bots
     if (member.user.bot) throw new Error("I cannot warn bots");
     // Allow the owner to warn anyone
-    if (member.id === interaction.guild.ownerId) return true;
+    if (member.id === interaction.guild!.ownerId) return true;
     // Check if the user has moderate_members permission
     if (!member.permissions.has("MODERATE_MEMBERS"))
         throw new Error("You do not have the *Moderate Members* permission");

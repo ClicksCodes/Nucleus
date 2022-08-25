@@ -56,7 +56,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT")
+            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
             .setTitle("Staff Notifications Channel")
             .setDescription(
                 "This will be the channel all notifications, updates, user reports etc. will be sent to.\n\n" +

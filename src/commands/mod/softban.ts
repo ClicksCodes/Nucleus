@@ -149,9 +149,9 @@ const check = (interaction: CommandInteraction) => {
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
-    const memberPos = member.roles ? member.roles.highest.position : 0;
-    const mePos = me.roles ? me.roles.highest.position : 0;
-    const applyPos = apply.roles ? apply.roles.highest.position : 0;
+    const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
+    const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
+    const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     // Do not allow softbanning the owner
     if (member.id === interaction.guild.ownerId) throw new Error("You cannot softban the owner of the server");
     // Check if Nucleus can ban the member

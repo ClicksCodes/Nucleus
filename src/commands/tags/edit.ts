@@ -79,7 +79,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ephemeral: true
         });
     const confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.NICKNAME.YELLOW")
+        .setEmoji("PUNISH.NICKNAME.YELLOW", "PUNISH.NICKNAME.RED")
         .setTitle("Tag Edit")
         .setDescription(
             keyValueList({

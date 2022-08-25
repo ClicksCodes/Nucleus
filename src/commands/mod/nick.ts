@@ -169,9 +169,9 @@ const check = (interaction: CommandInteraction) => {
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
-    const memberPos = member.roles ? member.roles.highest.position : 0;
-    const mePos = me.roles ? me.roles.highest.position : 0;
-    const applyPos = apply.roles ? apply.roles.highest.position : 0;
+    const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
+    const mePos = me.roles.cache.size ? me.roles.highest.position : 0;
+    const applyPos = apply.roles.cache.size ? apply.roles.highest.position : 0;
     // Do not allow any changing of the owner
     if (member.id === interaction.guild.ownerId) throw new Error("You cannot change the owner's nickname");
     // Check if Nucleus can change the nickname

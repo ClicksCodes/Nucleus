@@ -95,7 +95,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (channel) options.channel = renderChannel(channel);
         if (message) options.message = "\n> " + message;
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.EDIT")
+            .setEmoji("GUILD.ROLES.EDIT", "GUILD.ROLES.DELETE")
             .setTitle("Welcome Events")
             .setDescription(generateKeyValueList(options))
             .setColor("Warning")

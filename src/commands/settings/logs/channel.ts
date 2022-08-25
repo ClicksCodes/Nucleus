@@ -53,7 +53,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT")
+            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
             .setTitle("Log Channel")
             .setDescription(`Are you sure you want to set the log channel to <#${channel.id}>?`)
             .setColor("Warning")

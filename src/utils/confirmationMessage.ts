@@ -26,6 +26,8 @@ class confirmationMessage {
     interaction: CommandInteraction;
     title = "";
     emoji = "";
+    redEmoji: string | null = null;
+    timeoutText: string | null = null;
     description = "";
     color: "Danger" | "Warning" | "Success" = "Success";
     customButtons: Record<string, CustomBoolean<unknown>> = {};
@@ -40,12 +42,14 @@ class confirmationMessage {
         this.title = title;
         return this;
     }
-    setEmoji(emoji: string) {
+    setEmoji(emoji: string, redEmoji?: string) {
         this.emoji = emoji;
+        if (redEmoji) this.redEmoji = redEmoji; // TODO: go through all confirmation messages and change them to use this, and not do their own edits
         return this;
     }
-    setDescription(description: string) {
+    setDescription(description: string, timedOut?: string) {
         this.description = description;
+        if (timedOut) this.timeoutText = timedOut; // TODO also this
         return this;
     }
     setColor(color: "Danger" | "Warning" | "Success") {
@@ -256,12 +260,28 @@ class confirmationMessage {
         }
         const returnValue: Awaited<ReturnType<typeof this.send>> = {};
 
-        if (returnComponents) returnValue.components = this.customButtons;
+        if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
         if (success !== undefined) returnValue.success = success;
-        if (cancelled) returnValue.cancelled = true;
+        if (cancelled) {
+            await this.timeoutError()
+            returnValue.cancelled = true;
+        }
         if (newReason) returnValue.newReason = newReason;
 
         return returnValue;
+    }
+
+    async timeoutError(): Promise<void> {
+        await this.interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setTitle(this.title)
+                    .setDescription("We closed this message because it was not used for a while.")
+                    .setStatus("Danger")
+                    .setEmoji(this.redEmoji ?? this.emoji)
+            ],
+            components: []
+    })
     }
 }
 

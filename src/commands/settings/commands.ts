@@ -34,16 +34,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             )
             .setColor("Danger")
             .send(true);
-        if (confirmation.cancelled)
-            return await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Moderation Commands")
-                        .setDescription("No changes were made")
-                        .setStatus("Success")
-                        .setEmoji("GUILD.ROLES.CREATE")
-                ]
-            });
+        if (confirmation.cancelled) return
         if (confirmation.success) {
             await client.database.guilds.write(interaction.guild.id, {
                 ["moderation.mute.role"]: interaction.options.getRole("role").id
