@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import getEmojiByName from "./getEmojiByName.js";
 
 const colors = {
@@ -7,7 +7,7 @@ const colors = {
     Success: 0x68d49e
 };
 
-class EmojiEmbed extends MessageEmbed {
+class EmojiEmbed extends EmbedBuilder {
     _title = "";
     _emoji: string | null = null;
 
@@ -16,10 +16,6 @@ class EmojiEmbed extends MessageEmbed {
     override get title() {
         if (!this._emoji) return this._title;
         return `${getEmojiByName(this._emoji)} ${this._title}`;
-    }
-
-    override set title(title: string) {
-        this._title = title;
     }
 
     override setTitle(title: string) {

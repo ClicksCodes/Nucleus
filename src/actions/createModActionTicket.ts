@@ -1,4 +1,4 @@
-import Discord, { MessageActionRow, MessageButton } from "discord.js";
+import Discord, { ActionRowBuilder, ButtonBuilder, OverwriteType, ChannelType, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
@@ -12,30 +12,29 @@ export async function create(
 ) {
     const config = await client.database.guilds.read(guild.id);
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-    const overwrites = [
-        {
-            id: member,
-            allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
-            type: "member"
-        }
-    ] as Discord.OverwriteResolvable[];
+    const overwrites = [{
+        id: member,
+        allow: ["ViewChannel", "SendMessages", "AttachFiles", "AddReactions", "ReadMessageHistory"],
+        type: OverwriteType.Member
+    }] as unknown as Discord.OverwriteResolvable[];
     overwrites.push({
         id: guild.roles.everyone,
-        deny: ["VIEW_CHANNEL"],
-        type: "role"
+        deny: ["ViewChannel"],
+        type: OverwriteType.Role
     });
     if (config.tickets.supportRole !== null) {
         overwrites.push({
             id: guild.roles.cache.get(config.tickets.supportRole)!,
-            allow: ["VIEW_CHANNEL", "SEND_MESSAGES", "ATTACH_FILES", "ADD_REACTIONS", "READ_MESSAGE_HISTORY"],
-            type: "role"
+            allow: ["ViewChannel", "SendMessages", "AttachFiles", "AddReactions", "ReadMessageHistory"],
+            type: OverwriteType.Role
         });
     }
 
     let c;
     try {
-        c = await guild.channels.create(member.username, {
-            type: "GUILD_TEXT",
+        c = await guild.channels.create({
+            name: member.username,
+            type: ChannelType.GuildText,
             topic: `${member.id} Active`,
             parent: config.tickets.category,
             nsfw: false,
@@ -69,10 +68,10 @@ export async function create(
                     .setEmoji("GUILD.TICKET.OPEN")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Close")
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setCustomId("closeticket")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                 ])

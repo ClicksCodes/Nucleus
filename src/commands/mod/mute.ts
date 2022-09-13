@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -74,23 +74,23 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new Discord.MessageButton().setCustomId("1m").setLabel("1 Minute").setStyle("SECONDARY"),
-                    new Discord.MessageButton().setCustomId("10m").setLabel("10 Minutes").setStyle("SECONDARY"),
-                    new Discord.MessageButton().setCustomId("30m").setLabel("30 Minutes").setStyle("SECONDARY"),
-                    new Discord.MessageButton().setCustomId("1h").setLabel("1 Hour").setStyle("SECONDARY")
+                new ActionRowBuilder().addComponents([
+                    new Discord.ButtonBuilder().setCustomId("1m").setLabel("1 Minute").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder().setCustomId("10m").setLabel("10 Minutes").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder().setCustomId("30m").setLabel("30 Minutes").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder().setCustomId("1h").setLabel("1 Hour").setStyle(ButtonStyle.Secondary)
                 ]),
-                new MessageActionRow().addComponents([
-                    new Discord.MessageButton().setCustomId("6h").setLabel("6 Hours").setStyle("SECONDARY"),
-                    new Discord.MessageButton().setCustomId("12h").setLabel("12 Hours").setStyle("SECONDARY"),
-                    new Discord.MessageButton().setCustomId("1d").setLabel("1 Day").setStyle("SECONDARY"),
-                    new Discord.MessageButton().setCustomId("1w").setLabel("1 Week").setStyle("SECONDARY")
+                new ActionRowBuilder().addComponents([
+                    new Discord.ButtonBuilder().setCustomId("6h").setLabel("6 Hours").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder().setCustomId("12h").setLabel("12 Hours").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder().setCustomId("1d").setLabel("1 Day").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder().setCustomId("1w").setLabel("1 Week").setStyle(ButtonStyle.Secondary)
                 ]),
-                new MessageActionRow().addComponents([
-                    new Discord.MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new Discord.ButtonBuilder()
                         .setCustomId("cancel")
                         .setLabel("Cancel")
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                 ])
             ],
@@ -242,11 +242,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             .setStatus("Danger")
                     ],
                     components: [
-                        new MessageActionRow().addComponents(
+                        new ActionRowBuilder().addComponents(
                             config.moderation.mute.text
                                 ? [
-                                    new MessageButton()
-                                        .setStyle("LINK")
+                                    new ButtonBuilder()
+                                        .setStyle(ButtonStyle.Link)
                                         .setLabel(config.moderation.mute.text)
                                         .setURL(config.moderation.mute.link)
                                 ]

@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, GuildMember, Message, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 // @ts-expect-error
 import { WrappedCheck } from "jshaiku";
@@ -43,7 +43,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 return memberRoles.cache.has(element);
             });
         else managed = false;
-        const dropdown = new Discord.MessageSelectMenu()
+        const dropdown = new Discord.SelectMenuBuilder()
             .addOptions(
                 config.tracks.map((option, index) => {
                     const hasRoleInTrack = option.track.some((element: string) => {
@@ -114,7 +114,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     );
                 });
                 conflictDropdown = [
-                    new Discord.MessageSelectMenu()
+                    new Discord.SelectMenuBuilder()
                         .addOptions(conflictDropdown)
                         .setCustomId("conflict")
                         .setMaxValues(1)
@@ -135,27 +135,27 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setDescription(`${generated}`)
                     .setStatus("Success")
             ],
-            components: [new MessageActionRow().addComponents(dropdown)]
+            components: [new ActionRowBuilder().addComponents(dropdown)]
                 .concat(
-                    conflict && conflictDropdown.length ? [new MessageActionRow().addComponents(conflictDropdown)] : []
+                    conflict && conflictDropdown.length ? [new ActionRowBuilder().addComponents(conflictDropdown)] : []
                 )
                 .concat([
-                    new MessageActionRow().addComponents([
-                        new MessageButton()
+                    new ActionRowBuilder().addComponents([
+                        new ButtonBuilder()
                             .setEmoji(getEmojiByName("CONTROL.UP", "id"))
                             .setLabel("Move up")
                             .setCustomId("promote")
-                            .setStyle("SUCCESS")
+                            .setStyle(ButtonStyle.Success)
                             .setDisabled(
                                 conflict ||
                                     currentRoleIndex === 0 ||
                                     (currentRoleIndex === -1 ? false : !allowed[currentRoleIndex - 1])
                             ),
-                        new MessageButton()
+                        new ButtonBuilder()
                             .setEmoji(getEmojiByName("CONTROL.DOWN", "id"))
                             .setLabel("Move down")
                             .setCustomId("demote")
-                            .setStyle("DANGER")
+                            .setStyle(ButtonStyle.Danger)
                             .setDisabled(
                                 conflict ||
                                     (data.nullable

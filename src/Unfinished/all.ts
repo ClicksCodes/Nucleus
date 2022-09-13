@@ -2,9 +2,10 @@ import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
-    MessageActionRow,
-    MessageButton,
-    MessageSelectMenu
+    ActionRowBuilder,
+    ButtonBuilder,
+    SelectMenuBuilder,
+    ButtonStyle
 } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
@@ -224,8 +225,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new SelectMenuBuilder()
                         .setOptions(
                             filters.map((f, index) => ({
                                 label: (f.inverted ? "(Not) " : "") + f.name,
@@ -237,16 +238,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("select")
                         .setPlaceholder("Remove a filter")
                 ]),
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Apply")
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setCustomId("apply")
                         .setEmoji(client.emojis.cache.get(getEmojiByName("CONTROL.TICK", "id")))
                         .setDisabled(affected.length === 0),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setLabel("Add filter")
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setCustomId("add")
                         .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.FILTER", "id")))
                         .setDisabled(filters.length >= 25)

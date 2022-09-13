@@ -1,4 +1,4 @@
-import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -16,10 +16,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setStatus("Danger")
         ],
         components: [
-            new MessageActionRow().addComponents([
-                new MessageButton()
+            new ActionRowBuilder().addComponents([
+                new ButtonBuilder()
                     .setLabel("Invite")
-                    .setStyle("LINK")
+                    .setStyle(ButtonStyle.Link)
                     .setURL(
                         `https://discord.com/api/oauth2/authorize?client_id=${client.user.id}&permissions=295157886134&scope=bot%20applications.commands`
                     )

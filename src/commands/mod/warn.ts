@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -94,9 +94,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     ],
                     components: config.moderation.warn.text
                         ? [
-                              new MessageActionRow().addComponents([
-                                  new MessageButton()
-                                      .setStyle("LINK")
+                              new ActionRowBuilder().addComponents([
+                                  new ButtonBuilder()
+                                      .setStyle(ButtonStyle.Link)
                                       .setLabel(config.moderation.warn.text)
                                       .setURL(config.moderation.warn.link)
                               ])
@@ -167,17 +167,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Danger")
                 ],
                 components: [
-                    new MessageActionRow().addComponents([
-                        new Discord.MessageButton().setCustomId("log").setLabel("Ignore and log").setStyle("SECONDARY"),
-                        new Discord.MessageButton()
+                    new ActionRowBuilder().addComponents([
+                        new Discord.ButtonBuilder().setCustomId("log").setLabel("Ignore and log").setStyle(ButtonStyle.Secondary),
+                        new Discord.ButtonBuilder()
                             .setCustomId("here")
                             .setLabel("Warn here")
-                            .setStyle(canSeeChannel ? "PRIMARY" : "SECONDARY")
+                            .setStyle(canSeeChannel ? ButtonStyle.Primary : ButtonStyle.Secondary)
                             .setDisabled(!canSeeChannel),
-                        new Discord.MessageButton()
+                        new Discord.ButtonBuilder()
                             .setCustomId("ticket")
                             .setLabel("Create ticket")
-                            .setStyle(canSeeChannel ? "SECONDARY" : "PRIMARY")
+                            .setStyle(canSeeChannel ? ButtonStyle.Primary : ButtonStyle.Secondary)
                     ])
                 ]
             })) as Discord.Message;

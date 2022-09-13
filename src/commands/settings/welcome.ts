@@ -3,10 +3,11 @@ import Discord, {
     Channel,
     CommandInteraction,
     Message,
-    MessageActionRow,
-    MessageButton,
+    ActionRowBuilder,
+    ButtonBuilder,
     MessageComponentInteraction,
-    Role
+    Role,
+    ButtonStyle
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -203,36 +204,36 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel(lastClicked == "clear-message" ? "Click again to confirm" : "Clear Message")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-message")
                         .setDisabled(!config.welcome.message)
-                        .setStyle("DANGER"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
                         .setLabel(lastClicked == "clear-role" ? "Click again to confirm" : "Clear Role")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-role")
                         .setDisabled(!config.welcome.role)
-                        .setStyle("DANGER"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
                         .setLabel(lastClicked == "clear-ping" ? "Click again to confirm" : "Clear Ping")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-ping")
                         .setDisabled(!config.welcome.ping)
-                        .setStyle("DANGER"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
                         .setLabel(lastClicked == "clear-channel" ? "Click again to confirm" : "Clear Channel")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-channel")
                         .setDisabled(!config.welcome.channel)
-                        .setStyle("DANGER"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder()
                         .setLabel("Set Channel to DM")
                         .setCustomId("set-channel-dm")
                         .setDisabled(config.welcome.channel == "dm")
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                 ])
             ]
         })) as Message;

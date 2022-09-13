@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../utils/defaultEmbeds.js";
-import { CommandInteraction, GuildChannel, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 // @ts-expect-error
 import type { WrappedCheck } from "jshaiku";
@@ -56,8 +56,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new SelectMenuBuilder()
                         .setCustomId("selected")
                         .setMaxValues(Object.keys(types).length)
                         .setMinValues(1)
@@ -69,17 +69,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             }))
                         )
                 ]),
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Accept Suggestion")
                         .setCustomId("accept")
-                        .setStyle("SUCCESS")
+                        .setStyle(ButtonStyle.Success)
                         .setDisabled(predicted[channel].length === 0)
                         .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.TICK", "id"))),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setLabel('Use "Other"')
                         .setCustomId("reject")
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                         .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.CROSS", "id")))
                 ])
             ]

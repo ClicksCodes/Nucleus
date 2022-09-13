@@ -75,7 +75,7 @@ export class Logger {
             });
             if (channel) {
                 log.separate = log.separate || {};
-                const embed = new Discord.MessageEmbed()
+                const embed = new Discord.EmbedBuilder()
                     .setTitle(`${getEmojiByName(log.meta.emoji)} ${log.meta.displayName}`)
                     .setDescription(
                         (log.separate.start ? log.separate.start + "\n" : "") +

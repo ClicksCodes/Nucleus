@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, MessageActionRow, MessageButton } from "discord.js";
+import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -61,11 +61,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Danger")
                 ],
                 components: [
-                    new MessageActionRow().addComponents(
+                    new ActionRowBuilder().addComponents(
                         config.moderation.kick.text
                             ? [
-                                  new MessageButton()
-                                      .setStyle("LINK")
+                                  new ButtonBuilder()
+                                      .setStyle(ButtonStyle.Link)
                                       .setLabel(config.moderation.kick.text)
                                       .setURL(config.moderation.kick.link)
                               ]

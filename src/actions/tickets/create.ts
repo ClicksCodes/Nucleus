@@ -1,4 +1,4 @@
-import Discord, { MessageActionRow, MessageButton } from "discord.js";
+import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { tickets, toHexArray } from "../../utils/calculate.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -67,17 +67,17 @@ export default async function (interaction) {
         let formattedTicketTypes = [];
         formattedTicketTypes = ticketTypes.map((type) => {
             if (custom) {
-                return new MessageButton().setLabel(type).setStyle("PRIMARY").setCustomId(type);
+                return new ButtonBuilder().setLabel(type).setStyle(ButtonStyle.Primary).setCustomId(type);
             } else {
-                return new MessageButton()
+                return new ButtonBuilder()
                     .setLabel(capitalize(type))
-                    .setStyle("PRIMARY")
+                    .setStyle(ButtonStyle.Primary)
                     .setCustomId(type)
                     .setEmoji(getEmojiByName("TICKETS." + type.toString().toUpperCase(), "id"));
             }
         });
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
-            splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
+            splitFormattedTicketTypes.push(new ActionRowBuilder().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
         const m = await interaction.reply({
             embeds: [
@@ -102,22 +102,22 @@ export default async function (interaction) {
         formattedTicketTypes = [];
         formattedTicketTypes = ticketTypes.map((type) => {
             if (custom) {
-                return new MessageButton()
+                return new ButtonBuilder()
                     .setLabel(type)
-                    .setStyle(chosenType === type ? "SUCCESS" : "SECONDARY")
+                    .setStyle(chosenType === type ? ButtonStyle.Success : ButtonStyle.Secondary)
                     .setCustomId(type)
                     .setDisabled(true);
             } else {
-                return new MessageButton()
+                return new ButtonBuilder()
                     .setLabel(capitalize(type))
-                    .setStyle(chosenType === type ? "SUCCESS" : "SECONDARY")
+                    .setStyle(chosenType === type ? ButtonStyle.Success : ButtonStyle.Secondary)
                     .setCustomId(type)
                     .setEmoji(getEmojiByName("TICKETS." + type.toString().toUpperCase(), "id"))
                     .setDisabled(true);
             }
         });
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
-            splitFormattedTicketTypes.push(new MessageActionRow().addComponents(formattedTicketTypes.slice(i, i + 5)));
+            splitFormattedTicketTypes.push(new ActionRowBuilder().addComponents(formattedTicketTypes.slice(i, i + 5)));
         }
         component.update({
             embeds: [
@@ -207,10 +207,10 @@ export default async function (interaction) {
                     .setEmoji("GUILD.TICKET.OPEN")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Close")
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setCustomId("closeticket")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                 ])

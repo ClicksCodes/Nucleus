@@ -37,7 +37,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         .setDescription(
             keyValueList({
                 user: renderUser(interaction.options.getUser("user")),
-                role: renderRole(interaction.options.getRole("role"))
+                role: renderRole(interaction.options.get("role"))
             }) +
                 `\nAre you sure you want to ${
                     action === "give" ? "give the role to" : "remove the role from"
@@ -49,7 +49,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (confirmation.success) {
         try {
             const member = interaction.options.getMember("user") as GuildMember;
-            const role = interaction.options.getRole("role") as Role;
+            const role = interaction.options.get("role") as unknown as Role;
             if (interaction.options.getString("action") === "give") {
                 member.roles.add(role);
             } else {

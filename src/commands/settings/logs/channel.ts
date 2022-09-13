@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
 import { ChannelType } from "discord-api-types/v9";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
@@ -129,12 +129,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setCustomId("clear")
                         .setLabel(clicks ? "Click again to confirm" : "Reset channel")
                         .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setDisabled(!channel)
                 ])
             ]
@@ -169,12 +169,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 .setFooter({ text: "Message closed" })
         ],
         components: [
-            new MessageActionRow().addComponents([
-                new MessageButton()
+            new ActionRowBuilder().addComponents([
+                new ButtonBuilder()
                     .setCustomId("clear")
                     .setLabel("Clear")
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                    .setStyle("SECONDARY")
+                    .setStyle(ButtonStyle.Secondary)
                     .setDisabled(true)
             ])
         ]

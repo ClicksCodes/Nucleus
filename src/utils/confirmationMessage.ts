@@ -2,11 +2,12 @@ import Discord, {
     CommandInteraction,
     Interaction,
     Message,
-    MessageActionRow,
-    MessageButton,
+    ActionRowBuilder,
+    ButtonBuilder,
     MessageComponentInteraction,
     ModalSubmitInteraction,
-    TextInputComponent
+    TextInputComponent,
+    ButtonStyle
 } from "discord.js";
 import { modalInteractionCollector } from "./dualCollector.js";
 import EmojiEmbed from "./generateEmojiEmbed.js";
@@ -97,38 +98,38 @@ class confirmationMessage {
 
         while (!cancelled && success === undefined && !returnComponents && !newReason) {
             const fullComponents = [
-                new Discord.MessageButton()
+                new Discord.ButtonBuilder()
                     .setCustomId("yes")
                     .setLabel("Confirm")
-                    .setStyle(this.inverted ? "SUCCESS" : "DANGER")
+                    .setStyle(this.inverted ? ButtonStyle.Success : ButtonStyle.Danger)
                     .setEmoji(getEmojiByName("CONTROL.TICK", "id")),
-                new Discord.MessageButton()
+                new Discord.ButtonBuilder()
                     .setCustomId("no")
                     .setLabel("Cancel")
-                    .setStyle("SECONDARY")
+                    .setStyle(ButtonStyle.Secondary)
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
             ];
             Object.entries(this.customButtons).forEach(([k, v]) => {
-                const button = new Discord.MessageButton()
+                const button = new Discord.ButtonBuilder()
                     .setCustomId(k)
                     .setLabel(v.title)
-                    .setStyle(v.active ? "SUCCESS" : "PRIMARY")
+                    .setStyle(v.active ? ButtonStyle.Success : ButtonStyle.Primary)
                     .setDisabled(v.disabled);
                 if (v.emoji !== undefined) button.setEmoji(getEmojiByName(v.emoji, "id"));
                 fullComponents.push(button);
             });
             if (this.reason !== null)
                 fullComponents.push(
-                    new Discord.MessageButton()
+                    new Discord.ButtonBuilder()
                         .setCustomId("reason")
                         .setLabel("Edit Reason")
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setEmoji(getEmojiByName("ICONS.EDIT", "id"))
                         .setDisabled(false)
                 );
             const components = [];
             for (let i = 0; i < fullComponents.length; i += 5) {
-                components.push(new MessageActionRow().addComponents(fullComponents.slice(i, i + 5)));
+                components.push(new ActionRowBuilder().addComponents(fullComponents.slice(i, i + 5)));
             }
             const object = {
                 embeds: [
@@ -197,7 +198,7 @@ class confirmationMessage {
                         .setCustomId("modal")
                         .setTitle("Editing reason")
                         .addComponents(
-                            new MessageActionRow<TextInputComponent>().addComponents(
+                            new ActionRowBuilder<TextInputComponent>().addComponents(
                                 new TextInputComponent()
                                     .setCustomId("reason")
                                     .setLabel("Reason")
@@ -218,11 +219,11 @@ class confirmationMessage {
                             .setEmoji(this.emoji)
                     ],
                     components: [
-                        new MessageActionRow().addComponents([
-                            new MessageButton()
+                        new ActionRowBuilder().addComponents([
+                            new ButtonBuilder()
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                                .setStyle("PRIMARY")
+                                .setStyle(ButtonStyle.Primary)
                                 .setCustomId("back")
                         ])
                     ]

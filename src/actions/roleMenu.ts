@@ -1,10 +1,11 @@
-import { Interaction, MessageButton } from "discord.js";
+import { Interaction, ButtonBuilder, CommandInteraction, Role, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
-import { MessageActionRow, MessageSelectMenu } from "discord.js";
+import { ActionRowBuilder, SelectMenuBuilder } from "discord.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { LoadingEmbed } from "../utils/defaultEmbeds.js";
 import type { GuildConfig } from "../utils/database.js";
+import type { ButtonComponent } from "@discordjs/builders";
 
 export interface RoleMenuSchema {
     guild: string;
@@ -16,7 +17,9 @@ export interface RoleMenuSchema {
     interaction: Interaction;
 }
 
-export async function callback(interaction: Interaction) {
+export async function callback(interaction: CommandInteraction) {
+    if(!interaction.guild) return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
+    if(!interaction.member) return interaction.reply({ content: "You must be in a server to use this command.", ephemeral: true });
     const config = await client.database.guilds.read(interaction.guild.id);
     if (!config.roleMenu.enabled)
         return await interaction.reply({
@@ -67,7 +70,7 @@ export async function callback(interaction: Interaction) {
         client.roleMenu[code] = {
             guild: interaction.guild.id,
             guildName: interaction.guild.name,
-            guildIcon: interaction.guild.iconURL({ format: "png" }),
+            guildIcon: interaction.guild.iconURL({ extension: "png" }),
             user: interaction.member.user.id,
             username: interaction.member.user.username,
             data: config.roleMenu.options,
@@ -90,25 +93,26 @@ export async function callback(interaction: Interaction) {
                     .setEmoji("GUILD.GREEN")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Online")
-                        .setStyle("LINK")
+                        .setStyle(ButtonStyle.Link)
                         .setDisabled(!up)
                         .setURL(`${client.config.baseUrl}nucleus/rolemenu?code=${code}`),
-                    new MessageButton().setLabel("Manual").setStyle("PRIMARY").setCustomId("manual")
+                    new ButtonBuilder().setLabel("Manual").setStyle(ButtonStyle.Primary).setCustomId("manual")
                 ])
             ]
         });
     }
     let component;
+    if (!m) return;
     try {
         component = await m.awaitMessageComponent({ time: 300000 });
     } catch (e) {
         return;
     }
     component.deferUpdate();
-    let rolesToAdd = [];
+    let rolesToAdd: Role[] = [];
     for (let i = 0; i < config.roleMenu.options.length; i++) {
         const object = config.roleMenu.options[i];
         const m = await interaction.editReply({
@@ -129,19 +133,19 @@ export async function callback(interaction: Interaction) {
                     })
             ],
             components: [
-                new MessageActionRow().addComponents(
+                new ActionRowBuilder().addComponents(
                     [
-                        new MessageButton()
+                        new ButtonBuilder()
                             .setLabel("Cancel")
-                            .setStyle("DANGER")
+                            .setStyle(ButtonStyle.Danger)
                             .setCustomId("cancel")
                             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     ].concat(
                         object.min === 0
                             ? [
-                                  new MessageButton()
+                                  new ButtonBuilder()
                                       .setLabel("Skip")
-                                      .setStyle("SECONDARY")
+                                      .setStyle(ButtonStyle.Secondary)
                                       .setCustomId("skip")
                                       .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                               ]
@@ -149,8 +153,8 @@ export async function callback(interaction: Interaction) {
                     )
                 )
             ].concat([
-                new MessageActionRow().addComponents([
-                    new MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new SelectMenuBuilder()
                         .setPlaceholder(`${object.name}`)
                         .setCustomId("rolemenu")
                         .setMinValues(object.min)

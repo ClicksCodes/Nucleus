@@ -4,12 +4,13 @@ import Discord, {
     GuildMember,
     Interaction,
     Message,
-    MessageActionRow,
-    MessageButton,
+    ActionRowBuilder,
+    ButtonBuilder,
     MessageComponentInteraction,
     ModalSubmitInteraction,
     SelectMenuInteraction,
-    TextInputComponent
+    TextInputComponent,
+    ButtonStyle
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -148,8 +149,8 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         const components = (
             openFilterPane
                 ? [
-                      new MessageActionRow().addComponents([
-                          new Discord.MessageSelectMenu()
+                      new ActionRowBuilder().addComponents([
+                          new Discord.SelectMenuBuilder()
                               .setOptions(
                                   Object.entries(types).map(([key, value]) => ({
                                       label: value.text,
@@ -166,36 +167,36 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                   ]
                 : []
         ).concat([
-            new MessageActionRow().addComponents([
-                new MessageButton()
+            new ActionRowBuilder().addComponents([
+                new ButtonBuilder()
                     .setCustomId("prevYear")
                     .setLabel((currentYear - 1).toString())
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                    .setStyle("SECONDARY"),
-                new MessageButton().setCustomId("prevPage").setLabel("Previous page").setStyle("PRIMARY"),
-                new MessageButton().setCustomId("today").setLabel("Today").setStyle("PRIMARY"),
-                new MessageButton()
+                    .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId("prevPage").setLabel("Previous page").setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId("today").setLabel("Today").setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
                     .setCustomId("nextPage")
                     .setLabel("Next page")
-                    .setStyle("PRIMARY")
+                    .setStyle(ButtonStyle.Primary)
                     .setDisabled(pageIndex >= groups.length - 1 && currentYear === new Date().getFullYear()),
-                new MessageButton()
+                new ButtonBuilder()
                     .setCustomId("nextYear")
                     .setLabel((currentYear + 1).toString())
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                    .setStyle("SECONDARY")
+                    .setStyle(ButtonStyle.Secondary)
                     .setDisabled(currentYear === new Date().getFullYear())
             ]),
-            new MessageActionRow().addComponents([
-                new MessageButton()
+            new ActionRowBuilder().addComponents([
+                new ButtonBuilder()
                     .setLabel("Mod notes")
                     .setCustomId("modNotes")
-                    .setStyle("PRIMARY")
+                    .setStyle(ButtonStyle.Primary)
                     .setEmoji(getEmojiByName("ICONS.EDIT", "id")),
-                new MessageButton()
+                new ButtonBuilder()
                     .setLabel("Filter")
                     .setCustomId("openFilter")
-                    .setStyle(openFilterPane ? "SUCCESS" : "PRIMARY")
+                    .setStyle(openFilterPane ? ButtonStyle.Success : ButtonStyle.Primary)
                     .setEmoji(getEmojiByName("ICONS.FILTER", "id"))
             ])
         ]);
@@ -329,15 +330,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel(`${note ? "Modify" : "Create"} note`)
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setCustomId("modify")
                         .setEmoji(getEmojiByName("ICONS.EDIT", "id")),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setLabel("View moderation history")
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setCustomId("history")
                         .setEmoji(getEmojiByName("ICONS.HISTORY", "id"))
                 ])
@@ -356,7 +357,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setCustomId("modal")
                     .setTitle("Editing moderator note")
                     .addComponents(
-                        new MessageActionRow<TextInputComponent>().addComponents(
+                        new ActionRowBuilder<TextInputComponent>().addComponents(
                             new TextInputComponent()
                                 .setCustomId("note")
                                 .setLabel("Note")
@@ -376,11 +377,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("GUILD.TICKET.OPEN")
                 ],
                 components: [
-                    new MessageActionRow().addComponents([
-                        new MessageButton()
+                    new ActionRowBuilder().addComponents([
+                        new ButtonBuilder()
                             .setLabel("Back")
                             .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                            .setStyle("PRIMARY")
+                            .setStyle(ButtonStyle.Primary)
                             .setCustomId("back")
                     ])
                 ]

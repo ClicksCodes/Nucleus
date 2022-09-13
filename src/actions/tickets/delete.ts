@@ -1,4 +1,4 @@
-import Discord, { MessageButton, MessageActionRow } from "discord.js";
+import Discord, { ButtonBuilder, ActionRowBuilder, ButtonStyle } from "discord.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -129,19 +129,19 @@ export default async function (interaction) {
                     .setEmoji("GUILD.TICKET.ARCHIVED")
             ],
             components: [
-                new MessageActionRow().addComponents(
+                new ActionRowBuilder().addComponents(
                     [
-                        new MessageButton()
+                        new ButtonBuilder()
                             .setLabel("Delete")
-                            .setStyle("DANGER")
+                            .setStyle(ButtonStyle.Danger)
                             .setCustomId("closeticket")
                             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     ].concat(
                         client.database.premium.hasPremium(interaction.guild.id)
                             ? [
-                                  new MessageButton()
+                                  new ButtonBuilder()
                                       .setLabel("Create Transcript and Delete")
-                                      .setStyle("PRIMARY")
+                                      .setStyle(ButtonStyle.Primary)
                                       .setCustomId("createtranscript")
                                       .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
                               ]

@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel } from "discord.js";
+import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -74,21 +74,21 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Danger")
                 ],
                 components: [
-                    new Discord.MessageActionRow().addComponents([
-                        new Discord.MessageButton().setCustomId("1").setLabel("1").setStyle("SECONDARY"),
-                        new Discord.MessageButton().setCustomId("3").setLabel("3").setStyle("SECONDARY"),
-                        new Discord.MessageButton().setCustomId("5").setLabel("5").setStyle("SECONDARY")
+                    new Discord.ActionRowBuilder().addComponents([
+                        new Discord.ButtonBuilder().setCustomId("1").setLabel("1").setStyle(ButtonStyle.Secondary),
+                        new Discord.ButtonBuilder().setCustomId("3").setLabel("3").setStyle(ButtonStyle.Secondary),
+                        new Discord.ButtonBuilder().setCustomId("5").setLabel("5").setStyle(ButtonStyle.Secondary)
                     ]),
-                    new Discord.MessageActionRow().addComponents([
-                        new Discord.MessageButton().setCustomId("10").setLabel("10").setStyle("SECONDARY"),
-                        new Discord.MessageButton().setCustomId("25").setLabel("25").setStyle("SECONDARY"),
-                        new Discord.MessageButton().setCustomId("50").setLabel("50").setStyle("SECONDARY")
+                    new Discord.ActionRowBuilder().addComponents([
+                        new Discord.ButtonBuilder().setCustomId("10").setLabel("10").setStyle(ButtonStyle.Secondary),
+                        new Discord.ButtonBuilder().setCustomId("25").setLabel("25").setStyle(ButtonStyle.Secondary),
+                        new Discord.ButtonBuilder().setCustomId("50").setLabel("50").setStyle(ButtonStyle.Secondary)
                     ]),
-                    new Discord.MessageActionRow().addComponents([
-                        new Discord.MessageButton()
+                    new Discord.ActionRowBuilder().addComponents([
+                        new Discord.ButtonBuilder()
                             .setCustomId("done")
                             .setLabel("Done")
-                            .setStyle("SUCCESS")
+                            .setStyle(ButtonStyle.Success)
                             .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
                     ])
                 ]
@@ -103,12 +103,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 timedOut = true;
                 continue;
             }
-            component.deferUpdate();
-            if (component.customId === "done") {
+            (await component).deferUpdate();
+            if ((await component).customId === "done") {
                 amountSelected = true;
                 continue;
             }
-            const amount = parseInt(component.customId);
+            const amount = parseInt((await component).customId);
 
             let messages;
             await (interaction.channel as TextChannel).messages.fetch({ limit: amount }).then(async (ms) => {
@@ -189,11 +189,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new Discord.MessageActionRow().addComponents([
-                    new Discord.MessageButton()
+                new Discord.ActionRowBuilder().addComponents([
+                    new Discord.ButtonBuilder()
                         .setCustomId("download")
                         .setLabel("Download transcript")
-                        .setStyle("SUCCESS")
+                        .setStyle(ButtonStyle.Success)
                         .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
                 ])
             ]
@@ -337,11 +337,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Success")
                 ],
                 components: [
-                    new Discord.MessageActionRow().addComponents([
-                        new Discord.MessageButton()
+                    new Discord.ActionRowBuilder().addComponents([
+                        new Discord.ButtonBuilder()
                             .setCustomId("download")
                             .setLabel("Download transcript")
-                            .setStyle("SUCCESS")
+                            .setStyle(ButtonStyle.Success)
                             .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
                     ])
                 ]

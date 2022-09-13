@@ -2,10 +2,11 @@ import {
     CommandInteraction,
     GuildMember,
     Message,
-    MessageActionRow,
-    MessageButton,
+    ActionRowBuilder,
+    ButtonBuilder,
     MessageComponentInteraction,
-    TextChannel
+    TextChannel,
+    ButtonStyle
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -76,11 +77,11 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setEmoji("CONTROL.DOWNLOAD")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton().setLabel("View").setStyle("LINK").setURL(url),
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(url),
+                    new ButtonBuilder()
                         .setLabel("Delete")
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setCustomId("close")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                 ])
@@ -99,10 +100,10 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setEmoji("CONTROL.DOWNLOAD")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Delete")
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setCustomId("close")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                 ])

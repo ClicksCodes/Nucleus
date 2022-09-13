@@ -2,13 +2,14 @@ import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import Discord, {
     CommandInteraction,
     Message,
-    MessageActionRow,
-    MessageActionRowComponent,
-    MessageButton,
+    ActionRowBuilder,
+    Component,
+    ButtonBuilder,
     MessageComponentInteraction,
-    MessageEmbed,
+    EmbedBuilder,
     SelectMenuInteraction,
-    MessageSelectOptionData
+    MessageSelectOptionData,
+    ButtonStyle
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -17,11 +18,11 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
 
 class Embed {
-    embed: Discord.MessageEmbed = new MessageEmbed();
+    embed: Discord.EmbedBuilder = new EmbedBuilder();
     title: string = "";
     description = "";
     pageId = 0;
-    setEmbed(embed: Discord.MessageEmbed) {
+    setEmbed(embed: Discord.EmbedBuilder) {
         this.embed = embed;
         return this;
     }
@@ -85,7 +86,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let cancelled = false;
     let timedOut = false;
     while (!cancelled && !timedOut) {
-        let selectPane: MessageActionRow[] = [];
+        let selectPane: ActionRowBuilder[] = [];
 
         if (selectPaneOpen) {
             const options: MessageSelectOptionData[] = [];
@@ -97,8 +98,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 });
             });
             selectPane = [
-                new MessageActionRow().addComponents([
-                    new Discord.MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new Discord.SelectMenuBuilder()
                         .addOptions(options)
                         .setCustomId("page")
                         .setMaxValues(1)
@@ -106,31 +107,31 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 ])
             ];
         }
-        const em = new Discord.MessageEmbed(pages[page]!.embed);
+        const em = new Discord.EmbedBuilder(pages[page]!.embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
         await interaction.editReply({
             embeds: [em],
             components: selectPane.concat([
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setCustomId("left")
                         .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(page === 0),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("select")
                         .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                        .setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY")
+                        .setStyle(selectPaneOpen ? ButtonStyle.Primary : ButtonStyle.Secondary)
                         .setDisabled(false),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("right")
                         .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(page === pages.length - 1),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("close")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                 ])
             ])
         });
@@ -142,22 +143,22 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             continue;
         }
         i.deferUpdate();
-        if ((i.component as MessageActionRowComponent).customId === "left") {
+        if ((i.component as Component).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if ((i.component as MessageActionRowComponent).customId === "right") {
+        } else if ((i.component as Component).customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if ((i.component as MessageActionRowComponent).customId === "select") {
+        } else if ((i.component as Component).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if ((i.component as MessageActionRowComponent).customId === "page") {
+        } else if ((i.component as Component).customId === "page") {
             page = parseInt((i as SelectMenuInteraction).values[0]!);
             selectPaneOpen = false;
         } else {
             cancelled = true;
         }
     }
-    const em = new Discord.MessageEmbed(pages[page]!.embed);
+    const em = new Discord.EmbedBuilder(pages[page]!.embed);
     if (timedOut) {
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
     } else {

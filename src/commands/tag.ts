@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import { AutocompleteInteraction, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -29,7 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (tag.match(/^(http|https):\/\/[^ "]+$/)) {
         url = tag;
         components = [
-            new MessageActionRow().addComponents([new MessageButton().setLabel("Open").setURL(url).setStyle("LINK")])
+            new ActionRowBuilder().addComponents([new ButtonBuilder().setLabel("Open").setURL(url).setStyle(ButtonStyle.Link)])
         ];
     }
     return await interaction.reply({

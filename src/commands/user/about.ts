@@ -3,12 +3,13 @@ import Discord, {
     CommandInteraction,
     GuildMember,
     Message,
-    MessageActionRow,
-    MessageActionRowComponent,
-    MessageButton,
+    ActionRowBuilder,
+    Component,
+    ButtonBuilder,
     MessageComponentInteraction,
     MessageSelectOptionData,
-    SelectMenuInteraction
+    SelectMenuInteraction,
+    ButtonStyle
 } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -26,11 +27,11 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 class Embed {
-    embed: Discord.MessageEmbed;
+    embed: Discord.EmbedBuilder;
     title: string;
     description = "";
     pageId = 0;
-    setEmbed(embed: Discord.MessageEmbed) {
+    setEmbed(embed: Discord.EmbedBuilder) {
         this.embed = embed;
         return this;
     }
@@ -227,7 +228,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let page = 0;
     let timedOut = false;
     while (!timedOut) {
-        const em = new Discord.MessageEmbed(embeds[page].embed);
+        const em = new Discord.EmbedBuilder(embeds[page].embed);
         em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page));
         let selectPane = [];
 
@@ -241,8 +242,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 });
             });
             selectPane = [
-                new MessageActionRow().addComponents([
-                    new Discord.MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new Discord.SelectMenuBuilder()
                         .addOptions(options)
                         .setCustomId("page")
                         .setMaxValues(1)
@@ -253,21 +254,21 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         await interaction.editReply({
             embeds: [em],
             components: selectPane.concat([
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                         .setCustomId("left")
                         .setDisabled(page === 0),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                        .setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY")
+                        .setStyle(selectPaneOpen ? ButtonStyle.Primary : ButtonStyle.Secondary)
                         .setCustomId("select")
                         .setDisabled(false),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                         .setCustomId("right")
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                         .setDisabled(page === embeds.length - 1)
                 ])
             ])
@@ -280,20 +281,20 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             continue;
         }
         i.deferUpdate();
-        if ((i.component as MessageActionRowComponent).customId === "left") {
+        if ((i.component as Component).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if ((i.component as MessageActionRowComponent).customId === "right") {
+        } else if ((i.component as Component).customId === "right") {
             if (page < embeds.length - 1) page++;
             selectPaneOpen = false;
-        } else if ((i.component as MessageActionRowComponent).customId === "select") {
+        } else if ((i.component as Component).customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if ((i.component as MessageActionRowComponent).customId === "page") {
+        } else if ((i.component as Component).customId === "page") {
             page = parseInt((i as SelectMenuInteraction).values[0]);
             selectPaneOpen = false;
         }
     }
-    const em = new Discord.MessageEmbed(embeds[page].embed);
+    const em = new Discord.EmbedBuilder(embeds[page].embed);
     em.setDescription(em.description + "\n" + createPageIndicator(embeds.length, page) + " | Message closed");
     await interaction.editReply({
         embeds: [em],

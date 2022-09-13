@@ -3,15 +3,16 @@ import Discord, {
     CommandInteraction,
     Interaction,
     Message,
-    MessageActionRow,
-    MessageActionRowComponent,
-    MessageButton,
+    ActionRowBuilder,
+    Component,
+    ButtonBuilder,
     MessageComponentInteraction,
-    MessageSelectMenu,
+    SelectMenuBuilder,
     ModalSubmitInteraction,
     Role,
     SelectMenuInteraction,
-    TextInputComponent
+    TextInputComponent,
+    ButtonStyle
 } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -138,18 +139,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("GUILD.ROLES.CREATE")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setCustomId("clear")
                         .setLabel(clicks ? "Click again to confirm" : "Reset role")
                         .setEmoji(getEmojiByName(clicks ? "TICKETS.ISSUE" : "CONTROL.CROSS", "id"))
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setDisabled(!role),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("send")
                         .setLabel("Add verify button")
                         .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                 ])
             ]
         });
@@ -161,14 +162,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
         i.deferUpdate();
-        if ((i.component as MessageActionRowComponent).customId === "clear") {
+        if ((i.component as Component).customId === "clear") {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
                 await client.database.guilds.write(interaction.guild!.id, null, ["verify.role", "verify.enabled"]);
                 role = undefined;
             }
-        } else if ((i.component as MessageActionRowComponent).customId === "send") {
+        } else if ((i.component as Component).customId === "send") {
             const verifyMessages = [
                 {
                     label: "Verify",
@@ -198,8 +199,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             .setEmoji("GUILD.ROLES.CREATE")
                     ],
                     components: [
-                        new MessageActionRow().addComponents([
-                            new MessageSelectMenu()
+                        new ActionRowBuilder().addComponents([
+                            new SelectMenuBuilder()
                                 .setOptions(
                                     verifyMessages.map(
                                         (
@@ -224,18 +225,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 .setMinValues(1)
                                 .setPlaceholder("Select a message template")
                         ]),
-                        new MessageActionRow().addComponents([
-                            new MessageButton()
+                        new ActionRowBuilder().addComponents([
+                            new ButtonBuilder()
                                 .setCustomId("back")
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                                .setStyle("DANGER"),
-                            new MessageButton().setCustomId("blank").setLabel("Empty").setStyle("SECONDARY"),
-                            new MessageButton()
+                                .setStyle(ButtonStyle.Danger),
+                            new ButtonBuilder().setCustomId("blank").setLabel("Empty").setStyle(ButtonStyle.Secondary),
+                            new ButtonBuilder()
                                 .setCustomId("custom")
                                 .setLabel("Custom")
                                 .setEmoji(getEmojiByName("TICKETS.OTHER", "id"))
-                                .setStyle("PRIMARY")
+                                .setStyle(ButtonStyle.Primary)
                         ])
                     ]
                 });
@@ -246,7 +247,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     innerTimedOut = true;
                     continue;
                 }
-                if ((i.component as MessageActionRowComponent).customId === "template") {
+                if ((i.component as Component).customId === "template") {
                     i.deferUpdate();
                     await interaction.channel!.send({
                         embeds: [
@@ -259,39 +260,39 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 .setEmoji("CONTROL.BLOCKTICK")
                         ],
                         components: [
-                            new MessageActionRow().addComponents([
-                                new MessageButton()
+                            new ActionRowBuilder().addComponents([
+                                new ButtonBuilder()
                                     .setLabel("Verify")
                                     .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
-                                    .setStyle("SUCCESS")
+                                    .setStyle(ButtonStyle.Success)
                                     .setCustomId("verifybutton")
                             ])
                         ]
                     });
                     templateSelected = true;
                     continue;
-                } else if ((i.component as MessageActionRowComponent).customId === "blank") {
+                } else if ((i.component as Component).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel!.send({
                         components: [
-                            new MessageActionRow().addComponents([
-                                new MessageButton()
+                            new ActionRowBuilder().addComponents([
+                                new ButtonBuilder()
                                     .setLabel("Verify")
                                     .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
-                                    .setStyle("SUCCESS")
+                                    .setStyle(ButtonStyle.Success)
                                     .setCustomId("verifybutton")
                             ])
                         ]
                     });
                     templateSelected = true;
                     continue;
-                } else if ((i.component as MessageActionRowComponent).customId === "custom") {
+                } else if ((i.component as Component).customId === "custom") {
                     await i.showModal(
                         new Discord.Modal()
                             .setCustomId("modal")
                             .setTitle("Enter embed details")
                             .addComponents(
-                                new MessageActionRow<TextInputComponent>().addComponents(
+                                new ActionRowBuilder<TextInputComponent>().addComponents(
                                     new TextInputComponent()
                                         .setCustomId("title")
                                         .setLabel("Title")
@@ -299,7 +300,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                         .setRequired(true)
                                         .setStyle("SHORT")
                                 ),
-                                new MessageActionRow<TextInputComponent>().addComponents(
+                                new ActionRowBuilder<TextInputComponent>().addComponents(
                                     new TextInputComponent()
                                         .setCustomId("description")
                                         .setLabel("Description")
@@ -318,11 +319,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 .setEmoji("GUILD.TICKET.OPEN")
                         ],
                         components: [
-                            new MessageActionRow().addComponents([
-                                new MessageButton()
+                            new ActionRowBuilder().addComponents([
+                                new ButtonBuilder()
                                     .setLabel("Back")
                                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                                    .setStyle("PRIMARY")
+                                    .setStyle(ButtonStyle.Primary)
                                     .setCustomId("back")
                             ])
                         ]
@@ -352,11 +353,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                     .setEmoji("CONTROL.BLOCKTICK")
                             ],
                             components: [
-                                new MessageActionRow().addComponents([
-                                    new MessageButton()
+                                new ActionRowBuilder().addComponents([
+                                    new ButtonBuilder()
                                         .setLabel("Verify")
                                         .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
-                                        .setStyle("SUCCESS")
+                                        .setStyle(ButtonStyle.Success)
                                         .setCustomId("verifybutton")
                                 ])
                             ]

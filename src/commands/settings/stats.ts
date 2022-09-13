@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, Message, MessageActionRow, MessageSelectMenu } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, SelectMenuBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -152,7 +152,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     while (!timedOut) {
         config = await client.database.guilds.read(interaction.guild.id);
         const stats = config.getKey("stats");
-        const selectMenu = new MessageSelectMenu()
+        const selectMenu = new SelectMenuBuilder()
             .setCustomId("remove")
             .setMinValues(1)
             .setMaxValues(Math.max(1, Object.keys(stats).length));
@@ -167,7 +167,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new MessageActionRow().addComponents(
+                new ActionRowBuilder().addComponents(
                     Object.keys(stats).length
                         ? [
                               selectMenu

@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, MessageActionRow, MessageButton, User } from "discord.js";
+import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -81,11 +81,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             .setStatus("Danger")
                     ],
                     components: [
-                        new MessageActionRow().addComponents(
+                        new ActionRowBuilder().addComponents(
                             config.moderation.ban.text
                                 ? [
-                                    new MessageButton()
-                                        .setStyle("LINK")
+                                    new ButtonBuilder()
+                                        .setStyle(ButtonStyle.Link)
                                         .setLabel(config.moderation.ban.text)
                                         .setURL(config.moderation.ban.link)
                                 ]

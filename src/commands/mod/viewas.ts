@@ -2,9 +2,10 @@ import Discord, {
     CategoryChannel,
     CommandInteraction,
     GuildMember,
-    MessageActionRow,
-    MessageButton,
-    MessageSelectMenu
+    ActionRowBuilder,
+    ButtonBuilder,
+    SelectMenuBuilder,
+    ButtonStyle
 } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -99,8 +100,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     )
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new SelectMenuBuilder()
                         .setOptions(
                             channels.map((c, index) => ({
                                 label: c[0].parent ? c[0].parent.name : "Uncategorised",
@@ -113,8 +114,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setMinValues(1)
                         .setPlaceholder("Select a category")
                 ]),
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel(
                             page === 0
                                 ? ""
@@ -124,9 +125,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         )
                         .setDisabled(page === 0)
                         .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setCustomId("previous"),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setLabel(
                             page === channels.length - 1
                                 ? ""
@@ -136,7 +137,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         )
                         .setDisabled(page === channels.length - 1)
                         .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                        .setStyle("PRIMARY")
+                        .setStyle(ButtonStyle.Primary)
                         .setCustomId("next")
                 ])
             ]

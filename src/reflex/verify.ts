@@ -5,7 +5,8 @@ import Discord, {
     Interaction,
     MessageComponentInteraction,
     Permissions,
-    Role
+    Role,
+    ButtonStyle
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
@@ -94,14 +95,14 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setEmoji("CONTROL.BLOCKCROSS")
             ],
             components: [
-                new Discord.MessageActionRow().addComponents([
-                    new Discord.MessageButton()
+                new Discord.ActionRowBuilder().addComponents([
+                    new Discord.ButtonBuilder()
                         .setLabel("Check webpage")
-                        .setStyle("LINK")
+                        .setStyle(ButtonStyle.Link)
                         .setURL(client.config.baseUrl),
-                    new Discord.MessageButton()
+                    new Discord.ButtonBuilder()
                         .setLabel("Support")
-                        .setStyle("LINK")
+                        .setStyle(ButtonStyle.Link)
                         .setURL("https://discord.gg/bPaNnxe")
                 ])
             ]
@@ -228,10 +229,10 @@ export default async function (interaction: CommandInteraction | MessageComponen
                 .setEmoji("MEMBER.JOIN")
         ],
         components: [
-            new Discord.MessageActionRow().addComponents([
-                new Discord.MessageButton()
+            new Discord.ActionRowBuilder().addComponents([
+                new Discord.ButtonBuilder()
                     .setLabel("Verify")
-                    .setStyle("LINK")
+                    .setStyle(ButtonStyle.Link)
                     .setURL(`${client.config.baseUrl}nucleus/verify?code=${code}`)
             ])
         ]

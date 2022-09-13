@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, Message, MessageActionRow, MessageButton, MessageSelectMenu } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
@@ -54,8 +54,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new SelectMenuBuilder()
                         .setPlaceholder("Set events to log")
                         .setMaxValues(Object.keys(logs).length)
                         .setCustomId("logs")
@@ -68,9 +68,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             }))
                         )
                 ]),
-                new MessageActionRow().addComponents([
-                    new MessageButton().setLabel("Select all").setStyle("PRIMARY").setCustomId("all"),
-                    new MessageButton().setLabel("Select none").setStyle("DANGER").setCustomId("none")
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder().setLabel("Select all").setStyle(ButtonStyle.Primary).setCustomId("all"),
+                    new ButtonBuilder().setLabel("Select none").setStyle(ButtonStyle.Danger).setCustomId("none")
                 ])
             ]
         })) as Message;

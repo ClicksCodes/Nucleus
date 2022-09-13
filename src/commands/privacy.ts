@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -13,12 +13,12 @@ const command = new SlashCommandBuilder()
     .setDescription("Information and options for you and your server's settings");
 
 class Embed {
-    embed: Discord.MessageEmbed;
+    embed: Discord.EmbedBuilder;
     title: string;
     description = "";
     pageId = 0;
-    components?: MessageActionRow[] = [];
-    setEmbed(embed: Discord.MessageEmbed) {
+    components?: ActionRowBuilder[] = [];
+    setEmbed(embed: Discord.EmbedBuilder) {
         this.embed = embed;
         return this;
     }
@@ -34,7 +34,7 @@ class Embed {
         this.pageId = pageId;
         return this;
     }
-    setComponents(components: MessageActionRow[]) {
+    setComponents(components: ActionRowBuilder[]) {
         this.components = components;
         return this;
     }
@@ -102,11 +102,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                       .setDescription("Options")
                       .setPageId(3)
                       .setComponents([
-                          new MessageActionRow().addComponents([
-                              new MessageButton()
+                          new ActionRowBuilder().addComponents([
+                              new ButtonBuilder()
                                   .setLabel("Clear all data")
                                   .setCustomId("clear-all-data")
-                                  .setStyle("DANGER")
+                                  .setStyle(ButtonStyle.Danger)
                           ])
                       ])
               ]
@@ -138,8 +138,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 );
             });
             selectPane = [
-                new MessageActionRow().addComponents([
-                    new Discord.MessageSelectMenu()
+                new ActionRowBuilder().addComponents([
+                    new Discord.SelectMenuBuilder()
                         .addOptions(options)
                         .setCustomId("page")
                         .setMaxValues(1)
@@ -148,25 +148,25 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             ];
         }
         const components = selectPane.concat([
-            new MessageActionRow().addComponents([
-                new MessageButton()
+            new ActionRowBuilder().addComponents([
+                new ButtonBuilder()
                     .setCustomId("left")
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                    .setStyle("SECONDARY")
+                    .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === 0),
-                new MessageButton()
+                new ButtonBuilder()
                     .setCustomId("select")
                     .setEmoji(getEmojiByName("CONTROL.MENU", "id"))
-                    .setStyle(selectPaneOpen ? "PRIMARY" : "SECONDARY")
+                    .setStyle(selectPaneOpen ? ButtonStyle.Primary : ButtonStyle.Secondary)
                     .setDisabled(false),
-                new MessageButton()
+                new ButtonBuilder()
                     .setCustomId("right")
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                    .setStyle("SECONDARY")
+                    .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === pages.length - 1)
             ])
         ]);
-        const em = new Discord.MessageEmbed(pages[page].embed);
+        const em = new Discord.EmbedBuilder(pages[page].embed);
         em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
         em.setFooter({ text: nextFooter ?? "" });
         await interaction.editReply({
@@ -216,14 +216,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 continue;
             }
         } else {
-            const em = new Discord.MessageEmbed(pages[page].embed);
+            const em = new Discord.EmbedBuilder(pages[page].embed);
             em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({ text: "Message closed" });
             interaction.editReply({ embeds: [em], components: [] });
             return;
         }
     }
-    const em = new Discord.MessageEmbed(pages[page].embed);
+    const em = new Discord.EmbedBuilder(pages[page].embed);
     em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
     em.setFooter({ text: "Message timed out" });
     await interaction.editReply({

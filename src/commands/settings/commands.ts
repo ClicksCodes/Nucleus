@@ -1,8 +1,8 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, MessageActionRow, MessageButton, TextInputComponent } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, TextInputComponent, Role, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
@@ -23,27 +23,27 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
     let m;
     let clicked = "";
-    if (interaction.options.getRole("role")) {
+    if (interaction.options.get("role")) {
         const confirmation = await new confirmationMessage(interaction)
             .setEmoji("GUILD.ROLES.DELETE")
             .setTitle("Moderation Commands")
             .setDescription(
                 keyValueList({
-                    role: `<@&${interaction.options.getRole("role").id}>`
+                    role: `<@&${(interaction.options.get("role") as unknown as Role).id}>`
                 })
             )
             .setColor("Danger")
             .send(true);
         if (confirmation.cancelled) return
         if (confirmation.success) {
-            await client.database.guilds.write(interaction.guild.id, {
-                ["moderation.mute.role"]: interaction.options.getRole("role").id
+            await client.database.guilds.write(interaction!.guild.id, {
+                ["moderation.mute.role"]: (interaction.options.get("role") as unknown as Role).id
             });
         }
     }
     let timedOut = false;
     while (!timedOut) {
-        const config = await client.database.guilds.read(interaction.guild.id);
+        const config = await client.database.guilds.read(interaction!.guild.id);
         const moderation = config.getKey("moderation");
         m = await interaction.editReply({
             embeds: [
@@ -58,51 +58,51 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     )
             ],
             components: [
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Warn")
                         .setEmoji(getEmojiByName("PUNISH.WARN.YELLOW", "id"))
                         .setCustomId("warn")
-                        .setStyle("SECONDARY"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
                         .setLabel("Mute")
                         .setEmoji(getEmojiByName("PUNISH.MUTE.YELLOW", "id"))
                         .setCustomId("mute")
-                        .setStyle("SECONDARY"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
                         .setLabel("Nickname")
                         .setEmoji(getEmojiByName("PUNISH.NICKNAME.GREEN", "id"))
                         .setCustomId("nickname")
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                 ]),
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel("Kick")
                         .setEmoji(getEmojiByName("PUNISH.KICK.RED", "id"))
                         .setCustomId("kick")
-                        .setStyle("SECONDARY"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
                         .setLabel("Softban")
                         .setEmoji(getEmojiByName("PUNISH.BAN.YELLOW", "id"))
                         .setCustomId("softban")
-                        .setStyle("SECONDARY"),
-                    new MessageButton()
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
                         .setLabel("Ban")
                         .setEmoji(getEmojiByName("PUNISH.BAN.RED", "id"))
                         .setCustomId("ban")
-                        .setStyle("SECONDARY")
+                        .setStyle(ButtonStyle.Secondary)
                 ]),
-                new MessageActionRow().addComponents([
-                    new MessageButton()
+                new ActionRowBuilder().addComponents([
+                    new ButtonBuilder()
                         .setLabel(clicked === "clearMuteRole" ? "Click again to confirm" : "Clear mute role")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clearMuteRole")
-                        .setStyle("DANGER")
+                        .setStyle(ButtonStyle.Danger)
                         .setDisabled(!moderation.mute.role),
-                    new MessageButton()
+                    new ButtonBuilder()
                         .setCustomId("timeout")
                         .setLabel("Mute timeout " + (moderation.mute.timeout ? "Enabled" : "Disabled"))
-                        .setStyle(moderation.mute.timeout ? "SUCCESS" : "DANGER")
+                        .setStyle(moderation.mute.timeout ? ButtonStyle.Success : ButtonStyle.Danger)
                         .setEmoji(getEmojiByName("CONTROL." + (moderation.mute.timeout ? "TICK" : "CROSS"), "id"))
                 ])
             ]
@@ -140,7 +140,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setCustomId("modal")
                     .setTitle(`Options for ${i.customId}`)
                     .addComponents(
-                        new MessageActionRow<TextInputComponent>().addComponents(
+                        new ActionRowBuilder<TextInputComponent>().addComponents(
                             new TextInputComponent()
                                 .setCustomId("name")
                                 .setLabel("Button text")
@@ -149,7 +149,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 .setStyle("SHORT")
                                 .setValue(chosen.text ?? "")
                         ),
-                        new MessageActionRow<TextInputComponent>().addComponents(
+                        new ActionRowBuilder<TextInputComponent>().addComponents(
                             new TextInputComponent()
                                 .setCustomId("url")
                                 .setLabel("URL - Type {id} to insert the user's ID")
@@ -169,11 +169,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("GUILD.TICKET.OPEN")
                 ],
                 components: [
-                    new MessageActionRow().addComponents([
-                        new MessageButton()
+                    new ActionRowBuilder().addComponents([
+                        new ButtonBuilder()
                             .setLabel("Back")
                             .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                            .setStyle("PRIMARY")
+                            .setStyle(ButtonStyle.Primary)
                             .setCustomId("back")
                     ])
                 ]
