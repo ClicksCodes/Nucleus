@@ -16,7 +16,7 @@ import Discord, {
     TextInputComponent,
     ButtonStyle
 } from "discord.js";
-import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { ChannelType } from "discord-api-types/v9";
 import client from "../../utils/client.js";
 import { toHexInteger, toHexArray, tickets as ticketTypes } from "../../utils/calculate.js";
@@ -33,16 +33,16 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setName("enabled")
                 .setDescription("If users should be able to create tickets")
                 .setRequired(false)
-                .addChoices([
-                    ["Yes", "yes"],
-                    ["No", "no"]
-                ])
+                .addChoices(
+                    {name: "Yes", value: "yes"},
+                    {name: "No",value:  "no"}
+                )
         )
         .addChannelOption((option) =>
             option
                 .setName("category")
                 .setDescription("The category where tickets are created")
-                .addChannelType(ChannelType.GuildCategory)
+                .addChannelTypes(ChannelType.GuildCategory)
                 .setRequired(false)
         )
         .addNumberOption((option) =>

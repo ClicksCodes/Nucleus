@@ -1,4 +1,4 @@
-import type { HaikuClient } from "jshaiku";
+import type { Client } from 'discord.js';
 import express from "express";
 import bodyParser from "body-parser";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -8,7 +8,7 @@ const jsonParser = bodyParser.json();
 const app = express();
 const port = 10000;
 
-const runServer = (client: HaikuClient) => {
+const runServer = (client: Client) => {
     app.get("/", (req, res) => {
         res.status(200).send(client.ws.ping);
     });

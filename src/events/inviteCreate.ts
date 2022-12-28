@@ -1,8 +1,7 @@
 import type { GuildAuditLogsEntry, Invite } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 
 export const event = "inviteCreate";
 

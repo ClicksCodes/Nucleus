@@ -1,5 +1,4 @@
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import type { Guild, GuildAuditLogsEntry } from "discord.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
 

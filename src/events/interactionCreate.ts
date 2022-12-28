@@ -6,8 +6,7 @@ import createTranscript from "../premium/createTranscript.js";
 import Fuse from "fuse.js";
 import { autocomplete as tagAutocomplete } from "../commands/tag.js";
 import type { AutocompleteInteraction, Interaction, MessageComponentInteraction } from "discord.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 
 export const event = "interactionCreate";
 

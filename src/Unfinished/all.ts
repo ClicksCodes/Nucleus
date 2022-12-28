@@ -8,7 +8,6 @@ import Discord, {
     ButtonStyle
 } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import addPlural from "../utils/plurals.js";
@@ -259,7 +258,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     return;
 };
 
-const check = async (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = async (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     if (!me.permissions.has("MANAGE_ROLES")) throw new Error("I do not have the *Manage Roles* permission");

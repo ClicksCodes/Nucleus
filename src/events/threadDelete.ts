@@ -1,8 +1,7 @@
 import type { GuildAuditLogsEntry, ThreadChannel } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 export const event = "threadDelete";
 
 export async function callback(client: HaikuClient, thread: ThreadChannel) {

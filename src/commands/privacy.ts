@@ -1,7 +1,6 @@
 import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { SelectMenuOption, SlashCommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
@@ -232,7 +231,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction) => {
     return true;
 };
 

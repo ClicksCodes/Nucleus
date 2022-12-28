@@ -6,11 +6,13 @@ import keyValueList from "../../utils/generateKeyValueList.js";
 import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
 
+
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("ban")
         .setDescription("Bans a user from the server")
         .addUserOption((option) => option.setName("user").setDescription("The user to ban").setRequired(true))
+        .addStringOption((option) => option.setName("reason").setDescription("The reason for the ban").setRequired(false))
         .addNumberOption((option) =>
             option
                 .setName("delete")
@@ -19,6 +21,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setMaxValue(7)
                 .setRequired(false)
         );
+
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const { renderUser } = client.logger;
@@ -34,12 +37,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             .setTitle("Ban")
             .setDescription(
                 keyValueList({
-                    user: renderUser(interaction.options.getUser("user")),
+                    user: renderUser(interaction.options.getUser("user")!),
                     reason: reason ? "\n> " + (reason).replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n` +
                     `${addPlurals(
-                        interaction.options.getNumber("delete") ?? 0,
+                        (interaction.options.get("delete")?.value as number | null) ?? 0,
                         "day"
                     )} of messages will be deleted\n\n` +
                     `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
@@ -80,18 +83,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             )
                             .setStatus("Danger")
                     ],
-                    components: [
-                        new ActionRowBuilder().addComponents(
-                            config.moderation.ban.text
-                                ? [
-                                    new ButtonBuilder()
-                                        .setStyle(ButtonStyle.Link)
-                                        .setLabel(config.moderation.ban.text)
-                                        .setURL(config.moderation.ban.link)
-                                ]
-                                : []
-                        )
-                    ]
+                    components: config.moderation.ban.text ? [
+                        new ActionRowBuilder().addComponents([
+                            new ButtonBuilder()
+                                .setStyle(ButtonStyle.Link)
+                                .setLabel(config.moderation.ban.text)
+                                .setURL(config.moderation.ban.link!)
+                        ])
+                    ] : []
                 });
                 dmd = true;
             }

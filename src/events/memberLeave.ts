@@ -1,6 +1,5 @@
 import type { GuildAuditLogsEntry, GuildMember } from "discord.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";

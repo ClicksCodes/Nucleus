@@ -1,6 +1,5 @@
 import { CommandInteraction, GuildMember, Role } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -21,10 +20,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setName("action")
                 .setDescription("The action to perform")
                 .setRequired(true)
-                .addChoices([
-                    ["Add", "give"],
-                    ["Remove", "remove"]
-                ])
+                .addChoices(
+                    {name: "Add", value: "give"},
+                    {name: "Remove", value: "remove"}
+                )
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
@@ -91,7 +90,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember | null;

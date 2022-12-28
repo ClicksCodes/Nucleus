@@ -1,6 +1,5 @@
 import Discord, { CommandInteraction } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -13,7 +12,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     await interaction.reply("You're mum");
 };
 
-const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_ROLES"))
         throw Error("You must have the *Manage Roles* permission to use this command");

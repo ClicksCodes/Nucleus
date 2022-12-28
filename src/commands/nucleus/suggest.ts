@@ -1,6 +1,5 @@
 import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -63,7 +62,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction) => {
     return true;
 };
 

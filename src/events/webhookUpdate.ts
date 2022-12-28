@@ -1,7 +1,6 @@
 import type { GuildAuditLogsEntry, Webhook } from "discord.js";
 import type Discord from "discord.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 export const event = "webhookUpdate";
 
 export async function callback(client: HaikuClient, channel: Discord.GuildChannel) {

@@ -1,5 +1,4 @@
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import type { Message, MessageReference } from "discord.js";
 
 export const event = "messageUpdate";

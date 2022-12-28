@@ -1,4 +1,9 @@
+import { command } from "../../utils/commandRegistration/slashCommandBuilder.js";
+
 const name = "settings";
 const description = "Change bot settings";
 
-export { name, description };
+
+const subcommand = await command(name, description, "settings")
+
+export { name, description, subcommand as command};

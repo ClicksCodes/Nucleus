@@ -1,4 +1,8 @@
+import { command } from "../../utils/commandRegistration/slashCommandBuilder.js";
+
 const name = "tags";
 const description = "manage server tags";
 
-export { name, description };
+const subcommand = await command(name, description, `tags`);
+
+export { name, description, subcommand as command };

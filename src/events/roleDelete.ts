@@ -1,6 +1,5 @@
 import getEmojiByName from "../utils/getEmojiByName.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import type { GuildAuditLogsEntry, Role } from "discord.js";
 
 export const event = "roleDelete";

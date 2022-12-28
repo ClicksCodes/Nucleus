@@ -1,10 +1,9 @@
 import type { GuildAuditLogsEntry } from "discord.js";
 import type { GuildBasedChannel } from "discord.js";
-// @ts-expect-error
-import { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 export const event = "channelCreate";
 
-export async function callback(client: HaikuClient, channel: GuildBasedChannel) {
+export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_CREATE");
     const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();

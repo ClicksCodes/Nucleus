@@ -1,6 +1,5 @@
 import type { Guild, User } from "discord.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import type { GuildMember } from "discord.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import singleNotify from "../utils/singleNotify.js";

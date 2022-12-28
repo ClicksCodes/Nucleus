@@ -1,5 +1,4 @@
-// @ts-expect-error
-import { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from "../reflex/scanners.js";
 import logAttachment from "../premium/attachmentLogs.js";
 import createLogException from "../utils/createLogException.js";

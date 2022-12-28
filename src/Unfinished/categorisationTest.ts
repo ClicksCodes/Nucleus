@@ -1,8 +1,6 @@
 import { LoadingEmbed } from "../utils/defaultEmbeds.js";
 import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-// @ts-expect-error
-import type { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import client from "../utils/client.js";
 import addPlural from "../utils/plurals.js";
@@ -120,7 +118,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     console.log(categorised);
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction) => {
     return true;
 };
 

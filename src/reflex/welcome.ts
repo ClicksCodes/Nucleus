@@ -1,5 +1,4 @@
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";

@@ -7,7 +7,7 @@ import Discord, {
     SelectMenuBuilder,
     ButtonStyle
 } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import pageIndicator from "../../utils/createPageIndicator.js";

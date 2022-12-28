@@ -6,8 +6,7 @@ import {
     ThreadChannel,
     VoiceChannel
 } from "discord.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "channelDelete";

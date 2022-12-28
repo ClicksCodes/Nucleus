@@ -1,8 +1,6 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { SelectMenuOption, SlashCommandSubcommandBuilder } from "@discordjs/builders";
-// @ts-expect-error
-import { WrappedCheck } from "jshaiku";
+import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import addPlural from "../../utils/plurals.js";
@@ -205,7 +203,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = async (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = async (interaction: CommandInteraction) => {
     const tracks = (await client.database.guilds.read(interaction.guild.id)).tracks;
     if (tracks.length === 0) throw new Error("This server does not have any tracks");
     const member = interaction.member as GuildMember;

@@ -1,8 +1,7 @@
 import type { GuildMember } from "discord.js";
 import { callback as statsChannelAdd } from "../reflex/statsChannelUpdate.js";
 import { callback as welcome } from "../reflex/welcome.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 
 export const event = "guildMemberAdd";
 

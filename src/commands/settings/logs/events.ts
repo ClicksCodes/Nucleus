@@ -1,7 +1,6 @@
 import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
 import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import client from "../../../utils/client.js";
 import { toHexArray, toHexInteger } from "../../../utils/calculate.js";
@@ -104,7 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     return;
 };
 
-const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
         throw new Error("You must have the *Manage Server* permission to use this command");

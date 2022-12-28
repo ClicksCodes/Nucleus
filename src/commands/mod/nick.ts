@@ -1,18 +1,19 @@
 import { CommandInteraction, GuildMember } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
 
-const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("nick")
-        .setDescription("Changes a users nickname")
-        .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
-        .addStringOption((option) =>
-            option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
-        );
+
+const command = (builder: SlashCommandSubcommandBuilder) => builder
+    .setName("nick")
+    .setDescription("Changes a users nickname")
+    .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
+    .addStringOption((option) =>
+        option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
+    );
+
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { renderUser } = client.logger;

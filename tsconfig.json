@@ -1,7 +1,7 @@
 {
     "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
     "compilerOptions": {
-        "module": "esnext",
+        "module": "NodeNext",
         "target": "es2020",
         "sourceMap": true,
         "esModuleInterop": true,
@@ -9,7 +9,7 @@
         "declaration": true,
         "declarationMap": true,
         "resolveJsonModule": true,
-        "moduleResolution": "node",
+        "moduleResolution": "NodeNext",
         "skipLibCheck": true,
         "noImplicitReturns": false
     },

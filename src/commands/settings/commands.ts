@@ -3,7 +3,6 @@ import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, TextInput
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -208,7 +207,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
         throw new Error("You must have the *Manage Server* permission to use this command");

@@ -1,6 +1,5 @@
-import { CommandInteraction } from "discord.js";
+import type { CommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import { callback as roleMenu } from "../actions/roleMenu.js";
 
 const command = new SlashCommandBuilder()
@@ -11,7 +10,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     await roleMenu(interaction);
 };
 
-const check = (_interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (_interaction: CommandInteraction) => {
     return true;
 };
 

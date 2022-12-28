@@ -37,7 +37,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option
                 .setName("channel")
                 .setDescription("The channel the welcome message should be sent to")
-                .addChannelTypes([ChannelType.GuildText, ChannelType.GuildNews])
+                .addChannelTypes(ChannelType.GuildText)
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {

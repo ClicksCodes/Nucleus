@@ -3,7 +3,6 @@ import Discord, { CommandInteraction, Message, ActionRowBuilder, SelectMenuBuild
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
 import client from "../../utils/client.js";
 import convertCurlyBracketString from "../../utils/convertCurlyBracketString.js";
 import { callback as statsChannelAddCallback } from "../../reflex/statsChannelUpdate.js";
@@ -218,7 +217,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_CHANNELS"))
         throw new Error("You must have the *Manage Channels* permission to use this command");

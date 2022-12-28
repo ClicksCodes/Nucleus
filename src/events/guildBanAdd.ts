@@ -1,8 +1,7 @@
 import type { GuildAuditLogsEntry, GuildBan } from "discord.js";
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";
-// @ts-expect-error
-import type { HaikuClient } from "jshaiku";
+import type { HaikuClient } from "../utils/haiku/index.js";
 
 export const event = "guildBanAdd";
 

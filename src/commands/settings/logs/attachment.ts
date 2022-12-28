@@ -4,8 +4,7 @@ import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonSty
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
-import { WrappedCheck } from "jshaiku";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -16,7 +15,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option
                 .setName("channel")
                 .setDescription("The channel to log attachments in")
-                .addChannelTypes([ChannelType.GuildNews, ChannelType.GuildText])
+                .addChannelTypes(ChannelType.GuildText)
                 .setRequired(false)
         );
 
@@ -189,7 +188,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction, _defaultCheck: WrappedCheck) => {
+const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("MANAGE_GUILD"))
         throw new Error("You must have the *Manage Server* permission to use this command");

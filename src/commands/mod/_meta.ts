@@ -1,4 +1,8 @@
+import { command } from "../../utils/commandRegistration/slashCommandBuilder.js";
+
 const name = "mod";
 const description = "Perform moderator actions";
 
-export { name, description };
+const subcommand = await command(name, description, `mod`)
+
+export { name, description, subcommand as command };
