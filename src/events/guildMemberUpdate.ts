@@ -1,9 +1,9 @@
 import type { GuildAuditLogsEntry, GuildMember } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 
 export const event = "guildMemberUpdate";
 
-export async function callback(client: HaikuClient, before: GuildMember, after: GuildMember) {
+export async function callback(client: NucleusClient, before: GuildMember, after: GuildMember) {
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
         const auditLog = await getAuditLog(after.guild, "MEMBER_UPDATE");

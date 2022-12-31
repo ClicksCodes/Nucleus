@@ -1,9 +1,9 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import type { Message, MessageReference } from "discord.js";
 
 export const event = "messageUpdate";
 
-export async function callback(client: HaikuClient, oldMessage: Message, newMessage: Message) {
+export async function callback(client: NucleusClient, oldMessage: Message, newMessage: Message) {
     if (newMessage.author.id === client.user.id) return;
     if (!newMessage.guild) return;
     const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;

@@ -6,7 +6,7 @@ import createTranscript from "../premium/createTranscript.js";
 import Fuse from "fuse.js";
 import { autocomplete as tagAutocomplete } from "../commands/tag.js";
 import type { AutocompleteInteraction, Interaction, MessageComponentInteraction } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 
 export const event = "interactionCreate";
 
@@ -102,6 +102,6 @@ async function interactionCreate(interaction: Interaction) {
     }
 }
 
-export async function callback(_client: HaikuClient, interaction: Interaction) {
+export async function callback(_client: NucleusClient, interaction: Interaction) {
     await interactionCreate(interaction);
 }

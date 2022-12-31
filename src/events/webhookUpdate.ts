@@ -1,9 +1,9 @@
 import type { GuildAuditLogsEntry, Webhook } from "discord.js";
 import type Discord from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 export const event = "webhookUpdate";
 
-export async function callback(client: HaikuClient, channel: Discord.GuildChannel) {
+export async function callback(client: NucleusClient, channel: Discord.GuildChannel) {
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
         let auditLogCreate = getAuditLog(channel.guild, "WEBHOOK_CREATE");

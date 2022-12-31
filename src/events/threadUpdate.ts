@@ -1,11 +1,11 @@
 import type { GuildAuditLogsEntry, ThreadChannel } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 
 export const event = "threadUpdate";
 
-export async function callback(client: HaikuClient, before: ThreadChannel, after: ThreadChannel) {
+export async function callback(client: NucleusClient, before: ThreadChannel, after: ThreadChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = await getAuditLog(after.guild, "THREAD_UPDATE");
     const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === after.id).first();

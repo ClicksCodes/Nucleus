@@ -1,10 +1,10 @@
 import type { Role } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "roleUpdate";
 
-export async function callback(client: HaikuClient, or: Role, nr: Role) {
+export async function callback(client: NucleusClient, or: Role, nr: Role) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderRole } = client.logger;
 
     const auditLog = await getAuditLog(nr.guild, "ROLE_UPDATE");

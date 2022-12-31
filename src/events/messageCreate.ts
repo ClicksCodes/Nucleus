@@ -1,4 +1,4 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from "../reflex/scanners.js";
 import logAttachment from "../premium/attachmentLogs.js";
 import createLogException from "../utils/createLogException.js";
@@ -9,7 +9,7 @@ import { Message, ThreadChannel } from "discord.js";
 
 export const event = "messageCreate";
 
-export async function callback(_client: HaikuClient, message: Message) {
+export async function callback(_client: NucleusClient, message: Message) {
     if (!message.guild) return;
     if (message.author.bot) return;
     if (message.channel.type === "DM") return;

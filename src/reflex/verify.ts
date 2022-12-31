@@ -2,11 +2,10 @@ import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
-    Interaction,
     MessageComponentInteraction,
-    Permissions,
     Role,
-    ButtonStyle
+    ButtonStyle,
+    PermissionsBitField
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
@@ -22,7 +21,7 @@ export interface VerifySchema {
     uName: string;
     gName: string;
     gIcon: string;
-    interaction: Interaction;
+    interaction: Discord.MessageComponentInteraction;
 }
 
 function step(i: number) {
@@ -44,7 +43,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setTitle("Verify")
                     .setDescription("Verify is not enabled on this server")
                     .setFooter({
-                        text: (interaction.member!.permissions as Permissions).has("MANAGE_GUILD")
+                        text: (interaction.member!.permissions as PermissionsBitField).has("ManageGuild")
                             ? "You can enable it by running /settings verify"
                             : ""
                     })
@@ -95,7 +94,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setEmoji("CONTROL.BLOCKCROSS")
             ],
             components: [
-                new Discord.ActionRowBuilder().addComponents([
+                new Discord.ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                     new Discord.ButtonBuilder()
                         .setLabel("Check webpage")
                         .setStyle(ButtonStyle.Link)
@@ -120,9 +119,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         });
         if (
             await NSFWCheck(
-                (interaction.member as GuildMember).user.displayAvatarURL({
-                    format: "png"
-                })
+                (interaction.member as GuildMember).user.displayAvatarURL({extension: "png", forceStatic: true})
             )
         ) {
             return await interaction.editReply({
@@ -139,7 +136,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
             });
         }
     }
-    if (config.filters.wordFilter) {
+    if (config.filters.wordFilter.enabled) {
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -217,8 +214,8 @@ export default async function (interaction: CommandInteraction | MessageComponen
         rName: role.name,
         uName: interaction.member!.user.username,
         gName: interaction.guild!.name,
-        gIcon: interaction.guild!.iconURL({ format: "png" }),
-        interaction: interaction
+        gIcon: interaction.guild!.iconURL({ extension: "png", size: 256 }) ?? "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png",
+        interaction: interaction as MessageComponentInteraction
     };
     await interaction.editReply({
         embeds: [
@@ -229,7 +226,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                 .setEmoji("MEMBER.JOIN")
         ],
         components: [
-            new Discord.ActionRowBuilder().addComponents([
+            new Discord.ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                 new Discord.ButtonBuilder()
                     .setLabel("Verify")
                     .setStyle(ButtonStyle.Link)

@@ -1,6 +1,6 @@
 import type { GuildAuditLogsEntry } from "discord.js";
 import type { GuildBasedChannel } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 export const event = "channelCreate";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {

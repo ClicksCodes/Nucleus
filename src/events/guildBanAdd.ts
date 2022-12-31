@@ -1,11 +1,11 @@
 import type { GuildAuditLogsEntry, GuildBan } from "discord.js";
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 
 export const event = "guildBanAdd";
 
-export async function callback(client: HaikuClient, ban: GuildBan) {
+export async function callback(client: NucleusClient, ban: GuildBan) {
     await statsChannelRemove(client, undefined, ban.guild, ban.user);
     purgeByUser(ban.user.id, ban.guild);
     const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;

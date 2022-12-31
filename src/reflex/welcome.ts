@@ -1,10 +1,10 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { GuildChannel, GuildMember, BaseGuildTextChannel } from "discord.js";
 
-export async function callback(_client: HaikuClient, member: GuildMember) {
+export async function callback(_client: NucleusClient, member: GuildMember) {
     if (member.user.bot) return;
     const config = await client.database.guilds.read(member.guild.id);
     if (!config.welcome.enabled) return;

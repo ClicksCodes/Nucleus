@@ -1,9 +1,9 @@
 import type { Guild } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import guide from "../reflex/guide.js";
 
 export const event = "guildCreate";
 
-export async function callback(_client: HaikuClient, guild: Guild) {
+export async function callback(_client: NucleusClient, guild: Guild) {
     guide(guild);
 }

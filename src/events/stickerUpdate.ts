@@ -1,9 +1,9 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import type { Sticker } from "discord.js";
 
 export const event = "stickerUpdate";
 
-export async function callback(client: HaikuClient, oe: Sticker, ne: Sticker) {
+export async function callback(client: NucleusClient, oe: Sticker, ne: Sticker) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
 
     if (oe.name === ne.name) return;

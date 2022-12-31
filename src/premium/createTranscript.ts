@@ -11,10 +11,9 @@ import {
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
-import config from "../config/main.json" assert { type: "json" };
 import client from "../utils/client.js";
 
-const pbClient = new PasteClient(config.pastebinApiKey);
+const pbClient = new PasteClient(client.config.pastebinApiKey);
 
 export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
     if (interaction.channel === null) return;

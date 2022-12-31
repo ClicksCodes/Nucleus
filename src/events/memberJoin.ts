@@ -1,11 +1,11 @@
 import type { GuildMember } from "discord.js";
 import { callback as statsChannelAdd } from "../reflex/statsChannelUpdate.js";
 import { callback as welcome } from "../reflex/welcome.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 
 export const event = "guildMemberAdd";
 
-export async function callback(client: HaikuClient, member: GuildMember) {
+export async function callback(client: NucleusClient, member: GuildMember) {
     welcome(client, member);
     statsChannelAdd(client, member);
     const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;

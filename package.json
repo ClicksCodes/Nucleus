@@ -19,6 +19,7 @@
         "immutable": "^4.1.0",
         "mongodb": "^4.7.0",
         "node-cron": "^3.0.0",
+        "node-fetch": "^3.3.0",
         "node-tesseract-ocr": "^2.2.1",
         "pastebin-api": "^5.1.1",
         "structured-clone": "^0.2.2",

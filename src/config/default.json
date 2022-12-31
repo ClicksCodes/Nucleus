@@ -50,6 +50,7 @@
         }
     },
     "verify": {
+        "enabled": false,
         "role": null
     },
     "tickets": {

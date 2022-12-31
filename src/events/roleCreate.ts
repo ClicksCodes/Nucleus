@@ -1,9 +1,9 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import type { GuildAuditLogsEntry, Role } from "discord.js";
 
 export const event = "roleCreate";
 
-export async function callback(client: HaikuClient, role: Role) {
+export async function callback(client: NucleusClient, role: Role) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = client.logger;
     if (role.managed) return;
     const auditLog = await getAuditLog(role.guild, "ROLE_CREATE");

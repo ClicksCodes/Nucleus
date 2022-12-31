@@ -6,12 +6,12 @@ import {
     ThreadChannel,
     VoiceChannel
 } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "channelDelete";
 
-export async function callback(client: HaikuClient, channel: GuildBasedChannel) {
+export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
 
     const auditLog = await getAuditLog(channel.guild, "CHANNEL_DELETE");

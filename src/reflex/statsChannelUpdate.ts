@@ -1,5 +1,5 @@
 import type { Guild, User } from "discord.js";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import type { GuildMember } from "discord.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import singleNotify from "../utils/singleNotify.js";
@@ -9,7 +9,7 @@ interface PropSchema {
     name: string;
 }
 
-export async function callback(client: HaikuClient, member?: GuildMember, guild?: Guild, user?: User) {
+export async function callback(client: NucleusClient, member?: GuildMember, guild?: Guild, user?: User) {
     if (!member && !guild) return;
     guild = await client.guilds.fetch(member ? member.guild.id : guild!.id);
     if (!guild) return;

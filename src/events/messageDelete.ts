@@ -1,9 +1,9 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import type { GuildAuditLogsEntry, Message } from "discord.js";
 
 export const event = "messageDelete";
 
-export async function callback(client: HaikuClient, message: Message) {
+export async function callback(client: NucleusClient, message: Message) {
     try {
         if (message.author.id === client.user.id) return;
         if (client.noLog.includes(`${message.id}/${message.channel.id}/${message.id}`)) return;

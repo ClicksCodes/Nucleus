@@ -1,11 +1,11 @@
 import type { GuildAuditLogsEntry, Invite } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 
 export const event = "inviteCreate";
 
-export async function callback(client: HaikuClient, invite: Invite) {
+export async function callback(client: NucleusClient, invite: Invite) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = await getAuditLog(invite.guild, "INVITE_CREATE");
     const audit = auditLog.entries

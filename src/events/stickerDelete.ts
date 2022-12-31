@@ -1,9 +1,9 @@
-import type { HaikuClient } from "../utils/haiku/index.js";
+import type { NucleusClient } from "../utils/client.js";
 import type { GuildAuditLogsEntry, Sticker } from "discord.js";
 
 export const event = "stickerDelete";
 
-export async function callback(client: HaikuClient, emoji: Sticker) {
+export async function callback(client: NucleusClient, emoji: Sticker) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     const auditLog = await getAuditLog(emoji.guild, "STICKER_DELETE");
     const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === emoji.id).first();
