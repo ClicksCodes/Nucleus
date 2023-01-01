@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "@discordjs/builders";
 import getEmojiByName from "./getEmojiByName.js";
 
 const colors = {
@@ -11,19 +11,19 @@ class EmojiEmbed extends EmbedBuilder {
     _title = "";
     _emoji: string | null = null;
 
-    // @ts-expect-error
-    // This *is* meant to be an accessor rather than a property
-    override get title() {
-        if (!this._emoji) return this._title;
-        return `${getEmojiByName(this._emoji)} ${this._title}`;
+    _generateTitle() {
+        if (this._emoji) { return `${getEmojiByName(this._emoji)} ${this._title}`; }
+        return this._title;
     }
 
     override setTitle(title: string) {
         this._title = title;
+        super.setTitle(this._generateTitle());
         return this;
     }
     setEmoji(emoji: string) {
         this._emoji = emoji;
+        super.setTitle(this._generateTitle());
         return this;
     }
     setStatus(color: "Danger" | "Warning" | "Success") {
@@ -31,5 +31,6 @@ class EmojiEmbed extends EmbedBuilder {
         return this;
     }
 }
+
 
 export default EmojiEmbed;

@@ -12,11 +12,11 @@ export default async function getSubcommandsInFolder(path: string, indent: strin
         try {
             if (file.isDirectory()) {
                 // Get the _meta.ts file
-                subcommandGroups.push((await import(`../../../${path}/${file.name}/_meta.js`)).command);
+                subcommandGroups.push(await import(`../../../${path}/${file.name}/_meta.js`));
             } else if (file.name.endsWith(".js")) {
                 // If its a file
                 console.log(`│  ${indent}├─ Loading subcommand ${file.name}`)
-                subcommands.push((await import(`../../../${path}/${file.name}`)).command);
+                subcommands.push(await import(`../../../${path}/${file.name}`));
             }
         } catch (e) {
             console.error(`│  ${indent}│  └─ Error loading ${file.name}: ${e}`);

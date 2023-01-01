@@ -2,6 +2,8 @@ import type { SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
 import type { SlashCommandBuilder } from "discord.js";
 import config from "../../config/main.json" assert { type: "json" };
 import getSubcommandsInFolder from "./getFilesInFolder.js";
+import client from "../client.js";
+import Discord from "discord.js";
 
 
 const colours = {
@@ -12,6 +14,7 @@ const colours = {
 
 
 export async function group(name: string, description: string, path: string) {
+    // If the name of the command does not match the path (e.g. attachment.ts has /attachments), use commandString
     console.log(`│  ├─ Loading group ${name}`)
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path, "│  ")
     console.log(`│  │  └─ ${fetched.errors ? colours.red : colours.green}Loaded ${fetched.subcommands.length} subcommands for ${name} (${fetched.errors} failed)${colours.none}`)
@@ -21,14 +24,16 @@ export async function group(name: string, description: string, path: string) {
             .setDescription(description)
 
         for (const subcommand of fetched.subcommands) {
-            subcommandGroup.addSubcommand(subcommand);
+            subcommandGroup.addSubcommand(subcommand.command);
         };
 
         return subcommandGroup;
     };
 }
 
-export async function command(name: string, description: string, path: string) {
+export async function command(name: string, description: string, path: string, commandString: string | undefined = undefined) {
+    // If the name of the command does not match the path (e.g. attachment.ts has /attachments), use commandString
+    commandString = "commands/" + (commandString ?? path);
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path);
     console.log(`│  ├─ ${fetched.errors ? colours.red : colours.green}Loaded ${fetched.subcommands.length} subcommands and ${fetched.subcommandGroups.length} subcommand groups for ${name} (${fetched.errors} failed)${colours.none}`)
     return (command: SlashCommandBuilder) => {
@@ -36,10 +41,17 @@ export async function command(name: string, description: string, path: string) {
         command.setDescription(description)
 
         for (const subcommand of fetched.subcommands) {
-            command.addSubcommand(subcommand);
+            let fetchedCommand;
+            if (subcommand.command instanceof Function) {
+                fetchedCommand = subcommand.command(new Discord.SlashCommandSubcommandBuilder());
+            } else {
+                fetchedCommand = subcommand.command;
+            }
+            client.commands[commandString! + "/" + fetchedCommand.name] = subcommand
+            command.addSubcommand(fetchedCommand);
         }
         for (const group of fetched.subcommandGroups) {
-            command.addSubcommandGroup(group);
+            command.addSubcommandGroup(group.command);
         };
         return command;
     };

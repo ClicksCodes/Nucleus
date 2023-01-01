@@ -1,29 +1,10 @@
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
-// @ts-expect-error
-import structuredClone from "@ungap/structured-clone";
 import config from "../config/main.json" assert { type: "json" };
 
 const mongoClient = new MongoClient(config.mongoUrl);
 await mongoClient.connect();
 const database = mongoClient.db("Nucleus");
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const Entry = (data: any) => {
-    data = data ?? {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data.getKey = (key: any) => data[key];
-    return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        get(target: Record<string, any>, prop: string, receiver: any) {
-            let dataToReturn = data[prop];
-            if (dataToReturn === null) return Reflect.get(target, prop, receiver);
-            if (typeof dataToReturn === "object" && !Array.isArray(dataToReturn))
-                dataToReturn = new Proxy(Reflect.get(target, prop, receiver), Entry(dataToReturn));
-            return dataToReturn ?? Reflect.get(target, prop, receiver);
-        }
-    };
-};
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
@@ -42,7 +23,7 @@ export class Guilds {
 
     async read(guild: string): Promise<GuildConfig> {
         const entry = await this.guilds.findOne({ id: guild });
-        return new Proxy(structuredClone(this.defaultData), Entry(entry)) as unknown as GuildConfig;
+        return Object.assign({}, this.defaultData, entry);
     }
 
     async write(guild: string, set: object | null, unset: string[] | string = []) {
@@ -263,6 +244,7 @@ export interface GuildConfig {
         };
     };
     verify: {
+        enabled: boolean;
         role: string | null;
     };
     tickets: {

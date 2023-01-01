@@ -2,6 +2,7 @@ import { Interaction, SlashCommandBuilder } from 'discord.js';
 import config from "../../config/main.json" assert { type: "json" };
 import client from "../client.js";
 import fs from "fs";
+import Discord from "discord.js";
 
 
 const colours = {
@@ -29,7 +30,7 @@ async function registerCommands() {
             console.log(`${last}─ ${colours.yellow}Loading command ${file.name}${colours.none}`)
             const fetched = (await import(`../../../${config.commandsFolder}/${file.name}`));
             commands.push(fetched.command);
-            client.commands.set(fetched.command.name, [fetched.check, fetched.callback]);
+            client.commands["commands/" + fetched.command.name] = fetched;
         }
         i++;
         console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${files.length}]${colours.none}`)
@@ -47,12 +48,13 @@ async function registerCommands() {
 
     console.log(`Processed ${commands.length} commands, registering...`)
 
+    const updateCommands = process.argv.includes("--update-commands");
     if (developmentMode) {
         const guild = await client.guilds.fetch(config.developmentGuildID);
-        guild.commands.set(processed);
+        if (updateCommands) guild.commands.set(processed);
         console.log(`Commands registered in ${guild.name}`)
     } else {
-        client.application!.commands.set(processed);
+        if (updateCommands) client.application!.commands.set(processed);
         console.log(`Commands registered globally`)
     }
 
@@ -86,50 +88,30 @@ async function registerEvents() {
 
 async function registerCommandHandler() {
     client.on("interactionCreate", async (interaction: Interaction) => {
-        if (!interaction.isCommand()) return;
+        if (!interaction.isChatInputCommand()) return;
 
         const commandName = interaction.commandName;
         const subcommandGroupName = interaction.options.getSubcommandGroup(false);
         const subcommandName = interaction.options.getSubcommand(false);
 
-        let fullCommandName = commandName + (subcommandGroupName ? ` ${subcommandGroupName}` : "") + (subcommandName ? ` ${subcommandName}` : "");
+        const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
 
-        const command = this.commands.get(fullCommandName);
-        if (!command) return;
+        const command = client.commands[fullCommandName];
+        const callback = command?.callback;
+        const check = command?.check;
 
-        const sendErrorMessage = async (error: Error) => {
-            if (this.listenerCount("commandError")) {
-                return this.emit("commandError", interaction, error);
+        if (!callback) return;
+        if (check) {
+            let result;
+            try {
+                result = await check(interaction);
+            } catch (e) {
+                console.log(e);
+                result = false;
             }
-            let method = (!interaction.deferred && !interaction.replied) ? interaction.reply.bind(interaction) : interaction.followUp.bind(interaction);
-            await method({
-                embeds: [
-                    new Embed()
-                        .setColor(0xff0000)
-                        .setTitle("I couldn't run that command")
-                        .setDescription(error.message ?? error.toString())
-                ]
-            , ephemeral: true});
+            if (!result) return;
         }
-
-        try {
-            let hasPermission = await command.check(interaction);
-
-            if (!hasPermission) {
-                sendErrorMessage(new CheckFailedError("You don't have permission to run this command"));
-                return;
-            }
-        } catch (error) {
-            sendErrorMessage(error);
-            return;
-        }
-        try {
-            await command.callback(interaction);
-        } catch (error) {
-            this._error(error);
-            sendErrorMessage(error);
-            return;
-        }
+        callback(interaction);
     });
 }
 

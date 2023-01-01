@@ -33,6 +33,8 @@ Alternatively, you can run `Installer.js` to generate it for you.
     "managementGuildID": "your-management-guild-id-here",
     "developmentGuildID": "your-development-guild-id-here",
     "enableDevelopment": true,
+    "commandsFolder": "your-compiled-commands-folder, e.g. dist/commands",
+    "eventsFolder": "your-compiled-events-folder, e.g. dist/events",
     "owners": [
       "your-discord-id",
     ],

@@ -4,7 +4,8 @@ interface EmojisIndex {
     [key: string]: string | EmojisIndex | EmojisIndex[];
 }
 
-function getEmojiByName(name: string, format?: string): string {
+function getEmojiByName(name: string | null, format?: string): string {
+    if (!name) return "";
     const parts = name.split(".");
     let id: string | EmojisIndex | EmojisIndex[] | undefined = emojis;
     for (const part of parts) {
@@ -25,7 +26,7 @@ function getEmojiByName(name: string, format?: string): string {
         return id.toString();
     }
     if (id === undefined) {
-        return "<a:_:946346549271732234>";
+        return "";
     } else if (id.toString().startsWith("a")) {
         return `<a:_:${id.toString().slice(1, id.toString().length)}>`;
     }

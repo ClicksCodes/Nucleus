@@ -1,5 +1,6 @@
 import EmojiEmbed from "./generateEmojiEmbed.js";
+import getEmojiByName from "./getEmojiByName.js";
 
 export const LoadingEmbed = [
-    new EmojiEmbed().setTitle("Loading").setDescription("One moment...").setStatus("Danger").setEmoji("NUCLEUS.LOADING")
+    new EmojiEmbed().setDescription(`${getEmojiByName("NUCLEUS.LOADING")} One moment...`).setStatus("Danger")
 ];

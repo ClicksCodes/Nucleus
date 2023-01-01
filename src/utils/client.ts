@@ -22,14 +22,14 @@ class NucleusClient extends Client {
         premium: Premium;
         eventScheduler: EventScheduler;
     };
-    // commands: Record<string, {
-    //     command: Discord.SlashCommandBuilder |
-    //              ((builder: Discord.SlashCommandBuilder) => Discord.SlashCommandBuilder) |
-    //              Discord.SlashCommandSubcommandBuilder | ((builder: Discord.SlashCommandSubcommandBuilder) => Discord.SlashCommandSubcommandBuilder) | Discord.SlashCommandSubcommandGroupBuilder | ((builder: Discord.SlashCommandSubcommandGroupBuilder) => Discord.SlashCommandSubcommandGroupBuilder),
-    //     callback: (interaction: Interaction) => Promise<void>,
-    //     check: (interaction: Interaction) => Promise<boolean> | boolean
-    // }> = {};
-    commands: Discord.Collection<string, [Function, Function]> = new Discord.Collection();
+    commands: Record<string, {
+        command: Discord.SlashCommandBuilder |
+                ((builder: Discord.SlashCommandBuilder) => Discord.SlashCommandBuilder) |
+                Discord.SlashCommandSubcommandBuilder | ((builder: Discord.SlashCommandSubcommandBuilder) => Discord.SlashCommandSubcommandBuilder) | Discord.SlashCommandSubcommandGroupBuilder | ((builder: Discord.SlashCommandSubcommandGroupBuilder) => Discord.SlashCommandSubcommandGroupBuilder),
+        callback: (interaction: Interaction) => Promise<void>,
+        check: (interaction: Interaction) => Promise<boolean> | boolean
+    }> = {};
+    // commands: Discord.Collection<string, [Function, Function]> = new Discord.Collection();
 
     constructor(database: typeof NucleusClient.prototype.database) {
         super({ intents: 32767 });
