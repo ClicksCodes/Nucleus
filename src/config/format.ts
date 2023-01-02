@@ -11,6 +11,8 @@ const defaultDict: Record<string, string | string[] | boolean> = {
     owners: [],
     commandsFolder: "Your built commands folder (usually dist/commands)",
     eventsFolder: "Your built events folder (usually dist/events)",
+    messageContextFolder: "Your built message context folder (usually dist/context/messages)",
+    userContextFolder: "Your built user context folder (usually dist/context/users)",
     verifySecret:
         "If using verify, enter a code here which matches the secret sent back by your website. You can use a random code if you do not have one already. (Optional)",
     mongoUrl: "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",

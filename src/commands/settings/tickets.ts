@@ -62,6 +62,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (!interaction.guild) return;
     let m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -77,7 +78,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (options.category) {
             let channel: GuildChannel | null;
             try {
-                channel = await interaction.guild!.channels.fetch(options.category.id);
+                channel = await interaction.guild.channels.fetch(options.category.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [
@@ -91,7 +92,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
             if (!channel) return;
             channel = channel as Discord.CategoryChannel;
-            if (channel.guild.id !== interaction.guild!.id)
+            if (channel.guild.id !== interaction.guild.id)
                 return interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
@@ -117,7 +118,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let role: Role | null;
         if (options.supportping) {
             try {
-                role = await interaction.guild!.roles.fetch(options.supportping.id);
+                role = await interaction.guild.roles.fetch(options.supportping.id);
             } catch {
                 return await interaction.editReply({
                     embeds: [
@@ -131,7 +132,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
             if (!role) return;
             role = role as Discord.Role;
-            if (role.guild.id !== interaction.guild!.id)
+            if (role.guild.id !== interaction.guild.id)
                 return interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
@@ -170,7 +171,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             if (options.maxtickets) toUpdate["tickets.maxTickets"] = options.maxtickets;
             if (options.supportping) toUpdate["tickets.supportRole"] = options.supportping.id;
             try {
-                await client.database.guilds.write(interaction.guild!.id, toUpdate);
+                await client.database.guilds.write(interaction.guild.id, toUpdate);
             } catch (e) {
                 return interaction.editReply({
                     embeds: [
@@ -196,7 +197,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
     }
-    let data = await client.database.guilds.read(interaction.guild!.id);
+    let data = await client.database.guilds.read(interaction.guild.id);
     data.tickets.customTypes = (data.tickets.customTypes || []).filter(
         (value: string, index: number, array: string[]) => array.indexOf(value) === index
     );
@@ -284,19 +285,19 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if ((i.component as Component).customId === "clearCategory") {
             if (lastClicked === "cat") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild!.id, null, ["tickets.category"]);
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.category"]);
                 data.category = undefined;
             } else lastClicked = "cat";
         } else if ((i.component as Component).customId === "clearMaxTickets") {
             if (lastClicked === "max") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild!.id, null, ["tickets.maxTickets"]);
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.maxTickets"]);
                 data.maxTickets = 5;
             } else lastClicked = "max";
         } else if ((i.component as Component).customId === "clearSupportPing") {
             if (lastClicked === "sup") {
                 lastClicked = "";
-                await client.database.guilds.write(interaction.guild!.id, null, ["tickets.supportRole"]);
+                await client.database.guilds.write(interaction.guild.id, null, ["tickets.supportRole"]);
                 data.supportRole = undefined;
             } else lastClicked = "sup";
         } else if ((i.component as Component).customId === "send") {
@@ -732,7 +733,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("MANAGE_GUILD"))
+    if (!member.permissions.has("ManageGuild"))
         throw new Error("You must have the *Manage Server* permission to use this command");
     return true;
 };

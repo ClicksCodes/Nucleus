@@ -14,6 +14,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (!interaction.guild) return;
     const bans = await interaction.guild.bans.fetch();
     const user = interaction.options.getString("user");
     let resolved = bans.find((ban) => ban.user.id === user);
@@ -107,6 +108,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 };
 
 const check = (interaction: CommandInteraction) => {
+    if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
     const me = interaction.guild.me!;
     // Check if Nucleus can unban members

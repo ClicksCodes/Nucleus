@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";

@@ -49,6 +49,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (!interaction.guild) return;
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
     const user = interaction.options.getMember("user") as GuildMember;
     const time = {
@@ -57,7 +58,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         minutes: interaction.options.getInteger("minutes") ?? 0,
         seconds: interaction.options.getInteger("seconds") ?? 0
     };
-    const config = await client.database.guilds.read(interaction.guild!.id);
+    const config = await client.database.guilds.read(interaction.guild.id);
     let serverSettingsDescription = config.moderation.mute.timeout ? "given a timeout" : "";
     if (config.moderation.mute.role)
         serverSettingsDescription +=
@@ -187,9 +188,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .addCustomBoolean(
                 "appeal",
                 "Create appeal ticket",
-                !(await areTicketsEnabled(interaction.guild!.id)),
+                !(await areTicketsEnabled(interaction.guild.id)),
                 async () =>
-                    await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, reason),
+                    await create(interaction.guild, interaction.options.getUser("user")!, interaction.user, reason),
                 "An appeal ticket will be created when Confirm is clicked",
                 "CONTROL.TICKET",
                 createAppealTicket
@@ -226,7 +227,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             .setEmoji("PUNISH.MUTE.RED")
                             .setTitle("Muted")
                             .setDescription(
-                                `You have been muted in ${interaction.guild!.name}` +
+                                `You have been muted in ${interaction.guild.name}` +
                                     (reason
                                         ? ` for:\n> ${reason}`
                                         : ".\n\n" +
@@ -267,7 +268,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 if (config.moderation.mute.role !== null) {
                     await member.roles.add(config.moderation.mute.role);
                     await client.database.eventScheduler.schedule("naturalUnmute", new Date().getTime() + muteTime * 1000, {
-                        guild: interaction.guild!.id,
+                        guild: interaction.guild.id,
                         user: user.id,
                         expires: new Date().getTime() + muteTime * 1000
                     });
@@ -280,7 +281,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             if (config.moderation.mute.role !== null) {
                 await member.roles.add(config.moderation.mute.role);
                 await client.database.eventScheduler.schedule("unmuteRole", new Date().getTime() + muteTime * 1000, {
-                    guild: interaction.guild!.id,
+                    guild: interaction.guild.id,
                     user: user.id,
                     role: config.moderation.mute.role
                 });
@@ -303,7 +304,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             if (dmd && dm) await dm.delete();
             return;
         }
-        await client.database.history.create("mute", interaction.guild!.id, member.user, interaction.user, reason);
+        await client.database.history.create("mute", interaction.guild.id, member.user, interaction.user, reason);
         const failed = !dmd && notify;
         await interaction.editReply({
             embeds: [
@@ -342,7 +343,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 reason: entry(reason, reason ? reason : "*No reason provided*")
             },
             hidden: {
-                guild: interaction.guild!.id
+                guild: interaction.guild.id
             }
         };
         log(data);
@@ -361,14 +362,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 };
 
 const check = (interaction: CommandInteraction) => {
+    if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    const me = interaction.guild!.me!;
+    const me = interaction.guild.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     // Do not allow muting the owner
-    if (member.id === interaction.guild!.ownerId) throw new Error("You cannot mute the owner of the server");
+    if (member.id === interaction.guild.ownerId) throw new Error("You cannot mute the owner of the server");
     // Check if Nucleus can mute the member
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to mute
@@ -376,7 +378,7 @@ const check = (interaction: CommandInteraction) => {
     // Do not allow muting Nucleus
     if (member.id === me.id) throw new Error("I cannot mute myself");
     // Allow the owner to mute anyone
-    if (member.id === interaction.guild!.ownerId) return true;
+    if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     if (!member.permissions.has("MODERATE_MEMBERS"))
         throw new Error("You do not have the *Moderate Members* permission");

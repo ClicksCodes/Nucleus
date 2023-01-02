@@ -24,6 +24,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
+    if (!interaction.guild) return;
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
@@ -69,7 +70,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         reason = reason.length ? reason : null
         let dmSent = false;
         let dmMessage;
-        const config = await client.database.guilds.read(interaction.guild!.id);
+        const config = await client.database.guilds.read(interaction.guild.id);
         try {
             if (notify) {
                 const messageData: {
@@ -81,7 +82,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             .setEmoji("PUNISH.BAN.RED")
                             .setTitle("Banned")
                             .setDescription(
-                                `You have been banned in ${interaction.guild!.name}` + (reason ? ` for:\n> ${reason}` : ".")
+                                `You have been banned in ${interaction.guild.name}` + (reason ? ` for:\n> ${reason}` : ".")
                             )
                             .setStatus("Danger")
                     ],
@@ -110,7 +111,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 deleteMessageSeconds: days * 24 * 60 * 60,
                 reason: reason ?? "*No reason provided*"
             });
-            await client.database.history.create("ban", interaction.guild!.id, member.user, interaction.user, reason);
+            await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason);
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             const data = {
                 meta: {
@@ -128,10 +129,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
                     reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                     accountCreated: entry(member.user.createdAt.toString(), renderDelta(member.user.createdAt.getTime())),
-                    serverMemberCount: interaction.guild!.memberCount
+                    serverMemberCount: interaction.guild.memberCount
                 },
                 hidden: {
-                    guild: interaction.guild!.id
+                    guild: interaction.guild.id
                 }
             };
             log(data);
@@ -175,20 +176,21 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 };
 
 const check = async (interaction: CommandInteraction) => {
+    if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    const me = interaction.guild!.members.me!;
+    const me = interaction.guild.members.me!;
     let apply = interaction.options.getUser("user") as User | GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     let applyPos = 0
     try {
-        apply = await interaction.guild!.members.fetch(apply.id) as GuildMember
+        apply = await interaction.guild.members.fetch(apply.id) as GuildMember
         applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     } catch {
         apply = apply as User
     }
     // Do not allow banning the owner
-    if (member.id === interaction.guild!.ownerId) throw new Error("You cannot ban the owner of the server");
+    if (member.id === interaction.guild.ownerId) throw new Error("You cannot ban the owner of the server");
     // Check if Nucleus can ban the member
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to ban
@@ -196,7 +198,7 @@ const check = async (interaction: CommandInteraction) => {
     // Do not allow banning Nucleus
     if (member.id === me.id) throw new Error("I cannot ban myself");
     // Allow the owner to ban anyone
-    if (member.id === interaction.guild!.ownerId) return true;
+    if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has ban_members permission
     if (!member.permissions.has("BanMembers")) throw new Error("You do not have the *Ban Members* permission");
     // Check if the user is below on the role list

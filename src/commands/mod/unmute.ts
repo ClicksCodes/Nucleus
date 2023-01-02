@@ -1,5 +1,5 @@
-import { CommandInteraction, GuildMember } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { CommandInteraction, GuildMember } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -12,40 +12,51 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption((option) => option.setName("user").setDescription("The user to unmute").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (!interaction.guild) return;
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
     // TODO:[Modals] Replace this with a modal
-    let reason = null;
+    let reason: string | null = null;
     let notify = false;
     let confirmation;
+    let timedOut = false;
     let success = false;
-    while (!success) {
+    do {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.MUTE.RED")
             .setTitle("Unmute")
             .setDescription(
                 keyValueList({
-                    user: renderUser(interaction.options.getUser("user")),
+                    user: renderUser(interaction.options.getUser("user")!),
                     reason: `\n> ${reason ? reason : "*No reason provided*"}`
                 }) +
-                    `The user **will${notify ? "" : " not"}** be notified\n\n` +
                     `Are you sure you want to unmute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .setColor("Danger")
+            .addCustomBoolean(
+                "notify",
+                "Notify user",
+                false,
+                null,
+                "The user will be sent a DM",
+                "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
+                notify
+            )
             .addReasonButton(reason ?? "")
             .send(reason !== null);
-        if (confirmation.success) success = true;
+        if (confirmation.cancelled) timedOut = true;
+        else if (confirmation.success !== undefined) success = true;
         else if (confirmation.newReason) reason = confirmation.newReason;
         else if (confirmation.components) {
-            notify = confirmation.components.notify.active;
+            notify = confirmation.components!["notify"]!.active;
         }
-    }
+    } while (!timedOut && !success);
     if (confirmation.cancelled) return;
     if (confirmation.success) {
-        let dmd = false;
-        let dm;
+        let dmSent = false;
+        let dmMessage;
         try {
             if (notify) {
-                dm = await (interaction.options.getMember("user") as GuildMember).send({
+                dmMessage = await (interaction.options.getMember("user") as GuildMember).send({
                     embeds: [
                         new EmojiEmbed()
                             .setEmoji("PUNISH.MUTE.GREEN")
@@ -57,10 +68,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             .setStatus("Success")
                     ]
                 });
-                dmd = true;
+                dmSent = true;
             }
         } catch {
-            dmd = false;
+            dmSent = false;
         }
         const member = interaction.options.getMember("user") as GuildMember;
         try {
@@ -76,7 +87,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ],
                 components: []
             });
-            if (dmd) await dm.delete();
+            if (dmSent && dmMessage) await dmMessage.delete();
             return;
         }
         await client.database.history.create(
@@ -98,7 +109,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             list: {
                 memberId: entry(member.user.id, `\`${member.user.id}\``),
                 name: entry(member.user.id, renderUser(member.user)),
-                unmuted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
                 unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
             },
             hidden: {
@@ -106,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        const failed = !dmd && notify;
+        const failed = !dmSent && notify;
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -132,10 +143,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 };
 
 const check = (interaction: CommandInteraction) => {
+    if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
+    const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
@@ -144,11 +155,11 @@ const check = (interaction: CommandInteraction) => {
     // Check if Nucleus can unmute the member
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to unmute
-    if (!me.permissions.has("MODERATE_MEMBERS")) throw new Error("I do not have the *Moderate Members* permission");
+    if (!me.permissions.has("ModerateMembers")) throw new Error("I do not have the *Moderate Members* permission");
     // Allow the owner to unmute anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
-    if (!member.permissions.has("MODERATE_MEMBERS"))
+    if (!member.permissions.has("ModerateMembers"))
         throw new Error("You do not have the *Moderate Members* permission");
     // Check if the user is below on the role list
     if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");

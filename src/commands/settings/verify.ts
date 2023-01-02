@@ -30,6 +30,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (!interaction.guild) return;
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
@@ -51,7 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         role = role as Discord.Role;
-        if (role.guild.id !== interaction.guild!.id) {
+        if (role.guild.id !== interaction.guild.id) {
             return interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -72,7 +73,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (confirmation.cancelled) return;
         if (confirmation.success) {
             try {
-                await client.database.guilds.write(interaction.guild!.id, {
+                await client.database.guilds.write(interaction.guild.id, {
                     "verify.role": role.id,
                     "verify.enabled": true
                 });
@@ -92,7 +93,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         role: entry(role.id, renderRole(role))
                     },
                     hidden: {
-                        guild: interaction.guild!.id
+                        guild: interaction.guild.id
                     }
                 };
                 log(data);
@@ -123,7 +124,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     }
     let clicks = 0;
-    const data = await client.database.guilds.read(interaction.guild!.id);
+    const data = await client.database.guilds.read(interaction.guild.id);
     let role = data.verify.role;
 
     let timedOut = false;
@@ -166,7 +167,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild!.id, null, ["verify.role", "verify.enabled"]);
+                await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"]);
                 role = undefined;
             }
         } else if ((i.component as Component).customId === "send") {
@@ -379,7 +380,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("MANAGE_GUILD"))
+    if (!member.permissions.has("ManageGuild"))
         throw new Error("You must have the *Manage Server* permission to use this command");
     return true;
 };

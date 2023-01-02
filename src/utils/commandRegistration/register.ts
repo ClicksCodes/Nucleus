@@ -1,4 +1,5 @@
-import { Interaction, SlashCommandBuilder } from 'discord.js';
+import { typeSlashCommandSubcommandBuilder } from '@discordjs/builders';
+import { Interaction, SlashCommandBuilder, ApplicationCommandType } from 'discord.js';
 // @ts-expect-error
 import config from "../../config/main.json" assert { type: "json" };
 import client from "../client.js";
@@ -88,8 +89,64 @@ async function registerEvents() {
     console.log(`Loaded ${files.length - errors} events (${errors} failed)`)
 };
 
+async function registerContextMenus() {
+    console.log("Reading context menus")
+    const messageFiles = fs.readdirSync(config.messageContextFolder, { withFileTypes: true }).filter(
+        file => !file.name.endsWith(".ts") && !file.name.endsWith(".map")
+    );
+    const userFiles = fs.readdirSync(config.userContextFolder, { withFileTypes: true }).filter(
+        file => !file.name.endsWith(".ts") && !file.name.endsWith(".map")
+    );
+    console.log(`Registering ${messageFiles.length} message context menus and ${userFiles.length} user context menus`)
+    let i = 0;
+    let errors = 0;
+    for (const file of messageFiles) {
+        const last = i === messageFiles.length - 1 ? "└" : "├";
+        i++;
+        try {
+            console.log(`${last}─ ${colours.yellow}Loading message context menu ${file.name}${colours.none}`)
+            const context = (await import(`../../../${config.messageContextFolder}/${file.name}`));
+            context.command.setType(ApplicationCommandType.Message);
+
+            client.commands["contextCommands/message/" + file.name.replace(".js", "")] = context;
+
+            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${messageFiles.length}]${colours.none}`)
+        } catch (e) {
+            errors++;
+            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.red}Failed to load ${file.name} [${i} / ${messageFiles.length}]${colours.none}`)
+        }
+    }
+    for (const file of userFiles) {
+        const last = i === userFiles.length - 1 ? "└" : "├";
+        i++;
+        try {
+            console.log(`${last}─ ${colours.yellow}Loading user context menu ${file.name}${colours.none}`)
+            const context = (await import(`../../../${config.userContextFolder}/${file.name}`));
+            context.command.setType(ApplicationCommandType.User);
+
+            client.commands["contextCommands/user/" + file.name.replace(".js", "")] = context;
+
+            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${userFiles.length}]${colours.none}`)
+        } catch (e) {
+            errors++;
+            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.red}Failed to load ${file.name} [${i} / ${userFiles.length}]${colours.none}`)
+        }
+    }
+
+    console.log(`Loaded ${messageFiles.length + userFiles.length - errors} context menus (${errors} failed)`)
+};
+
 async function registerCommandHandler() {
     client.on("interactionCreate", async (interaction: Interaction) => {
+        if (interaction.isUserContextMenuCommand()) {;
+            const commandName = interaction.commandName;
+            console.log(commandName);
+            return;
+        } else if (interaction.isMessageContextMenuCommand()) {
+            const commandName = interaction.commandName;
+            console.log(commandName);
+            return;
+        }
         if (!interaction.isChatInputCommand()) return;
 
         const commandName = interaction.commandName;
@@ -118,7 +175,8 @@ async function registerCommandHandler() {
 }
 
 export default async function register() {
-    await registerCommands();
+    let commandList: (SlashCommandBuilder | SlashCommandSubcommandBuilder)[] = []
+    commandList.concat(await registerCommands());
     await registerCommandHandler();
     await registerEvents();
     console.log(`${colours.green}Registered commands and events${colours.none}`)

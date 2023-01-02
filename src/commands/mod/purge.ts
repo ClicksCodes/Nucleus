@@ -26,7 +26,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const user = (interaction.options.getMember("user") as GuildMember) ?? null;
+    const user = (interaction.options.getMember("user") as GuildMember);
     const channel = interaction.channel as GuildChannel;
     if (
         !["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(
