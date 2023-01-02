@@ -119,10 +119,10 @@ async function registerContextMenus() {
 
             client.commands["contextCommands/user/" + context.command.name] = context;
 
-            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${userFiles.length}]${colours.none}`)
+            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${totalFiles}]${colours.none}`)
         } catch (e) {
             errors++;
-            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.red}Failed to load ${file.name} [${i} / ${userFiles.length}]${colours.none}`)
+            console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.red}Failed to load ${file.name} [${i} / ${totalFiles}]${colours.none}`)
         }
     }
 
@@ -187,7 +187,7 @@ export default async function register() {
     }
     await registerCommandHandler();
     await registerEvents();
-    console.log(`${colours.green}Registered commands and events${colours.none}`)
+    console.log(`${colours.green}Registered commands, events and context menus${colours.none}`)
     console.log(
         (config.enableDevelopment ? `${colours.purple}Bot started in Development mode` :
         `${colours.blue}Bot started in Production mode`) + colours.none)

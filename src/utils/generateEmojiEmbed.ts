@@ -10,6 +10,7 @@ const colors = {
 class EmojiEmbed extends EmbedBuilder {
     _title = "";
     _emoji: string | null = null;
+    description = "";
 
     _generateTitle() {
         if (this._emoji) { return `${getEmojiByName(this._emoji)} ${this._title}`; }
@@ -19,6 +20,11 @@ class EmojiEmbed extends EmbedBuilder {
     override setTitle(title: string) {
         this._title = title;
         super.setTitle(this._generateTitle());
+        return this;
+    }
+    override setDescription(description: string) {
+        this.description = description;
+        super.setDescription(description);
         return this;
     }
     setEmoji(emoji: string) {
