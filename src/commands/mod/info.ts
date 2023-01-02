@@ -8,9 +8,9 @@ import Discord, {
     ButtonBuilder,
     MessageComponentInteraction,
     ModalSubmitInteraction,
-    SelectMenuInteraction,
     TextInputComponent,
-    ButtonStyle
+    ButtonStyle,
+    StringSelectMenuInteraction
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -101,8 +101,15 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
     let currentYear = new Date().getFullYear();
     let pageIndex: number | null = null;
     let history, current: TimelineSection;
+    history = await client.database.history.read(member.guild.id, member.id, currentYear);
+    history = history
+        .sort(
+            (a: { occurredAt: Date }, b: { occurredAt: Date }) =>
+                b.occurredAt.getTime() - a.occurredAt.getTime()
+        )
+        .reverse();
     let m: Message;
-    let refresh = true;
+    let refresh = false;
     let filteredTypes: string[] = [];
     let openFilterPane = false;
     let timedOut = false;
@@ -149,7 +156,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         const components = (
             openFilterPane
                 ? [
-                      new ActionRowBuilder().addComponents([
+                      new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents(
                           new Discord.SelectMenuBuilder()
                               .setOptions(
                                   Object.entries(types).map(([key, value]) => ({
@@ -163,11 +170,11 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                               .setMaxValues(Object.keys(types).length)
                               .setCustomId("filter")
                               .setPlaceholder("Select at least one event")
-                      ])
+                      )
                   ]
                 : []
         ).concat([
-            new ActionRowBuilder().addComponents([
+            new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                 new ButtonBuilder()
                     .setCustomId("prevYear")
                     .setLabel((currentYear - 1).toString())
@@ -187,7 +194,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(currentYear === new Date().getFullYear())
             ]),
-            new ActionRowBuilder().addComponents([
+            new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                 new ButtonBuilder()
                     .setLabel("Mod notes")
                     .setCustomId("modNotes")
@@ -258,7 +265,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         }
         i.deferUpdate();
         if (i.customId === "filter") {
-            filteredTypes = (i as SelectMenuInteraction).values;
+            filteredTypes = (i as StringSelectMenuInteraction).values;
             pageIndex = null;
             refresh = true;
         }
@@ -330,7 +337,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel(`${note ? "Modify" : "Create"} note`)
                         .setStyle(ButtonStyle.Primary)
@@ -353,11 +360,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         if (i.customId === "modify") {
             await i.showModal(
-                new Discord.Modal()
+                new Discord.ModalBuilder()
                     .setCustomId("modal")
                     .setTitle("Editing moderator note")
                     .addComponents(
-                        new ActionRowBuilder<TextInputComponent>().addComponents(
+                        new ActionRowBuilder<Discord.TextInputComponent>().addComponents(
                             new TextInputComponent()
                                 .setCustomId("note")
                                 .setLabel("Note")
@@ -377,7 +384,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("GUILD.TICKET.OPEN")
                 ],
                 components: [
-                    new ActionRowBuilder().addComponents([
+                    new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                         new ButtonBuilder()
                             .setLabel("Back")
                             .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -415,7 +422,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("MODERATE_MEMBERS"))
+    if (!member.permissions.has("ModerateMembers"))
         throw new Error("You do not have the *Moderate Members* permission");
     return true;
 };

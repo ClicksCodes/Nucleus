@@ -1,4 +1,5 @@
 let format;
+
 try {
     format = (await import("./dist/config/format.js")).default;
 } catch (e) {

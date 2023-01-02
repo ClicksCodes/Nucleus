@@ -64,7 +64,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         const member = interaction.options.getMember("user") as GuildMember;
         try {
-            member.timeout(0, reason ?? "No reason provided");
+            member.timeout(0, reason ?? "*No reason provided*");
         } catch {
             await interaction.editReply({
                 embeds: [

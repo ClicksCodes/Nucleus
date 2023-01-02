@@ -16,6 +16,7 @@ export default async function (
     severity: "Critical" | "Warning" | "Info" = "Info"
 ) {
     const data = await client.database.guilds.read(guild);
+    if (data.logging.staff.channel === null) return;
     if (message === true) {
         return await client.database.guilds.write(guild, {
             [`singleEventNotifications.${type}`]: false
@@ -28,6 +29,7 @@ export default async function (
     try {
         const channel = await client.channels.fetch(data.logging.staff.channel);
         if (!channel) return;
+        if (!channel.isTextBased()) return;
         await channel.send({
             embeds: [
                 new EmojiEmbed()

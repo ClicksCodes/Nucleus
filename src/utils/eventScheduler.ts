@@ -2,6 +2,7 @@ import { Agenda } from "@hokify/agenda";
 import client from "./client.js";
 import * as fs from "fs";
 import * as path from "path";
+// @ts-expect-error
 import config from "../config/main.json" assert { type: "json" };
 
 class EventScheduler {
@@ -19,11 +20,11 @@ class EventScheduler {
             const guild = await client.guilds.fetch(job.attrs.data.guild);
             const user = await guild.members.fetch(job.attrs.data.user);
             const role = await guild.roles.fetch(job.attrs.data.role);
-            await user.roles.remove(role);
+            if (role) await user.roles.remove(role);
             await job.remove();
         });
         this.agenda.define("deleteFile", async (job) => {
-            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), client._error);
+            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), (e) => { client.emit("error", e as Error); });
             await job.remove();
         });
         this.agenda.define("naturalUnmute", async (job) => {
@@ -34,7 +35,7 @@ class EventScheduler {
             try {
                 await client.database.history.create("unmute", user.guild.id, user.user, null, null, null, null);
             } catch (e) {
-                client._error(e);
+                client.emit("error", e as Error);
             }
             const data = {
                 meta: {
@@ -48,7 +49,7 @@ class EventScheduler {
                 list: {
                     memberId: entry(user.user.id, `\`${user.user.id}\``),
                     name: entry(user.user.id, renderUser(user.user)),
-                    unmuted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
                     unmutedBy: entry(null, "*Time out ended*")
                 },
                 hidden: {

@@ -12,7 +12,7 @@ export default function generateFileName(ending: string): string {
     if (fs.existsSync(`./${fileName}`)) {
         fileName = generateFileName(ending);
     }
-    client.database.eventScheduler.schedule("deleteFile", new Date().getTime() + 60 * 1000, {
+    client.database.eventScheduler.schedule("deleteFile", (new Date().getTime() + 60 * 1000).toString(), {
         fileName: `${fileName}.${ending}`
     });
     return path.join(__dirname, fileName + "." + ending);

@@ -1,3 +1,4 @@
+import { TextInputBuilder } from "@discordjs/builders";
 import Discord, {
     CommandInteraction,
     Interaction,
@@ -6,8 +7,8 @@ import Discord, {
     ButtonBuilder,
     MessageComponentInteraction,
     ModalSubmitInteraction,
-    TextInputComponent,
-    ButtonStyle
+    ButtonStyle,
+    TextInputStyle
 } from "discord.js";
 import { modalInteractionCollector } from "./dualCollector.js";
 import EmojiEmbed from "./generateEmojiEmbed.js";
@@ -65,7 +66,7 @@ class confirmationMessage {
         customId: string,
         title: string,
         disabled: boolean,
-        callback: () => Promise<unknown> = async () => null,
+        callback: (() => Promise<unknown>) | null = async () => null,
         callbackClicked: string | null,
         emoji?: string,
         initial?: boolean
@@ -76,7 +77,7 @@ class confirmationMessage {
             value: callbackClicked,
             emoji: emoji,
             active: initial ?? false,
-            onClick: callback,
+            onClick: callback ?? (async () => null),
             response: null
         };
         return this;
@@ -129,7 +130,10 @@ class confirmationMessage {
                 );
             const components = [];
             for (let i = 0; i < fullComponents.length; i += 5) {
-                components.push(new ActionRowBuilder().addComponents(fullComponents.slice(i, i + 5)));
+                components.push(new ActionRowBuilder<
+                    Discord.ButtonBuilder | Discord.StringSelectMenuBuilder |
+                    Discord.RoleSelectMenuBuilder | Discord.UserSelectMenuBuilder
+                >().addComponents(fullComponents.slice(i, i + 5)));
             }
             const object = {
                 embeds: [
@@ -155,7 +159,7 @@ class confirmationMessage {
             let m: Message;
             try {
                 if (editOnly) {
-                    m = (await this.interaction.editReply(object)) as Message;
+                    m = (await this.interaction.editReply(object)) as unknown as Message;
                 } else {
                     m = (await this.interaction.reply(object)) as unknown as Message;
                 }
@@ -194,17 +198,17 @@ class confirmationMessage {
                 continue;
             } else if (component.customId === "reason") {
                 await component.showModal(
-                    new Discord.Modal()
+                    new Discord.ModalBuilder()
                         .setCustomId("modal")
                         .setTitle("Editing reason")
                         .addComponents(
-                            new ActionRowBuilder<TextInputComponent>().addComponents(
-                                new TextInputComponent()
+                            new ActionRowBuilder<TextInputBuilder>().addComponents(
+                                new TextInputBuilder()
                                     .setCustomId("reason")
                                     .setLabel("Reason")
                                     .setMaxLength(2000)
                                     .setRequired(false)
-                                    .setStyle("PARAGRAPH")
+                                    .setStyle(TextInputStyle.Paragraph)
                                     .setPlaceholder("Spammed in #general")
                                     .setValue(this.reason ? this.reason : "")
                             )
@@ -219,13 +223,13 @@ class confirmationMessage {
                             .setEmoji(this.emoji)
                     ],
                     components: [
-                        new ActionRowBuilder().addComponents([
+                        new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
                             new ButtonBuilder()
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
                                 .setStyle(ButtonStyle.Primary)
                                 .setCustomId("back")
-                        ])
+                        )
                     ]
                 });
                 let out;
@@ -269,7 +273,12 @@ class confirmationMessage {
         }
         if (newReason) returnValue.newReason = newReason;
 
-        return returnValue;
+        const typedReturnValue = returnValue as {cancelled: true} |
+        { success: boolean, components: Record<string, CustomBoolean<unknown>>, newReason?: string} |
+        { newReason: string, components: Record<string, CustomBoolean<unknown>> } |
+        { components: Record<string, CustomBoolean<unknown>> };
+
+        return typedReturnValue;
     }
 
     async timeoutError(): Promise<void> {

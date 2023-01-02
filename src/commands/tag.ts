@@ -17,7 +17,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag")
-                    .setDescription(`Tag \`${interaction.options.getString("tag")}\` does not exist`)
+                    .setDescription(`Tag \`${interaction.options.get("tag")}\` does not exist`)
                     .setEmoji("PUNISH.NICKNAME.RED")
                     .setStatus("Danger")
             ],
@@ -25,7 +25,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
     }
     let url = "";
-    let components = [];
+    let components: ActionRowBuilder[] = [];
     if (tag.match(/^(http|https):\/\/[^ "]+$/)) {
         url = tag;
         components = [
@@ -35,7 +35,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     return await interaction.reply({
         embeds: [
             new EmojiEmbed()
-                .setTitle(interaction.options.getString("tag"))
+                .setTitle(interaction.options.get("tag").value)
                 .setDescription(tag)
                 .setEmoji("PUNISH.NICKNAME.GREEN")
                 .setStatus("Success")

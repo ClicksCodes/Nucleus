@@ -263,7 +263,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let errors = 0;
         try {
             if (config.moderation.mute.timeout) {
-                await member.timeout(muteTime * 1000, reason || "No reason provided");
+                await member.timeout(muteTime * 1000, reason || "*No reason provided*");
                 if (config.moderation.mute.role !== null) {
                     await member.roles.add(config.moderation.mute.role);
                     await client.database.eventScheduler.schedule("naturalUnmute", new Date().getTime() + muteTime * 1000, {

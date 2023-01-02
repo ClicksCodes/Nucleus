@@ -5,6 +5,7 @@ import type { VerifySchema } from "../reflex/verify.js";
 import { Guilds, History, ModNotes, Premium } from "../utils/database.js";
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
+// @ts-expect-error
 import config from "../config/main.json" assert { type: "json" };
 
 
@@ -38,7 +39,7 @@ class NucleusClient extends Client {
 }
 
 const client = new NucleusClient({
-    guilds: new Guilds(),
+    guilds: await new Guilds().setup(),
     history: new History(),
     notes: new ModNotes(),
     premium: new Premium(),

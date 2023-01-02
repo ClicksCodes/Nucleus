@@ -1,5 +1,6 @@
 import runServer from "./api/index.js";
 import client from "./utils/client.js";
+// @ts-expect-error
 import config from "./config/main.json" assert { type: "json" };
 import register from "./utils/commandRegistration/register.js";
 
@@ -9,6 +10,9 @@ client.on("ready", () => {
     runServer(client);
 });
 process.on("unhandledRejection", (err) => {
+    console.error(err);
+});
+process.on("uncaughtException", (err) => {
     console.error(err);
 });
 

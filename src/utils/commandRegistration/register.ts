@@ -1,14 +1,16 @@
 import { Interaction, SlashCommandBuilder } from 'discord.js';
+// @ts-expect-error
 import config from "../../config/main.json" assert { type: "json" };
 import client from "../client.js";
 import fs from "fs";
-import Discord from "discord.js";
 
 
 const colours = {
     red: "\x1b[31m",
     green: "\x1b[32m",
     yellow: "\x1b[33m",
+    blue: "\x1b[34m",
+    purple: "\x1b[35m",
     none: "\x1b[0m"
 }
 
@@ -52,10 +54,10 @@ async function registerCommands() {
     if (developmentMode) {
         const guild = await client.guilds.fetch(config.developmentGuildID);
         if (updateCommands) guild.commands.set(processed);
-        console.log(`Commands registered in ${guild.name}`)
+        console.log(`${colours.purple}Commands registered in ${guild.name}${colours.none}`)
     } else {
         if (updateCommands) client.application!.commands.set(processed);
-        console.log(`Commands registered globally`)
+        console.log(`${colours.blue}Commands registered globally${colours.none}`)
     }
 
 };
@@ -120,4 +122,7 @@ export default async function register() {
     await registerCommandHandler();
     await registerEvents();
     console.log(`${colours.green}Registered commands and events${colours.none}`)
+    console.log(
+        (config.enableDevelopment ? `${colours.purple}Bot started in Development mode` :
+        `${colours.blue}Bot started in Production mode`) + colours.none)
 };

@@ -7,11 +7,9 @@ import Discord, {
     Component,
     ButtonBuilder,
     MessageComponentInteraction,
-    MessageSelectOptionData,
-    SelectMenuInteraction,
     ButtonStyle
 } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";

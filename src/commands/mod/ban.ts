@@ -1,10 +1,11 @@
-import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
+import { LinkWarningFooter } from "../../utils/defaultEmbeds.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -12,11 +13,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setName("ban")
         .setDescription("Bans a user from the server")
         .addUserOption((option) => option.setName("user").setDescription("The user to ban").setRequired(true))
-        .addStringOption((option) => option.setName("reason").setDescription("The reason for the ban").setRequired(false))
         .addNumberOption((option) =>
             option
                 .setName("delete")
-                .setDescription("The days of messages to delete | Default: 0")
+                .setDescription("Delete this number of days of messages from the user | Default: 0")
                 .setMinValue(0)
                 .setMaxValue(7)
                 .setRequired(false)
@@ -42,9 +42,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n` +
                     `${addPlurals(
-                        (interaction.options.get("delete")?.value as number | null) ?? 0,
-                        "day"
-                    )} of messages will be deleted\n\n` +
+                        (interaction.options.get("delete")?.value as number | null) ?? 0, "day")
+                    } of messages will be deleted\n\n` +
                     `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .addCustomBoolean(
@@ -52,7 +51,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 "Notify user",
                 false,
                 undefined,
-                null,
+                "The user will be sent a DM",
                 "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
                 notify
             )
@@ -68,12 +67,15 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (timedOut) return;
     if (confirmation.success) {
         reason = reason.length ? reason : null
-        let dmd = false;
-        let dm;
+        let dmSent = false;
+        let dmMessage;
         const config = await client.database.guilds.read(interaction.guild!.id);
         try {
             if (notify) {
-                dm = await (interaction.options.getMember("user") as GuildMember).send({
+                const messageData: {
+                    embeds: EmojiEmbed[];
+                    components: ActionRowBuilder<ButtonBuilder>[];
+                } = {
                     embeds: [
                         new EmojiEmbed()
                             .setEmoji("PUNISH.BAN.RED")
@@ -83,25 +85,30 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             )
                             .setStatus("Danger")
                     ],
-                    components: config.moderation.ban.text ? [
-                        new ActionRowBuilder().addComponents([
-                            new ButtonBuilder()
+                    components: []
+                };
+                if (config.moderation.ban.text && config.moderation.ban.link) {
+                    messageData.embeds[0]!.setFooter(LinkWarningFooter)
+                    messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
+                            .addComponents(new ButtonBuilder()
                                 .setStyle(ButtonStyle.Link)
                                 .setLabel(config.moderation.ban.text)
-                                .setURL(config.moderation.ban.link!)
-                        ])
-                    ] : []
-                });
-                dmd = true;
+                                .setURL(config.moderation.ban.link)
+                            )
+                    )
+                }
+                dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
+                dmSent = true;
             }
         } catch {
-            dmd = false;
+            dmSent = false;
         }
         try {
             const member = interaction.options.getMember("user") as GuildMember;
+            const days: number = interaction.options.get("delete")?.value as number | null ?? 0;
             member.ban({
-                days: Number(interaction.options.getNumber("delete") ?? 0),
-                reason: reason ?? "No reason provided"
+                deleteMessageSeconds: days * 24 * 60 * 60,
+                reason: reason ?? "*No reason provided*"
             });
             await client.database.history.create("ban", interaction.guild!.id, member.user, interaction.user, reason);
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
@@ -117,10 +124,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 list: {
                     memberId: entry(member.user.id, `\`${member.user.id}\``),
                     name: entry(member.user.id, renderUser(member.user)),
-                    banned: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    banned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
                     bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
                     reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
-                    accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+                    accountCreated: entry(member.user.createdAt.toString(), renderDelta(member.user.createdAt.getTime())),
                     serverMemberCount: interaction.guild!.memberCount
                 },
                 hidden: {
@@ -139,10 +146,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 ],
                 components: []
             });
-            if (dmd && dm) await dm.delete();
+            if (dmSent && dmMessage) await dmMessage.delete();
             return;
         }
-        const failed = !dmd && notify;
+        const failed = !dmSent && notify;
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -169,7 +176,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
 const check = async (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    const me = interaction.guild!.me!;
+    const me = interaction.guild!.members.me!;
     let apply = interaction.options.getUser("user") as User | GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
@@ -185,13 +192,13 @@ const check = async (interaction: CommandInteraction) => {
     // Check if Nucleus can ban the member
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to ban
-    if (!me.permissions.has("BAN_MEMBERS")) throw new Error("I do not have the *Ban Members* permission");
+    if (!me.permissions.has("BanMembers")) throw new Error("I do not have the *Ban Members* permission");
     // Do not allow banning Nucleus
-    if (member.id === interaction.guild!.me!.id) throw new Error("I cannot ban myself");
+    if (member.id === me.id) throw new Error("I cannot ban myself");
     // Allow the owner to ban anyone
     if (member.id === interaction.guild!.ownerId) return true;
     // Check if the user has ban_members permission
-    if (!member.permissions.has("BAN_MEMBERS")) throw new Error("You do not have the *Ban Members* permission");
+    if (!member.permissions.has("BanMembers")) throw new Error("You do not have the *Ban Members* permission");
     // Check if the user is below on the role list
     if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
     // Allow ban

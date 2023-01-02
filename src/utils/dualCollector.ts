@@ -1,4 +1,4 @@
-import Discord, { Interaction, Message, MessageComponentInteraction } from "discord.js";
+import Discord, { Client, Interaction, Message, MessageComponentInteraction } from "discord.js";
 import client from "./client.js";
 
 export default async function (
@@ -26,7 +26,7 @@ export default async function (
                     try {
                         m.delete();
                     } catch (e) {
-                        client._error(e);
+                        client.emit("error", e as Error);
                     }
                     resolve(m);
                 });
@@ -61,7 +61,7 @@ export async function modalInteractionCollector(
                 .on("collect", (i: Interaction) => {
                     resolve(i);
                 });
-            const mod = new Discord.InteractionCollector(client, {
+            const mod = new Discord.InteractionCollector(client as Client, {
                 filter: (i: Interaction) => modalFilter(i),
                 time: 300000
             }).on("collect", async (i: Interaction) => {

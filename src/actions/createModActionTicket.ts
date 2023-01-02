@@ -68,7 +68,7 @@ export async function create(
                     .setEmoji("GUILD.TICKET.OPEN")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel("Close")
                         .setStyle(ButtonStyle.Danger)
@@ -89,7 +89,7 @@ export async function create(
             list: {
                 ticketFor: entry(member.id, renderUser(member)),
                 createdBy: entry(createdBy.id, renderUser(createdBy)),
-                created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                created: entry((new Date().getTime()).toString(), renderDelta(new Date().getTime())),
                 ticketChannel: entry(c.id, renderChannel(c))
             },
             hidden: {

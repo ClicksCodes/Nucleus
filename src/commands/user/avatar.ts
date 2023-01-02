@@ -1,5 +1,6 @@
-import Discord, { CommandInteraction } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { CommandInteraction } from "discord.js";
+import type Discord from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
@@ -24,10 +25,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setDescription(
                     generateKeyValueList({
                         member: renderUser(member.user),
-                        url: member.user.displayAvatarURL({ dynamic: true })
+                        url: member.user.displayAvatarURL({ forceStatic: false })
                     })
                 )
-                .setImage(member.user.displayAvatarURL({ dynamic: true }))
+                .setImage(member.user.displayAvatarURL({ forceStatic: true }))
         ],
         ephemeral: true,
         fetchReply: true

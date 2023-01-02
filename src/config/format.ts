@@ -2,13 +2,15 @@ import fs from "fs";
 // @ts-expect-error
 import * as readLine from "node:readline/promises";
 
-const defaultDict = {
+const defaultDict: Record<string, string | string[] | boolean> = {
     developmentToken: "Your development bot token (Used for testing in one server, rather than production)",
     developmentGuildID: "Your development guild ID",
     enableDevelopment: true,
     token: "Your bot token",
     managementGuildID: "Your management guild ID (Used for running management commands on the bot)",
     owners: [],
+    commandsFolder: "Your built commands folder (usually dist/commands)",
+    eventsFolder: "Your built events folder (usually dist/events)",
     verifySecret:
         "If using verify, enter a code here which matches the secret sent back by your website. You can use a random code if you do not have one already. (Optional)",
     mongoUrl: "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",

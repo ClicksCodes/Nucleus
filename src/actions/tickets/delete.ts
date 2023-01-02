@@ -3,10 +3,10 @@ import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
-export default async function (interaction) {
+export default async function (interaction: Discord.CommandInteraction) {
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
 
-    const config = await client.database.guilds.read(interaction.guild.id);
+    const config = await client.database.guilds.read(interaction.guild!.id);
     let thread = false;
     if (interaction.channel instanceof Discord.ThreadChannel) thread = true;
     const threadChannel = interaction.channel as Discord.ThreadChannel;
