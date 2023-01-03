@@ -1,6 +1,5 @@
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
-// @ts-expect-error
 import config from "../config/main.json" assert { type: "json" };
 
 const mongoClient = new MongoClient(config.mongoUrl);
@@ -17,7 +16,6 @@ export class Guilds {
     }
 
     async setup(): Promise<Guilds> {
-        // @ts-expect-error
         this.defaultData = (await import("../config/default.json", { assert: { type: "json" } }))
             .default as unknown as GuildConfig;
         return this;

@@ -2,7 +2,6 @@ import { Agenda } from "@hokify/agenda";
 import client from "./client.js";
 import * as fs from "fs";
 import * as path from "path";
-// @ts-expect-error
 import config from "../config/main.json" assert { type: "json" };
 
 class EventScheduler {

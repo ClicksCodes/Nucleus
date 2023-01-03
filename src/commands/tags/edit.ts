@@ -110,6 +110,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             toSet[`tags.${newname}`] = data.tags[name];
         }
         await client.database.guilds.write(interaction.guild.id, toSet === {} ? null : toSet, toUnset);
+        await client.memory.forceUpdate(interaction.guild!.id);
     } catch (e) {
         return await interaction.editReply({
             embeds: [
@@ -136,7 +137,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("MANAGE_MESSAGES"))
+    if (!member.permissions.has("ManageMessages"))
         throw new Error("You must have the *Manage Messages* permission to use this command");
     return true;
 };

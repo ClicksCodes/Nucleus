@@ -1,6 +1,5 @@
 import type { SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
 import type { SlashCommandBuilder } from "discord.js";
-// @ts-expect-error
 import config from "../../config/main.json" assert { type: "json" };
 import getSubcommandsInFolder from "./getFilesInFolder.js";
 import client from "../client.js";

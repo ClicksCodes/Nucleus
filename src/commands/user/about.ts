@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed, Embed } from "./../../utils/defaultEmbeds.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
@@ -24,30 +24,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption((option) =>
             option.setName("user").setDescription("The user to get info about | Default: Yourself")
         );
-
-class Embed {
-    embed: EmojiEmbed = new EmojiEmbed();
-    title: string = "";
-    description = "";
-    pageId = 0;
-
-    setEmbed(embed: EmojiEmbed) {
-        this.embed = embed;
-        return this;
-    }
-    setTitle(title: string) {
-        this.title = title;
-        return this;
-    }
-    setDescription(description: string) {
-        this.description = description;
-        return this;
-    }
-    setPageId(pageId: number) {
-        this.pageId = pageId;
-        return this;
-    }
-}
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const guild = interaction.guild!;
@@ -101,11 +77,11 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         BugHunterLevel2: "Bug Hunter Level 2",
         Partner: "Partnered Server Owner",
         Staff: "Discord Staff",
-        VerifiedDeveloper: "Verified Bot Developer"
-        // ActiveDeveloper
+        VerifiedDeveloper: "Verified Bot Developer",
+        ActiveDeveloper: "Active Developer",
+        Quarantined: "Quarantined [What does this mean?](https://support.discord.com/hc/en-us/articles/6461420677527)",
+        Spammer: "Likely Spammer"
         // CertifiedModerator
-        // Quarantined https://discord-api-types.dev/api/discord-api-types-v10/enum/UserFlags#Quarantined
-        // Spammer https://discord-api-types.dev/api/discord-api-types-v10/enum/UserFlags#Spammer
         // VerifiedBot
     };
     const members = await guild.members.fetch();
@@ -121,8 +97,8 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
     let s = "";
     let count = 0;
     let ended = false;
-    for (const roleId in roles) {
-        const string = `<@&${roleId}>, `;
+    for (const roleId of roles) {
+        const string = `<@&${roleId[1].id}>, `;
         if (s.length + string.length > 1000) {
             ended = true;
             s += `and ${roles.size - count} more`;

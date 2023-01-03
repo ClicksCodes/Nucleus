@@ -2,6 +2,8 @@ import { AutocompleteInteraction, CommandInteraction, ActionRowBuilder, ButtonBu
 import { SlashCommandBuilder } from "@discordjs/builders";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
+import { capitalize } from "../utils/generateKeyValueList.js";
+import { getResults } from "../utils/search.js";
 
 const command = new SlashCommandBuilder()
     .setName("tag")
@@ -9,41 +11,44 @@ const command = new SlashCommandBuilder()
     .addStringOption((o) => o.setName("tag").setDescription("The tag to get").setAutocomplete(true).setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    const config = await client.database.guilds.read(interaction.guild.id);
-    const tags = config.getKey("tags");
-    const tag = tags[interaction.options.getString("tag")];
+    const config = await client.database.guilds.read(interaction.guild!.id);
+    const tags = config.tags;
+    const search = interaction.options.get("tag")?.value as string;
+    const tag = tags[search];
     if (!tag) {
-        return await interaction.reply({
+        await interaction.reply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Tag")
-                    .setDescription(`Tag \`${interaction.options.get("tag")}\` does not exist`)
+                    .setDescription(`Tag \`${search}\` does not exist`)
                     .setEmoji("PUNISH.NICKNAME.RED")
                     .setStatus("Danger")
             ],
             ephemeral: true
         });
+        return;
     }
     let url = "";
-    let components: ActionRowBuilder[] = [];
+    let components: ActionRowBuilder<ButtonBuilder>[] = [];
     if (tag.match(/^(http|https):\/\/[^ "]+$/)) {
         url = tag;
         components = [
-            new ActionRowBuilder().addComponents([new ButtonBuilder().setLabel("Open").setURL(url).setStyle(ButtonStyle.Link)])
+            new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel("Open").setURL(url).setStyle(ButtonStyle.Link)])
         ];
     }
-    return await interaction.reply({
-        embeds: [
-            new EmojiEmbed()
-                .setTitle(interaction.options.get("tag").value)
-                .setDescription(tag)
-                .setEmoji("PUNISH.NICKNAME.GREEN")
-                .setStatus("Success")
-                .setImage(url)
-        ],
+    const em = new EmojiEmbed()
+        .setTitle(capitalize(search))
+        .setEmoji("PUNISH.NICKNAME.GREEN")
+        .setStatus("Success")
+    if (url) em.setImage(url)
+    else em.setDescription(tag);
+
+    await interaction.reply({
+        embeds: [em],
         components: components,
         ephemeral: true
     });
+    return;
 };
 
 const check = () => {
@@ -52,9 +57,12 @@ const check = () => {
 
 const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
     if (!interaction.guild) return [];
-    const config = await client.database.guilds.read(interaction.guild.id);
-    const tags = Object.keys(config.getKey("tags"));
-    return tags;
+    const prompt = interaction.options.getString("tag");
+    console.log(prompt)
+    const possible = Object.keys((await client.memory.readGuildInfo(interaction.guild.id)).tags);
+    const results = getResults(prompt ?? "", possible);
+    console.log(results)
+    return results;
 };
 
 export { command };

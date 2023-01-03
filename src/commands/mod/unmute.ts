@@ -38,6 +38,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 false,
                 null,
                 "The user will be sent a DM",
+                null,
                 "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
                 notify
             )

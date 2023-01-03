@@ -18,6 +18,7 @@ interface CustomBoolean<T> {
     title: string;
     disabled: boolean;
     value: string | null;
+    notValue: string | null;
     emoji: string | undefined;
     active: boolean;
     onClick: () => Promise<T>;
@@ -68,6 +69,7 @@ class confirmationMessage {
         disabled: boolean,
         callback: (() => Promise<unknown>) | null = async () => null,
         callbackClicked: string | null,
+        callbackNotClicked: string | null,
         emoji?: string,
         initial?: boolean
     ) {
@@ -75,6 +77,7 @@ class confirmationMessage {
             title: title,
             disabled: disabled,
             value: callbackClicked,
+            notValue: callbackNotClicked,
             emoji: emoji,
             active: initial ?? false,
             onClick: callback ?? (async () => null),
@@ -145,10 +148,12 @@ class confirmationMessage {
                                 "\n\n" +
                                 Object.values(this.customButtons)
                                     .map((v) => {
-                                        if (v.value === null) return "";
-                                        return v.active ? `*${v.value}*\n` : "";
-                                    })
-                                    .join("")
+                                        if (v.active) {
+                                            return v.value ? `*${v.value}*\n` : "";
+                                        } else {
+                                            return v.notValue ? `*${v.notValue}*\n` : "";
+                                        }
+                                    }).join("")
                         )
                         .setStatus(this.color)
                 ],
@@ -163,7 +168,8 @@ class confirmationMessage {
                 } else {
                     m = (await this.interaction.reply(object)) as unknown as Message;
                 }
-            } catch {
+            } catch (e) {
+                console.log(e);
                 cancelled = true;
                 continue;
             }

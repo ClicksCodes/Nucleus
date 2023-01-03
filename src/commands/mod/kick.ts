@@ -1,4 +1,4 @@
-import { LinkWarningFooter } from './../../utils/defaultEmbeds';
+import { LinkWarningFooter } from './../../utils/defaultEmbeds.js';
 import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
@@ -42,6 +42,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 false,
                 null,
                 "The user will be sent a DM",
+                null,
                 "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
                 notify
             )

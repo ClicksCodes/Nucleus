@@ -1,11 +1,10 @@
-import Discord, { Client, Interaction } from 'discord.js';
+import Discord, { Client, Interaction, AutocompleteInteraction } from 'discord.js';
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
 import type { VerifySchema } from "../reflex/verify.js";
 import { Guilds, History, ModNotes, Premium } from "../utils/database.js";
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
-// @ts-expect-error
 import config from "../config/main.json" assert { type: "json" };
 
 
@@ -28,9 +27,9 @@ class NucleusClient extends Client {
                 ((builder: Discord.SlashCommandBuilder) => Discord.SlashCommandBuilder) |
                 Discord.SlashCommandSubcommandBuilder | ((builder: Discord.SlashCommandSubcommandBuilder) => Discord.SlashCommandSubcommandBuilder) | Discord.SlashCommandSubcommandGroupBuilder | ((builder: Discord.SlashCommandSubcommandGroupBuilder) => Discord.SlashCommandSubcommandGroupBuilder),
         callback: (interaction: Interaction) => Promise<void>,
-        check: (interaction: Interaction) => Promise<boolean> | boolean
+        check: (interaction: Interaction) => Promise<boolean> | boolean,
+        autocomplete: (interaction: AutocompleteInteraction) => Promise<string[]>
     }> = {};
-    // commands: Discord.Collection<string, [Function, Function]> = new Discord.Collection();
 
     constructor(database: typeof NucleusClient.prototype.database) {
         super({ intents: 32767 });

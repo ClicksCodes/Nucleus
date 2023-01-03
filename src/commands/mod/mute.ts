@@ -192,6 +192,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 async () =>
                     await create(interaction.guild, interaction.options.getUser("user")!, interaction.user, reason),
                 "An appeal ticket will be created when Confirm is clicked",
+                null,
                 "CONTROL.TICKET",
                 createAppealTicket
             )
@@ -200,6 +201,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 "Notify user",
                 false,
                 undefined,
+                null,
                 null,
                 "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
                 notify

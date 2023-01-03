@@ -6,6 +6,7 @@ interface GuildData {
     filters: GuildConfig["filters"];
     logging: GuildConfig["logging"];
     tickets: GuildConfig["tickets"];
+    tags: GuildConfig["tags"];
 }
 
 class Memory {
@@ -20,7 +21,7 @@ class Memory {
                 }
             }
         }, 1000 * 60 * 30);
-    }
+    };
 
     async readGuildInfo(guild: string): Promise<GuildData> {
         if (!this.memory.has(guild)) {
@@ -29,10 +30,15 @@ class Memory {
                 lastUpdated: Date.now(),
                 filters: guildData.filters,
                 logging: guildData.logging,
-                tickets: guildData.tickets
+                tickets: guildData.tickets,
+                tags: guildData.tags
             });
         }
         return this.memory.get(guild)!;
+    };
+
+    async forceUpdate(guild: string) {
+        if (this.memory.has(guild)) this.memory.delete(guild);
     }
 }
 

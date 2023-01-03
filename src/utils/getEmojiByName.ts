@@ -1,4 +1,3 @@
-// @ts-expect-error
 import emojis from "../config/emojis.json" assert { type: "json" };
 
 interface EmojisIndex {

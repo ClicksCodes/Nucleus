@@ -13,7 +13,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addStringOption((o) => o.setName("name").setRequired(true).setDescription("The name of the tag"));
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const name = interaction.options.getString("name");
+    const name = interaction.options.get("name")?.value as string;
     const data = await client.database.guilds.read(interaction.guild!.id);
     if (!data.tags[name])
         return await interaction.reply({
@@ -51,6 +51,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         });
     try {
         await client.database.guilds.write(interaction.guild!.id, null, ["tags." + name]);
+        await client.memory.forceUpdate(interaction.guild!.id);
     } catch (e) {
         console.log(e);
         return await interaction.editReply({
@@ -78,7 +79,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("MANAGE_MESSAGES"))
+    if (!member.permissions.has("ManageMessages"))
         throw new Error("You must have the *Manage Messages* permission to use this command");
     return true;
 };

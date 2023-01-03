@@ -1,3 +1,4 @@
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
 import type { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
@@ -8,11 +9,12 @@ import Discord, {
     ButtonBuilder,
     MessageComponentInteraction,
     ModalSubmitInteraction,
-    TextInputComponent,
     ButtonStyle,
-    StringSelectMenuInteraction
+    StringSelectMenuInteraction,
+    TextInputStyle,
+    APIMessageComponentEmoji
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";
@@ -153,60 +155,59 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
             }
         }
         if (pageIndex === null) pageIndex = 0;
-        const components = (
-            openFilterPane
-                ? [
-                      new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents(
-                          new Discord.SelectMenuBuilder()
-                              .setOptions(
-                                  Object.entries(types).map(([key, value]) => ({
-                                      label: value.text,
-                                      value: key,
-                                      default: filteredTypes.includes(key),
-                                      emoji: client.emojis.resolve(getEmojiByName(value.emoji, "id"))
-                                  }))
-                              )
-                              .setMinValues(1)
-                              .setMaxValues(Object.keys(types).length)
-                              .setCustomId("filter")
-                              .setPlaceholder("Select at least one event")
-                      )
-                  ]
-                : []
-        ).concat([
-            new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
-                new ButtonBuilder()
-                    .setCustomId("prevYear")
-                    .setLabel((currentYear - 1).toString())
-                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder().setCustomId("prevPage").setLabel("Previous page").setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId("today").setLabel("Today").setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setCustomId("nextPage")
-                    .setLabel("Next page")
-                    .setStyle(ButtonStyle.Primary)
-                    .setDisabled(pageIndex >= groups.length - 1 && currentYear === new Date().getFullYear()),
-                new ButtonBuilder()
-                    .setCustomId("nextYear")
-                    .setLabel((currentYear + 1).toString())
-                    .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-                    .setStyle(ButtonStyle.Secondary)
-                    .setDisabled(currentYear === new Date().getFullYear())
-            ]),
-            new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
-                new ButtonBuilder()
-                    .setLabel("Mod notes")
-                    .setCustomId("modNotes")
-                    .setStyle(ButtonStyle.Primary)
-                    .setEmoji(getEmojiByName("ICONS.EDIT", "id")),
-                new ButtonBuilder()
-                    .setLabel("Filter")
-                    .setCustomId("openFilter")
-                    .setStyle(openFilterPane ? ButtonStyle.Success : ButtonStyle.Primary)
-                    .setEmoji(getEmojiByName("ICONS.FILTER", "id"))
-            ])
-        ]);
+        let components: (ActionRowBuilder<Discord.StringSelectMenuBuilder> | ActionRowBuilder<ButtonBuilder>)[] = []
+        if (openFilterPane) components = components.concat([
+            new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents(
+                new Discord.StringSelectMenuBuilder().setOptions(
+                    ...Object.entries(types).map(([key, value]) => new StringSelectMenuOptionBuilder()
+                        .setLabel(value.text)
+                        .setValue(key)
+                        .setDefault(filteredTypes.includes(key))
+                        .setEmoji(client.emojis.resolve(getEmojiByName(value.emoji, "id"))! as APIMessageComponentEmoji)
+                    )
+                )
+                .setMinValues(1)
+                .setMaxValues(Object.keys(types).length)
+                .setCustomId("filter")
+                .setPlaceholder("Select events to show")
+            )
+        ])
+        components = components.concat([new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
+            new ButtonBuilder()
+                .setCustomId("prevYear")
+                .setLabel((currentYear - 1).toString())
+                .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+                .setCustomId("prevPage")
+                .setLabel("Previous page")
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId("today").setLabel("Today").setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setCustomId("nextPage")
+                .setLabel("Next page")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(pageIndex >= groups.length - 1 && currentYear === new Date().getFullYear()),
+            new ButtonBuilder()
+                .setCustomId("nextYear")
+                .setLabel((currentYear + 1).toString())
+                .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(currentYear === new Date().getFullYear())
+        ])])
+        components = components.concat([new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
+            new ButtonBuilder()
+                .setLabel("Mod notes")
+                .setCustomId("modNotes")
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji(getEmojiByName("ICONS.EDIT", "id")),
+            new ButtonBuilder()
+                .setLabel("Filter")
+                .setCustomId("openFilter")
+                .setStyle(openFilterPane ? ButtonStyle.Success : ButtonStyle.Primary)
+                .setEmoji(getEmojiByName("ICONS.FILTER", "id"))
+        ])])
+
         const end =
             "\n\nJanuary " +
             currentYear.toString() +
@@ -216,7 +217,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
             currentYear.toString();
         if (groups.length > 0) {
             const toRender = groups[Math.min(pageIndex, groups.length - 1)]!;
-            m = (await interaction.editReply({
+            m = await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
@@ -226,25 +227,25 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                         )
                         .setStatus("Success")
                         .setFooter({
-                            text: openFilterPane && filteredTypes.length ? "Filters are currently enabled" : ""
+                            text: openFilterPane && filteredTypes.length ? "Filters are currently enabled" : "No filters selected"
                         })
                 ],
                 components: components
-            })) as Message;
+            });
         } else {
-            m = (await interaction.editReply({
+            m = await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")
                         .setTitle("Moderation history for " + member.user.username)
-                        .setDescription(`**${currentYear}**\n\n*No events*` + "\n\n" + end)
+                        .setDescription(`**${currentYear}**\n\n*No events*`)
                         .setStatus("Success")
                         .setFooter({
-                            text: openFilterPane && filteredTypes.length ? "Filters are currently enabled" : ""
+                            text: openFilterPane && filteredTypes.length ? "Filters are currently enabled" : "No filters selected"
                         })
                 ],
                 components: components
-            })) as Message;
+            })
         }
         let i: MessageComponentInteraction;
         try {
@@ -315,7 +316,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let m: Message;
     const member = interaction.options.getMember("user") as Discord.GuildMember;
     await interaction.reply({
-        embeds: [new EmojiEmbed().setEmoji("NUCLEUS.LOADING").setTitle("Downloading Data").setStatus("Danger")],
+        embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
     });
@@ -324,9 +325,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let timedOut = false;
     while (!timedOut) {
         note = await client.database.notes.read(member.guild.id, member.id);
-        if (firstLoad && !note) {
-            await showHistory(member, interaction);
-        }
+        if (firstLoad && !note) { await showHistory(member, interaction); }
         firstLoad = false;
         m = (await interaction.editReply({
             embeds: [
@@ -344,7 +343,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("modify")
                         .setEmoji(getEmojiByName("ICONS.EDIT", "id")),
                     new ButtonBuilder()
-                        .setLabel("View moderation history")
+                        .setLabel("Moderation history")
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("history")
                         .setEmoji(getEmojiByName("ICONS.HISTORY", "id"))
@@ -364,14 +363,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setCustomId("modal")
                     .setTitle("Editing moderator note")
                     .addComponents(
-                        new ActionRowBuilder<Discord.TextInputComponent>().addComponents(
-                            new TextInputComponent()
+                        new ActionRowBuilder<Discord.TextInputBuilder>().addComponents(
+                            new Discord.TextInputBuilder()
                                 .setCustomId("note")
                                 .setLabel("Note")
                                 .setMaxLength(4000)
                                 .setRequired(false)
-                                .setStyle("PARAGRAPH")
-                                .setValue(note ? note : "")
+                                .setStyle(TextInputStyle.Paragraph)
+                                .setValue(note ? note : " ")
                         )
                     )
             );
@@ -408,7 +407,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             if (out === null) {
                 continue;
             } else if (out instanceof ModalSubmitInteraction) {
-                const toAdd = out.fields.getTextInputValue("note") || null;
+                let toAdd = out.fields.getTextInputValue("note") || null;
+                if (toAdd === " ") toAdd = null;
+                if (toAdd) toAdd = toAdd.trim();
                 await client.database.notes.create(member.guild.id, member.id, toAdd);
             } else {
                 continue;

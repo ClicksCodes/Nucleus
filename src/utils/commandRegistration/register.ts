@@ -1,5 +1,4 @@
 import Discord, { Interaction, SlashCommandBuilder, ApplicationCommandType } from 'discord.js';
-// @ts-expect-error
 import config from "../../config/main.json" assert { type: "json" };
 import client from "../client.js";
 import fs from "fs";
@@ -140,19 +139,31 @@ async function registerCommandHandler() {
             const commandName = "contextCommands/message/" + interaction.commandName;
             execute(client.commands[commandName]?.check, client.commands[commandName]?.callback, interaction)
             return;
+        } else if (interaction.isAutocomplete()) {
+            const commandName = interaction.commandName;
+            const subcommandGroupName = interaction.options.getSubcommandGroup(false);
+            const subcommandName = interaction.options.getSubcommand(false);
+
+            const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
+
+            const choices = await client.commands[fullCommandName]?.autocomplete(interaction);
+
+            const formatted = (choices ?? []).map(choice => {
+                return { name: choice, value: choice }
+            })
+            interaction.respond(formatted)
+        } else if (interaction.isChatInputCommand()) {
+            const commandName = interaction.commandName;
+            const subcommandGroupName = interaction.options.getSubcommandGroup(false);
+            const subcommandName = interaction.options.getSubcommand(false);
+
+            const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
+
+            const command = client.commands[fullCommandName];
+            const callback = command?.callback;
+            const check = command?.check;
+            execute(check, callback, interaction);
         }
-        if (!interaction.isChatInputCommand()) return;
-
-        const commandName = interaction.commandName;
-        const subcommandGroupName = interaction.options.getSubcommandGroup(false);
-        const subcommandName = interaction.options.getSubcommand(false);
-
-        const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
-
-        const command = client.commands[fullCommandName];
-        const callback = command?.callback;
-        const check = command?.check;
-        execute(check, callback, interaction);
     });
 }
 

@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle } from "discord.js";
+import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -26,7 +26,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const user = (interaction.options.getMember("user") as GuildMember);
+    if (!interaction.guild) return;
+    const user = (interaction.options.getMember("user") as GuildMember | null);
     const channel = interaction.channel as GuildChannel;
     if (
         !["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(
@@ -46,7 +47,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         });
     }
     // TODO:[Modals] Replace this with a modal
-    if (!interaction.options.getInteger("amount")) {
+    if (!interaction.options.get("amount")) {
         await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -74,17 +75,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Danger")
                 ],
                 components: [
-                    new Discord.ActionRowBuilder().addComponents([
+                    new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
                         new Discord.ButtonBuilder().setCustomId("1").setLabel("1").setStyle(ButtonStyle.Secondary),
                         new Discord.ButtonBuilder().setCustomId("3").setLabel("3").setStyle(ButtonStyle.Secondary),
                         new Discord.ButtonBuilder().setCustomId("5").setLabel("5").setStyle(ButtonStyle.Secondary)
                     ]),
-                    new Discord.ActionRowBuilder().addComponents([
+                    new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
                         new Discord.ButtonBuilder().setCustomId("10").setLabel("10").setStyle(ButtonStyle.Secondary),
                         new Discord.ButtonBuilder().setCustomId("25").setLabel("25").setStyle(ButtonStyle.Secondary),
                         new Discord.ButtonBuilder().setCustomId("50").setLabel("50").setStyle(ButtonStyle.Secondary)
                     ]),
-                    new Discord.ActionRowBuilder().addComponents([
+                    new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
                         new Discord.ButtonBuilder()
                             .setCustomId("done")
                             .setLabel("Done")
@@ -110,16 +111,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
             const amount = parseInt((await component).customId);
 
-            let messages;
+            let messages: Discord.Message[] = [];
             await (interaction.channel as TextChannel).messages.fetch({ limit: amount }).then(async (ms) => {
                 if (user) {
                     ms = ms.filter((m) => m.author.id === user.id);
                 }
-                messages = await (channel as TextChannel).bulkDelete(ms, true);
+                messages = (await (channel as TextChannel).bulkDelete(ms, true)).map(m => m as Discord.Message);
             });
-            if (messages) {
-                deleted = deleted.concat(messages.map((m) => m));
-            }
+            deleted = deleted.concat(messages);
         }
         if (deleted.length === 0)
             return await interaction.editReply({
@@ -136,11 +135,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             await client.database.history.create(
                 "purge",
                 interaction.guild.id,
-                user,
-                interaction.options.getString("reason"),
+                user.user,
+                interaction.user,
+                (interaction.options.get("reason")?.value as (string | null)) ?? "*No reason provided*",
                 null,
                 null,
-                deleted.length
+                deleted.length.toString()
             );
         }
         const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
@@ -156,8 +156,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             list: {
                 memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
                 purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
-                messagesCleared: entry(deleted.length, deleted.length)
+                channel: entry(interaction.channel!.id, renderChannel(interaction.channel! as GuildChannel)),
+                messagesCleared: entry(deleted.length.toString(), deleted.length.toString())
             },
             hidden: {
                 guild: interaction.guild.id
@@ -189,7 +189,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new Discord.ActionRowBuilder().addComponents([
+                new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
                     new Discord.ButtonBuilder()
                         .setCustomId("download")
                         .setLabel("Download transcript")
@@ -207,7 +207,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         } catch {
             return;
         }
-        if (component && component.customId === "download") {
+        if (component.customId === "download") {
             interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -239,12 +239,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setDescription(
                 keyValueList({
                     channel: `<#${channel.id}>`,
-                    amount: interaction.options.getInteger("amount").toString(),
-                    reason: `\n> ${
-                        interaction.options.getString("reason")
-                            ? interaction.options.getString("reason")
-                            : "*No reason provided*"
-                    }`
+                    amount: (interaction.options.get("amount")?.value as number).toString(),
+                    reason: `\n> ${interaction.options.get("reason")?.value ? interaction.options.get("reason")?.value : "*No reason provided*"}`
                 })
             )
             .setColor("Danger")
@@ -255,7 +251,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             try {
                 if (!user) {
                     const toDelete = await (interaction.channel as TextChannel).messages.fetch({
-                        limit: interaction.options.getInteger("amount")
+                        limit: interaction.options.get("amount")?.value as number
                     });
                     messages = await (channel as TextChannel).bulkDelete(toDelete, true);
                 } else {
@@ -265,7 +261,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 limit: 100
                             })
                         ).filter((m) => m.author.id === user.id)
-                    ).first(interaction.options.getInteger("amount"));
+                    ).first(interaction.options.get("amount")?.value as number);
                     messages = await (channel as TextChannel).bulkDelete(toDelete, true);
                 }
             } catch (e) {
@@ -280,15 +276,29 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     components: []
                 });
             }
+            if (!messages) {
+                await interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed()
+                            .setEmoji("CHANNEL.PURGE.RED")
+                            .setTitle("Purge")
+                            .setDescription("No messages could be deleted")
+                            .setStatus("Danger")
+                    ],
+                    components: []
+                });
+                return;
+            }
             if (user) {
                 await client.database.history.create(
                     "purge",
                     interaction.guild.id,
-                    user,
-                    interaction.options.getString("reason"),
+                    user.user,
+                    interaction.user,
+                    (interaction.options.get("reason")?.value as (string | null)) ?? "*No reason provided*",
                     null,
                     null,
-                    messages.size
+                    messages.size.toString()
                 );
             }
             const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
@@ -304,8 +314,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 list: {
                     memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
                     purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                    channel: entry(interaction.channel.id, renderChannel(interaction.channel)),
-                    messagesCleared: entry(messages.size, messages.size)
+                    channel: entry(interaction.channel!.id, renderChannel(interaction.channel! as GuildChannel)),
+                    messagesCleared: entry(messages.size.toString(), messages.size.toString())
                 },
                 hidden: {
                     guild: interaction.guild.id
@@ -314,14 +324,26 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             log(data);
             let out = "";
             messages.reverse().forEach((message) => {
-                out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(
-                    message.createdTimestamp
-                ).toISOString()}]\n`;
-                const lines = message.content.split("\n");
-                lines.forEach((line) => {
-                    out += `> ${line}\n`;
-                });
-                out += "\n\n";
+                if (!message) {
+                    out += "Unknown message\n\n"
+                } else {
+                    const author = message.author ?? { username: "Unknown", discriminator: "0000", id: "Unknown" };
+                    out += `${author.username}#${author.discriminator} (${author.id}) [${new Date(
+                        message.createdTimestamp
+                    ).toISOString()}]\n`;
+                    if (message.content) {
+                        const lines = message.content.split("\n");
+                        lines.forEach((line) => {
+                            out += `> ${line}\n`;
+                        });
+                    }
+                    if (message.attachments.size > 0) {
+                        message.attachments.forEach((attachment) => {
+                            out += `Attachment > ${attachment.url}\n`;
+                        });
+                    }
+                    out += "\n\n";
+                }
             });
             const attachmentObject = {
                 attachment: Buffer.from(out),
@@ -337,7 +359,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStatus("Success")
                 ],
                 components: [
-                    new Discord.ActionRowBuilder().addComponents([
+                    new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
                         new Discord.ButtonBuilder()
                             .setCustomId("download")
                             .setLabel("Download transcript")
@@ -355,7 +377,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } catch {
                 return;
             }
-            if (component && component.customId === "download") {
+            if (component.customId === "download") {
                 interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
@@ -395,14 +417,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 };
 
 const check = (interaction: CommandInteraction) => {
+    if (!interaction.guild) return false;
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
+    const me = interaction.guild.members.me!;
     // Check if nucleus has the manage_messages permission
-    if (!me.permissions.has("MANAGE_MESSAGES")) throw new Error("I do not have the *Manage Messages* permission");
+    if (!me.permissions.has("ManageMessages")) throw new Error("I do not have the *Manage Messages* permission");
     // Allow the owner to purge
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_messages permission
-    if (!member.permissions.has("MANAGE_MESSAGES")) throw new Error("You do not have the *Manage Messages* permission");
+    if (!member.permissions.has("ManageMessages")) throw new Error("You do not have the *Manage Messages* permission");
     // Allow purge
     return true;
 };
