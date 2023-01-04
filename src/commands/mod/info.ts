@@ -159,12 +159,18 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         if (openFilterPane) components = components.concat([
             new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents(
                 new Discord.StringSelectMenuBuilder().setOptions(
-                    ...Object.entries(types).map(([key, value]) => new StringSelectMenuOptionBuilder()
-                        .setLabel(value.text)
-                        .setValue(key)
-                        .setDefault(filteredTypes.includes(key))
-                        .setEmoji(client.emojis.resolve(getEmojiByName(value.emoji, "id"))! as APIMessageComponentEmoji)
-                    )
+                    // ...Object.entries(types).map(([key, value]) => new StringSelectMenuOptionBuilder()
+                    //     .setLabel(value.text)
+                    //     .setValue(key)
+                    //     .setDefault(filteredTypes.includes(key))
+                    //     .setEmoji(client.emojis.resolve(getEmojiByName(value.emoji, "id"))! as APIMessageComponentEmoji)
+                    // )
+                    ...Object.entries(types).map(([key, value]) => ({
+                        label: value.text,
+                        value: key,
+                        default: filteredTypes.includes(key),
+                        emoji: client.emojis.resolve(getEmojiByName(value.emoji, "id"))! as APIMessageComponentEmoji
+                    }))
                 )
                 .setMinValues(1)
                 .setMaxValues(Object.keys(types).length)

@@ -5,6 +5,7 @@ interface EmojisIndex {
 }
 
 function getEmojiByName(name: string | null, format?: string): string {
+    console.log(name)
     if (!name) return "";
     const parts = name.split(".");
     let id: string | EmojisIndex | EmojisIndex[] | undefined = emojis;
