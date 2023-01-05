@@ -3,6 +3,7 @@ import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { GuildChannel, GuildMember, BaseGuildTextChannel } from "discord.js";
+import singleNotify from "../utils/singleNotify.js";
 
 export async function callback(_client: NucleusClient, member: GuildMember) {
     if (member.user.bot) return;
@@ -24,7 +25,7 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                     embeds: [new EmojiEmbed().setDescription(string).setStatus("Success")]
                 });
             } else {
-                const channel: GuildChannel | null = await member.guild.channels.fetch(config.welcome.channel);
+                const channel: GuildChannel | null = await member.guild.channels.fetch(config.welcome.channel) as GuildChannel | null;
                 if (!channel) return; // TODO: SEN
                 if (!(channel instanceof BaseGuildTextChannel)) return;
                 if (channel.guild.id !== member.guild.id) return;
@@ -34,7 +35,12 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                         content: (config.welcome.ping ? `<@${config.welcome.ping}>` : "") + `<@${member.id}>`
                     });
                 } catch (err) {
-                    console.error(err); // TODO: SEN
+                    singleNotify(
+                        "welcomeChannelDeleted",
+                        member.guild.id,
+                        "The welcome channel has been deleted or is no longer accessible. Use /settings welcome to set a new one",
+                        "Warning"
+                    )
                 }
             }
         }

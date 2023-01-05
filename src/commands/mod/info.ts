@@ -12,9 +12,8 @@ import Discord, {
     ButtonStyle,
     StringSelectMenuInteraction,
     TextInputStyle,
-    APIMessageComponentEmoji
 } from "discord.js";
-import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";
@@ -158,26 +157,19 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         let components: (ActionRowBuilder<Discord.StringSelectMenuBuilder> | ActionRowBuilder<ButtonBuilder>)[] = []
         if (openFilterPane) components = components.concat([
             new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents(
-                new Discord.StringSelectMenuBuilder().setOptions(
-                    // ...Object.entries(types).map(([key, value]) => new StringSelectMenuOptionBuilder()
-                    //     .setLabel(value.text)
-                    //     .setValue(key)
-                    //     .setDefault(filteredTypes.includes(key))
-                    //     .setEmoji(client.emojis.resolve(getEmojiByName(value.emoji, "id"))! as APIMessageComponentEmoji)
-                    // )
-                    ...Object.entries(types).map(([key, value]) => ({
-                        label: value.text,
-                        value: key,
-                        default: filteredTypes.includes(key),
-                        emoji: client.emojis.resolve(getEmojiByName(value.emoji, "id"))! as APIMessageComponentEmoji
-                    }))
-                )
-                .setMinValues(1)
-                .setMaxValues(Object.keys(types).length)
-                .setCustomId("filter")
-                .setPlaceholder("Select events to show")
-            )
-        ])
+                new Discord.StringSelectMenuBuilder()
+                    .setMinValues(1)
+                    .setMaxValues(Object.keys(types).length)
+                    .setCustomId("filter")
+                    .setPlaceholder("Select events to show")
+                    .setOptions(...Object.entries(types).map(([key, value]) => new Discord.StringSelectMenuOptionBuilder()
+                        .setLabel(value.text)
+                        .setValue(key)
+                        .setDefault(filteredTypes.includes(key))
+                        // @ts-expect-error
+                        .setEmoji(getEmojiByName(value.emoji, "id"))  // FIXME: This gives a type error but is valid
+            )))
+        ]);
         components = components.concat([new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
             new ButtonBuilder()
                 .setCustomId("prevYear")
@@ -188,7 +180,10 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                 .setCustomId("prevPage")
                 .setLabel("Previous page")
                 .setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId("today").setLabel("Today").setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setCustomId("today")
+                .setLabel("Today")
+                .setStyle(ButtonStyle.Primary),
             new ButtonBuilder()
                 .setCustomId("nextPage")
                 .setLabel("Next page")
