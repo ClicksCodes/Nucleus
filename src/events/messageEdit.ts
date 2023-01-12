@@ -1,10 +1,11 @@
 import type { NucleusClient } from "../utils/client.js";
 import type { Message, MessageReference } from "discord.js";
+import type Discord from "discord.js";
 
 export const event = "messageUpdate";
 
 export async function callback(client: NucleusClient, oldMessage: Message, newMessage: Message) {
-    if (newMessage.author.id === client.user.id) return;
+    if (newMessage.author.id === client.user!.id) return;
     if (!newMessage.guild) return;
     const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;
     const replyTo: MessageReference | null = newMessage.reference;
@@ -17,8 +18,8 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (config) {
         attachmentJump = ` [[View attachments]](${config})`;
     }
-    if (newContent === oldContent) {
-        if (!oldMessage.flags.has("CROSSPOSTED") && newMessage.flags.has("CROSSPOSTED")) {
+    if (newContent === oldContent && newMessage.attachments.size === oldMessage.attachments.size) {
+        if (!replyTo) {
             const data = {
                 meta: {
                     type: "messageAnnounce",
@@ -34,14 +35,14 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
                 list: {
                     messageId: entry(newMessage.id, `\`${newMessage.id}\``),
                     sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
-                    sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel)),
+                    sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel as Discord.GuildBasedChannel)),
                     sent: entry(
-                        new Date(newMessage.createdTimestamp),
-                        renderDelta(new Date(newMessage.createdTimestamp))
+                        newMessage.createdTimestamp,
+                        renderDelta(newMessage.createdTimestamp)
                     ),
                     published: entry(
-                        new Date(newMessage.editedTimestamp!),
-                        renderDelta(new Date(newMessage.editedTimestamp!))
+                        newMessage.editedTimestamp!,
+                        renderDelta(newMessage.editedTimestamp!)
                     ),
                     mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
                     attachments: entry(
@@ -81,16 +82,16 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
         list: {
             messageId: entry(newMessage.id, `\`${newMessage.id}\``),
             sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
-            sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel)),
-            sent: entry(new Date(newMessage.createdTimestamp), renderDelta(new Date(newMessage.createdTimestamp))),
-            edited: entry(new Date(newMessage.editedTimestamp), renderDelta(new Date(newMessage.editedTimestamp))),
+            sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel as Discord.GuildBasedChannel)),
+            sent: entry(newMessage.createdTimestamp, renderDelta(newMessage.createdTimestamp)),
+            edited: entry(newMessage.editedTimestamp, renderDelta(newMessage.editedTimestamp)),
             mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
             attachments: entry(
                 renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
                 renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size) + attachmentJump
             ),
             repliedTo: entry(
-                replyTo,
+                replyTo ? replyTo.messageId! : null,
                 replyTo
                     ? `[[Jump to message]](https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${replyTo.messageId})`
                     : "None"

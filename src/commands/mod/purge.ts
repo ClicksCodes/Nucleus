@@ -29,11 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
     const user = (interaction.options.getMember("user") as GuildMember | null);
     const channel = interaction.channel as GuildChannel;
-    if (
-        !["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD", "GUILD_PRIVATE_THREAD"].includes(
-            channel.type.toString()
-        )
-    ) {
+    if (channel.isTextBased()) {
         return await interaction.reply({
             embeds: [
                 new EmojiEmbed()

@@ -5,7 +5,8 @@ import Discord, {
     MessageComponentInteraction,
     Role,
     ButtonStyle,
-    PermissionsBitField
+    PermissionsBitField,
+    ButtonInteraction
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import fetch from "node-fetch";
@@ -28,7 +29,7 @@ function step(i: number) {
     return "\n\n" + createPageIndicator(5, i);
 }
 
-export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
+export default async function (interaction: CommandInteraction | ButtonInteraction) {
     const verify = client.verify;
     await interaction.reply({
         embeds: LoadingEmbed,

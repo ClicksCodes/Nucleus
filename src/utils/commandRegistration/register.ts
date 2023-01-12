@@ -16,7 +16,7 @@ const colours = {
 async function registerCommands() {
     const commands = [];
 
-    const files = fs.readdirSync(config.commandsFolder, { withFileTypes: true }).filter(
+    const files: fs.Dirent[] = fs.readdirSync(config.commandsFolder, { withFileTypes: true }).filter(
         file => !file.name.endsWith(".ts") && !file.name.endsWith(".map")
     );
     console.log(`Registering ${files.length} commands`)
@@ -25,10 +25,15 @@ async function registerCommands() {
         const last = i === files.length - 1 ? "└" : "├";
         if (file.isDirectory()) {
             console.log(`${last}─ ${colours.yellow}Loading subcommands of ${file.name}${colours.none}`)
-            commands.push((await import(`../../../${config.commandsFolder}/${file.name}/_meta.js`)).command);
+            const fetched = (await import(`../../../${config.commandsFolder}/${file.name}/_meta.js`)).command;
+            commands.push(fetched);
         } else if (file.name.endsWith(".js")) {
             console.log(`${last}─ ${colours.yellow}Loading command ${file.name}${colours.none}`)
             const fetched = (await import(`../../../${config.commandsFolder}/${file.name}`));
+            fetched.command.setDMPermission(fetched.allowedInDMs ?? false)
+            fetched.command.setNameLocalizations(fetched.nameLocalizations ?? {})
+            fetched.command.setDescriptionLocalizations(fetched.descriptionLocalizations ?? {})
+            if (fetched.nameLocalizations || fetched.descriptionLocalizations) console.log("AAAAA")
             commands.push(fetched.command);
             client.commands["commands/" + fetched.command.name] = fetched;
         }
@@ -97,6 +102,8 @@ async function registerContextMenus() {
             console.log(`${last}─ ${colours.yellow}Loading message context menu ${file.name}${colours.none}`)
             const context = (await import(`../../../${config.messageContextFolder}/${file.name}`));
             context.command.setType(ApplicationCommandType.Message);
+            context.command.setDMPermission(context.allowedInDMs ?? false)
+            context.command.setNameLocalizations(context.nameLocalizations ?? {})
             commands.push(context.command);
 
             client.commands["contextCommands/message/" + context.command.name] = context;
@@ -181,6 +188,7 @@ async function execute(check: Function | undefined, callback: Function | undefin
     }
     callback(data);
 }
+
 
 export default async function register() {
     let commandList: ( Discord.SlashCommandBuilder | Discord.ContextMenuCommandBuilder )[] = [];

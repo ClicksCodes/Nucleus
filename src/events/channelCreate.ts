@@ -1,45 +1,52 @@
-import type { GuildAuditLogsEntry } from "discord.js";
+import { AuditLogEvent, ChannelType, GuildAuditLogsEntry } from "discord.js";
 import type { GuildBasedChannel } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 export const event = "channelCreate";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
-    const auditLog = await getAuditLog(channel.guild, "CHANNEL_CREATE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id)[0];
+    if (!auditLog) return;
+    if (auditLog.executor!.id === client.user!.id) return;
     let emoji;
     let readableType;
     let displayName;
     switch (channel.type) {
-        case "GUILD_TEXT": {
+        case ChannelType.GuildText: {
             emoji = "CHANNEL.TEXT.CREATE";
             readableType = "Text";
             displayName = "Text Channel";
             break;
         }
-        case "GUILD_NEWS": {
+        case ChannelType.GuildAnnouncement: {
             emoji = "CHANNEL.TEXT.CREATE";
             readableType = "Announcement";
             displayName = "Announcement Channel";
             break;
         }
-        case "GUILD_VOICE": {
+        case ChannelType.GuildVoice: {
             emoji = "CHANNEL.VOICE.CREATE";
             readableType = "Voice";
             displayName = "Voice Channel";
             break;
         }
-        case "GUILD_STAGE_VOICE": {
+        case ChannelType.GuildStageVoice: {
             emoji = "CHANNEL.VOICE.CREATE";
             readableType = "Stage";
             displayName = "Stage Channel";
             break;
         }
-        case "GUILD_CATEGORY": {
+        case ChannelType.GuildCategory: {
             emoji = "CHANNEL.CATEGORY.CREATE";
             readableType = "Category";
             displayName = "Category";
+            break;
+        }
+        case ChannelType.GuildForum: {
+            emoji = "CHANNEL.TEXT.CREATE";
+            readableType = "Forum";
+            displayName = "Forum Channel";
             break;
         }
         default: {
@@ -65,12 +72,12 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
                 channel.parent ? channel.parent.id : null,
                 channel.parent ? channel.parent.name : "Uncategorised"
             ),
-            createdBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp))
+            createdBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
+            created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp!))
         },
         hidden: {
             guild: channel.guild.id
         }
     };
     log(data);
-}
+};

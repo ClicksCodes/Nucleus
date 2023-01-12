@@ -149,6 +149,33 @@ export class History {
     }
 }
 
+export class PerformanceTest {
+    performanceData: Collection<PerformanceDataSchema>;
+
+    constructor() {
+        this.performanceData = database.collection<PerformanceDataSchema>("performance");
+    }
+
+    async record(data: PerformanceDataSchema) {
+        data.timestamp = new Date();
+        await this.performanceData.insertOne(data);
+    }
+    async read() {
+        return await this.performanceData.find({}).toArray();
+    }
+}
+
+export interface PerformanceDataSchema {
+    timestamp?: Date;
+    discord: number;
+    databaseRead: number;
+    resources: {
+        cpu: number;
+        memory: number;
+        temperature: number;
+    }
+}
+
 export class ModNotes {
     modNotes: Collection<ModNoteSchema>;
 
@@ -205,7 +232,11 @@ export interface GuildConfig {
         };
         invite: {
             enabled: boolean;
-            channels: string[];
+            allowed: {
+                channels: string[];
+                roles: string[];
+                users: string[];
+            };
         };
         pings: {
             mass: number;

@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
-import { CommandInteraction } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { CommandInteraction } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 
@@ -19,8 +19,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setTitle("Ping")
                 .setDescription(
                     `**Ping:** \`${ping}ms\`\n` +
-                        `**To Discord:** \`${client.ws.ping}ms\`\n` +
-                        `**From Expected:** \`±${Math.abs(ping / 2 - client.ws.ping)}ms\``
+                    `**To Discord:** \`${client.ws.ping}ms\`\n` +
+                    `**From Expected:** \`±${Math.abs(ping / 2 - client.ws.ping)}ms\``
                 )
                 .setEmoji("CHANNEL.SLOWMODE.OFF")
                 .setStatus("Danger")

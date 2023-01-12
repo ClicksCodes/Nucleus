@@ -1,4 +1,4 @@
-import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from "discord.js";
+import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ButtonInteraction } from "discord.js";
 import { tickets, toHexArray } from "../../utils/calculate.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -9,7 +9,7 @@ function capitalize(s: string) {
     return s.length < 3 ? s.toUpperCase() : s[0].toUpperCase() + s.slice(1).toLowerCase();
 }
 
-export default async function (interaction: CommandInteraction) {
+export default async function (interaction: CommandInteraction | ButtonInteraction) {
     if (!interaction.guild) return;
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
 

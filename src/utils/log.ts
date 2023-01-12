@@ -25,7 +25,7 @@ export const Logger = {
         const delta = num2 - num1;
         return `${num1} -> ${num2} (${delta > 0 ? "+" : ""}${delta})`;
     },
-    entry(value: string | null, displayValue: string): { value: string | null; displayValue: string } {
+    entry(value: string | number | null, displayValue: string): { value: string | null; displayValue: string } {
         return { value: value, displayValue: displayValue };
     },
     renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel) {
@@ -44,16 +44,15 @@ export const Logger = {
     },
     async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable): Promise<Discord.GuildAuditLogsEntry[]> {
         await wait(250);
-        const auditLog = await guild.fetchAuditLogs({ type: event });
-        return auditLog as unknown as Discord.GuildAuditLogsEntry[];
+        const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map(m => m)
+        return auditLog as Discord.GuildAuditLogsEntry[];
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async log(log: any): Promise<void> {
         const config = await client.database.guilds.read(log.hidden.guild);
         if (!config.logging.logs.enabled) return;
-        if (!(log.meta.calculateType === true)) {
-            if (!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType))
-                console.log("Not logging this type of event");
+        if (!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) {
+            console.log("Not logging this type of event");
             return;
         }
         if (config.logging.logs.channel) {

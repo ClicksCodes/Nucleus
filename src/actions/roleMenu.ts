@@ -1,11 +1,10 @@
-import { Interaction, ButtonBuilder, CommandInteraction, Role, ButtonStyle } from "discord.js";
+import { Interaction, ButtonBuilder, CommandInteraction, Role, ButtonStyle, ButtonInteraction } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { ActionRowBuilder, SelectMenuBuilder } from "discord.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { LoadingEmbed } from "../utils/defaultEmbeds.js";
 import type { GuildConfig } from "../utils/database.js";
-import type { ButtonComponent } from "@discordjs/builders";
 
 export interface RoleMenuSchema {
     guild: string;
@@ -17,7 +16,7 @@ export interface RoleMenuSchema {
     interaction: Interaction;
 }
 
-export async function callback(interaction: CommandInteraction) {
+export async function callback(interaction: CommandInteraction | ButtonInteraction) {
     if(!interaction.guild) return interaction.reply({ content: "This command can only be used in a server.", ephemeral: true });
     if(!interaction.member) return interaction.reply({ content: "You must be in a server to use this command.", ephemeral: true });
     const config = await client.database.guilds.read(interaction.guild.id);

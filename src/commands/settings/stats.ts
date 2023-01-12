@@ -224,6 +224,16 @@ const check = (interaction: CommandInteraction) => {
     return true;
 };
 
+const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
+    if (!interaction.guild) return [];
+    const prompt = interaction.options.getString("tag");
+    // generateStatsChannelAutocomplete(int.options.getString("name") ?? "")
+    const results = generateStatsChannelAutocomplete(prompt ?? "");
+    return results;
+};
+
+
+
 export { command };
 export { callback };
 export { check };

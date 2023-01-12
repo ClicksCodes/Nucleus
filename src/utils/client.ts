@@ -1,8 +1,8 @@
-import Discord, { Client, Interaction, AutocompleteInteraction } from 'discord.js';
+import Discord, { Client, Interaction, AutocompleteInteraction, GatewayIntentBits } from 'discord.js';
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
 import type { VerifySchema } from "../reflex/verify.js";
-import { Guilds, History, ModNotes, Premium } from "../utils/database.js";
+import { Guilds, History, ModNotes, Premium, PerformanceTest } from "../utils/database.js";
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
 import config from "../config/main.json" assert { type: "json" };
@@ -21,6 +21,7 @@ class NucleusClient extends Client {
         notes: ModNotes;
         premium: Premium;
         eventScheduler: EventScheduler;
+        performanceTest: PerformanceTest;
     };
     commands: Record<string, {
         command: Discord.SlashCommandBuilder |
@@ -32,7 +33,13 @@ class NucleusClient extends Client {
     }> = {};
 
     constructor(database: typeof NucleusClient.prototype.database) {
-        super({ intents: 32767 });
+        super({ intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildPresences,
+            GatewayIntentBits.GuildMembers
+        ]});
         this.database = database;
     }
 }
@@ -42,7 +49,8 @@ const client = new NucleusClient({
     history: new History(),
     notes: new ModNotes(),
     premium: new Premium(),
-    eventScheduler: new EventScheduler()
+    eventScheduler: new EventScheduler(),
+    performanceTest: new PerformanceTest()
 });
 
 export default client;

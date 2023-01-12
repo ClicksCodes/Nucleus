@@ -58,10 +58,8 @@ const check = () => {
 const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
     if (!interaction.guild) return [];
     const prompt = interaction.options.getString("tag");
-    console.log(prompt)
     const possible = Object.keys((await client.memory.readGuildInfo(interaction.guild.id)).tags);
     const results = getResults(prompt ?? "", possible);
-    console.log(results)
     return results;
 };
 

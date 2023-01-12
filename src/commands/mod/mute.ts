@@ -13,6 +13,7 @@ import { areTicketsEnabled, create } from "../../actions/createModActionTicket.j
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("mute")
+        // .setNameLocalizations({"ru": "silence"})
         .setDescription("Mutes a member, stopping them from talking in the server")
         .addUserOption((option) => option.setName("user").setDescription("The user to mute").setRequired(true))
         .addIntegerOption((option) =>
@@ -234,6 +235,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let dmMessage;
     try {
         if (notify) {
+            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
             const messageData: {
                 embeds: EmojiEmbed[];
                 components: ActionRowBuilder<ButtonBuilder>[];
@@ -244,7 +246,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setTitle("Muted")
                         .setDescription(
                             `You have been muted in ${interaction.guild.name}` +
-                                (reason ? ` for:\n> ${reason}` : ".\n*No reason was provided*") + "\n\n" +
+                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") + "\n\n" +
                             `You will be unmuted at: <t:${Math.round(new Date().getTime() / 1000) + muteTime}:D> at ` +
                             `<t:${Math.round(new Date().getTime() / 1000) + muteTime}:T> (<t:${Math.round(new Date().getTime() / 1000) + muteTime
                             }:R>)` + "\n\n" +

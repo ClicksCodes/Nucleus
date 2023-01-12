@@ -5,4 +5,6 @@ const description = "Commands relating to Nucleus itself";
 
 const subcommand = await command(name, description, `nucleus`)
 
-export { name, description, subcommand as command };
+const allowedInDMs = true;
+
+export { name, description, subcommand as command, allowedInDMs };

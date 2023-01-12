@@ -78,7 +78,7 @@ export async function callback(client: NucleusClient, before: Guild, after: Guil
     const data = {
         meta: {
             type: "guildUpdate",
-            displayName: "Guild Edited",
+            displayName: "Server Edited",
             calculateType: "guildUpdate",
             color: NucleusColors.yellow,
             emoji: "GUILD.YELLOW",

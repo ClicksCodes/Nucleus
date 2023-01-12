@@ -79,7 +79,7 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         Staff: "Discord Staff",
         VerifiedDeveloper: "Verified Bot Developer",
         ActiveDeveloper: "Active Developer",
-        Quarantined: "Quarantined [What does this mean?](https://support.discord.com/hc/en-us/articles/6461420677527)",
+        Quarantined: "Quarantined [[What does this mean?]](https://support.discord.com/hc/en-us/articles/6461420677527)",
         Spammer: "Likely Spammer"
         // CertifiedModerator
         // VerifiedBot

@@ -12,7 +12,7 @@ export const event = "messageCreate";
 export async function callback(_client: NucleusClient, message: Message) {
     if (!message.guild) return;
     if (message.author.bot) return;
-    if (message.channel.type === "DM") return;
+    if (message.channel.isDMBased()) return;
     try {
         await statsChannelUpdate(client, await message.guild.members.fetch(message.author.id));
     } catch (e) {
@@ -38,7 +38,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         mentions: message.mentions.users.size,
         attachments: entry(message.attachments.size, message.attachments.size + attachmentJump),
         repliedTo: entry(
-            message.reference ? message.reference.messageId : null,
+            (message.reference ? message.reference.messageId : null) ?? null,
             message.reference
                 ? `[[Jump to message]](https://discord.com/channels/${message.guild.id}/${message.channel.id}/${message.reference.messageId})`
                 : "None"

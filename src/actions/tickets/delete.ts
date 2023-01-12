@@ -1,9 +1,9 @@
-import Discord, { ButtonBuilder, ActionRowBuilder, ButtonStyle } from "discord.js";
+import Discord, { ButtonBuilder, ActionRowBuilder, ButtonStyle, ButtonInteraction } from "discord.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
-export default async function (interaction: Discord.CommandInteraction) {
+export default async function (interaction: Discord.CommandInteraction | ButtonInteraction) {
     if (!interaction.guild) return;
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
 

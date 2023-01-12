@@ -7,7 +7,8 @@ import Discord, {
     ButtonBuilder,
     MessageComponentInteraction,
     Role,
-    ButtonStyle
+    ButtonStyle,
+    AutocompleteInteraction
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -204,7 +205,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel(lastClicked == "clear-message" ? "Click again to confirm" : "Clear Message")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
@@ -296,11 +297,42 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("MANAGE_GUILD"))
+    if (!member.permissions.has("ManageGuild"))
         throw new Error("You must have the *Manage Server* permission to use this command");
     return true;
 };
 
-export { command };
-export { callback };
-export { check };
+const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
+    const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"]
+    if (!interaction.guild) return [];
+    const prompt = interaction.options.getString("message");
+    const autocompletions = [];
+    if ( prompt === null ) {
+        for (const replacement of validReplacements) {
+            autocompletions.push(`{${replacement}}`);
+        };
+        return autocompletions;
+    };
+    const beforeLastOpenBracket = prompt.match(/(.*){[^{}]{0,15}$/);
+    const afterLastOpenBracket = prompt.match(/{[^{}]{0,15}$/);
+    if (beforeLastOpenBracket !== null) {
+        if (afterLastOpenBracket !== null) {
+            for (const replacement of validReplacements) {
+                if (replacement.startsWith(afterLastOpenBracket[0].slice(1))) {
+                    autocompletions.push(`${beforeLastOpenBracket[1]}{${replacement}}`);
+                }
+            }
+        } else {
+            for (const replacement of validReplacements) {
+                autocompletions.push(`${beforeLastOpenBracket[1]}{${replacement}}`);
+            }
+        }
+    } else {
+        for (const replacement of validReplacements) {
+            autocompletions.push(`${prompt} {${replacement}}`);
+        }
+    }
+    return autocompletions;
+};
+
+export { command, callback, check, autocomplete };

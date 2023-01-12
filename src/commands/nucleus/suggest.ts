@@ -1,4 +1,5 @@
-import Discord, { CommandInteraction } from "discord.js";
+import type { CommandInteraction } from "discord.js";
+import type Discord from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -13,8 +14,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
+    await interaction.guild?.members.fetch(interaction.member!.user.id)
     const { renderUser } = client.logger;
-    const suggestion = interaction.options.getString("suggestion");
+    const suggestion = interaction.options.get("suggestion")?.value as string;
     const confirmation = await new confirmationMessage(interaction)
         .setEmoji("ICONS.OPP.ADD")
         .setTitle("Suggest")
@@ -32,7 +34,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Suggestion")
                     .setDescription(
-                        `**From:** ${renderUser(interaction.member.user)}\n**Suggestion:**\n> ${suggestion}`
+                        `**From:** ${renderUser(interaction.member!.user as Discord.User)}\n**Suggestion:**\n> ${suggestion}`
                     )
                     .setStatus("Danger")
                     .setEmoji("NUCLEUS.LOGO")

@@ -13,7 +13,13 @@ const colours = {
 }
 
 
-export async function group(name: string, description: string, path: string) {
+export async function group(
+    name: string,
+    description: string,
+    path: string,
+    nameLocalizations?: Record<string, string>,
+    descriptionLocalizations?: Record<string, string>
+) {
     // If the name of the command does not match the path (e.g. attachment.ts has /attachments), use commandString
     console.log(`│  ├─ Loading group ${name}`)
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path, "│  ")
@@ -22,6 +28,8 @@ export async function group(name: string, description: string, path: string) {
         subcommandGroup
             .setName(name)
             .setDescription(description)
+        if (nameLocalizations) { subcommandGroup.setNameLocalizations(nameLocalizations) }
+        if (descriptionLocalizations) { subcommandGroup.setDescriptionLocalizations(descriptionLocalizations) }
 
         for (const subcommand of fetched.subcommands) {
             subcommandGroup.addSubcommand(subcommand.command);
@@ -31,7 +39,16 @@ export async function group(name: string, description: string, path: string) {
     };
 }
 
-export async function command(name: string, description: string, path: string, commandString: string | undefined = undefined) {
+export async function command(
+    name: string,
+    description: string,
+    path: string,
+    commandString: string | undefined = undefined,
+    nameLocalizations?: Record<string, string>,
+    descriptionLocalizations?: Record<string, string>,
+    userPermissions?: Discord.PermissionsString[],
+    allowedInDMs?: boolean
+) {
     // If the name of the command does not match the path (e.g. attachment.ts has /attachments), use commandString
     commandString = "commands/" + (commandString ?? path);
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path);
@@ -39,6 +56,14 @@ export async function command(name: string, description: string, path: string, c
     return (command: SlashCommandBuilder) => {
         command.setName(name)
         command.setDescription(description)
+        command.setNameLocalizations(nameLocalizations ?? {})
+        command.setDescriptionLocalizations(descriptionLocalizations ?? {})
+        command.setDMPermission(allowedInDMs ?? false)
+        if (userPermissions) {
+            const bitfield = new Discord.PermissionsBitField()
+                bitfield.add(userPermissions)
+            command.setDefaultMemberPermissions(bitfield.bitfield)
+        }
 
         for (const subcommand of fetched.subcommands) {
             let fetchedCommand;

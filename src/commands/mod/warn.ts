@@ -84,6 +84,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const config = await client.database.guilds.read(interaction.guild.id);
     try {
         if (notify) {
+            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
             const messageData: {
                 embeds: EmojiEmbed[];
                 components: ActionRowBuilder<ButtonBuilder>[];
@@ -94,7 +95,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setTitle("Warned")
                         .setDescription(
                             `You have been warned in ${interaction.guild.name}` +
-                                (reason ? ` for:\n> ${reason}` : ".\n*No reason was provided*") +
+                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") +
                                 "\n\n" +
                                 (createAppealTicket
                                     ? `You can appeal this in the ticket created in <#${confirmation.components!["appeal"]!.response}>`

@@ -74,6 +74,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         const config = await client.database.guilds.read(interaction.guild.id);
         try {
             if (notify) {
+                if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
                 const messageData: {
                     embeds: EmojiEmbed[];
                     components: ActionRowBuilder<ButtonBuilder>[];
@@ -83,7 +84,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             .setEmoji("PUNISH.BAN.RED")
                             .setTitle("Banned")
                             .setDescription(
-                                `You have been banned in ${interaction.guild.name}` + (reason ? ` for:\n> ${reason}` : ".")
+                                `You have been banned in ${interaction.guild.name}` +
+                                    (reason ? ` for:\n${reason}` : ".\n*No reason was provided.*")
                             )
                             .setStatus("Danger")
                     ],

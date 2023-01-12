@@ -5,6 +5,7 @@ export const event = "channelUpdate";
 
 export async function callback(client, oc, nc) {
     const config = await client.memory.readGuildInfo(nc.guild.id);
+    return;
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderChannel } = client.logger;
 
     if (nc.parent && nc.parent.id === config.tickets.category) return;

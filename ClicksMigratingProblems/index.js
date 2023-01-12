@@ -48,7 +48,11 @@ for (const file of files) {
             },
             invite: {
                 enabled: data.invite ? data.invite.enabled : false,
-                channels: data.invite ? data.invite.whitelist.channels.map((channel) => channel.toString()) : []
+                allowed: {
+                    channels: data.invite ? data.invite.whitelist.channels.map((channel) => channel.toString()) : [],
+                    users: [],
+                    roles: []
+                }
             },
             pings: {
                 mass: 5,

@@ -6,7 +6,8 @@ import {
     ButtonBuilder,
     MessageComponentInteraction,
     TextChannel,
-    ButtonStyle
+    ButtonStyle,
+    User
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -76,7 +77,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setEmoji("CONTROL.DOWNLOAD")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(url),
                     new ButtonBuilder()
                         .setLabel("Delete")
@@ -99,7 +100,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     .setEmoji("CONTROL.DOWNLOAD")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel("Delete")
                         .setStyle(ButtonStyle.Danger)
@@ -128,8 +129,8 @@ export default async function (interaction: CommandInteraction | MessageComponen
         },
         list: {
             ticketFor: member ? entry(member.id, renderUser(member.user)) : entry(null, "*Unknown*"),
-            deletedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user)),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
+            deletedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as User)),
+            deleted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime()))
         },
         hidden: {
             guild: interaction.guild!.id

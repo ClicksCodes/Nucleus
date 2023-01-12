@@ -1,8 +1,8 @@
 import runServer from "./api/index.js";
 import client from "./utils/client.js";
-// @ts-expect-error
 import config from "./config/main.json" assert { type: "json" };
 import register from "./utils/commandRegistration/register.js";
+import { record as recordPerformance } from "./utils/performanceTesting/record.js";
 
 client.on("ready", () => {
     console.log(`Logged in as ${client.user!.tag}!`);
@@ -18,3 +18,5 @@ process.on("uncaughtException", (err) => {
 
 if (config.enableDevelopment) { await client.login(config.developmentToken); }
 else { await client.login(config.token); }
+
+await recordPerformance();

@@ -4,7 +4,7 @@ import singleNotify from "../utils/singleNotify.js";
 import { saveAttachment } from "../reflex/scanners.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import addPlural from "../utils/plurals.js";
-import type { Message } from "discord.js";
+import type { GuildTextBasedChannel, Message } from "discord.js";
 
 export default async function logAttachment(message: Message): Promise<AttachmentLogSchema> {
     if (!message.guild) throw new Error("Tried to log an attachment in a non-guild message");
@@ -31,7 +31,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
         }
     }
     if (attachments.length === 0) return { files: [] };
-    if (client.database.premium.hasPremium(message.guild.id)) {
+    if (await client.database.premium.hasPremium(message.guild.id)) {
         const channel = (await client.database.guilds.read(message.guild.id)).logging.attachments.channel;
         if (!channel) {
             singleNotify(
@@ -52,7 +52,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
             );
             return { files: attachments };
         }
-        const m = await channelObj.send({
+        const m = await (channelObj as GuildTextBasedChannel).send({
             embeds: [
                 new EmojiEmbed()
                     .setTitle(`${addPlural(attachments.length, "Attachment")} Sent`)
@@ -60,8 +60,8 @@ export default async function logAttachment(message: Message): Promise<Attachmen
                         keyValueList({
                             messageId: `\`${message.id}\``,
                             sentBy: renderUser(message.author),
-                            sentIn: renderChannel(message.channel),
-                            sent: renderDelta(new Date(message.createdTimestamp))
+                            sentIn: renderChannel(message.channel as GuildTextBasedChannel),
+                            sent: renderDelta((new Date(message.createdTimestamp)).getTime())
                         }) + `\n[[Jump to message]](${message.url})`
                     )
                     .setEmoji("ICONS.ATTACHMENT")

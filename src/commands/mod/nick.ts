@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember } from "discord.js";
+import type { CommandInteraction, GuildMember } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -8,6 +8,7 @@ import client from "../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("nick")
+    // .setNameLocalizations({"ru": "name", "zh-CN": "nickname"})
     .setDescription("Changes a users nickname")
     .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
     .addStringOption((option) =>
