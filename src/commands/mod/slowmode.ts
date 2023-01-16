@@ -47,45 +47,33 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }) + "Are you sure you want to set the slowmode in this channel?"
         )
         .setColor("Danger")
+        .setFailedMessage("No changes were made", "Danger", "CHANNEL.SLOWMODE.ON")
         .send();
-    if (confirmation.cancelled) return;
-    if (confirmation.success) {
-        try {
-            (interaction.channel as TextChannel).setRateLimitPerUser(time);
-        } catch (e) {
-            await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("CHANNEL.SLOWMODE.OFF")
-                        .setTitle("Slowmode")
-                        .setDescription("Something went wrong while setting the slowmode")
-                        .setStatus("Danger")
-                ],
-                components: []
-            });
-        }
+    if (confirmation.cancelled || !confirmation.success) return;
+    try {
+        (interaction.channel as TextChannel).setRateLimitPerUser(time);
+    } catch (e) {
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
-                    .setEmoji("CHANNEL.SLOWMODE.ON")
+                    .setEmoji("CHANNEL.SLOWMODE.OFF")
                     .setTitle("Slowmode")
-                    .setDescription("The channel slowmode was set successfully")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
-    } else {
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("CHANNEL.SLOWMODE.ON")
-                    .setTitle("Slowmode")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
+                    .setDescription("Something went wrong while setting the slowmode")
+                    .setStatus("Danger")
             ],
             components: []
         });
     }
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji("CHANNEL.SLOWMODE.ON")
+                .setTitle("Slowmode")
+                .setDescription("The channel slowmode was set successfully")
+                .setStatus("Success")
+        ],
+        components: []
+    });
 };
 
 const check = (interaction: CommandInteraction) => {

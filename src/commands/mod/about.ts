@@ -1,4 +1,4 @@
-import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from '../../utils/defaultEmbeds.js';
 import type { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
@@ -22,8 +22,8 @@ import pageIndicator from "../../utils/createPageIndicator.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-        .setName("info")
-        // .setNameLocalizations({"ru": "about", "zh-CN": "history", "zh-TW": "notes", "pt-BR": "flags"})
+        .setName("about")
+        // .setNameLocalizations({"ru": "info", "zh-CN": "history", "zh-TW": "notes", "pt-BR": "flags"})
         .setDescription("Shows moderator information about a user")
         .addUserOption((option) =>
             option.setName("user").setDescription("The user to get information about").setRequired(true)

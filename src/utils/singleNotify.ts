@@ -13,7 +13,8 @@ export default async function (
     type: string,
     guild: string,
     message: string | true,
-    severity: "Critical" | "Warning" | "Info" = "Info"
+    severity: "Critical" | "Warning" | "Info" = "Info",
+    pings?: string[]
 ) {
     const data = await client.database.guilds.read(guild);
     if (data.logging.staff.channel === null) return;
@@ -30,6 +31,11 @@ export default async function (
         const channel = await client.channels.fetch(data.logging.staff.channel);
         if (!channel) return;
         if (!channel.isTextBased()) return;
+        if (pings) {
+            await channel.send({
+                content: pings.map((ping) => `<@${ping}>`).join(" ")
+            });
+        }
         await channel.send({
             embeds: [
                 new EmojiEmbed()

@@ -59,6 +59,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             )
             .setColor("Danger")
             .addReasonButton(reason ?? "")
+            .setFailedMessage("No changes were made", "Success", "PUNISH.BAN.GREEN")
             .send(reason !== null);
         reason = reason ?? "";
         if (confirmation.cancelled) timedOut = true;
@@ -66,116 +67,103 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         else if (confirmation.newReason) reason = confirmation.newReason;
         else if (confirmation.components) notify = confirmation.components["notify"]!.active;
     } while (!timedOut && !chosen)
-    if (timedOut) return;
-    if (confirmation.success) {
-        reason = reason.length ? reason : null
-        let dmSent = false;
-        let dmMessage;
-        const config = await client.database.guilds.read(interaction.guild.id);
-        try {
-            if (notify) {
-                if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
-                const messageData: {
-                    embeds: EmojiEmbed[];
-                    components: ActionRowBuilder<ButtonBuilder>[];
-                } = {
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("PUNISH.BAN.RED")
-                            .setTitle("Banned")
-                            .setDescription(
-                                `You have been banned in ${interaction.guild.name}` +
-                                    (reason ? ` for:\n${reason}` : ".\n*No reason was provided.*")
-                            )
-                            .setStatus("Danger")
-                    ],
-                    components: []
-                };
-                if (config.moderation.ban.text && config.moderation.ban.link) {
-                    messageData.embeds[0]!.setFooter(LinkWarningFooter)
-                    messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
-                            .addComponents(new ButtonBuilder()
-                                .setStyle(ButtonStyle.Link)
-                                .setLabel(config.moderation.ban.text)
-                                .setURL(config.moderation.ban.link)
-                            )
-                    )
-                }
-                dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
-                dmSent = true;
-            }
-        } catch {
-            dmSent = false;
-        }
-        try {
-            const member = interaction.options.getMember("user") as GuildMember;
-            const days: number = interaction.options.get("delete")?.value as number | null ?? 0;
-            member.ban({
-                deleteMessageSeconds: days * 24 * 60 * 60,
-                reason: reason ?? "*No reason provided*"
-            });
-            await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason);
-            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-            const data = {
-                meta: {
-                    type: "memberBan",
-                    displayName: "Member Banned",
-                    calculateType: "guildMemberPunish",
-                    color: NucleusColors.red,
-                    emoji: "PUNISH.BAN.RED",
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    memberId: entry(member.user.id, `\`${member.user.id}\``),
-                    name: entry(member.user.id, renderUser(member.user)),
-                    banned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
-                    bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                    reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
-                    accountCreated: entry(member.user.createdAt.toString(), renderDelta(member.user.createdAt.getTime())),
-                    serverMemberCount: interaction.guild.memberCount
-                },
-                hidden: {
-                    guild: interaction.guild.id
-                }
-            };
-            log(data);
-        } catch {
-            await interaction.editReply({
+    if (timedOut || !confirmation.success) return;
+    reason = reason.length ? reason : null
+    let dmSent = false;
+    let dmMessage;
+    const config = await client.database.guilds.read(interaction.guild.id);
+    try {
+        if (notify) {
+            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
+            const messageData: {
+                embeds: EmojiEmbed[];
+                components: ActionRowBuilder<ButtonBuilder>[];
+            } = {
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("PUNISH.BAN.RED")
-                        .setTitle("Ban")
-                        .setDescription("Something went wrong and the user was not banned")
+                        .setTitle("Banned")
+                        .setDescription(
+                            `You have been banned in ${interaction.guild.name}` +
+                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided.*")
+                        )
                         .setStatus("Danger")
                 ],
                 components: []
-            });
-            if (dmSent && dmMessage) await dmMessage.delete();
-            return;
+            };
+            if (config.moderation.ban.text && config.moderation.ban.link) {
+                messageData.embeds[0]!.setFooter(LinkWarningFooter)
+                messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
+                        .addComponents(new ButtonBuilder()
+                            .setStyle(ButtonStyle.Link)
+                            .setLabel(config.moderation.ban.text)
+                            .setURL(config.moderation.ban.link)
+                        )
+                )
+            }
+            dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
+            dmSent = true;
         }
-        const failed = !dmSent && notify;
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
-                    .setTitle("Ban")
-                    .setDescription("The member was banned" + (failed ? ", but could not be notified" : ""))
-                    .setStatus(failed ? "Warning" : "Success")
-            ],
-            components: []
-        });
-    } else {
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("PUNISH.BAN.GREEN")
-                    .setTitle("Ban")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
+    } catch {
+        dmSent = false;
     }
+    try {
+        const member = interaction.options.getMember("user") as GuildMember;
+        const days: number = interaction.options.get("delete")?.value as number | null ?? 0;
+        member.ban({
+            deleteMessageSeconds: days * 24 * 60 * 60,
+            reason: reason ?? "*No reason provided*"
+        });
+        await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason);
+        const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+        const data = {
+            meta: {
+                type: "memberBan",
+                displayName: "Member Banned",
+                calculateType: "guildMemberPunish",
+                color: NucleusColors.red,
+                emoji: "PUNISH.BAN.RED",
+                timestamp: new Date().getTime()
+            },
+            list: {
+                memberId: entry(member.user.id, `\`${member.user.id}\``),
+                name: entry(member.user.id, renderUser(member.user)),
+                banned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
+                accountCreated: entry(member.user.createdAt.toString(), renderDelta(member.user.createdAt.getTime())),
+                serverMemberCount: interaction.guild.memberCount
+            },
+            hidden: {
+                guild: interaction.guild.id
+            }
+        };
+        log(data);
+    } catch {
+        await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("PUNISH.BAN.RED")
+                    .setTitle("Ban")
+                    .setDescription("Something went wrong and the user was not banned")
+                    .setStatus("Danger")
+            ],
+            components: []
+        });
+        if (dmSent && dmMessage) await dmMessage.delete();
+        return;
+    }
+    const failed = !dmSent && notify;
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
+                .setTitle("Ban")
+                .setDescription("The member was banned" + (failed ? ", but could not be notified" : ""))
+                .setStatus(failed ? "Warning" : "Success")
+        ],
+        components: []
+    });
 };
 
 const check = async (interaction: CommandInteraction) => {

@@ -240,170 +240,158 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 })
             )
             .setColor("Danger")
+            .setFailedMessage("No changes were made", "Success", "CHANNEL.PURGE.GREEN")
             .send();
-        if (confirmation.cancelled) return;
-        if (confirmation.success) {
-            let messages;
-            try {
-                if (!user) {
-                    const toDelete = await (interaction.channel as TextChannel).messages.fetch({
-                        limit: interaction.options.get("amount")?.value as number
-                    });
-                    messages = await (channel as TextChannel).bulkDelete(toDelete, true);
-                } else {
-                    const toDelete = (
-                        await (
-                            await (interaction.channel as TextChannel).messages.fetch({
-                                limit: 100
-                            })
-                        ).filter((m) => m.author.id === user.id)
-                    ).first(interaction.options.get("amount")?.value as number);
-                    messages = await (channel as TextChannel).bulkDelete(toDelete, true);
-                }
-            } catch (e) {
-                await interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("CHANNEL.PURGE.RED")
-                            .setTitle("Purge")
-                            .setDescription("Something went wrong and no messages were deleted")
-                            .setStatus("Danger")
-                    ],
-                    components: []
+        if (confirmation.cancelled || !confirmation.success) return;
+        let messages;
+        try {
+            if (!user) {
+                const toDelete = await (interaction.channel as TextChannel).messages.fetch({
+                    limit: interaction.options.get("amount")?.value as number
                 });
+                messages = await (channel as TextChannel).bulkDelete(toDelete, true);
+            } else {
+                const toDelete = (
+                    await (
+                        await (interaction.channel as TextChannel).messages.fetch({
+                            limit: 100
+                        })
+                    ).filter((m) => m.author.id === user.id)
+                ).first(interaction.options.get("amount")?.value as number);
+                messages = await (channel as TextChannel).bulkDelete(toDelete, true);
             }
-            if (!messages) {
-                await interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("CHANNEL.PURGE.RED")
-                            .setTitle("Purge")
-                            .setDescription("No messages could be deleted")
-                            .setStatus("Danger")
-                    ],
-                    components: []
-                });
-                return;
-            }
-            if (user) {
-                await client.database.history.create(
-                    "purge",
-                    interaction.guild.id,
-                    user.user,
-                    interaction.user,
-                    (interaction.options.get("reason")?.value as (string | null)) ?? "*No reason provided*",
-                    null,
-                    null,
-                    messages.size.toString()
-                );
-            }
-            const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
-            const data = {
-                meta: {
-                    type: "channelPurge",
-                    displayName: "Channel Purged",
-                    calculateType: "messageDelete",
-                    color: NucleusColors.red,
-                    emoji: "PUNISH.BAN.RED",
-                    timestamp: new Date().getTime()
-                },
-                list: {
-                    memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
-                    purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                    channel: entry(interaction.channel!.id, renderChannel(interaction.channel! as GuildChannel)),
-                    messagesCleared: entry(messages.size.toString(), messages.size.toString())
-                },
-                hidden: {
-                    guild: interaction.guild.id
-                }
-            };
-            log(data);
-            let out = "";
-            messages.reverse().forEach((message) => {
-                if (!message) {
-                    out += "Unknown message\n\n"
-                } else {
-                    const author = message.author ?? { username: "Unknown", discriminator: "0000", id: "Unknown" };
-                    out += `${author.username}#${author.discriminator} (${author.id}) [${new Date(
-                        message.createdTimestamp
-                    ).toISOString()}]\n`;
-                    if (message.content) {
-                        const lines = message.content.split("\n");
-                        lines.forEach((line) => {
-                            out += `> ${line}\n`;
-                        });
-                    }
-                    if (message.attachments.size > 0) {
-                        message.attachments.forEach((attachment) => {
-                            out += `Attachment > ${attachment.url}\n`;
-                        });
-                    }
-                    out += "\n\n";
-                }
+        } catch (e) {
+            await interaction.editReply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setEmoji("CHANNEL.PURGE.RED")
+                        .setTitle("Purge")
+                        .setDescription("Something went wrong and no messages were deleted")
+                        .setStatus("Danger")
+                ],
+                components: []
             });
-            const attachmentObject = {
-                attachment: Buffer.from(out),
-                name: `purge-${channel.id}-${Date.now()}.txt`,
-                description: "Purge log"
-            };
-            const m = (await interaction.editReply({
+        }
+        if (!messages) {
+            await interaction.editReply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setEmoji("CHANNEL.PURGE.RED")
+                        .setTitle("Purge")
+                        .setDescription("No messages could be deleted")
+                        .setStatus("Danger")
+                ],
+                components: []
+            });
+            return;
+        }
+        if (user) {
+            await client.database.history.create(
+                "purge",
+                interaction.guild.id,
+                user.user,
+                interaction.user,
+                (interaction.options.get("reason")?.value as (string | null)) ?? "*No reason provided*",
+                null,
+                null,
+                messages.size.toString()
+            );
+        }
+        const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
+        const data = {
+            meta: {
+                type: "channelPurge",
+                displayName: "Channel Purged",
+                calculateType: "messageDelete",
+                color: NucleusColors.red,
+                emoji: "PUNISH.BAN.RED",
+                timestamp: new Date().getTime()
+            },
+            list: {
+                memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
+                purgedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                channel: entry(interaction.channel!.id, renderChannel(interaction.channel! as GuildChannel)),
+                messagesCleared: entry(messages.size.toString(), messages.size.toString())
+            },
+            hidden: {
+                guild: interaction.guild.id
+            }
+        };
+        log(data);
+        let out = "";
+        messages.reverse().forEach((message) => {
+            if (!message) {
+                out += "Unknown message\n\n"
+            } else {
+                const author = message.author ?? { username: "Unknown", discriminator: "0000", id: "Unknown" };
+                out += `${author.username}#${author.discriminator} (${author.id}) [${new Date(
+                    message.createdTimestamp
+                ).toISOString()}]\n`;
+                if (message.content) {
+                    const lines = message.content.split("\n");
+                    lines.forEach((line) => {
+                        out += `> ${line}\n`;
+                    });
+                }
+                if (message.attachments.size > 0) {
+                    message.attachments.forEach((attachment) => {
+                        out += `Attachment > ${attachment.url}\n`;
+                    });
+                }
+                out += "\n\n";
+            }
+        });
+        const attachmentObject = {
+            attachment: Buffer.from(out),
+            name: `purge-${channel.id}-${Date.now()}.txt`,
+            description: "Purge log"
+        };
+        const m = (await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("CHANNEL.PURGE.GREEN")
+                    .setTitle("Purge")
+                    .setDescription("Messages cleared")
+                    .setStatus("Success")
+            ],
+            components: [
+                new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
+                    new Discord.ButtonBuilder()
+                        .setCustomId("download")
+                        .setLabel("Download transcript")
+                        .setStyle(ButtonStyle.Success)
+                        .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
+                ])
+            ]
+        })) as Discord.Message;
+        let component;
+        try {
+            component = await m.awaitMessageComponent({
+                filter: (m) => m.user.id === interaction.user.id,
+                time: 300000
+            });
+        } catch {
+            return;
+        }
+        if (component.customId === "download") {
+            interaction.editReply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setEmoji("CHANNEL.PURGE.GREEN")
+                        .setTitle("Purge")
+                        .setDescription("Transcript uploaded above")
+                        .setStatus("Success")
+                ],
+                components: [],
+                files: [attachmentObject]
+            });
+        } else {
+            interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.PURGE.GREEN")
                         .setTitle("Purge")
                         .setDescription("Messages cleared")
-                        .setStatus("Success")
-                ],
-                components: [
-                    new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
-                        new Discord.ButtonBuilder()
-                            .setCustomId("download")
-                            .setLabel("Download transcript")
-                            .setStyle(ButtonStyle.Success)
-                            .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
-                    ])
-                ]
-            })) as Discord.Message;
-            let component;
-            try {
-                component = await m.awaitMessageComponent({
-                    filter: (m) => m.user.id === interaction.user.id,
-                    time: 300000
-                });
-            } catch {
-                return;
-            }
-            if (component.customId === "download") {
-                interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("CHANNEL.PURGE.GREEN")
-                            .setTitle("Purge")
-                            .setDescription("Transcript uploaded above")
-                            .setStatus("Success")
-                    ],
-                    components: [],
-                    files: [attachmentObject]
-                });
-            } else {
-                interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("CHANNEL.PURGE.GREEN")
-                            .setTitle("Purge")
-                            .setDescription("Messages cleared")
-                            .setStatus("Success")
-                    ],
-                    components: []
-                });
-            }
-        } else {
-            await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("CHANNEL.PURGE.GREEN")
-                        .setTitle("Purge")
-                        .setDescription("No changes were made")
                         .setStatus("Success")
                 ],
                 components: []

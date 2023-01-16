@@ -30,7 +30,9 @@ class confirmationMessage {
     title = "";
     emoji = "";
     redEmoji: string | null = null;
-    timeoutText: string | null = null;
+    failedMessage: string | null = null;
+    failedEmoji: string | null = null;
+    failedStatus: "Success" | "Danger" | "Warning" | null = null;
     description = "";
     color: "Danger" | "Warning" | "Success" = "Success";
     customButtons: Record<string, CustomBoolean<unknown>> = {};
@@ -45,14 +47,13 @@ class confirmationMessage {
         this.title = title;
         return this;
     }
-    setEmoji(emoji: string, redEmoji?: string) {
+    setEmoji(emoji: string) {
         this.emoji = emoji;
-        if (redEmoji) this.redEmoji = redEmoji; // TODO: go through all confirmation messages and change them to use this, and not do their own edits
         return this;
     }
     setDescription(description: string, timedOut?: string) {
         this.description = description;
-        if (timedOut) this.timeoutText = timedOut; // TODO also this
+        if (timedOut) this.failedMessage = timedOut;
         return this;
     }
     setColor(color: "Danger" | "Warning" | "Success") {
@@ -61,6 +62,12 @@ class confirmationMessage {
     }
     setInverted(inverted: boolean) {
         this.inverted = inverted;
+        return this;
+    }
+    setFailedMessage(text: string, failedStatus: "Success" | "Danger" | "Warning" | null, failedEmoji: string | null = null) {
+        this.failedMessage = text;
+        this.failedStatus = failedStatus;
+        this.failedEmoji = failedEmoji;
         return this;
     }
     addCustomBoolean(
@@ -243,8 +250,7 @@ class confirmationMessage {
                     out = await modalInteractionCollector(
                         m,
                         (m: Interaction) =>
-                            (m as MessageComponentInteraction | ModalSubmitInteraction).channelId ===
-                            this.interaction.channelId,
+                            (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === this.interaction.channelId,
                         (m) => m.customId === "reason"
                     );
                 } catch (e) {
@@ -277,6 +283,17 @@ class confirmationMessage {
             await this.timeoutError()
             returnValue.cancelled = true;
         }
+        if (success == false) {
+            await this.interaction.editReply({
+                embeds: [new EmojiEmbed()
+                    .setTitle(this.title)
+                    .setDescription(this.failedMessage ?? "")
+                    .setStatus(this.failedStatus ?? "Danger")
+                    .setEmoji(this.failedEmoji ?? this.redEmoji ?? this.emoji)
+                ], components: []
+            });
+            return {success: false}
+        }
         if (newReason) returnValue.newReason = newReason;
 
         const typedReturnValue = returnValue as {cancelled: true} |
@@ -294,10 +311,10 @@ class confirmationMessage {
                     .setTitle(this.title)
                     .setDescription("We closed this message because it was not used for a while.")
                     .setStatus("Danger")
-                    .setEmoji(this.redEmoji ?? this.emoji)
+                    .setEmoji("CONTROL.BLOCKCROSS")
             ],
             components: []
-    })
+        })
     }
 }
 

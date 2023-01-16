@@ -47,6 +47,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 notify
             )
             .addReasonButton(reason ?? "")
+            .setFailedMessage("No changes were made", "Success", "PUNISH.KICK.GREEN")
             .send(reason !== null);
         reason = reason ?? "";
         if (confirmation.cancelled) timedOut = true;
@@ -56,20 +57,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             notify = confirmation.components["notify"]!.active;
         }
     } while (!timedOut && !success)
-    if (timedOut) return;
-    if (!confirmation.success) {
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("PUNISH.KICK.GREEN")
-                    .setTitle("Kick")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
-        return;
-    }
+    if (timedOut || !confirmation.success) return;
     let dmSent = false;
     let dmMessage;
     const config = await client.database.guilds.read(interaction.guild.id);

@@ -169,22 +169,22 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
+    const me = interaction.guild!.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size ? apply.roles.highest.position : 0;
+    if (!interaction.guild) return false;
     // Do not allow any changing of the owner
     if (member.id === interaction.guild.ownerId) throw new Error("You cannot change the owner's nickname");
     // Check if Nucleus can change the nickname
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to change the nickname
-    if (!me.permissions.has("MANAGE_NICKNAMES")) throw new Error("I do not have the *Manage Nicknames* permission");
+    if (!me.permissions.has("ManageNicknames")) throw new Error("I do not have the *Manage Nicknames* permission");
     // Allow the owner to change anyone's nickname
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_nicknames permission
-    if (!member.permissions.has("MANAGE_NICKNAMES"))
+    if (!member.permissions.has("ManageNicknames"))
         throw new Error("You do not have the *Manage Nicknames* permission");
     // Allow changing your own nickname
     if (member === apply) return true;

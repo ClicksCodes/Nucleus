@@ -1,9 +1,11 @@
-import type { CommandInteraction } from "discord.js";
-import type Discord from "discord.js";
+import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { ButtonStyle, CommandInteraction } from "discord.js";
+import Discord from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
+import getEmojiByName from '../../utils/getEmojiByName.js';
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -17,6 +19,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     await interaction.guild?.members.fetch(interaction.member!.user.id)
     const { renderUser } = client.logger;
     const suggestion = interaction.options.get("suggestion")?.value as string;
+    await interaction.reply({embeds: LoadingEmbed, ephemeral: true})
     const confirmation = await new confirmationMessage(interaction)
         .setEmoji("ICONS.OPP.ADD")
         .setTitle("Suggest")
@@ -26,7 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         )
         .setColor("Danger")
         .setInverted(true)
-        .send();
+        .send(true);
     if (confirmation.cancelled) return;
     if (confirmation.success) {
         await (client.channels.cache.get("955161206459600976") as Discord.TextChannel).send({
@@ -34,11 +37,22 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Suggestion")
                     .setDescription(
-                        `**From:** ${renderUser(interaction.member!.user as Discord.User)}\n**Suggestion:**\n> ${suggestion}`
+                        `**From:** ${renderUser(interaction.member!.user as Discord.User)}\n**Suggestion:**\n> ${suggestion}\n\n` +
+                        `**Server:** ${interaction.guild!.name} (${interaction.guild!.id})\n`,
                     )
-                    .setStatus("Danger")
-                    .setEmoji("NUCLEUS.LOGO")
-            ]
+                    .setStatus("Warning")
+            ], components: [new Discord.ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                new Discord.ButtonBuilder()
+                    .setCustomId("suggestionAccept")
+                    .setLabel("Accept")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji(getEmojiByName("ICONS.ADD", "id")),
+                new Discord.ButtonBuilder()
+                    .setCustomId("suggestionDeny")
+                    .setLabel("Delete")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji(getEmojiByName("ICONS.REMOVE", "id"))
+            )]
         });
         await interaction.editReply({
             embeds: [

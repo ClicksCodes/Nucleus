@@ -1,7 +1,9 @@
 import client from "../client.js";
-import { resourceUsage } from "process";
-import { spawn } from "child_process";
+import * as CP from 'child_process';
+import * as process from 'process';
+import systeminformation from "systeminformation";
 import config from "../../config/main.json" assert { type: "json" };
+import singleNotify from "../singleNotify.js";
 
 
 const discordPing = () => {
@@ -18,17 +20,11 @@ const databaseReadTime = async () => {
     return end - start;
 }
 
-const resources = () => {
-    const current = resourceUsage();
-    const temperatureRaw = spawn("acpi", ["-t"])
-    let temperatureData: number = 0;
-    temperatureRaw.stdout.on("data", (data) => {
-        return temperatureData = data.toString().split(", ")[1].split(" ")[0];  // °C
-    })
+const resources = async () => {
     return {
-        memory: current.sharedMemorySize,
-        cpu: current.userCPUTime + current.systemCPUTime,
-        temperature: temperatureData
+        memory: process.memoryUsage().rss / 1024 / 1024,
+        cpu: parseFloat(CP.execSync(`ps -p ${process.pid} -o %cpu=`).toString().trim()),
+        temperature: (await systeminformation.cpuTemperature()).main
     }
 }
 
@@ -36,12 +32,24 @@ const record = async () => {
     const results = {
         discord: discordPing(),
         databaseRead: await databaseReadTime(),
-        resources: resources()
+        resources: await resources()
+    };
+    if (results.discord > 1000 || results.databaseRead > 500 || results.resources.cpu > 100) {
+        singleNotify(
+            "performanceTest",
+            config.developmentGuildID,
+            `Discord ping time: \`${results.discord}ms\`\nDatabase read time: \`${results.databaseRead}ms\`\nCPU usage: \`${results.resources.cpu}%\`\nMemory usage: \`${results.resources.memory}MB\`\nCPU temperature: \`${results.resources.temperature}°C\``,
+            "Critical",
+            config.owners
+        )
+    } else {
+        singleNotify("performanceTest", config.developmentGuildID, true)
     }
+
     client.database.performanceTest.record(results)
-    setInterval(async () => {
-        record();
-    }, 10 * 1000);
+    setTimeout(async () => {
+        await record();
+    }, 60 * 1000);
 }
 
 export { record };
