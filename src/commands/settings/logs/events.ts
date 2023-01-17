@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../../../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../../../utils/defaults.js";
 import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
@@ -75,7 +75,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         })) as Message;
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
@@ -105,8 +108,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("MANAGE_GUILD"))
-        throw new Error("You must have the *Manage Server* permission to use this command");
+    if (!member.permissions.has("ManageGuild"))
+        return "You must have the *Manage Server* permission to use this command";
     return true;
 };
 

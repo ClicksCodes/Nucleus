@@ -43,6 +43,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 notify
             )
             .addReasonButton(reason ?? "")
+            .setFailedMessage("No changes were made", "Success", "PUNISH.MUTE.GREEN")
             .send(reason !== null);
         if (confirmation.cancelled) timedOut = true;
         else if (confirmation.success !== undefined) success = true;
@@ -51,96 +52,83 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             notify = confirmation.components!["notify"]!.active;
         }
     } while (!timedOut && !success);
-    if (confirmation.cancelled) return;
-    if (confirmation.success) {
-        let dmSent = false;
-        let dmMessage;
-        try {
-            if (notify) {
-                dmMessage = await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("PUNISH.MUTE.GREEN")
-                            .setTitle("Unmuted")
-                            .setDescription(
-                                `You have been unmuted in ${interaction.guild.name}` +
-                                    (reason ? ` for:\n> ${reason}` : " with no reason provided.")
-                            )
-                            .setStatus("Success")
-                    ]
-                });
-                dmSent = true;
-            }
-        } catch {
-            dmSent = false;
-        }
-        const member = interaction.options.getMember("user") as GuildMember;
-        try {
-            member.timeout(0, reason ?? "*No reason provided*");
-        } catch {
-            await interaction.editReply({
+    if (confirmation.cancelled || !confirmation.success) return;
+    let dmSent = false;
+    let dmMessage;
+    try {
+        if (notify) {
+            dmMessage = await (interaction.options.getMember("user") as GuildMember).send({
                 embeds: [
                     new EmojiEmbed()
-                        .setEmoji("PUNISH.MUTE.RED")
-                        .setTitle("Unmute")
-                        .setDescription("Something went wrong and the user was not unmuted")
-                        .setStatus("Danger")
-                ],
-                components: []
+                        .setEmoji("PUNISH.MUTE.GREEN")
+                        .setTitle("Unmuted")
+                        .setDescription(
+                            `You have been unmuted in ${interaction.guild.name}` +
+                                (reason ? ` for:\n> ${reason}` : " with no reason provided.")
+                        )
+                        .setStatus("Success")
+                ]
             });
-            if (dmSent && dmMessage) await dmMessage.delete();
-            return;
+            dmSent = true;
         }
-        await client.database.history.create(
-            "unmute",
-            interaction.guild.id,
-            (interaction.options.getMember("user") as GuildMember).user,
-            interaction.user,
-            reason
-        );
-        const data = {
-            meta: {
-                type: "memberUnmute",
-                displayName: "Unmuted",
-                calculateType: "guildMemberPunish",
-                color: NucleusColors.green,
-                emoji: "PUNISH.MUTE.GREEN",
-                timestamp: new Date().getTime()
-            },
-            list: {
-                memberId: entry(member.user.id, `\`${member.user.id}\``),
-                name: entry(member.user.id, renderUser(member.user)),
-                unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
-                unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
-            },
-            hidden: {
-                guild: interaction.guild.id
-            }
-        };
-        log(data);
-        const failed = !dmSent && notify;
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
-                    .setTitle("Unmute")
-                    .setDescription("The member was unmuted" + (failed ? ", but could not be notified" : ""))
-                    .setStatus(failed ? "Warning" : "Success")
-            ],
-            components: []
-        });
-    } else {
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("PUNISH.MUTE.GREEN")
-                    .setTitle("Unmute")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
+    } catch {
+        dmSent = false;
     }
+    const member = interaction.options.getMember("user") as GuildMember;
+    try {
+        member.timeout(0, reason ?? "*No reason provided*");
+    } catch {
+        await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("PUNISH.MUTE.RED")
+                    .setTitle("Unmute")
+                    .setDescription("Something went wrong and the user was not unmuted")
+                    .setStatus("Danger")
+            ],
+            components: []
+        });
+        if (dmSent && dmMessage) await dmMessage.delete();
+        return;
+    }
+    await client.database.history.create(
+        "unmute",
+        interaction.guild.id,
+        (interaction.options.getMember("user") as GuildMember).user,
+        interaction.user,
+        reason
+    );
+    const data = {
+        meta: {
+            type: "memberUnmute",
+            displayName: "Unmuted",
+            calculateType: "guildMemberPunish",
+            color: NucleusColors.green,
+            emoji: "PUNISH.MUTE.GREEN",
+            timestamp: new Date().getTime()
+        },
+        list: {
+            memberId: entry(member.user.id, `\`${member.user.id}\``),
+            name: entry(member.user.id, renderUser(member.user)),
+            unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+            unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
+        },
+        hidden: {
+            guild: interaction.guild.id
+        }
+    };
+    log(data);
+    const failed = !dmSent && notify;
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
+                .setTitle("Unmute")
+                .setDescription("The member was unmuted" + (failed ? ", but could not be notified" : ""))
+                .setStatus(failed ? "Warning" : "Success")
+        ],
+        components: []
+    });
 };
 
 const check = (interaction: CommandInteraction) => {
@@ -152,18 +140,18 @@ const check = (interaction: CommandInteraction) => {
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     // Do not allow unmuting the owner
-    if (member.id === interaction.guild.ownerId) throw new Error("You cannot unmute the owner of the server");
+    if (member.id === interaction.guild.ownerId) return "You cannot unmute the owner of the server";
     // Check if Nucleus can unmute the member
-    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
+    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
     // Check if Nucleus has permission to unmute
-    if (!me.permissions.has("ModerateMembers")) throw new Error("I do not have the *Moderate Members* permission");
+    if (!me.permissions.has("ModerateMembers")) return "I do not have the *Moderate Members* permission";
     // Allow the owner to unmute anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     if (!member.permissions.has("ModerateMembers"))
-        throw new Error("You do not have the *Moderate Members* permission");
+        return "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
+    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
     // Allow unmute
     return true;
 };

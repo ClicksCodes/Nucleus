@@ -113,7 +113,10 @@ export default async function (interaction: CommandInteraction | MessageComponen
     }
     let i;
     try {
-        i = await m.awaitMessageComponent({ time: 300000 });
+        i = await m.awaitMessageComponent({
+            time: 300000,
+            filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+        });
         i.deferUpdate();
     } catch {
         return;

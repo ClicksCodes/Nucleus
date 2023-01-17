@@ -29,6 +29,7 @@ const resources = async () => {
 }
 
 const record = async () => {
+    if (config.enableDevelopment) return;
     const results = {
         discord: discordPing(),
         databaseRead: await databaseReadTime(),

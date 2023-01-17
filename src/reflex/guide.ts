@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../utils/defaults.js";
 import Discord, {
     ActionRowBuilder,
     ButtonBuilder,
@@ -225,7 +225,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
     }
     let page = 0;
 
-    const f = async (component: MessageComponentInteraction) => {
+    const publicFilter = async (component: MessageComponentInteraction) => {
         return (component.member as Discord.GuildMember).permissions.has("MANAGE_GUILD");
     };
 
@@ -293,10 +293,8 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
         try {
             i = await m.awaitMessageComponent({
                 filter: interaction
-                    ? () => {
-                          return true;
-                      }
-                    : f,
+                    ? (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                    : publicFilter,
                 time: 300000
             });
         } catch (e) {

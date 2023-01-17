@@ -1,10 +1,13 @@
+import { LoadingEmbed } from './../../utils/defaults.js';
 import Discord, {
     CommandInteraction,
     GuildMember,
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
-    NonThreadGuildBasedChannel
+    NonThreadGuildBasedChannel,
+    StringSelectMenuOptionBuilder,
+    StringSelectMenuBuilder
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import type { GuildBasedChannel } from "discord.js";
@@ -26,183 +29,155 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             "null": channel[]
         }
     */
+    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
 
-    const channels: Record<string, GuildBasedChannel[]> = {"": [] as GuildBasedChannel[]};
+    let channels: Record<string, GuildBasedChannel[]> = {"": []};
 
-    interaction.guild!.channels.fetch().then(channelCollection => {
-        channelCollection.forEach(channel => {
-            if (!channel) return; // if no channel
-            if (channel.type === Discord.ChannelType.GuildCategory) {
-                if(!channels[channel!.id]) channels[channel!.id] = [channel];
-            } else if (channel.parent) {
-                if (!channels[channel.parent.id]) channels[channel.parent.id] = [channel];
-                else (channels[channel.parent.id as string])!.push(channel);
-            } else {
-                channels[""]!.push(channel);
-            }
-        });
+    const channelCollection = await interaction.guild!.channels.fetch();
+
+    channelCollection.forEach(channel => {
+        if (!channel) return; // if no channel
+        if (channel.type === Discord.ChannelType.GuildCategory) {
+            if(!channels[channel!.id]) channels[channel!.id] = [];
+        } else if (channel.parent) {
+            if (!channels[channel.parent.id]) channels[channel.parent.id] = [channel];
+            else (channels[channel.parent.id as string])!.push(channel);
+        } else {
+            channels[""]!.push(channel);
+        }
     });
 
     const member = interaction.options.getMember("member") as Discord.GuildMember;
     const autoSortBelow = [Discord.ChannelType.GuildVoice, Discord.ChannelType.GuildStageVoice];
-    // for each category, sort its channels. This should be based on the order of the channels, with voice and stage channels sorted below text
-    channels = Object.values(channels).map((c) => {
-        return c.sort((a: GuildBasedChannel, b: GuildBasedChannel) => {
-            if (a.type === Discord.ChannelType.PrivateThread || b.type === Discord.ChannelType.PrivateThread)
-            if (autoSortBelow.includes(a.type) && autoSortBelow.includes(b.type)) return a.position ?? 0 - b.position ;
+
+    for (const category in channels) {
+        channels[category] = channels[category]!.sort((a: GuildBasedChannel, b: GuildBasedChannel) => {
+            const disallowedTypes = [Discord.ChannelType.PublicThread, Discord.ChannelType.PrivateThread, Discord.ChannelType.AnnouncementThread];
+            if (disallowedTypes.includes(a.type) || disallowedTypes.includes(b.type)) return 0;
+            a = a as NonThreadGuildBasedChannel;
+            b = b as NonThreadGuildBasedChannel;
+            if (autoSortBelow.includes(a.type) && autoSortBelow.includes(b.type)) return a.position - b.position;
             if (autoSortBelow.includes(a.type)) return 1;
             if (autoSortBelow.includes(b.type)) return -1;
-            return a - b;
+            return a.position - b.position;
         });
     }
-    
+    for (const category in channels) {
+        channels[category] = channels[category]!.filter((c) => {
+            return c.permissionsFor(member).has("ViewChannel");
+        });
+    }
+    for (const category in channels) {
+        channels[category] = channels[category]!.filter((c) => {
+            return !(c.type === Discord.ChannelType.PublicThread || c.type === Discord.ChannelType.PrivateThread || c.type === Discord.ChannelType.AnnouncementThread)
+        });
+    }
+    channels = Object.fromEntries(Object.entries(channels).filter(([_, v]) => v.length > 0));
+    let page = 0;
+    let closed = false;
+    const categoryIDs = Object.keys(channels);
+    const categoryNames = Object.values(channels).map((c) => {
+        return c[0]!.parent?.name ?? "Uncategorised";
+    });
+    // Split the category names into the first and last 25, ignoring the last 25 if there are 25 or less
+    const first25 = categoryNames.slice(0, 25);
+    const last25 = categoryNames.slice(25);
+    const categoryNames25: string[][] = [first25];
+    if (last25.length > 0) categoryNames25.push(last25);
 
-    //OLD CODE START
-    // const unprocessedChannels: GuildBasedChannel[] = [];
-    // let m;
-    // interaction.guild!.channels.cache.forEach((channel) => {
-    //     if (!channel.parent && channel.type !== Discord.ChannelType.GuildCategory) unprocessedChannels.push(channel);
-    // });
-    // let channels: GuildBasedChannel[][] = [unprocessedChannels];
-    // channels = channels.concat(
-    //     interaction.guild!.channels.cache
-    //         .filter((c) => c.type === Discord.ChannelType.GuildCategory)
-    //         .map((c) => (c as CategoryChannel).children.map((c) => c))
-    // );
-    // const autoSortBelow = ["GUILD_VOICE", "GUILD_STAGE_VOICE"];
-    // channels = channels.map((c) =>
-    //     c.sort((a, b) => {
-    //         if (autoSortBelow.includes(a.type) && autoSortBelow.includes(b.type)) return a.position - b.position;
-    //         if (autoSortBelow.includes(a.type)) return 1;
-    //         if (autoSortBelow.includes(b.type)) return -1;
-    //         return a.position - b.position;
-    //     })
-    // );
-    // // Sort all arrays by the position of the first channels parent position
-    // channels = channels.sort((a, b) => {
-    //     if (!a[0].parent) return -1;
-    //     if (!b[0].parent) return 1;
-    //     return a[0].parent.position - b[0].parent.position;
-    // });
-    // const member = interaction.options.getMember("member") as Discord.GuildMember;
-    // m = await interaction.reply({
-    //     embeds: [
-    //         new EmojiEmbed()
-    //             .setEmoji("MEMBER.JOIN")
-    //             .setTitle("Viewing as " + member.displayName)
-    //             .setStatus("Success")
-    //     ],
-    //     ephemeral: true,
-    //     fetchReply: true
-    // });
-    // let page = 0;
-    // let timedOut = false;
-    // while (!timedOut) {
-    //     m = await interaction.editReply({
-    //         embeds: [
-    //             new EmojiEmbed()
-    //                 .setEmoji("MEMBER.JOIN")
-    //                 .setTitle("Viewing as " + member.displayName)
-    //                 .setStatus("Success")
-    //                 .setDescription(
-    //                     `**${channels[page][0].parent ? channels[page][0].parent.name : "Uncategorised"}**` +
-    //                         "\n" +
-    //                         channels[page]
-    //                             .map((c) => {
-    //                                 let channelType = c.type;
-    //                                 if (interaction.guild.rulesChannelId === c.id) channelType = "RULES";
-    //                                 else if ("nsfw" in c && c.nsfw) channelType += "_NSFW";
-    //                                 return c.permissionsFor(member).has("VIEW_CHANNEL")
-    //                                     ? `${getEmojiByName("ICONS.CHANNEL." + channelType)} ${c.name}\n` +
-    //                                           (() => {
-    //                                               if ("threads" in c && c.threads.cache.size > 0) {
-    //                                                   return (
-    //                                                       c.threads.cache
-    //                                                           .map(
-    //                                                               (t) =>
-    //                                                                   ` ${
-    //                                                                       getEmojiByName("ICONS.CHANNEL.THREAD_PIPE") +
-    //                                                                       " " +
-    //                                                                       getEmojiByName("ICONS.CHANNEL.THREAD_CHANNEL")
-    //                                                                   } ${t.name}`
-    //                                                           )
-    //                                                           .join("\n") + "\n"
-    //                                                   );
-    //                                               }
-    //                                               return "";
-    //                                           })()
-    //                                     : "";
-    //                             })
-    //                             .join("") +
-    //                         "\n" +
-    //                         pageIndicator(channels.length, page)
-    //                 )
-    //         ],
-    //         components: [
-    //             new ActionRowBuilder().addComponents([
-    //                 new SelectMenuBuilder()
-    //                     .setOptions(
-    //                         channels.map((c, index) => ({
-    //                             label: c[0].parent ? c[0].parent.name : "Uncategorised",
-    //                             value: index.toString(),
-    //                             default: page === index
-    //                         }))
-    //                     )
-    //                     .setCustomId("select")
-    //                     .setMaxValues(1)
-    //                     .setMinValues(1)
-    //                     .setPlaceholder("Select a category")
-    //             ]),
-    //             new ActionRowBuilder().addComponents([
-    //                 new ButtonBuilder()
-    //                     .setLabel(
-    //                         page === 0
-    //                             ? ""
-    //                             : channels[page - 1][0].parent
-    //                             ? channels[page - 1][0].parent.name
-    //                             : "Uncategorised"
-    //                     )
-    //                     .setDisabled(page === 0)
-    //                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-    //                     .setStyle(ButtonStyle.Primary)
-    //                     .setCustomId("previous"),
-    //                 new ButtonBuilder()
-    //                     .setLabel(
-    //                         page === channels.length - 1
-    //                             ? ""
-    //                             : channels[page + 1][0].parent
-    //                             ? channels[page + 1][0].parent.name
-    //                             : "Uncategorised"
-    //                     )
-    //                     .setDisabled(page === channels.length - 1)
-    //                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-    //                     .setStyle(ButtonStyle.Primary)
-    //                     .setCustomId("next")
-    //             ])
-    //         ]
-    //     });
-    //     let i;
-    //     try {
-    //         i = await m.awaitMessageComponent({ time: 300000 });
-    //     } catch (e) {
-    //         timedOut = true;
-    //         continue;
-    //     }
-    //     i.deferUpdate();
-    //     if (i.customId === "next") {
-    //         page++;
-    //     } else if (i.customId === "previous") {
-    //         page--;
-    //     } else if (i.customId === "select") {
-    //         page = parseInt(i.values[0]);
-    //     }
-    // }
-    
+    const channelTypeEmoji: Record<number, string> = {
+        0: "GUILD_TEXT",  // Text channel
+        2: "GUILD_VOICE",  // Voice channel
+        5: "GUILD_NEWS",  // Announcement channel
+        13: "GUILD_STAGE_VOICE",  // Stage channel
+        15: "FORUM",  // Forum channel
+        99: "RULES"  // Rules channel
+    };
+    const NSFWAvailable: number[] = [0, 2, 5, 13];
+    const rulesChannel = interaction.guild!.rulesChannel?.id;
+
+    async function nameFromChannel(channel: GuildBasedChannel): Promise<string> {
+        let channelType = channel.type;
+        if (channelType === Discord.ChannelType.GuildCategory) return "";
+        if (channel.id === rulesChannel) channelType = 99
+        let threads: Discord.ThreadChannel[] = [];
+        if ("threads" in channel) {
+            threads = channel.threads.cache.toJSON().map((t) => t as Discord.ThreadChannel);
+        }
+        const nsfw = ("nsfw" in channel ? channel.nsfw : false) && NSFWAvailable.includes(channelType)
+        const emojiName = channelTypeEmoji[channelType] + (nsfw ? "_NSFW" : "");
+        const emoji = getEmojiByName("ICONS.CHANNEL." + (threads.length ? "THREAD_CHANNEL" : emojiName));
+        let current = `${emoji} ${channel.name}`;
+        if (threads.length) {
+            for (const thread of threads) {
+                current += `\n${getEmojiByName("ICONS.CHANNEL.THREAD_PIPE")} ${thread.name}`;
+            }
+        }
+        return current;
+    }
+
+    while (!closed) {
+        const category = categoryIDs[page]!;
+        let description = "";
+        for (const channel of channels[category]!) {
+            description += `${await nameFromChannel(channel)}\n`;
+        }
+
+        const parsedCategorySelectMenu: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] = categoryNames25.map(
+            (categories, set) => { return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(new StringSelectMenuBuilder()
+                .setCustomId("category")
+                .setMinValues(1)
+                .setMaxValues(1)
+                .setOptions(categories.map((c, i) => {
+                    return new StringSelectMenuOptionBuilder()
+                        .setLabel(c)
+                        .setValue((set * 25 + i).toString())
+                        // @ts-expect-error
+                        .setEmoji(getEmojiByName("ICONS.CHANNEL.CATEGORY", "id"))  // Again, this is valid but TS doesn't think so
+                        .setDefault((set * 25 + i) === page)
+                }))
+            )}
+        );
+
+        const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = parsedCategorySelectMenu
+        components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId("back")
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(page === 0)
+                .setEmoji(getEmojiByName("CONTROL.LEFT", "id")),
+            new ButtonBuilder()
+                .setCustomId("right")
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(page === categoryIDs.length - 1)
+                .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
+        ));
+
+        await interaction.editReply({
+            embeds: [new EmojiEmbed()
+                .setEmoji("MEMBER.JOIN")
+                .setTitle("Viewing as " + member.displayName)
+                .setStatus("Success")
+                .setDescription(description + "\n" + pageIndicator(categoryIDs.length, page))
+            ], components: components
+        });
+        let i;
+        try {
+            i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id, time: 30000});
+        } catch (e) {
+            closed = true;
+            continue;
+        }
+        i.deferUpdate();
+        if (i.customId === "back") page--;
+        else if (i.customId === "right") page++;
+        else if (i.customId === "category" && i.isStringSelectMenu()) page = parseInt(i.values[0]!);
+    }
 };
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("MANAGE_ROLES")) throw new Error("You do not have the *Manage Roles* permission");
+    if (!member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
     return true;
 };
 

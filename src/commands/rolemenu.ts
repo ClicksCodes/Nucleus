@@ -10,7 +10,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     await roleMenu(interaction);
 };
 
-const check = (_interaction: CommandInteraction) => {
+const check = () => {
     return true;
 };
 

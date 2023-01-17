@@ -1,43 +1,17 @@
-import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { LoadingEmbed } from "../utils/defaults.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, SelectMenuOptionBuilder, StringSelectMenuBuilder } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
 import client from "../utils/client.js";
 import confirmationMessage from "../utils/confirmationMessage.js";
+import { Embed } from "../utils/defaults.js";
 
 const command = new SlashCommandBuilder()
     .setName("privacy")
     .setDescription("Information and options for you and your server's settings");
 
-class Embed {
-    embed: Discord.EmbedBuilder;
-    title: string;
-    description = "";
-    pageId = 0;
-    components?: ActionRowBuilder[] = [];
-    setEmbed(embed: Discord.EmbedBuilder) {
-        this.embed = embed;
-        return this;
-    }
-    setTitle(title: string) {
-        this.title = title;
-        return this;
-    }
-    setDescription(description: string) {
-        this.description = description;
-        return this;
-    }
-    setPageId(pageId: number) {
-        this.pageId = pageId;
-        return this;
-    }
-    setComponents(components: ActionRowBuilder[]) {
-        this.components = components;
-        return this;
-    }
-}
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const pages = [
@@ -78,7 +52,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(
                         "**Facebook** - Facebook trackers include data such as your date of birth, and guess your age if not entered, your preferences, who you interact with and more.\n" +
                             "**AMP** - AMP is a technology that allows websites to be served by Google. This means Google can store and track data, and are pushing this to as many pages as possible.\n\n" +
-                            "Transcripts allow you to store all messages sent in a channel. This could be an issue in some cases, as they are hosted on [Pastebin](https://pastebin.com), so a leaked link could show all messages sent in the channel.\n"
+                            "Transcripts allow you to store all messages sent in a channel. This could be an issue in some cases, as they are hosted on [Pastebin](https://pastebin.com), so a leaked link could show all messages sent in the channel.\n"  // TODO: Not on pastebin
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
@@ -87,7 +61,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             .setDescription("Regarding Facebook and AMP filter types, and ticket transcripts")
             .setPageId(2)
     ].concat(
-        (interaction.member as Discord.GuildMember).permissions.has("ADMINISTRATOR")
+        (interaction.member as Discord.GuildMember).permissions.has("Administrator")
             ? [
                   new Embed()
                       .setEmbed(
@@ -101,7 +75,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                       .setDescription("Options")
                       .setPageId(3)
                       .setComponents([
-                          new ActionRowBuilder().addComponents([
+                          new ActionRowBuilder<ButtonBuilder>().addComponents([
                               new ButtonBuilder()
                                   .setLabel("Clear all data")
                                   .setCustomId("clear-all-data")
@@ -116,20 +90,20 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         fetchReply: true,
         ephemeral: true
     });
-    let page = 0;
+    let page = parseInt(client.preloadPage[interaction.channel!.id] ? client.preloadPage[interaction.channel!.id]?.argument! : "0");
 
     let selectPaneOpen = false;
     let nextFooter = null;
 
     let timedOut = false;
     while (!timedOut) {
-        let selectPane = [];
+        let selectPane: Discord.ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [];
 
         if (selectPaneOpen) {
-            const options = [];
+            const options: SelectMenuOptionBuilder[] = [];
             pages.forEach((embed) => {
                 options.push(
-                    new SelectMenuOption({
+                    new StringSelectMenuOptionBuilder({
                         label: embed.title,
                         value: embed.pageId.toString(),
                         description: embed.description || ""
@@ -137,8 +111,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 );
             });
             selectPane = [
-                new ActionRowBuilder().addComponents([
-                    new Discord.SelectMenuBuilder()
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+                    new Discord.StringSelectMenuBuilder()
                         .addOptions(options)
                         .setCustomId("page")
                         .setMaxValues(1)
@@ -146,8 +120,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 ])
             ];
         }
-        const components = selectPane.concat([
-            new ActionRowBuilder().addComponents([
+        const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = selectPane.concat([
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
                 new ButtonBuilder()
                     .setCustomId("left")
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -163,36 +137,39 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === pages.length - 1)
-            ])
+            )
         ]);
-        const em = new Discord.EmbedBuilder(pages[page].embed);
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
-        em.setFooter({ text: nextFooter ?? "" });
+        const em = new Discord.EmbedBuilder(pages[page]!.embed);
+        em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
+        if (nextFooter) em.setFooter({ text: nextFooter });
         await interaction.editReply({
             embeds: [em],
-            components: components.concat(pages[page].components)
+            components: components.concat(pages[page]?.componentsToSet ?? [])
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
         }
         nextFooter = null;
         i.deferUpdate();
-        if (i.component.customId === "left") {
+        if (i.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if (i.component.customId === "right") {
+        } else if (i.customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if (i.component.customId === "select") {
+        } else if (i.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId === "page") {
-            page = parseInt(i.values[0]);
+        } else if (i.customId === "page" && i.isStringSelectMenu()) {
+            page = parseInt(i.values[0]!);
             selectPaneOpen = false;
-        } else if (i.component.customId === "clear-all-data") {
+        } else if (i.customId === "clear-all-data") {
             const confirmation = await new confirmationMessage(interaction)
                 .setEmoji("CONTROL.BLOCKCROSS")
                 .setTitle("Clear All Data")
@@ -206,8 +183,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 break;
             }
             if (confirmation.success) {
-                client.database.guilds.delete(interaction.guild.id);
-                client.database.history.delete(interaction.guild.id);
+                client.database.guilds.delete(interaction.guild!.id);
+                client.database.history.delete(interaction.guild!.id);
                 nextFooter = "All data cleared";
                 continue;
             } else {
@@ -215,15 +192,15 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 continue;
             }
         } else {
-            const em = new Discord.EmbedBuilder(pages[page].embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+            const em = new Discord.EmbedBuilder(pages[page]!.embed);
+            em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({ text: "Message closed" });
             interaction.editReply({ embeds: [em], components: [] });
             return;
         }
     }
-    const em = new Discord.EmbedBuilder(pages[page].embed);
-    em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+    const em = new Discord.EmbedBuilder(pages[page]!.embed);
+    em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
     em.setFooter({ text: "Message timed out" });
     await interaction.editReply({
         embeds: [em],
@@ -231,7 +208,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (_interaction: CommandInteraction) => {
+const check = () => {
     return true;
 };
 

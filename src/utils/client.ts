@@ -23,6 +23,7 @@ class NucleusClient extends Client {
         eventScheduler: EventScheduler;
         performanceTest: PerformanceTest;
     };
+    preloadPage: Record<string, {command: string, argument: string}> = {};  // e.g. { channelID: { command: privacy, page: 3}}
     commands: Record<string, {
         command: Discord.SlashCommandBuilder |
                 ((builder: Discord.SlashCommandBuilder) => Discord.SlashCommandBuilder) |

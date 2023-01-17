@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../utils/defaults.js";
 import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -84,7 +84,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             return await interaction.editReply({
                 embeds: [
@@ -118,7 +121,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     console.log(categorised);
 };
 
-const check = (_interaction: CommandInteraction) => {
+const check = () => {
     return true;
 };
 

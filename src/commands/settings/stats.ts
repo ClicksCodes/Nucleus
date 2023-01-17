@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../../utils/defaults.js";
 import Discord, { CommandInteraction, Message, ActionRowBuilder, SelectMenuBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -196,7 +196,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
@@ -219,8 +222,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("MANAGE_CHANNELS"))
-        throw new Error("You must have the *Manage Channels* permission to use this command");
+    if (!member.permissions.has("manageChannels"))
+        return "You must have the *Manage Channels* permission to use this command";
     return true;
 };
 
@@ -237,3 +240,4 @@ const autocomplete = async (interaction: AutocompleteInteraction): Promise<strin
 export { command };
 export { callback };
 export { check };
+export { autocomplete };

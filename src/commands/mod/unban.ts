@@ -1,5 +1,5 @@
-import { CommandInteraction, GuildMember, User } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { CommandInteraction, GuildMember, User } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -16,7 +16,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
     const bans = await interaction.guild.bans.fetch();
-    const user = interaction.options.getString("user");
+    const user = interaction.options.get("user")?.value as string;
     let resolved = bans.find((ban) => ban.user.id === user);
     if (!resolved) resolved = bans.find((ban) => ban.user.username.toLowerCase() === user.toLowerCase());
     if (!resolved) resolved = bans.find((ban) => ban.user.tag.toLowerCase() === user.toLowerCase());
@@ -48,7 +48,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             await interaction.guild.members.unban(resolved.user as User, "Unban");
             const member = resolved.user as User;
-            await client.database.history.create("unban", interaction.guild.id, member, interaction.user);
+            await client.database.history.create("unban", interaction.guild.id, member, interaction.user, "No reason provided");
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             const data = {
                 meta: {
@@ -64,7 +64,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     name: entry(member.id, renderUser(member)),
                     unbanned: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                     unbannedBy: entry(interaction.user.id, renderUser(interaction.user)),
-                    accountCreated: entry(member.createdAt, renderDelta(member.createdAt))
+                    accountCreated: entry(member.createdTimestamp, renderDelta(member.createdTimestamp))
                 },
                 hidden: {
                     guild: interaction.guild.id
@@ -110,13 +110,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
+    const me = interaction.guild.members.me!;
     // Check if Nucleus can unban members
-    if (!me.permissions.has("BAN_MEMBERS")) throw new Error("I do not have the *Ban Members* permission");
+    if (!me.permissions.has("BanMembers")) return "I do not have the *Ban Members* permission";
     // Allow the owner to unban anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has ban_members permission
-    if (!member.permissions.has("BAN_MEMBERS")) throw new Error("You do not have the *Ban Members* permission");
+    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
     // Allow unban
     return true;
 };

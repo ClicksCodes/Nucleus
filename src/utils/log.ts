@@ -26,6 +26,7 @@ export const Logger = {
         return `${num1} -> ${num2} (${delta > 0 ? "+" : ""}${delta})`;
     },
     entry(value: string | number | null, displayValue: string): { value: string | null; displayValue: string } {
+        if (typeof value === "number") value = value.toString();
         return { value: value, displayValue: displayValue };
     },
     renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel) {

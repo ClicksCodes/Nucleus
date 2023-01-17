@@ -1,4 +1,4 @@
-import { LoadingEmbed, Embed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed, Embed } from "../../utils/defaults.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
@@ -256,7 +256,10 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         });
         let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch {
             timedOut = true;
             continue;

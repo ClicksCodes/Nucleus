@@ -1,4 +1,4 @@
-import type { GuildAuditLogsEntry, GuildMember } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, GuildMember } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 
 export const event = "guildMemberUpdate";
@@ -6,9 +6,9 @@ export const event = "guildMemberUpdate";
 export async function callback(client: NucleusClient, before: GuildMember, after: GuildMember) {
     try {
         const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
-        const auditLog = await getAuditLog(after.guild, "MEMBER_UPDATE");
+        const auditLog = await getAuditLog(after.guild, AuditLogEvent.MemberUpdate);
         const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === after.id).first();
-        if (audit.executor.id === client.user.id) return;
+        if (audit.executor.id === client.user!.id) return;
         if (before.nickname !== after.nickname) {
             await client.database.history.create(
                 "nickname",

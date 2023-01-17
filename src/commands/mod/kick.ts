@@ -1,4 +1,4 @@
-import { LinkWarningFooter } from './../../utils/defaultEmbeds.js';
+import { LinkWarningFooter } from '../../utils/defaults.js';
 import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
@@ -177,19 +177,19 @@ const check = (interaction: CommandInteraction) => {
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     // Do not allow kicking the owner
-    if (member.id === interaction.guild.ownerId) throw new Error("You cannot kick the owner of the server");
+    if (member.id === interaction.guild.ownerId) return "You cannot kick the owner of the server";
     // Check if Nucleus can kick the member
-    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
+    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
     // Check if Nucleus has permission to kick
-    if (!me.permissions.has("KickMembers")) throw new Error("I do not have the *Kick Members* permission");
+    if (!me.permissions.has("KickMembers")) return "I do not have the *Kick Members* permission";
     // Do not allow kicking Nucleus
-    if (member.id === interaction.guild.members.me!.id) throw new Error("I cannot kick myself");
+    if (member.id === interaction.guild.members.me!.id) return "I cannot kick myself";
     // Allow the owner to kick anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has kick_members permission
-    if (!member.permissions.has("KickMembers")) throw new Error("You do not have the *Kick Members* permission");
+    if (!member.permissions.has("KickMembers")) return "You do not have the *Kick Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
+    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
     // Allow kick
     return true;
 };

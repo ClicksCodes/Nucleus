@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../../utils/defaults.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -276,7 +276,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         })) as Message;
         let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
@@ -376,7 +379,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 });
                 let i: MessageComponentInteraction;
                 try {
-                    i = await m.awaitMessageComponent({ time: 300000 });
+                    i = await m.awaitMessageComponent({
+                        time: 300000,
+                        filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                    });
                 } catch (e) {
                     innerTimedOut = true;
                     continue;
@@ -627,7 +633,10 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
         }
         let i;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
@@ -734,7 +743,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
-        throw new Error("You must have the *Manage Server* permission to use this command");
+        return "You must have the *Manage Server* permission to use this command";
     return true;
 };
 

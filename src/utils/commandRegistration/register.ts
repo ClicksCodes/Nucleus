@@ -1,8 +1,10 @@
+import type { CommandInteraction } from 'discord.js';
 import Discord, { Interaction, SlashCommandBuilder, ApplicationCommandType } from 'discord.js';
 import config from "../../config/main.json" assert { type: "json" };
 import client from "../client.js";
 import fs from "fs";
-
+import EmojiEmbed from '../generateEmojiEmbed.js';
+import getEmojiByName from '../getEmojiByName.js';
 
 const colours = {
     red: "\x1b[31m",
@@ -174,17 +176,25 @@ async function registerCommandHandler() {
     });
 }
 
-async function execute(check: Function | undefined, callback: Function | undefined, data: Interaction) {
+async function execute(check: Function | undefined, callback: Function | undefined, data: CommandInteraction) {
     if (!callback) return;
     if (check) {
         let result;
         try {
             result = await check(data);
-        } catch (e) {
-            console.log(e);
+        } catch(e) {
             result = false;
         }
-        if (!result) return;
+        if (result === false) return;
+        if (typeof result === "string") {
+            const { NucleusColors } = client.logger
+            return data.reply({embeds: [new EmojiEmbed()
+                .setTitle("")
+                .setDescription(result)
+                .setColor(NucleusColors.red)
+                .setEmoji(getEmojiByName("CONTROL.BLOCKCROSS"))
+            ]});
+        };
     }
     callback(data);
 }

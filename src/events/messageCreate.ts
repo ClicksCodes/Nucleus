@@ -1,7 +1,7 @@
 import type { NucleusClient } from "../utils/client.js";
 import { LinkCheck, MalwareCheck, NSFWCheck, SizeCheck, TestString, TestImage } from "../reflex/scanners.js";
 import logAttachment from "../premium/attachmentLogs.js";
-import createLogException from "../utils/createLogException.js";
+import { messageException } from "../utils/createTemporaryStorage.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
@@ -48,7 +48,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (config.filters.invite.enabled) {
         if (!config.filters.invite.allowed.channels.includes(message.channel.id)) {
             if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(content)) {
-                createLogException(message.guild.id, message.channel.id, message.id);
+                messageException(message.guild.id, message.channel.id, message.id);
                 message.delete();
                 const data = {
                     meta: {
@@ -84,7 +84,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                     !(message.channel instanceof ThreadChannel ? message.channel.parent?.nsfw : message.channel.nsfw)
                 ) {
                     if (await NSFWCheck(url)) {
-                        createLogException(message.guild.id, message.channel.id, message.id);
+                        messageException(message.guild.id, message.channel.id, message.id);
                         await message.delete();
                         const data = {
                             meta: {
@@ -119,7 +119,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                         config.filters.wordFilter.words.strict
                     );
                     if (check !== null) {
-                        createLogException(message.guild.id, message.channel.id, message.id);
+                        messageException(message.guild.id, message.channel.id, message.id);
                         await message.delete();
                         const data = {
                             meta: {
@@ -149,7 +149,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 if (config.filters.images.size) {
                     if (url.match(/\.+(webp|png|jpg)$/gi)) {
                         if (!(await SizeCheck(element))) {
-                            createLogException(message.guild.id, message.channel.id, message.id);
+                            messageException(message.guild.id, message.channel.id, message.id);
                             await message.delete();
                             const data = {
                                 meta: {
@@ -180,7 +180,7 @@ export async function callback(_client: NucleusClient, message: Message) {
             }
             if (config.filters.malware) {
                 if (!(await MalwareCheck(url))) {
-                    createLogException(message.guild.id, message.channel.id, message.id);
+                    messageException(message.guild.id, message.channel.id, message.id);
                     await message.delete();
                     const data = {
                         meta: {
@@ -212,7 +212,7 @@ export async function callback(_client: NucleusClient, message: Message) {
 
     const linkDetectionTypes = await LinkCheck(message);
     if (linkDetectionTypes.length > 0) {
-        createLogException(message.guild.id, message.channel.id, message.id);
+        messageException(message.guild.id, message.channel.id, message.id);
         await message.delete();
         const data = {
             meta: {
@@ -244,7 +244,7 @@ export async function callback(_client: NucleusClient, message: Message) {
             config.filters.wordFilter.words.strict
         );
         if (check !== null) {
-            createLogException(message.guild.id, message.channel.id, message.id);
+            messageException(message.guild.id, message.channel.id, message.id);
             await message.delete();
             const data = {
                 meta: {
@@ -293,7 +293,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (config.filters.pings.roles) {
         for (const roleId in message.mentions.roles) {
             if (!config.filters.pings.allowed.roles.includes(roleId)) {
-                createLogException(message.guild.id, message.channel.id, message.id);
+                messageException(message.guild.id, message.channel.id, message.id);
                 await message.delete();
                 const data = {
                     meta: {
@@ -319,7 +319,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         }
     }
     if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
-        createLogException(message.guild.id, message.channel.id, message.id);
+        messageException(message.guild.id, message.channel.id, message.id);
         await message.delete();
         const data = {
             meta: {

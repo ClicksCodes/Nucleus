@@ -35,7 +35,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (_interaction: CommandInteraction) => {
+const check = () => {
     return true;
 };
 

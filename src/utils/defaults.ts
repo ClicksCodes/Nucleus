@@ -1,3 +1,4 @@
+import type Discord from "discord.js";
 import EmojiEmbed from "./generateEmojiEmbed.js";
 import getEmojiByName from "./getEmojiByName.js";
 
@@ -15,6 +16,7 @@ class Embed {
     title: string = "";
     description = "";
     pageId = 0;
+    componentsToSet: Discord.ActionRowBuilder<Discord.ButtonBuilder | Discord.StringSelectMenuBuilder>[] = [];
 
     setEmbed(embed: EmojiEmbed) {
         this.embed = embed;
@@ -32,6 +34,12 @@ class Embed {
         this.pageId = pageId;
         return this;
     }
+    setComponents(components: Discord.ActionRowBuilder<Discord.ButtonBuilder | Discord.StringSelectMenuBuilder>[]) {
+        this.componentsToSet = components;
+        return this;
+    }
 }
 
 export { Embed };
+
+export const unknownServerIcon = "";

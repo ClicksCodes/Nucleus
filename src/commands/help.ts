@@ -8,13 +8,13 @@ const command = new SlashCommandBuilder()
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     interaction.reply({components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-            .setLabel("Verify")
+            .setLabel("Create ticket")
             .setStyle(ButtonStyle.Primary)
-            .setCustomId("verifybutton")
+            .setCustomId("createticket")
     )]}); // TODO: FINISH THIS FOR RELEASE
 };
 
-const check = (_interaction: CommandInteraction) => {
+const check = () => {
     return true;
 };
 

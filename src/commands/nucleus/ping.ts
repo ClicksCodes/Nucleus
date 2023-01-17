@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../../utils/defaults.js";
 import type { CommandInteraction } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";

@@ -1,9 +1,10 @@
 import confirmationMessage from '../../utils/confirmationMessage.js';
 import EmojiEmbed from '../../utils/generateEmojiEmbed.js';
-import { LoadingEmbed } from './../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from '../../utils/defaults.js';
 import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, GuildTextBasedChannel, MessageContextMenuCommandInteraction } from "discord.js";
 import client from "../../utils/client.js";
 import getEmojiByName from '../../utils/getEmojiByName.js';
+import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from "../../utils/logTranscripts.js";
 
 const command = new ContextMenuCommandBuilder()
     .setName("Purge up to here")
@@ -12,7 +13,7 @@ const command = new ContextMenuCommandBuilder()
 async function waitForButton(m: Discord.Message, member: Discord.GuildMember): Promise<boolean> {
     let component;
     try {
-        component = m.awaitMessageComponent({ time: 200000, filter: (i) => i.user.id === member.id });
+        component = m.awaitMessageComponent({ time: 200000, filter: (i) => i.user.id === member.id && i.channel!.id === m.channel.id });
     } catch (e) {
         return false;
     }
@@ -120,6 +121,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
             )
             .setColor("Danger")
             .addReasonButton(reason ?? "")
+            .setFailedMessage("No changes were made", "Success", "CHANNEL.PURGE.GREEN")
             .send(true)
         reason = reason ?? ""
         if (confirmation.cancelled) timedOut = true;
@@ -130,16 +132,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
             deleteUser = confirmation.components["onlySelectedUser"]!.active;
         }
     } while (!chosen && !timedOut);
-    if (timedOut) return;
-    if (!confirmation.success) {
-        await interaction.editReply({ embeds: [new EmojiEmbed()
-            .setTitle("Purge")
-            .setDescription("No changes were made")
-            .setEmoji("CHANNEL.PURGE.GREEN")
-            .setStatus("Success")
-        ], components: [] });
-        return;
-    }
+    if (timedOut || !confirmation.success) return;
     const filteredMessages = history
         .filter(m => m.createdTimestamp >= allowedMessage!.createdTimestamp)  // older than selected
         .filter(m => deleteUser ? m.author.id === targetMember.id : true)  // only selected user
@@ -191,31 +184,9 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         }
     };
     log(data);
-    let out = "";
-    deleted.reverse().forEach((message) => {
-        if (!message) {
-            out += "Unknown message\n\n"
-        } else {
-            const author = message.author ?? { username: "Unknown", discriminator: "0000", id: "Unknown" };
-            out += `${author.username}#${author.discriminator} (${author.id}) [${new Date(
-                message.createdTimestamp
-            ).toISOString()}]\n`;
-            if (message.content) {
-                const lines = message.content.split("\n");
-                lines.forEach((line) => {
-                    out += `> ${line}\n`;
-                });
-            }
-            if (message.attachments.size > 0) {
-                message.attachments.forEach((attachment) => {
-                    out += `Attachment > ${attachment.url}\n`;
-                });
-            }
-            out += "\n\n";
-        }
-    });
+    const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(deleted.map((m) => m as Discord.Message))!);
     const attachmentObject = {
-        attachment: Buffer.from(out),
+        attachment: Buffer.from(transcript),
         name: `purge-${channel.id}-${Date.now()}.txt`,
         description: "Purge log"
     };
@@ -240,7 +211,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
     let component;
     try {
         component = await m.awaitMessageComponent({
-            filter: (m) => m.user.id === interaction.user.id,
+            filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
             time: 300000
         });
     } catch {

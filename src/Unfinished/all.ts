@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../utils/defaults.js";
 import Discord, {
     CommandInteraction,
     GuildMember,

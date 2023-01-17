@@ -5,7 +5,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
-import { LinkWarningFooter } from "../../utils/defaultEmbeds.js";
+import { LinkWarningFooter } from "../../utils/defaults.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -84,7 +84,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Banned")
                         .setDescription(
-                            `You have been banned in ${interaction.guild.name}` +
+                            `You have been banned from ${interaction.guild.name}` +
                                 (reason ? ` for:\n${reason}` : ".\n*No reason was provided.*")
                         )
                         .setStatus("Danger")
@@ -131,7 +131,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 banned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
                 bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
-                accountCreated: entry(member.user.createdAt.toString(), renderDelta(member.user.createdAt.getTime())),
+                accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp)),
                 serverMemberCount: interaction.guild.memberCount
             },
             hidden: {

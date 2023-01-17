@@ -1,173 +1,201 @@
-import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
+import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
-import addPlural from "../../utils/plurals.js";
+import { LinkWarningFooter } from "../../utils/defaults.js";
+
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("softban")
         .setDescription("Kicks a user and deletes their messages")
         .addUserOption((option) => option.setName("user").setDescription("The user to softban").setRequired(true))
-        .addIntegerOption((option) =>
+        .addNumberOption((option) =>
             option
                 .setName("delete")
-                .setDescription("The days of messages to delete | Default: 0")
+                .setDescription("Delete this number of days of messages from the user | Default: 0")
                 .setMinValue(0)
                 .setMaxValue(7)
                 .setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+
+const callback = async (interaction: CommandInteraction): Promise<void> => {
+    if (!interaction.guild) return;
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason = null;
     let notify = true;
     let confirmation;
+    let chosen = false;
     let timedOut = false;
-    let success = false;
-    while (!timedOut && !success) {
-        const confirmation = await new confirmationMessage(interaction)
+    do {
+        confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.BAN.RED")
             .setTitle("Softban")
             .setDescription(
                 keyValueList({
-                    user: renderUser(interaction.options.getUser("user")),
-                    reason: reason ? "\n> " + (reason ?? "").replaceAll("\n", "\n> ") : "*No reason provided*"
+                    user: renderUser(interaction.options.getUser("user")!),
+                    reason: reason ? "\n> " + (reason).replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n` +
-                    `${addPlural(
-                        interaction.options.getInteger("delete") ? interaction.options.getInteger("delete") : 0,
-                        "day"
-                    )} of messages will be deleted\n\n` +
+                    `${addPlurals(
+                        (interaction.options.get("delete")?.value as number | null) ?? 0, "day")
+                    } of messages will be deleted\n\n` +
                     `Are you sure you want to softban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
-            .setColor("Danger")
             .addCustomBoolean(
                 "notify",
                 "Notify user",
                 false,
-                null,
-                null,
+                undefined,
+                "The user will be sent a DM",
                 null,
                 "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
                 notify
             )
+            .setColor("Danger")
             .addReasonButton(reason ?? "")
+            .setFailedMessage("No changes were made", "Success", "PUNISH.BAN.GREEN")
             .send(reason !== null);
         reason = reason ?? "";
         if (confirmation.cancelled) timedOut = true;
-        else if (confirmation.success) success = true;
+        else if (confirmation.success !== undefined) chosen = true;
         else if (confirmation.newReason) reason = confirmation.newReason;
-        else if (confirmation.components) {
-            notify = confirmation.components.notify.active;
-        }
-    }
-    if (timedOut) return;
-    if (confirmation.success) {
-        let dmd = false;
-        const config = await client.database.guilds.read(interaction.guild.id);
-        try {
-            if (notify) {
-                await (interaction.options.getMember("user") as GuildMember).send({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setEmoji("PUNISH.BAN.RED")
-                            .setTitle("Softbanned")
-                            .setDescription(
-                                `You have been softbanned from ${interaction.guild.name}` +
-                                    (reason ? ` for:\n> ${reason}` : ".")
-                            )
-                            .setStatus("Danger")
-                    ],
-                    components: [
-                        new ActionRowBuilder().addComponents(
-                            config.moderation.ban.text
-                                ? [
-                                      new ButtonBuilder()
-                                          .setStyle(ButtonStyle.Link)
-                                          .setLabel(config.moderation.ban.text)
-                                          .setURL(config.moderation.ban.link)
-                                  ]
-                                : []
-                        )
-                    ]
-                });
-                dmd = true;
-            }
-        } catch {
-            dmd = false;
-        }
-        const member = interaction.options.getMember("user") as GuildMember;
-        try {
-            await member.ban({
-                days: Number(interaction.options.getInteger("delete") ?? 0),
-                reason: reason
-            });
-            await interaction.guild.members.unban(member, "Softban");
-        } catch {
-            await interaction.editReply({
+        else if (confirmation.components) notify = confirmation.components["notify"]!.active;
+    } while (!timedOut && !chosen)
+    if (timedOut || !confirmation.success) return;
+    reason = reason.length ? reason : null
+    let dmSent = false;
+    let dmMessage;
+    const config = await client.database.guilds.read(interaction.guild.id);
+    try {
+        if (notify) {
+            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
+            const messageData: {
+                embeds: EmojiEmbed[];
+                components: ActionRowBuilder<ButtonBuilder>[];
+            } = {
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("PUNISH.BAN.RED")
                         .setTitle("Softban")
-                        .setDescription("Something went wrong and the user was not softbanned")
+                        .setDescription(
+                            `You have been softbanned from ${interaction.guild.name}` +
+                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided.*")
+                        )
                         .setStatus("Danger")
                 ],
                 components: []
-            });
+            };
+            if (config.moderation.softban.text && config.moderation.softban.link) {
+                messageData.embeds[0]!.setFooter(LinkWarningFooter)
+                messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
+                        .addComponents(new ButtonBuilder()
+                            .setStyle(ButtonStyle.Link)
+                            .setLabel(config.moderation.softban.text)
+                            .setURL(config.moderation.softban.link)
+                        )
+                )
+            }
+            dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
+            dmSent = true;
         }
-        await client.database.history.create("softban", interaction.guild.id, member.user, reason);
-        const failed = !dmd && notify;
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
-                    .setTitle("Softban")
-                    .setDescription("The member was softbanned" + (failed ? ", but could not be notified" : ""))
-                    .setStatus(failed ? "Warning" : "Success")
-            ],
-            components: []
-        });
-    } else {
-        await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("PUNISH.BAN.GREEN")
-                    .setTitle("Softban")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
+    } catch {
+        dmSent = false;
     }
+    try {
+        const member = interaction.options.getMember("user") as GuildMember;
+        const days: number = interaction.options.get("delete")?.value as number | null ?? 0;
+        member.ban({
+            deleteMessageSeconds: days * 24 * 60 * 60,
+            reason: reason ?? "*No reason provided*"
+        });
+        await interaction.guild.members.unban(member, "Softban");
+        await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason);
+        const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+        const data = {
+            meta: {
+                type: "memberSoftban",
+                displayName: "Member Softbanned",
+                calculateType: "guildMemberPunish",
+                color: NucleusColors.yellow,
+                emoji: "PUNISH.BAN.YELLOW",
+                timestamp: new Date().getTime()
+            },
+            list: {
+                memberId: entry(member.user.id, `\`${member.user.id}\``),
+                name: entry(member.user.id, renderUser(member.user)),
+                softbanned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                softbannedBy: entry(interaction.user.id, renderUser(interaction.user)),
+                reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
+                accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp)),
+                serverMemberCount: interaction.guild.memberCount
+            },
+            hidden: {
+                guild: interaction.guild.id
+            }
+        };
+        log(data);
+    } catch {
+        await interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("PUNISH.BAN.RED")
+                    .setTitle("Softban")
+                    .setDescription("Something went wrong and the user was not softbanned")
+                    .setStatus("Danger")
+            ],
+            components: []
+        });
+        if (dmSent && dmMessage) await dmMessage.delete();
+        return;
+    }
+    const failed = !dmSent && notify;
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setEmoji(`PUNISH.BAN.${failed ? "YELLOW" : "GREEN"}`)
+                .setTitle("Softban")
+                .setDescription("The member was softbanned" + (failed ? ", but could not be notified" : ""))
+                .setStatus(failed ? "Warning" : "Success")
+        ],
+        components: []
+    });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction) => {
+    if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
-    const apply = interaction.options.getMember("user") as GuildMember;
-    if (member === null || me === null || apply === null) throw new Error("That member is not in the server");
+    const me = interaction.guild.members.me!;
+    let apply = interaction.options.getUser("user") as User | GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
-    const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
-    // Do not allow softbanning the owner
+    let applyPos = 0
+    try {
+        apply = await interaction.guild.members.fetch(apply.id) as GuildMember
+        applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
+    } catch {
+        apply = apply as User
+    }
+    // Do not allow banning the owner
     if (member.id === interaction.guild.ownerId) throw new Error("You cannot softban the owner of the server");
     // Check if Nucleus can ban the member
     if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
     // Check if Nucleus has permission to ban
-    if (!me.permissions.has("BAN_MEMBERS")) throw new Error("I do not have the *Ban Members* permission");
-    // Do not allow softbanning Nucleus
+    if (!me.permissions.has("BanMembers")) throw new Error("I do not have the *Ban Members* permission");
+    // Do not allow banning Nucleus
     if (member.id === me.id) throw new Error("I cannot softban myself");
-    // Allow the owner to softban anyone
+    // Allow the owner to ban anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has ban_members permission
-    if (!member.permissions.has("BAN_MEMBERS")) throw new Error("You do not have the *Ban Members* permission");
+    if (!member.permissions.has("BanMembers")) throw new Error("You do not have the *Ban Members* permission");
     // Check if the user is below on the role list
     if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
-    // Allow softban
+    // Allow ban
     return true;
 };
 

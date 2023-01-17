@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../utils/defaultEmbeds.js";
+import { LoadingEmbed, unknownServerIcon } from "../utils/defaults.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
@@ -215,7 +215,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
         rName: role.name,
         uName: interaction.member!.user.username,
         gName: interaction.guild!.name,
-        gIcon: interaction.guild!.iconURL({ extension: "png", size: 256 }) ?? "https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png",
+        gIcon: interaction.guild!.iconURL({ extension: "png", size: 256 }) ?? unknownServerIcon,
         interaction: interaction as MessageComponentInteraction
     };
     await interaction.editReply({

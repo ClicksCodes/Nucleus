@@ -1,21 +1,22 @@
-import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../../utils/defaults.js";
 import Discord, {
     CommandInteraction,
     Message,
     ActionRowBuilder,
-    Component,
     ButtonBuilder,
     MessageComponentInteraction,
     EmbedBuilder,
-    SelectMenuInteraction,
-    MessageSelectOptionData,
-    ButtonStyle
+    ButtonStyle,
+    ButtonComponent,
+    StringSelectMenuBuilder
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
+interface MessageSelectOptionData { label: string; value: string; description?: string; }
+
 
 class Embed {
     embed: Discord.EmbedBuilder = new EmbedBuilder();
@@ -45,9 +46,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const data = await client.database.guilds.read(interaction.guild!.id);
-    const tags = data.getKey("tags");
+    const tags = data.tags;
     let strings = [];
-    if (data === {}) strings = ["*No tags exist*"];
+    if (Object.keys(tags).length === 0) strings = ["*No tags exist*"];
     else {
         let string = "";
         for (const tag in tags) {
@@ -86,8 +87,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let cancelled = false;
     let timedOut = false;
     while (!cancelled && !timedOut) {
-        let selectPane: ActionRowBuilder[] = [];
-
+        let selectPane: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = [];
         if (selectPaneOpen) {
             const options: MessageSelectOptionData[] = [];
             pages.forEach((embed) => {
@@ -98,8 +98,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 });
             });
             selectPane = [
-                new ActionRowBuilder().addComponents([
-                    new Discord.SelectMenuBuilder()
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+                    new Discord.StringSelectMenuBuilder()
                         .addOptions(options)
                         .setCustomId("page")
                         .setMaxValues(1)
@@ -107,12 +107,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 ])
             ];
         }
-        const em = new Discord.EmbedBuilder(pages[page]!.embed);
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+        const em = new Discord.EmbedBuilder(pages[page]!.embed.data);
+        em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
         await interaction.editReply({
             embeds: [em],
             components: selectPane.concat([
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setCustomId("left")
                         .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -137,32 +137,35 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
         let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
         }
         i.deferUpdate();
-        if ((i.component as Component).customId === "left") {
+        if ((i.component as ButtonComponent).customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
-        } else if ((i.component as Component).customId === "right") {
+        } else if ((i.component as ButtonComponent).customId === "right") {
             if (page < pages.length - 1) page++;
             selectPaneOpen = false;
-        } else if ((i.component as Component).customId === "select") {
+        } else if (i.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if ((i.component as Component).customId === "page") {
-            page = parseInt((i as SelectMenuInteraction).values[0]!);
+        } else if (i.customId === "page" && i.isStringSelectMenu()) {
+            page = parseInt(i.values[0]!);
             selectPaneOpen = false;
         } else {
             cancelled = true;
         }
     }
-    const em = new Discord.EmbedBuilder(pages[page]!.embed);
+    const em = new Discord.EmbedBuilder(pages[page]!.embed.data);
     if (timedOut) {
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
+        em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
     } else {
-        em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
+        em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
     }
     await interaction.editReply({
         embeds: [em],

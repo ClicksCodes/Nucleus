@@ -5,7 +5,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js";
-import { LinkWarningFooter } from "../../utils/defaultEmbeds.js";
+import { LinkWarningFooter } from "../../utils/defaults.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -186,7 +186,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id,
+                filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
                 time: 300000
             });
         } catch (e) {
@@ -279,18 +279,18 @@ const check = (interaction: CommandInteraction) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
     const apply = interaction.options.getMember("user") as GuildMember | null;
-    if (apply === null) throw new Error("That member is not in the server");
+    if (apply === null) return "That member is not in the server";
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size ? apply.roles.highest.position : 0;
     // Do not allow warning bots
-    if (member.user.bot) throw new Error("I cannot warn bots");
+    if (member.user.bot) return "I cannot warn bots";
     // Allow the owner to warn anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     if (!member.permissions.has("ModerateMembers"))
-        throw new Error("You do not have the *Moderate Members* permission");
+        return "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
+    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
     // Allow warn
     return true;
 };

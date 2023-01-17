@@ -183,7 +183,7 @@ class confirmationMessage {
             let component;
             try {
                 component = await m.awaitMessageComponent({
-                    filter: (m) => m.user.id === this.interaction.user.id,
+                    filter: (m) => m.user.id === this.interaction.user.id && m.channel!.id === this.interaction.channel!.id,
                     time: 300000
                 });
             } catch (e) {

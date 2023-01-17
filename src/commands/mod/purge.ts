@@ -1,3 +1,4 @@
+import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from '../../utils/logTranscripts.js';
 import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -93,7 +94,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             let component;
             try {
                 component = m.awaitMessageComponent({
-                    filter: (m) => m.user.id === interaction.user.id,
+                    filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
                     time: 300000
                 });
             } catch (e) {
@@ -146,7 +147,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 displayName: "Channel Purged",
                 calculateType: "messageDelete",
                 color: NucleusColors.red,
-                emoji: "PUNISH.BAN.RED",
+                emoji: "CHANNEL.PURGE.RED",
                 timestamp: new Date().getTime()
             },
             list: {
@@ -160,19 +161,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        let out = "";
-        deleted.reverse().forEach((message) => {
-            out += `${message.author.username}#${message.author.discriminator} (${message.author.id}) [${new Date(
-                message.createdTimestamp
-            ).toISOString()}]\n`;
-            const lines = message.content.split("\n");
-            lines.forEach((line) => {
-                out += `> ${line}\n`;
-            });
-            out += "\n\n";
-        });
+        const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(deleted)!);
         const attachmentObject = {
-            attachment: Buffer.from(out),
+            attachment: Buffer.from(transcript),
             name: `purge-${channel.id}-${Date.now()}.txt`,
             description: "Purge log"
         };
@@ -197,7 +188,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id,
+                filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
                 time: 300000
             });
         } catch {
@@ -304,7 +295,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 displayName: "Channel Purged",
                 calculateType: "messageDelete",
                 color: NucleusColors.red,
-                emoji: "PUNISH.BAN.RED",
+                emoji: "CHANNEL.PURGE.RED",
                 timestamp: new Date().getTime()
             },
             list: {
@@ -367,7 +358,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id,
+                filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
                 time: 300000
             });
         } catch {
@@ -405,11 +396,11 @@ const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     const me = interaction.guild.members.me!;
     // Check if nucleus has the manage_messages permission
-    if (!me.permissions.has("ManageMessages")) throw new Error("I do not have the *Manage Messages* permission");
+    if (!me.permissions.has("ManageMessages")) return "I do not have the *Manage Messages* permission";
     // Allow the owner to purge
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has manage_messages permission
-    if (!member.permissions.has("ManageMessages")) throw new Error("You do not have the *Manage Messages* permission");
+    if (!member.permissions.has("ManageMessages")) return "You do not have the *Manage Messages* permission";
     // Allow purge
     return true;
 };

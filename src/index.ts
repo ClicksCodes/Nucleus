@@ -9,14 +9,9 @@ client.on("ready", () => {
     register();
     runServer(client);
 });
-process.on("unhandledRejection", (err) => {
-    console.error(err);
-});
-process.on("uncaughtException", (err) => {
-    console.error(err);
-});
+process.on("unhandledRejection", (err) => { console.error(err) });
+process.on("uncaughtException", (err) => { console.error(err) });
 
-if (config.enableDevelopment) { await client.login(config.developmentToken); }
-else { await client.login(config.token); }
+await client.login(config.enableDevelopment ? config.developmentToken : config.token)
 
 await recordPerformance();

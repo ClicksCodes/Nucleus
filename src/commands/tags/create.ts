@@ -64,7 +64,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ephemeral: true
         });
     const confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.NICKNAME.YELLOW", "PUNISH.NICKNAME.RED")
+        .setEmoji("PUNISH.NICKNAME.YELLOW")
         .setTitle("Tag create")
         .setDescription(
             keyValueList({
@@ -74,18 +74,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         )
         .setColor("Warning")
         .setInverted(true)
+        .setFailedMessage("No changes were made", "Success", "PUNISH.NICKNAME.GREEN")
         .send();
-    if (confirmation.cancelled) return;
-    if (!confirmation.success)
-        return await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setTitle("Tag Create")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-                    .setEmoji("PUNISH.NICKNAME.GREEN")
-            ]
-        });
+    if (confirmation.cancelled || !confirmation.success) return;
     try {
         await client.database.guilds.write(interaction.guild!.id, {
             [`tags.${name}`]: value
@@ -118,7 +109,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageMessages"))
-        throw new Error("You must have the *Manage Messages* permission to use this command");
+        return "You must have the *Manage Messages* permission to use this command";
     return true;
 };
 

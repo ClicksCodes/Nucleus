@@ -1,4 +1,4 @@
-import { LoadingEmbed } from '../../utils/defaultEmbeds.js';
+import { LoadingEmbed } from '../../utils/defaults.js';
 import type { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
@@ -251,7 +251,10 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         }
         let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             interaction.editReply({
                 embeds: [
@@ -354,7 +357,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         })) as Message;
         let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000 });
+            i = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;
@@ -426,7 +432,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has("ModerateMembers"))
-        throw new Error("You do not have the *Moderate Members* permission");
+        return "You do not have the *Moderate Members* permission";
     return true;
 };
 

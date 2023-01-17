@@ -8,7 +8,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     verify(interaction);
 };
 
-const check = (_interaction: CommandInteraction) => {
+const check = () => {
     return true;
 };
 

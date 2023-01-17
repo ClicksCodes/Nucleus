@@ -1,4 +1,4 @@
-import { LoadingEmbed } from "./../../utils/defaultEmbeds.js";
+import { LoadingEmbed } from "../../utils/defaults.js";
 import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -166,7 +166,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         })) as Message;
         let component;
         try {
-            component = await m.awaitMessageComponent({ time: 300000 });
+            component = await m.awaitMessageComponent({
+                time: 300000,
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+            });
         } catch (e) {
             timedOut = true;
             continue;

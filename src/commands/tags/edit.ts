@@ -19,9 +19,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
-    const name = interaction.options.getString("name");
-    const value = interaction.options.getString("value") ?? "";
-    const newname = interaction.options.getString("newname") ?? "";
+    const name = interaction.options.get("name")?.value as string;
+    const value = interaction.options.get("value")?.value as string;
+    const newname = interaction.options.get("newname")?.value as string;
     if (!newname && !value)
         return await interaction.reply({
             embeds: [
@@ -79,7 +79,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ephemeral: true
         });
     const confirmation = await new confirmationMessage(interaction)
-        .setEmoji("PUNISH.NICKNAME.YELLOW", "PUNISH.NICKNAME.RED")
+        .setEmoji("PUNISH.NICKNAME.YELLOW")
         .setTitle("Tag Edit")
         .setDescription(
             keyValueList({
@@ -89,27 +89,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         )
         .setColor("Warning")
         .setInverted(true)
+        .setFailedMessage("No changes were made", "Success", "PUNISH.NICKNAME.GREEN")
         .send();
     if (confirmation.cancelled) return;
-    if (!confirmation.success)
-        return await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setTitle("Tag Edit")
-                    .setDescription("No changes were made")
-                    .setStatus("Success")
-                    .setEmoji("PUNISH.NICKNAME.GREEN")
-            ]
-        });
     try {
         const toSet: Record<string, string> = {};
         const toUnset: string[] = [];
         if (value) toSet[`tags.${name}`] = value;
         if (newname) {
             toUnset.push(`tags.${name}`);
-            toSet[`tags.${newname}`] = data.tags[name];
+            toSet[`tags.${newname}`] = data.tags[name]!;
         }
-        await client.database.guilds.write(interaction.guild.id, toSet === {} ? null : toSet, toUnset);
+        await client.database.guilds.write(interaction.guild.id, Object.keys(toSet).length === 0 ? null : toSet, toUnset);
         await client.memory.forceUpdate(interaction.guild!.id);
     } catch (e) {
         return await interaction.editReply({
@@ -138,7 +129,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has("ManageMessages"))
-        throw new Error("You must have the *Manage Messages* permission to use this command");
+        return "You must have the *Manage Messages* permission to use this command";
     return true;
 };
 
