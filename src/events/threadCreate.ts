@@ -1,4 +1,4 @@
-import type { GuildAuditLogsEntry, ThreadChannel } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, ThreadChannel } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
@@ -6,9 +6,9 @@ export const event = "threadCreate";
 
 export async function callback(client: NucleusClient, thread: ThreadChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
-    const auditLog = await getAuditLog(thread.guild, "THREAD_CREATE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === thread.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(thread.guild, AuditLogEvent.ThreadCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as ThreadChannel)!.id === thread.id)[0] as GuildAuditLogsEntry;
+    if (auditLog.executor!.id === client.user!.id) return;
     const category = thread.parent
         ? entry(
               thread.parent.parent ? thread.parent.parent.name : "None",
@@ -27,7 +27,7 @@ export async function callback(client: NucleusClient, thread: ThreadChannel) {
         list: {
             threadId: entry(thread.id, `\`${thread.id}\``),
             name: entry(thread.name, renderChannel(thread)),
-            parentChannel: entry(thread.parentId, renderChannel(thread.parent)),
+            parentChannel: entry(thread.parentId, renderChannel(thread.parent!)),
             category: category,
             autoArchiveDuration: entry(
                 thread.autoArchiveDuration,
@@ -35,8 +35,8 @@ export async function callback(client: NucleusClient, thread: ThreadChannel) {
                     round: true
                 })
             ),
-            createdBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(thread.createdTimestamp, renderDelta(thread.createdTimestamp))
+            createdBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
+            created: entry(thread.createdTimestamp, renderDelta(thread.createdTimestamp!))
         },
         hidden: {
             guild: thread.guild.id

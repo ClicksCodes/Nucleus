@@ -1,4 +1,4 @@
-import type { GuildAuditLogsEntry, Webhook } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, Webhook } from "discord.js";
 import type Discord from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 export const event = "webhookUpdate";
@@ -6,32 +6,13 @@ export const event = "webhookUpdate";
 export async function callback(client: NucleusClient, channel: Discord.GuildChannel) {
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-        let auditLogCreate = getAuditLog(channel.guild, "WEBHOOK_CREATE");
-        let auditLogUpdate = getAuditLog(channel.guild, "WEBHOOK_UPDATE");
-        let auditLogDelete = getAuditLog(channel.guild, "WEBHOOK_DELETE");
-        [auditLogCreate, auditLogUpdate, auditLogDelete] = await Promise.all([
-            auditLogCreate,
-            auditLogUpdate,
-            auditLogDelete
-        ]);
-        const auditCreate = auditLogCreate.entries
-            .filter((entry: GuildAuditLogsEntry | null) => {
-                if (entry === null) return false;
-                return (entry.target! as Webhook).channelId === channel.id;
-            })
-            .first();
-        const auditUpdate = auditLogUpdate.entries
-            .filter((entry: GuildAuditLogsEntry | null) => {
-                if (entry === null) return false;
-                return (entry.target! as Webhook).channelId === channel.id;
-            })
-            .first();
-        const auditDelete = auditLogDelete.entries
-            .filter((entry: GuildAuditLogsEntry | null) => {
-                if (entry === null) return false;
-                return (entry.target! as Webhook).channelId === channel.id;
-            })
-            .first();
+        const auditCreate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookCreate))
+            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0] as GuildAuditLogsEntry;
+        const auditDelete = (await getAuditLog(channel.guild, AuditLogEvent.WebhookDelete))
+            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0] as GuildAuditLogsEntry;
+        const auditUpdate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookUpdate))
+            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0] as GuildAuditLogsEntry;
+
         if (!auditCreate && !auditUpdate && !auditDelete) return;
         let audit = auditCreate;
         let action: "Create" | "Update" | "Delete" = "Create";

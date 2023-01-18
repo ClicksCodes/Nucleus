@@ -1,31 +1,31 @@
 import type { NucleusClient } from "../utils/client.js";
-import type { GuildAuditLogsEntry, Sticker } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, Sticker } from "discord.js";
 
 export const event = "stickerDelete";
 
-export async function callback(client: NucleusClient, emoji: Sticker) {
+export async function callback(client: NucleusClient, sticker: Sticker) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    const auditLog = await getAuditLog(emoji.guild, "STICKER_DELETE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === emoji.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.StickerDelete))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0] as GuildAuditLogsEntry;
+    if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {
             type: "stickerDelete",
             displayName: "Sticker Deleted",
             calculateType: "stickerUpdate",
             color: NucleusColors.red,
-            emoji: "GUILD.EMOJI.DELETE",
-            timestamp: audit.createdTimestamp
+            sticker: "GUILD.sticker.DELETE",
+            timestamp: auditLog.createdTimestamp
         },
         list: {
-            stickerId: entry(emoji.id, `\`${emoji.id}\``),
-            sticker: entry(emoji.name, `\`${emoji.name}\``),
-            deletedBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(emoji.createdTimestamp, renderDelta(emoji.createdTimestamp)),
-            deleted: entry(audit.createdTimestamp, renderDelta(audit.createdTimestamp))
+            stickerId: entry(sticker.id, `\`${sticker.id}\``),
+            sticker: entry(sticker.name, `\`${sticker.name}\``),
+            deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
+            created: entry(sticker.createdTimestamp, renderDelta(sticker.createdTimestamp)),
+            deleted: entry(auditLog.createdTimestamp, renderDelta(auditLog.createdTimestamp))
         },
         hidden: {
-            guild: emoji.guild!.id
+            guild: sticker.guild!.id
         }
     };
     log(data);

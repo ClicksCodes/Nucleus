@@ -1,13 +1,13 @@
 import type { NucleusClient } from "../utils/client.js";
-import type { GuildAuditLogsEntry, Sticker } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, Sticker } from "discord.js";
 
 export const event = "stickerDelete";
 
-export async function callback(client: NucleusClient, emoji: Sticker) {
+export async function callback(client: NucleusClient, sticker: Sticker) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    const auditLog = await getAuditLog(emoji.guild, "STICKER_CREATE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === emoji.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.EmojiCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0] as GuildAuditLogsEntry;
+    if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {
             type: "stickerCreate",
@@ -15,16 +15,16 @@ export async function callback(client: NucleusClient, emoji: Sticker) {
             calculateType: "stickerUpdate",
             color: NucleusColors.green,
             emoji: "GUILD.EMOJI.CREATE",
-            timestamp: emoji.createdTimestamp
+            timestamp: sticker.createdTimestamp
         },
         list: {
-            stickerId: entry(emoji.id, `\`${emoji.id}\``),
-            emoji: entry(emoji.name, `\`:${emoji.name}:\``),
-            createdBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(emoji.createdTimestamp, renderDelta(emoji.createdTimestamp))
+            stickerId: entry(sticker.id, `\`${sticker.id}\``),
+            emoji: entry(sticker.name, `\`:${sticker.name}:\``),
+            createdBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
+            created: entry(sticker.createdTimestamp, renderDelta(sticker.createdTimestamp))
         },
         hidden: {
-            guild: emoji.guild!.id
+            guild: sticker.guild!.id
         }
     };
     log(data);

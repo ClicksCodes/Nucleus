@@ -1,15 +1,15 @@
 import getEmojiByName from "../utils/getEmojiByName.js";
 import type { NucleusClient } from "../utils/client.js";
-import type { GuildAuditLogsEntry, Role } from "discord.js";
+import { AuditLogEvent, Guild, GuildAuditLogsEntry, Role } from "discord.js";
 
 export const event = "roleDelete";
 
 export async function callback(client: NucleusClient, role: Role) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (role.managed) return;
-    const auditLog = await getAuditLog(role.guild, "ROLE_DELETE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === role.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(role.guild as Guild, AuditLogEvent.RoleDelete))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === role.id)[0]!;
+    if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {
             type: "roleDelete",
@@ -17,7 +17,7 @@ export async function callback(client: NucleusClient, role: Role) {
             calculateType: "guildRoleUpdate",
             color: NucleusColors.red,
             emoji: "GUILD.ROLES.DELETE",
-            timestamp: audit.createdTimestamp
+            timestamp: auditLog.createdTimestamp
         },
         list: {
             roleId: entry(role.id, `\`${role.id}\``),
@@ -32,7 +32,7 @@ export async function callback(client: NucleusClient, role: Role) {
                 role.mentionable ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`
             ),
             members: entry(role.members.size, `${role.members.size}`),
-            deletedBy: entry(audit.executor.id, renderUser(audit.executor)),
+            deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
             created: entry(role.createdTimestamp, renderDelta(role.createdTimestamp)),
             deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
         },

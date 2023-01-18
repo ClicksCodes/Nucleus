@@ -1,4 +1,4 @@
-import type { GuildAuditLogsEntry, ThreadChannel } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, ThreadChannel } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
@@ -6,9 +6,9 @@ export const event = "threadDelete";
 
 export async function callback(client: NucleusClient, thread: ThreadChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
-    const auditLog = await getAuditLog(thread.guild, "THREAD_UPDATE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === thread.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(thread.guild, AuditLogEvent.ThreadDelete))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as ThreadChannel)!.id === thread.id)[0] as GuildAuditLogsEntry;
+    if (auditLog.executor!.id === client.user!.id) return;
     const category = thread.parent
         ? entry(
               thread.parent.parent ? thread.parent.parent.name : "None",
@@ -35,9 +35,9 @@ export async function callback(client: NucleusClient, thread: ThreadChannel) {
                     round: true
                 })
             ),
-            membersInThread: entry(thread.memberCount, thread.memberCount),
-            deletedBy: entry(audit.executor.id, renderUser(audit.executor)),
-            created: entry(thread.createdTimestamp, renderDelta(thread.createdTimestamp)),
+            membersInThread: entry(thread.memberCount, thread.memberCount!.toString()),
+            deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
+            created: entry(thread.createdTimestamp, renderDelta(thread.createdTimestamp!)),
             deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
         },
         hidden: {

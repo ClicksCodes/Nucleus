@@ -22,8 +22,8 @@ export async function callback(client: NucleusClient, member: GuildMember) {
         list: {
             memberId: entry(member.id, `\`${member.id}\``),
             name: entry(member.id, renderUser(member.user)),
-            joined: entry(member.joinedAt, renderDelta(member.joinedAt)),
-            accountCreated: entry(member.user.createdAt, renderDelta(member.user.createdAt)),
+            joined: entry(member.joinedTimestamp, renderDelta(member.joinedTimestamp?.valueOf()!)),
+            accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp.valueOf()!)),
             serverMemberCount: member.guild.memberCount
         },
         hidden: {

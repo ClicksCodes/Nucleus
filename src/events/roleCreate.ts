@@ -1,14 +1,14 @@
 import type { NucleusClient } from "../utils/client.js";
-import type { GuildAuditLogsEntry, Role } from "discord.js";
+import { AuditLogEvent, Guild, GuildAuditLogsEntry, Role } from "discord.js";
 
 export const event = "roleCreate";
 
 export async function callback(client: NucleusClient, role: Role) {
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = client.logger;
     if (role.managed) return;
-    const auditLog = await getAuditLog(role.guild, "ROLE_CREATE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === role.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(role.guild as Guild, AuditLogEvent.RoleCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === role.id)[0]!;
+    if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {
             type: "roleCreate",
@@ -21,7 +21,7 @@ export async function callback(client: NucleusClient, role: Role) {
         list: {
             roleId: entry(role.id, `\`${role.id}\``),
             role: entry(role.name, renderRole(role)),
-            createdBy: entry(audit.executor.id, renderUser(audit.executor)),
+            createdBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
             created: entry(role.createdTimestamp, renderDelta(role.createdTimestamp))
         },
         hidden: {

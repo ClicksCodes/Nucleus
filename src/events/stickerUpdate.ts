@@ -1,21 +1,21 @@
 import type { NucleusClient } from "../utils/client.js";
-import type { Sticker } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, Sticker } from "discord.js";
 
 export const event = "stickerUpdate";
 
-export async function callback(client: NucleusClient, oe: Sticker, ne: Sticker) {
+export async function callback(client: NucleusClient, oldSticker: Sticker, newSticker: Sticker) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
 
-    if (oe.name === ne.name) return;
-    const auditLog = await getAuditLog(ne.guild, "STICKER_UPDATE");
-    const audit = auditLog.entries.first();
-    if (audit.executor.id === client.user.id) return;
+    if (oldSticker.name === newSticker.name) return;
+    const auditLog = (await getAuditLog(newSticker.guild!, AuditLogEvent.StickerUpdate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === newSticker.id)[0] as GuildAuditLogsEntry;
+    if (auditLog.executor!.id === client.user!.id) return;
 
     const changes = {
-        stickerId: entry(ne.id, `\`${ne.id}\``),
-        edited: entry(ne.createdTimestamp, renderDelta(ne.createdTimestamp)),
-        editedBy: entry(audit.executor.id, renderUser((await ne.guild!.members.fetch(audit.executor.id)).user)),
-        name: entry([oe.name, ne.name], `\`:${oe.name}:\` -> \`:${ne.name}:\``)
+        stickerId: entry(newSticker.id, `\`${newSticker.id}\``),
+        edited: entry(newSticker.createdTimestamp, renderDelta(newSticker.createdTimestamp)),
+        editedBy: entry(auditLog.executor!.id, renderUser((await newSticker.guild!.members.fetch(auditLog.executor!.id)).user)),
+        name: entry([oldSticker.name, newSticker.name], `\`:${oldSticker.name}:\` -> \`:${newSticker.name}:\``)
     };
     const data = {
         meta: {
@@ -24,11 +24,11 @@ export async function callback(client: NucleusClient, oe: Sticker, ne: Sticker) 
             calculateType: "stickerUpdate",
             color: NucleusColors.yellow,
             emoji: "GUILD.EMOJI.EDIT",
-            timestamp: audit.createdTimestamp
+            timestamp: auditLog.createdTimestamp
         },
         list: changes,
         hidden: {
-            guild: ne.guild!.id
+            guild: newSticker.guild!.id
         }
     };
     log(data);

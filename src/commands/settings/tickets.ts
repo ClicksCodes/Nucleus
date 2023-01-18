@@ -10,9 +10,9 @@ import Discord, {
     Component,
     ButtonBuilder,
     MessageComponentInteraction,
-    SelectMenuBuilder,
+    StringSelectMenuBuilder,
     Role,
-    SelectMenuInteraction,
+    StringSelectMenuInteraction,
     TextInputComponent,
     ButtonStyle
 } from "discord.js";
@@ -69,10 +69,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         fetchReply: true
     })) as Message;
     const options = {
-        enabled: interaction.options.getString("enabled")?.startsWith("yes") as boolean | null,
-        category: interaction.options.getChannel("category"),
-        maxtickets: interaction.options.getNumber("maxticketsperuser"),
-        supportping: interaction.options.getRole("supportrole")
+        enabled: (interaction.options.get("enabled")?.value as string).startsWith("yes") as boolean | null,
+        category: interaction.options.get("category")?.channel,
+        maxtickets: interaction.options.get("maxticketsperuser")?.value as number,
+        supportping: interaction.options.get("supportrole")?.role as Role
     };
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         if (options.category) {
@@ -337,7 +337,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     ],
                     components: [
                         new ActionRowBuilder().addComponents([
-                            new SelectMenuBuilder()
+                            new StringSelectMenuBuilder()
                                 .setOptions(
                                     ticketMessages.map(
                                         (
@@ -392,9 +392,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(ticketMessages[parseInt((i as SelectMenuInteraction).values[0]!)]!.label)
+                                .setTitle(ticketMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.label)
                                 .setDescription(
-                                    ticketMessages[parseInt((i as SelectMenuInteraction).values[0]!)]!.description
+                                    ticketMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("GUILD.TICKET.OPEN")
@@ -546,7 +546,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                 components: (customTypes
                     ? [
                           new ActionRowBuilder().addComponents([
-                              new Discord.SelectMenuBuilder()
+                              new Discord.StringSelectMenuBuilder()
                                   .setCustomId("removeTypes")
                                   .setPlaceholder("Select types to remove")
                                   .setMaxValues(customTypes.length)
@@ -585,7 +585,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             const options = [];
             ticketTypes.forEach((type) => {
                 options.push(
-                    new SelectMenuOption({
+                    new StringSelectMenuOption({
                         label: capitalize(type),
                         value: type,
                         emoji: client.emojis.cache.get(getEmojiByName(`TICKETS.${type.toUpperCase()}`, "id")),
@@ -594,7 +594,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                 );
             });
             const selectPane = new ActionRowBuilder().addComponents([
-                new Discord.SelectMenuBuilder()
+                new Discord.StringSelectMenuBuilder()
                     .addOptions(options)
                     .setCustomId("types")
                     .setMaxValues(ticketTypes.length)
