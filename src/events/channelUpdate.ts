@@ -1,7 +1,41 @@
-import { GuildChannel, AuditLogEvent } from 'discord.js';
+import { GuildChannel, AuditLogEvent, ChannelType, TextChannel, VoiceChannel, StageChannel } from 'discord.js';
+import type { GuildAuditLogsEntry } from 'discord.js';
+//@ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
+
+const channelTypeEmoji: Record<number, string> = {
+    0: "Text",  // Text channel
+    2: "Voice",  // Voice channel
+    5: "Announcement",  // Announcement channel
+    13: "Stage",  // Stage channel
+    15: "Forum",  // Forum channel
+    99: "Rules"  // Rules channel
+};
+
+interface channelChanges {
+    channelId: { value: string | boolean | string[] | null; displayValue: string; };
+    channel: { value: string | boolean | string[] | null; displayValue: string; };
+    edited: { value: string | boolean | string[] | null; displayValue: string; };
+    editedBy: { value: string | boolean | string[] | null; displayValue: string; };
+    type?: { value: string | boolean | string[] | null; displayValue: string; };
+    name?: { value: string | boolean | string[] | null; displayValue: string; };
+    position?: { value: string | boolean | string[] | null; displayValue: string; };
+    description?: { value: string | boolean | string[] | null; displayValue: string; };
+    nsfw?: { value: string | boolean | string[] | null; displayValue: string; };
+    slowmode?: { value: string | boolean | string[] | null; displayValue: string; };
+    topic?: { value: string | boolean | string[] | null; displayValue: string; };
+    bitrate?: { value: string | boolean | string[] | null; displayValue: string; };
+    userLimit?: { value: string | boolean | string[] | null; displayValue: string; };
+    rateLimitPerUser?: { value: string | boolean | string[] | null; displayValue: string; };
+    parent?: { value: string | boolean | string[] | null; displayValue: string; };
+    permissionOverwrites?: { value: string | boolean | string[] | null; displayValue: string; };
+    region?: { value: string | boolean | string[] | null; displayValue: string; };
+    maxUsers?: { value: string | boolean | string[] | null; displayValue: string; };
+}
+
+
 
 export const event = "channelUpdate";
 
@@ -11,30 +45,30 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
 
     if (newChannel.parent && newChannel.parent.id === config.tickets.category) return;
 
-    const auditLog = await getAuditLog(newChannel.guild, "CHANNEL_UPDATE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === newChannel.id).first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog: GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> = (await getAuditLog(newChannel.guild, AuditLogEvent.ChannelUpdate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildChannel)!.id === newChannel.id)[0] as GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate>;
+    if (auditLog.executor!.id === client.user!.id) return;
 
     let emoji: string;
     let readableType: string;
     let displayName: string;
-    const changes = {
+    const changes: channelChanges = {
         channelId: entry(newChannel.id, `\`${newChannel.id}\``),
         channel: entry(newChannel.id, renderChannel(newChannel)),
         edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-        editedBy: entry(audit.executor.id, renderUser((await newChannel.guild.members.fetch(audit.executor.id)).user))
+        editedBy: entry(auditLog.executor!.id, renderUser((await newChannel.guild.members.fetch(auditLog.executor!.id)).user)),
     };
     if (oldChannel.name !== newChannel.name) changes.name = entry([oldChannel.name, newChannel.name], `${oldChannel.name} -> ${newChannel.name}`);
     if (oldChannel.position !== newChannel.position)
         changes.position = entry([oldChannel.position.toString(), newChannel.position.toString()], `${oldChannel.position} -> ${newChannel.position}`);
 
     switch (newChannel.type) {
-        case "GUILD_TEXT": {
+        case ChannelType.GuildText: {
             emoji = "CHANNEL.TEXT.EDIT";
             readableType = "Text";
             displayName = "Text Channel";
-            let oldTopic = oldChannel.topic,
-                newTopic = newChannel.topic;
+            let oldTopic = (oldChannel as TextChannel).topic,
+                newTopic = (newChannel as TextChannel).topic;
             if (oldTopic) {
                 if (oldTopic.length > 256)
                     oldTopic = `\`\`\`\n${oldTopic.replace("`", "'").substring(0, 253) + "..."}\n\`\`\``;
@@ -50,25 +84,26 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
                 newTopic = "None";
             }
             const nsfw = ["", ""];
-            nsfw[0] = oldChannel.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
-            nsfw[1] = newChannel.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
-            if (oldChannel.topic !== newChannel.topic)
-                changes.description = entry([oldChannel.topic, newChannel.topic], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
-            if (oldChannel.nsfw !== newChannel.nsfw) changes.nsfw = entry([oldChannel.nsfw, newChannel.nsfw], `${nsfw[0]} -> ${nsfw[1]}`);
-            if (oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser)
+console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextChannel).rateLimitPerUser);
+            nsfw[0] = (oldChannel as TextChannel).nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
+            nsfw[1] = (newChannel as TextChannel).nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
+            if ((oldChannel as TextChannel).topic !== (newChannel as TextChannel).topic)
+                changes.description = entry([(oldChannel as TextChannel).topic ?? "", (newChannel as TextChannel).topic ?? ""], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
+            if ((oldChannel as TextChannel).nsfw !== (newChannel as TextChannel).nsfw) changes.nsfw = entry([(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"], `${nsfw[0]} -> ${nsfw[1]}`);
+            if ((oldChannel as TextChannel).rateLimitPerUser !== (newChannel as TextChannel).rateLimitPerUser && (oldChannel as TextChannel).rateLimitPerUser !== undefined)
                 changes.rateLimitPerUser = entry(
-                    [oldChannel.rateLimitPerUser, newChannel.rateLimitPerUser],
-                    `${humanizeDuration(oldChannel.rateLimitPerUser * 1000)} -> ${humanizeDuration(newChannel.rateLimitPerUser * 1000)}`
+                    [((oldChannel as TextChannel).rateLimitPerUser ?? 0).toString(), ((newChannel as TextChannel).rateLimitPerUser ?? 0).toString()],
+                    `${humanizeDuration((oldChannel as TextChannel).rateLimitPerUser * 1000)} -> ${humanizeDuration((newChannel as TextChannel).rateLimitPerUser * 1000)}`
                 );
 
             break;
         }
-        case "GUILD_NEWS": {
+        case ChannelType.GuildAnnouncement: {
             emoji = "CHANNEL.TEXT.EDIT";
-            readableType = "News";
-            displayName = "News Channel";
-            let oldTopic = oldChannel.topic,
-                newTopic = newChannel.topic;
+            readableType = "Announcement";
+            displayName = "Announcment Channel";
+            let oldTopic = (oldChannel as TextChannel).topic,
+                newTopic = (newChannel as TextChannel).topic;
             if (oldTopic) {
                 if (oldTopic.length > 256)
                     oldTopic = `\`\`\`\n${oldTopic.replace("`", "'").substring(0, 253) + "..."}\n\`\`\``;
@@ -83,34 +118,34 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             } else {
                 newTopic = "None";
             }
-            if (oldChannel.nsfw !== newChannel.nsfw)
-                changes.nsfw = entry([oldChannel.nsfw, newChannel.nsfw], `${oldChannel.nsfw ? "On" : "Off"} -> ${newChannel.nsfw ? "On" : "Off"}`);
+            if ((oldChannel as TextChannel).nsfw !== (newChannel as TextChannel).nsfw)
+                changes.nsfw = entry([(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"], `${(oldChannel as TextChannel).nsfw ? "On" : "Off"} -> ${(newChannel as TextChannel).nsfw ? "On" : "Off"}`);
             break;
         }
-        case "GUILD_VOICE": {
+        case ChannelType.GuildVoice: {
             emoji = "CHANNEL.VOICE.EDIT";
             readableType = "Voice";
             displayName = "Voice Channel";
-            if (oldChannel.bitrate !== newChannel.bitrate)
-                changes.bitrate = entry([oldChannel.bitrate, newChannel.bitrate], `${oldChannel.bitrate} -> ${newChannel.bitrate}`);
-            if (oldChannel.userLimit !== newChannel.userLimit)
+            if ((oldChannel as VoiceChannel).bitrate !== (newChannel as VoiceChannel).bitrate)
+                changes.bitrate = entry([(oldChannel as VoiceChannel).bitrate.toString(), (newChannel as VoiceChannel).bitrate.toString()], `${(oldChannel as VoiceChannel).bitrate} -> ${(newChannel as VoiceChannel).bitrate}`);
+            if ((oldChannel as VoiceChannel).userLimit !== (newChannel as VoiceChannel).userLimit)
                 changes.maxUsers = entry(
-                    [oldChannel.userLimit, newChannel.userLimit],
-                    `${oldChannel.userLimit ? oldChannel.userLimit : "Unlimited"} -> ${newChannel.userLimit}`
+                    [(oldChannel as VoiceChannel).userLimit.toString(), (newChannel as VoiceChannel).userLimit.toString()],
+                    `${(oldChannel as VoiceChannel).userLimit ? (oldChannel as VoiceChannel).userLimit : "Unlimited"} -> ${(newChannel as VoiceChannel).userLimit}`
                 );
-            if (oldChannel.rtcRegion !== newChannel.rtcRegion)
+            if ((oldChannel as VoiceChannel).rtcRegion !== (newChannel as VoiceChannel).rtcRegion)
                 changes.region = entry(
-                    [oldChannel.rtcRegion, newChannel.rtcRegion],
-                    `${oldChannel.rtcRegion || "Automatic"} -> ${newChannel.rtcRegion || "Automatic"}`
+                    [(oldChannel as VoiceChannel).rtcRegion ?? "Automatic", (newChannel as VoiceChannel).rtcRegion ?? "Automatic"],
+                    `${(oldChannel as VoiceChannel).rtcRegion?.toUpperCase() || "Automatic"} -> ${(newChannel as VoiceChannel).rtcRegion?.toUpperCase() || "Automatic"}`
                 );
             break;
         }
-        case "GUILD_STAGE": {
+        case ChannelType.GuildStageVoice: {
             emoji = "CHANNEL.VOICE.EDIT";
             readableType = "Stage";
             displayName = "Stage Channel";
-            let oldTopic = oldChannel.topic,
-                newTopic = newChannel.topic;
+            let oldTopic = (oldChannel as StageChannel).topic,
+                newTopic = (newChannel as StageChannel).topic;
             if (oldTopic) {
                 if (oldTopic.length > 256)
                     oldTopic = `\`\`\`\n${oldTopic.replace("`", "'").substring(0, 253) + "..."}\n\`\`\``;
@@ -125,21 +160,21 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             } else {
                 newTopic = "None";
             }
-            if (oldChannel.bitrate !== newChannel.bitrate)
-                changes.bitrate = entry([oldChannel.bitrate, newChannel.bitrate], `${oldChannel.bitrate} -> ${newChannel.bitrate}`);
-            if (oldChannel.userLimit !== newChannel.userLimit)
+            if ((oldChannel as StageChannel).bitrate !== (newChannel as StageChannel).bitrate)
+                changes.bitrate = entry([(oldChannel as StageChannel).bitrate.toString(), (newChannel as StageChannel).bitrate.toString()], `${(oldChannel as StageChannel).bitrate} -> ${(newChannel as StageChannel).bitrate}`);
+            if ((oldChannel as StageChannel).userLimit !== (newChannel as StageChannel).userLimit)
                 changes.maxUsers = entry(
-                    [oldChannel.userLimit, newChannel.userLimit],
-                    `${oldChannel.userLimit ? oldChannel.userLimit : "Unlimited"} -> ${newChannel.userLimit}`
+                    [(oldChannel as StageChannel).userLimit.toString(), (newChannel as StageChannel).userLimit.toString()],
+                    `${(oldChannel as StageChannel).userLimit ? (oldChannel as StageChannel).userLimit : "Unlimited"} -> ${(newChannel as StageChannel).userLimit}`
                 );
-            if (oldChannel.rtcRegion !== newChannel.rtcRegion)
+            if ((oldChannel as StageChannel).rtcRegion !== (newChannel as StageChannel).rtcRegion)
                 changes.region = entry(
-                    [oldChannel.rtcRegion, newChannel.rtcRegion],
-                    `${oldChannel.rtcRegion || "Automatic"} -> ${newChannel.rtcRegion || "Automatic"}`
+                    [(oldChannel as StageChannel).rtcRegion ?? "Automatic", (newChannel as StageChannel).rtcRegion ?? "Automatic"],
+                    `${(oldChannel as StageChannel).rtcRegion?.toUpperCase() || "Automatic"} -> ${(newChannel as StageChannel).rtcRegion?.toUpperCase() || "Automatic"}`
                 );
             break;
         }
-        case "GUILD_CATEGORY": {
+        case ChannelType.GuildCategory: {
             emoji = "CHANNEL.CATEGORY.EDIT";
             readableType = "Category";
             displayName = "Category";
@@ -151,9 +186,10 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             displayName = "Channel";
         }
     }
-    const t = oldChannel.type.split("_")[1];
+    let ocType = channelTypeEmoji[oldChannel.type],
+        ncType = channelTypeEmoji[newChannel.type];
     if (oldChannel.type !== newChannel.type)
-        changes.type = entry([oldChannel.type, newChannel.type], `${t[0] + t.splice(1).toLowerCase()} -> ${readableType}`);
+        changes.type = entry([ocType!, ncType!], `${ocType!} -> ${readableType}`);
     if (!(Object.values(changes).length - 4)) return;
     const data = {
         meta: {
@@ -162,7 +198,7 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             calculateType: "channelUpdate",
             color: NucleusColors.yellow,
             emoji: emoji,
-            timestamp: audit.createdTimestamp
+            timestamp: auditLog.createdTimestamp
         },
         list: changes,
         hidden: {
@@ -171,3 +207,4 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
     };
     log(data);
 }
+//TODO: Capitialize RTC Regions
