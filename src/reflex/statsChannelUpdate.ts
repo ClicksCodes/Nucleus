@@ -1,3 +1,4 @@
+import { getCommandMentionByName } from '../utils/getCommandMentionByName.js';
 import type { Guild, User } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 import type { GuildMember } from "discord.js";
@@ -31,7 +32,7 @@ export async function callback(client: NucleusClient, member?: GuildMember, guil
                 return singleNotify(
                     "statsChannelDeleted",
                     guild!.id,
-                    "One or more of your stats channels have been deleted. Please use `/settings stats` if you wish to add the channel again.\n" +
+                    `One or more of your stats channels have been deleted. You can use ${await getCommandMentionByName("settings/stats")}.\n` +
                         `The channels name was: ${deleted!.name}`,
                     "Critical"
                 );

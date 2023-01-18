@@ -67,7 +67,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
     } while (!timedOut && !success)
-    if (timedOut || !confirmation.success) return;
+    if (timedOut || !success) return;
     let dmSent = false;
     const config = await client.database.guilds.read(interaction.guild.id);
     try {

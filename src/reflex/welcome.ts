@@ -1,3 +1,4 @@
+import { getCommandMentionByName } from './../utils/getCommandMentionByName.js';
 import type { NucleusClient } from "../utils/client.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import client from "../utils/client.js";
@@ -26,7 +27,7 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                 });
             } else {
                 const channel: GuildChannel | null = await member.guild.channels.fetch(config.welcome.channel) as GuildChannel | null;
-                if (!channel) return; // TODO: SEN
+                if (!channel) return await singleNotify("welcomeChannelDeleted", member.guild.id, `The welcome channel has been deleted or is no longer accessible. Use ${await getCommandMentionByName("settings/welcome")} to set a new one`, "Warning")
                 if (!(channel instanceof BaseGuildTextChannel)) return;
                 if (channel.guild.id !== member.guild.id) return;
                 try {
@@ -38,7 +39,7 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                     singleNotify(
                         "welcomeChannelDeleted",
                         member.guild.id,
-                        "The welcome channel has been deleted or is no longer accessible. Use /settings welcome to set a new one",
+                        `The welcome channel has been deleted or is no longer accessible. Use ${await getCommandMentionByName("settings/welcome")} to set a new one`,
                         "Warning"
                     )
                 }

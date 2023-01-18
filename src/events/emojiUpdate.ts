@@ -1,19 +1,22 @@
+import { AuditLogEvent } from 'discord.js';
+import type { NucleusClient } from "../utils/client.js";
+import type { GuildEmoji, GuildAuditLogsEntry } from 'discord.js'
 export const event = "emojiUpdate";
 
-export async function callback(client, oe, ne) {
+export async function callback(client: NucleusClient, oldEmoji: GuildEmoji, newEmoji: GuildEmoji) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderEmoji } = client.logger;
 
-    if (oe.name === ne.name) return;
-    const auditLog = await getAuditLog(ne.guild, "EMOJI_UPDATE");
-    const audit = auditLog.entries.first();
-    if (audit.executor.id === client.user.id) return;
+    const auditLog = (await getAuditLog(newEmoji.guild, AuditLogEvent.EmojiCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === newEmoji.id)[0];
+    if (!auditLog) return;
+    if (auditLog.executor!.id === client.user!.id) return;
 
     const changes = {
-        emojiId: entry(ne.id, `\`${ne.id}\``),
-        emoji: entry(ne.id, renderEmoji(ne)),
-        edited: entry(ne.createdTimestamp, renderDelta(ne.createdTimestamp)),
-        editedBy: entry(audit.executor.id, renderUser((await ne.guild.members.fetch(audit.executor.id)).user)),
-        name: entry([oe.name, ne.name], `\`:${oe.name}:\` -> \`:${ne.name}:\``)
+        emojiId: entry(newEmoji.id, `\`${newEmoji.id}\``),
+        emoji: entry(newEmoji.id, renderEmoji(newEmoji)),
+        edited: entry(newEmoji.createdTimestamp, renderDelta(newEmoji.createdTimestamp)),
+        editedBy: entry(auditLog.executor!.id, renderUser((await newEmoji.guild.members.fetch(auditLog.executor!.id)).user)),
+        name: entry([oldEmoji.name!, newEmoji.name!], `\`:${oldEmoji.name}:\` -> \`:${newEmoji.name}:\``)
     };
     const data = {
         meta: {
@@ -22,11 +25,11 @@ export async function callback(client, oe, ne) {
             calculateType: "emojiUpdate",
             color: NucleusColors.yellow,
             emoji: "GUILD.EMOJI.EDIT",
-            timestamp: audit.createdTimestamp
+            timestamp: auditLog.createdTimestamp
         },
         list: changes,
         hidden: {
-            guild: ne.guild.id
+            guild: newEmoji.guild.id
         }
     };
     log(data);

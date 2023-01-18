@@ -1,10 +1,14 @@
+import { AuditLogEvent } from 'discord.js';
+import type { NucleusClient } from "../utils/client.js";
+import type { GuildEmoji, GuildAuditLogsEntry } from 'discord.js'
 export const event = "emojiDelete";
 
-export async function callback(client, emoji) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = emoji.client.logger;
-    const auditLog = await getAuditLog(emoji.guild, "EMOJI_DELETE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === emoji.id).first();
-    if (audit.executor.id === client.user.id) return;
+export async function callback(client: NucleusClient, emoji: GuildEmoji) {
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = client.logger;
+    const auditLog = (await getAuditLog(emoji.guild, AuditLogEvent.EmojiCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === emoji.id)[0];
+    if (!auditLog) return;
+    if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {
             type: "emojiDelete",
@@ -12,14 +16,14 @@ export async function callback(client, emoji) {
             calculateType: "emojiUpdate",
             color: NucleusColors.red,
             emoji: "GUILD.EMOJI.DELETE",
-            timestamp: audit.createdTimestamp
+            timestamp: auditLog.createdTimestamp
         },
         list: {
             emojiId: entry(emoji.id, `\`${emoji.id}\``),
             emoji: entry(emoji.name, renderEmoji(emoji)),
-            deletedBy: entry(audit.executor.id, renderUser(audit.executor)),
+            deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
             created: entry(emoji.createdTimestamp, renderDelta(emoji.createdTimestamp)),
-            deleted: entry(audit.createdTimestamp, renderDelta(audit.createdTimestamp))
+            deleted: entry(auditLog.createdTimestamp, renderDelta(auditLog.createdTimestamp))
         },
         hidden: {
             guild: emoji.guild.id

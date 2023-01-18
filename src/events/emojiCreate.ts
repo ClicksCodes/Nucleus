@@ -1,10 +1,14 @@
+import { AuditLogEvent } from 'discord.js';
+import type { NucleusClient } from "../utils/client.js";
+import type { GuildEmoji, GuildAuditLogsEntry } from 'discord.js'
 export const event = "emojiCreate";
 
-export async function callback(client, emoji) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = emoji.client.logger;
-    const auditLog = await getAuditLog(emoji.guild, "EMOJI_CREATE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === emoji.id).first();
-    if (audit.executor.id === client.user.id) return;
+export async function callback(client: NucleusClient, emoji: GuildEmoji) {
+    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = client.logger;
+    const auditLog = (await getAuditLog(emoji.guild, AuditLogEvent.EmojiCreate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === emoji.id)[0];
+    if (!auditLog) return;
+    if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {
             type: "emojiCreate",
@@ -17,7 +21,7 @@ export async function callback(client, emoji) {
         list: {
             emojiId: entry(emoji.id, `\`${emoji.id}\``),
             emoji: entry(emoji.name, renderEmoji(emoji)),
-            createdBy: entry(audit.executor.id, renderUser(audit.executor)),
+            createdBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
             created: entry(emoji.createdTimestamp, renderDelta(emoji.createdTimestamp))
         },
         hidden: {
@@ -26,3 +30,4 @@ export async function callback(client, emoji) {
     };
     log(data);
 }
+

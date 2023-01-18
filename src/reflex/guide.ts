@@ -3,45 +3,18 @@ import Discord, {
     ActionRowBuilder,
     ButtonBuilder,
     MessageComponentInteraction,
-    MessageSelectOptionData,
+    StringSelectMenuInteraction,
     Guild,
     CommandInteraction,
     GuildTextBasedChannel,
     Message,
-    SelectMenuInteraction,
-    ButtonStyle
+    ButtonStyle,
+    ChannelType
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
-
-class Embed {
-    embed: Discord.EmbedBuilder;
-    title: string;
-    description = "";
-    pageId = 0;
-
-    constructor() {
-        this.embed = new Discord.EmbedBuilder();
-        this.title = "";
-    }
-    setEmbed(embed: Discord.EmbedBuilder) {
-        this.embed = embed;
-        return this;
-    }
-    setTitle(title: string) {
-        this.title = title;
-        return this;
-    }
-    setDescription(description: string) {
-        this.description = description;
-        return this;
-    }
-    setPageId(pageId: number) {
-        this.pageId = pageId;
-        return this;
-    }
-}
+import { Embed } from "../utils/defaults.js";
 
 export default async (guild: Guild, interaction?: CommandInteraction) => {
     let c: GuildTextBasedChannel | null = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
@@ -50,14 +23,14 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
         : (guild.channels.cache.find(
               (ch) =>
                   [
-                      "GUILD_TEXT",
-                      "GUILD_NEWS",
-                      "GUILD_NEWS_THREAD",
-                      "GUILD_PRIVATE_THREAD",
-                      "GUILD_PUBLIC_THREAD"
+                        ChannelType.GuildText,
+                        ChannelType.GuildAnnouncement,
+                        ChannelType.PublicThread,
+                        ChannelType.PrivateThread,
+                        ChannelType.AnnouncementThread
                   ].includes(ch.type) &&
-                  ch.permissionsFor(guild.roles.everyone).has("SEND_MESSAGES") &&
-                  ch.permissionsFor(guild.me!).has("EMBED_LINKS")
+                  ch.permissionsFor(guild.roles.everyone).has("SendMessages") &&
+                  ch.permissionsFor(guild.members.me!).has("EmbedLinks")
           ) as GuildTextBasedChannel | undefined) ?? null;
     if (interaction) c = interaction.channel as GuildTextBasedChannel;
     if (!c) {
@@ -226,7 +199,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
     let page = 0;
 
     const publicFilter = async (component: MessageComponentInteraction) => {
-        return (component.member as Discord.GuildMember).permissions.has("MANAGE_GUILD");
+        return (component.member as Discord.GuildMember).permissions.has("ManageGuild");
     };
 
     let selectPaneOpen = false;
@@ -234,20 +207,20 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
     let cancelled = false;
     let timedOut = false;
     while (!cancelled && !timedOut) {
-        let selectPane: ActionRowBuilder[] = [];
+        let selectPane: ActionRowBuilder<Discord.StringSelectMenuBuilder | ButtonBuilder>[] = [];
 
         if (selectPaneOpen) {
-            const options: MessageSelectOptionData[] = [];
+            const options: Discord.StringSelectMenuOptionBuilder[] = [];
             pages.forEach((embed) => {
-                options.push({
-                    label: embed.title,
-                    value: embed.pageId.toString(),
-                    description: embed.description || ""
-                });
+                options.push(new Discord.StringSelectMenuOptionBuilder()
+                    .setLabel(embed.title)
+                    .setValue(embed.pageId.toString())
+                    .setDescription(embed.description || "")
+                );
             });
             selectPane = [
-                new ActionRowBuilder().addComponents([
-                    new Discord.SelectMenuBuilder()
+                new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents([
+                    new Discord.StringSelectMenuBuilder()
                         .addOptions(options)
                         .setCustomId("page")
                         .setMaxValues(1)
@@ -255,8 +228,8 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                 ])
             ];
         }
-        const components = selectPane.concat([
-            new ActionRowBuilder().addComponents([
+        const components: ActionRowBuilder<ButtonBuilder | Discord.StringSelectMenuBuilder>[] = selectPane.concat([
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
                 new ButtonBuilder()
                     .setCustomId("left")
                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -272,18 +245,18 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(page === pages.length - 1)
-            ])
+            )
         ]);
         if (interaction) {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+            em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
             await interaction.editReply({
                 embeds: [em],
                 components: components
             });
         } else {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+            em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
             (await m.edit({
                 embeds: [em],
                 components: components
@@ -313,7 +286,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
         } else if (i.component.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
         } else if (i.component.customId === "page") {
-            page = parseInt((i as SelectMenuInteraction).values[0]!);
+            page = parseInt((i as StringSelectMenuInteraction).values[0]!);
             selectPaneOpen = false;
         } else {
             cancelled = true;
@@ -322,7 +295,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
     if (timedOut) {
         if (interaction) {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
+            em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
                 text: "Message timed out"
             });
             await interaction.editReply({
@@ -331,7 +304,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
             });
         } else {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
+            em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page)).setFooter({
                 text: "Message timed out"
             });
             await m.edit({
@@ -342,7 +315,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
     } else {
         if (interaction) {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
-            em.setDescription(em.description + "\n\n" + createPageIndicator(pages.length, page));
+            em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({ text: "Message closed" });
             interaction.editReply({
                 embeds: [em],

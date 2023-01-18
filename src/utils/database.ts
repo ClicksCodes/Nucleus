@@ -313,6 +313,10 @@ export interface GuildConfig {
             text: null;
             link: null;
         };
+        nick: {
+            text: string | null;
+            link: string | null;
+        }
     };
     tracks: {
         name: string;

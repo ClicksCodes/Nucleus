@@ -1,39 +1,40 @@
+import { GuildChannel, AuditLogEvent } from 'discord.js';
 import humanizeDuration from "humanize-duration";
+import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "channelUpdate";
 
-export async function callback(client, oc, nc) {
-    const config = await client.memory.readGuildInfo(nc.guild.id);
-    return;
+export async function callback(client: NucleusClient, oldChannel: GuildChannel, newChannel: GuildChannel) {
+    const config = await client.memory.readGuildInfo(newChannel.guild.id);
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderChannel } = client.logger;
 
-    if (nc.parent && nc.parent.id === config.tickets.category) return;
+    if (newChannel.parent && newChannel.parent.id === config.tickets.category) return;
 
-    const auditLog = await getAuditLog(nc.guild, "CHANNEL_UPDATE");
-    const audit = auditLog.entries.filter((entry) => entry.target.id === nc.id).first();
+    const auditLog = await getAuditLog(newChannel.guild, "CHANNEL_UPDATE");
+    const audit = auditLog.entries.filter((entry) => entry.target.id === newChannel.id).first();
     if (audit.executor.id === client.user.id) return;
 
     let emoji: string;
     let readableType: string;
     let displayName: string;
     const changes = {
-        channelId: entry(nc.id, `\`${nc.id}\``),
-        channel: entry(nc.id, renderChannel(nc)),
+        channelId: entry(newChannel.id, `\`${newChannel.id}\``),
+        channel: entry(newChannel.id, renderChannel(newChannel)),
         edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-        editedBy: entry(audit.executor.id, renderUser((await nc.guild.members.fetch(audit.executor.id)).user))
+        editedBy: entry(audit.executor.id, renderUser((await newChannel.guild.members.fetch(audit.executor.id)).user))
     };
-    if (oc.name !== nc.name) changes.name = entry([oc.name, nc.name], `${oc.name} -> ${nc.name}`);
-    if (oc.position !== nc.position)
-        changes.position = entry([oc.position, nc.position], `${oc.position} -> ${nc.position}`);
+    if (oldChannel.name !== newChannel.name) changes.name = entry([oldChannel.name, newChannel.name], `${oldChannel.name} -> ${newChannel.name}`);
+    if (oldChannel.position !== newChannel.position)
+        changes.position = entry([oldChannel.position, newChannel.position], `${oldChannel.position} -> ${newChannel.position}`);
 
-    switch (nc.type) {
+    switch (newChannel.type) {
         case "GUILD_TEXT": {
             emoji = "CHANNEL.TEXT.EDIT";
             readableType = "Text";
             displayName = "Text Channel";
-            let oldTopic = oc.topic,
-                newTopic = nc.topic;
+            let oldTopic = oldChannel.topic,
+                newTopic = newChannel.topic;
             if (oldTopic) {
                 if (oldTopic.length > 256)
                     oldTopic = `\`\`\`\n${oldTopic.replace("`", "'").substring(0, 253) + "..."}\n\`\`\``;
@@ -49,15 +50,15 @@ export async function callback(client, oc, nc) {
                 newTopic = "None";
             }
             const nsfw = ["", ""];
-            nsfw[0] = oc.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
-            nsfw[1] = nc.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
-            if (oc.topic !== nc.topic)
-                changes.description = entry([oc.topic, nc.topic], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
-            if (oc.nsfw !== nc.nsfw) changes.nsfw = entry([oc.nsfw, nc.nsfw], `${nsfw[0]} -> ${nsfw[1]}`);
-            if (oc.rateLimitPerUser !== nc.rateLimitPerUser)
+            nsfw[0] = oldChannel.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
+            nsfw[1] = newChannel.nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
+            if (oldChannel.topic !== newChannel.topic)
+                changes.description = entry([oldChannel.topic, newChannel.topic], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
+            if (oldChannel.nsfw !== newChannel.nsfw) changes.nsfw = entry([oldChannel.nsfw, newChannel.nsfw], `${nsfw[0]} -> ${nsfw[1]}`);
+            if (oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser)
                 changes.rateLimitPerUser = entry(
-                    [oc.rateLimitPerUser, nc.rateLimitPerUser],
-                    `${humanizeDuration(oc.rateLimitPerUser * 1000)} -> ${humanizeDuration(nc.rateLimitPerUser * 1000)}`
+                    [oldChannel.rateLimitPerUser, newChannel.rateLimitPerUser],
+                    `${humanizeDuration(oldChannel.rateLimitPerUser * 1000)} -> ${humanizeDuration(newChannel.rateLimitPerUser * 1000)}`
                 );
 
             break;
@@ -66,8 +67,8 @@ export async function callback(client, oc, nc) {
             emoji = "CHANNEL.TEXT.EDIT";
             readableType = "News";
             displayName = "News Channel";
-            let oldTopic = oc.topic,
-                newTopic = nc.topic;
+            let oldTopic = oldChannel.topic,
+                newTopic = newChannel.topic;
             if (oldTopic) {
                 if (oldTopic.length > 256)
                     oldTopic = `\`\`\`\n${oldTopic.replace("`", "'").substring(0, 253) + "..."}\n\`\`\``;
@@ -82,25 +83,25 @@ export async function callback(client, oc, nc) {
             } else {
                 newTopic = "None";
             }
-            if (oc.nsfw !== nc.nsfw)
-                changes.nsfw = entry([oc.nsfw, nc.nsfw], `${oc.nsfw ? "On" : "Off"} -> ${nc.nsfw ? "On" : "Off"}`);
+            if (oldChannel.nsfw !== newChannel.nsfw)
+                changes.nsfw = entry([oldChannel.nsfw, newChannel.nsfw], `${oldChannel.nsfw ? "On" : "Off"} -> ${newChannel.nsfw ? "On" : "Off"}`);
             break;
         }
         case "GUILD_VOICE": {
             emoji = "CHANNEL.VOICE.EDIT";
             readableType = "Voice";
             displayName = "Voice Channel";
-            if (oc.bitrate !== nc.bitrate)
-                changes.bitrate = entry([oc.bitrate, nc.bitrate], `${oc.bitrate} -> ${nc.bitrate}`);
-            if (oc.userLimit !== nc.userLimit)
+            if (oldChannel.bitrate !== newChannel.bitrate)
+                changes.bitrate = entry([oldChannel.bitrate, newChannel.bitrate], `${oldChannel.bitrate} -> ${newChannel.bitrate}`);
+            if (oldChannel.userLimit !== newChannel.userLimit)
                 changes.maxUsers = entry(
-                    [oc.userLimit, nc.userLimit],
-                    `${oc.userLimit ? oc.userLimit : "Unlimited"} -> ${nc.userLimit}`
+                    [oldChannel.userLimit, newChannel.userLimit],
+                    `${oldChannel.userLimit ? oldChannel.userLimit : "Unlimited"} -> ${newChannel.userLimit}`
                 );
-            if (oc.rtcRegion !== nc.rtcRegion)
+            if (oldChannel.rtcRegion !== newChannel.rtcRegion)
                 changes.region = entry(
-                    [oc.rtcRegion, nc.rtcRegion],
-                    `${oc.rtcRegion || "Automatic"} -> ${nc.rtcRegion || "Automatic"}`
+                    [oldChannel.rtcRegion, newChannel.rtcRegion],
+                    `${oldChannel.rtcRegion || "Automatic"} -> ${newChannel.rtcRegion || "Automatic"}`
                 );
             break;
         }
@@ -108,8 +109,8 @@ export async function callback(client, oc, nc) {
             emoji = "CHANNEL.VOICE.EDIT";
             readableType = "Stage";
             displayName = "Stage Channel";
-            let oldTopic = oc.topic,
-                newTopic = nc.topic;
+            let oldTopic = oldChannel.topic,
+                newTopic = newChannel.topic;
             if (oldTopic) {
                 if (oldTopic.length > 256)
                     oldTopic = `\`\`\`\n${oldTopic.replace("`", "'").substring(0, 253) + "..."}\n\`\`\``;
@@ -124,17 +125,17 @@ export async function callback(client, oc, nc) {
             } else {
                 newTopic = "None";
             }
-            if (oc.bitrate !== nc.bitrate)
-                changes.bitrate = entry([oc.bitrate, nc.bitrate], `${oc.bitrate} -> ${nc.bitrate}`);
-            if (oc.userLimit !== nc.userLimit)
+            if (oldChannel.bitrate !== newChannel.bitrate)
+                changes.bitrate = entry([oldChannel.bitrate, newChannel.bitrate], `${oldChannel.bitrate} -> ${newChannel.bitrate}`);
+            if (oldChannel.userLimit !== newChannel.userLimit)
                 changes.maxUsers = entry(
-                    [oc.userLimit, nc.userLimit],
-                    `${oc.userLimit ? oc.userLimit : "Unlimited"} -> ${nc.userLimit}`
+                    [oldChannel.userLimit, newChannel.userLimit],
+                    `${oldChannel.userLimit ? oldChannel.userLimit : "Unlimited"} -> ${newChannel.userLimit}`
                 );
-            if (oc.rtcRegion !== nc.rtcRegion)
+            if (oldChannel.rtcRegion !== newChannel.rtcRegion)
                 changes.region = entry(
-                    [oc.rtcRegion, nc.rtcRegion],
-                    `${oc.rtcRegion || "Automatic"} -> ${nc.rtcRegion || "Automatic"}`
+                    [oldChannel.rtcRegion, newChannel.rtcRegion],
+                    `${oldChannel.rtcRegion || "Automatic"} -> ${newChannel.rtcRegion || "Automatic"}`
                 );
             break;
         }
@@ -150,9 +151,9 @@ export async function callback(client, oc, nc) {
             displayName = "Channel";
         }
     }
-    const t = oc.type.split("_")[1];
-    if (oc.type !== nc.type)
-        changes.type = entry([oc.type, nc.type], `${t[0] + t.splice(1).toLowerCase()} -> ${readableType}`);
+    const t = oldChannel.type.split("_")[1];
+    if (oldChannel.type !== newChannel.type)
+        changes.type = entry([oldChannel.type, newChannel.type], `${t[0] + t.splice(1).toLowerCase()} -> ${readableType}`);
     if (!(Object.values(changes).length - 4)) return;
     const data = {
         meta: {
@@ -165,7 +166,7 @@ export async function callback(client, oc, nc) {
         },
         list: changes,
         hidden: {
-            guild: nc.guild.id
+            guild: newChannel.guild.id
         }
     };
     log(data);
