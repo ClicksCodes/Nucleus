@@ -26,7 +26,7 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
     };
     if (oldChannel.name !== newChannel.name) changes.name = entry([oldChannel.name, newChannel.name], `${oldChannel.name} -> ${newChannel.name}`);
     if (oldChannel.position !== newChannel.position)
-        changes.position = entry([oldChannel.position, newChannel.position], `${oldChannel.position} -> ${newChannel.position}`);
+        changes.position = entry([oldChannel.position.toString(), newChannel.position.toString()], `${oldChannel.position} -> ${newChannel.position}`);
 
     switch (newChannel.type) {
         case "GUILD_TEXT": {
