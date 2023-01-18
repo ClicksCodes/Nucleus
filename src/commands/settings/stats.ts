@@ -1,8 +1,8 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, SelectMenuBuilder } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, GuildMember, StringSelectMenuBuilder, StringSelectMenuInteraction, AutocompleteInteraction } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../utils/client.js";
 import convertCurlyBracketString from "../../utils/convertCurlyBracketString.js";
 import { callback as statsChannelAddCallback } from "../../reflex/statsChannelUpdate.js";
@@ -21,16 +21,16 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    singleNotify("statsChannelDeleted", interaction.guild.id, true);
+    singleNotify("statsChannelDeleted", interaction.guild!.id, true);
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
     })) as Message;
-    let config = await client.database.guilds.read(interaction.guild.id);
-    if (interaction.options.getString("name")) {
+    let config = await client.database.guilds.read(interaction.guild!.id);
+    if (interaction.options.get("name")?.value as string) {
         let channel;
-        if (Object.keys(config.getKey("stats")).length >= 25) {
+        if (Object.keys(config["stats"]).length >= 25) {
             return await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -42,7 +42,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         try {
-            channel = interaction.options.getChannel("channel");
+            channel = interaction.options.get("channel")?.channel as Discord.Channel;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -55,7 +55,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         channel = channel as Discord.TextChannel;
-        if (channel.guild.id !== interaction.guild.id) {
+        if (channel.guild.id !== interaction.guild!.id) {
             return interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -67,17 +67,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         let newName = await convertCurlyBracketString(
-            interaction.options.getString("name"),
-            null,
-            null,
-            interaction.guild.name,
-            interaction.guild.members
+            interaction.options.get("name")?.value as string,
+            "",
+            "",
+            interaction.guild!.name,
+            interaction.guild!.members
         );
-        if (interaction.options.getChannel("channel").type === "GUILD_TEXT") {
+        if (interaction.options.get("channel")?.channel!.type === Discord.ChannelType.GuildText) {
             newName = newName.toLowerCase().replace(/[\s]/g, "-");
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
+            .setEmoji("CHANNEL.TEXT.EDIT")
             .setTitle("Stats Channel")
             .setDescription(
                 `Are you sure you want to set <#${channel.id}> to a stats channel?\n\n*Preview: ${newName.replace(
@@ -87,13 +87,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             )
             .setColor("Warning")
             .setInverted(true)
+            .setFailedMessage(`Could not convert <#${channel.id}> to a stats chanel.`, "Danger", "CHANNEL.TEXT.DELETE")
             .send(true);
         if (confirmation.cancelled) return;
         if (confirmation.success) {
             try {
-                const name = interaction.options.getString("name");
-                const channel = interaction.options.getChannel("channel");
-                await client.database.guilds.write(interaction.guild.id, {
+                const name = interaction.options.get("name")?.value as string;
+                const channel = interaction.options.get("channel")?.channel as Discord.TextChannel;
+                await client.database.guilds.write(interaction.guild!.id, {
                     [`stats.${channel.id}`]: { name: name, enabled: true }
                 });
                 const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
@@ -111,12 +112,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         changedBy: entry(interaction.user.id, renderUser(interaction.user)),
                         channel: entry(channel.id, renderChannel(channel)),
                         name: entry(
-                            interaction.options.getString("name"),
-                            `\`${interaction.options.getString("name")}\``
+                            interaction.options.get("name")?.value as string,
+                            `\`${interaction.options.get("name")?.value as string}\``
                         )
                     },
                     hidden: {
-                        guild: interaction.guild.id
+                        guild: interaction.guild!.id
                     }
                 };
                 log(data);
@@ -145,13 +146,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 components: []
             });
         }
-        await statsChannelAddCallback(client, interaction.member);
+        await statsChannelAddCallback(client, interaction.member as GuildMember);
     }
     let timedOut = false;
     while (!timedOut) {
-        config = await client.database.guilds.read(interaction.guild.id);
-        const stats = config.getKey("stats");
-        const selectMenu = new SelectMenuBuilder()
+        config = await client.database.guilds.read(interaction.guild!.id);
+        const stats = config["stats"];
+        const selectMenu = new StringSelectMenuBuilder()
             .setCustomId("remove")
             .setMinValues(1)
             .setMaxValues(Math.max(1, Object.keys(stats).length));
@@ -166,16 +167,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new ActionRowBuilder().addComponents(
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
                     Object.keys(stats).length
                         ? [
                               selectMenu
                                   .setPlaceholder("Select a stats channel to remove, stopping it updating")
                                   .addOptions(
                                       Object.keys(stats).map((key) => ({
-                                          label: interaction.guild.channels.cache.get(key).name,
+                                          label: interaction.guild!.channels.cache.get(key)!.name,
                                           value: key,
-                                          description: `${stats[key].name}`
+                                          description: `${stats[key]!.name}`
                                       }))
                                   )
                           ]
@@ -194,12 +195,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 )
             ]
         });
-        let i;
+        let i: StringSelectMenuInteraction;
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
                 filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
-            });
+            }) as StringSelectMenuInteraction;
         } catch (e) {
             timedOut = true;
             continue;
@@ -208,21 +209,21 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (i.customId === "remove") {
             const toRemove = i.values;
             await client.database.guilds.write(
-                interaction.guild.id,
+                interaction.guild!.id,
                 null,
                 toRemove.map((k) => `stats.${k}`)
             );
         }
     }
     await interaction.editReply({
-        embeds: [m.embeds[0]!.setFooter({ text: "Message timed out" })],
+        embeds: [new Discord.EmbedBuilder(m.embeds[0]!.data).setFooter({ text: "Message timed out" })],
         components: []
     });
 };
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as Discord.GuildMember;
-    if (!member.permissions.has("manageChannels"))
+    if (!member.permissions.has("ManageChannels"))
         return "You must have the *Manage Channels* permission to use this command";
     return true;
 };
