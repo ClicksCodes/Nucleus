@@ -228,6 +228,10 @@ const check = (interaction: CommandInteraction) => {
     return true;
 };
 
+const generateStatsChannelAutocomplete = (prompt: string): string[] => {
+    return [prompt];
+};
+
 const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
     if (!interaction.guild) return [];
     const prompt = interaction.options.getString("tag");
