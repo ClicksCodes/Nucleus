@@ -97,7 +97,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .addComponents(new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.ban.text)
-                            .setURL(config.moderation.ban.link)
+                            .setURL(config.moderation.ban.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
                         )
                 )
             }

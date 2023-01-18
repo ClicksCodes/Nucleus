@@ -252,7 +252,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .addComponents(new ButtonBuilder()
                         .setStyle(ButtonStyle.Link)
                         .setLabel(config.moderation.mute.text)
-                        .setURL(config.moderation.mute.link)
+                        .setURL(config.moderation.mute.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
                     )
                 )
             };

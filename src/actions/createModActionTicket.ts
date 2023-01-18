@@ -1,3 +1,4 @@
+import { getCommandMentionByName } from './../utils/getCommandMentionByName.js';
 import Discord, { ActionRowBuilder, ButtonBuilder, OverwriteType, ChannelType, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -62,7 +63,7 @@ export async function create(
                             `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
                             (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                             `**Ticket ID:** \`${c.id}\`\n` +
-                            "Type `/ticket close` to close this ticket."
+                            `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                     )
                     .setStatus("Success")
                     .setEmoji("GUILD.TICKET.OPEN")

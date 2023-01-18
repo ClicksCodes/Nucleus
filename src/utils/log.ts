@@ -25,7 +25,7 @@ export const Logger = {
         const delta = num2 - num1;
         return `${num1} -> ${num2} (${delta > 0 ? "+" : ""}${delta})`;
     },
-    entry(value: string | number | null, displayValue: string): { value: string | null; displayValue: string } {
+    entry(value: string | number | boolean | null, displayValue: string): { value: string | boolean | null; displayValue: string } {
         if (typeof value === "number") value = value.toString();
         return { value: value, displayValue: displayValue };
     },

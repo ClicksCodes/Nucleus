@@ -1,5 +1,5 @@
 import { getCommandMentionByName } from '../../utils/getCommandMentionByName.js';
-import Discord, { ActionRowBuilder, ButtonBuilder, ButtonInteraction, PrivateThreadChannel, TextChannel, ButtonStyle } from "discord.js";
+import Discord, { ActionRowBuilder, ButtonBuilder, ButtonInteraction, PrivateThreadChannel, TextChannel, ButtonStyle, CategoryChannel } from "discord.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -142,47 +142,60 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
 
 
 async function purgeByUser(member: string, guild: string) {
-    const config = await client.database.guilds.read(guild.id);
+    const config = await client.database.guilds.read(guild);
     const fetchedGuild = await client.guilds.fetch(guild);
     if (!config.tickets.category) return;
-    const tickets = fetchedGuild.channels.cache.get(config.tickets.category);
+    const tickets: CategoryChannel | TextChannel | undefined = fetchedGuild.channels.cache.get(config.tickets.category) as CategoryChannel | TextChannel | undefined;
     if (!tickets) return;
-    const ticketChannels = tickets.children;
     let deleted = 0;
-    ticketChannels.forEach((element) => {
-        if (element.type !== "GUILD_TEXT") return;
-        if (element.topic.split(" ")[0] === member) {
+    if (tickets.type === Discord.ChannelType.GuildCategory) {
+        // For channels, the topic is the user ID, then the word Active
+        const category = tickets as Discord.CategoryChannel;
+        category.children.cache.forEach((element) => {
+            if (!(element.type === Discord.ChannelType.GuildText)) return;
+            if (!(((element as Discord.TextChannel).topic ?? "").includes(member))) return;
             try {
                 element.delete();
-            } catch {
-                /* Errors if the channel does not exist (deleted already) */
+                deleted++;
+            } catch (e) {
+                console.error(e);
             }
-            deleted++;
-        }
-    });
-    if (deleted) {
-        const { log, NucleusColors, entry, renderUser, renderDelta } = member.client.logger;
-        const data = {
-            meta: {
-                type: "ticketPurge",
-                displayName: "Tickets Purged",
-                calculateType: "ticketUpdate",
-                color: NucleusColors.red,
-                emoji: "GUILD.TICKET.DELETE",
-                timestamp: new Date().getTime()
-            },
-            list: {
-                ticketFor: entry(member, renderUser(member)),
-                deletedBy: entry(null, "Member left server"),
-                deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-                ticketsDeleted: deleted
-            },
-            hidden: {
-                guild: guild.id
+        });
+    } else {
+        // For threads, the name is the users name, id, then the word Active
+        const channel = tickets as Discord.TextChannel;
+        channel.threads.cache.forEach((element: Discord.ThreadChannel) => {
+            if (!element.name.includes(member)) return;
+            try {
+                element.delete();
+                deleted++;
+            } catch (e) {
+                console.error(e);
             }
-        };
-        log(data);
+        });
     }
+    if (!deleted) return
+    const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    const data = {
+        meta: {
+            type: "ticketPurge",
+            displayName: "Tickets Purged",
+            calculateType: "ticketUpdate",
+            color: NucleusColors.red,
+            emoji: "GUILD.TICKET.DELETE",
+            timestamp: new Date().getTime()
+        },
+        list: {
+            ticketFor: entry(member, renderUser(member)),
+            deletedBy: entry(null, "Member left server"),
+            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            ticketsDeleted: deleted
+        },
+        hidden: {
+            guild: guild
+        }
+    };
+    log(data);
 }
 
 export { purgeByUser };

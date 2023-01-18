@@ -1,5 +1,7 @@
 import {
+    AuditLogEvent,
     BaseGuildTextChannel,
+    ChannelType,
     GuildAuditLogsEntry,
     GuildBasedChannel,
     StageChannel,
@@ -13,34 +15,47 @@ export const event = "channelDelete";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
-
-    const auditLog = await getAuditLog(channel.guild, "CHANNEL_DELETE");
-    const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();
-    if (audit.executor.id === client.user.id) return;
+    // const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();
+    const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelDelete))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id)[0];
+    if (!auditLog) return;
+    if (auditLog.executor!.id === client.user!.id) return;
 
     let emoji;
     let readableType;
     let displayName;
     switch (channel.type) {
-        case "GUILD_TEXT": {
+        case ChannelType.GuildText: {
             emoji = "CHANNEL.TEXT.DELETE";
             readableType = "Text";
             displayName = "Text Channel";
             break;
-        }
-        case "GUILD_VOICE": {
+        } case ChannelType.GuildAnnouncement: {
+            emoji = "CHANNEL.TEXT.DELETE";
+            readableType = "Announcement";
+            displayName = "Announcement Channel";
+            break;
+        } case ChannelType.GuildVoice: {
             emoji = "CHANNEL.VOICE.DELETE";
             readableType = "Voice";
             displayName = "Voice Channel";
             break;
-        }
-        case "GUILD_CATEGORY": {
+        } case ChannelType.GuildCategory: {
             emoji = "CHANNEL.CATEGORY.DELETE";
             readableType = "Category";
             displayName = "Category";
             break;
-        }
-        default: {
+        } case ChannelType.GuildStageVoice: {
+            emoji = "CHANNEL.VOICE.DELETE";
+            readableType = "Stage";
+            displayName = "Stage Channel";
+            break;
+        } case ChannelType.GuildForum: {
+            emoji = "CHANNEL.TEXT.DELETE";
+            readableType = "Forum";
+            displayName = "Forum Channel";
+            break;
+        } default: {
             emoji = "CHANNEL.TEXT.DELETE";
             readableType = "Channel";
             displayName = "Channel";
@@ -66,9 +81,9 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
             channel.parent ? channel.parent.name : "Uncategorised"
         ),
         nsfw: null,
-        created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp)),
+        created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp!)),
         deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
-        deletedBy: entry(audit.executor.id, renderUser(audit.executor))
+        deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!))
     };
     if ((channel instanceof BaseGuildTextChannel || channel instanceof StageChannel) && channel.topic !== null)
         list.topic = entry(channel.topic, `\`\`\`\n${channel.topic.replace("`", "'")}\n\`\`\``);
@@ -94,7 +109,7 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
             calculateType: "channelUpdate",
             color: NucleusColors.red,
             emoji: emoji,
-            timestamp: audit.createdTimestamp
+            timestamp: auditLog.createdTimestamp
         },
         list: list,
         hidden: {

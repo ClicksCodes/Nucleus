@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, TextInputComponent, Role, ButtonStyle, ButtonComponent, TextInputBuilder } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, Role, ButtonStyle, ButtonComponent, TextInputBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -43,7 +43,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let timedOut = false;
     while (!timedOut) {
         const config = await client.database.guilds.read(interaction.guild!.id);
-        const moderation = config["moderation"];
+        const moderation = config.moderation;
         m = await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -117,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
         type modIDs = "mute" | "kick" | "ban" | "softban" | "warn" | "role";
-        let chosen = moderation[i.customId as modIDs] ?? { text: null, url: null };
+        let chosen = moderation[i.customId as modIDs];
         if ((i.component as ButtonComponent).customId === "clearMuteRole") {
             i.deferUpdate();
             if (clicked === "clearMuteRole") {
@@ -181,31 +181,28 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     ])
                 ]
             });
-            let out: Discord.ModalSubmitInteraction;
+            let out: Discord.ModalSubmitInteraction | null;
             try {
                 out = await modalInteractionCollector(
                     m,
                     (m) => m.channel!.id === interaction.channel!.id,
                     (_) => true
-                ) as Discord.ModalSubmitInteraction;
+                ) as Discord.ModalSubmitInteraction | null;
             } catch (e) {
                 continue;
             }
-            if ((out!).fields) {
-                const buttonText = out.fields.getTextInputValue("name");
-                const buttonLink = out.fields.getTextInputValue("url").replace(/{id}/gi, "{id}");
-                const current = chosen;
-                if (current.text !== buttonText || current.link !== buttonLink) {
-                    chosen = { text: buttonText, link: buttonLink };
-                    await client.database.guilds.write(interaction.guild!.id, {
-                        ["moderation." + i.customId]: {
-                            text: buttonText,
-                            link: buttonLink
-                        }
-                    });
-                }
-            } else {
-                continue;
+            if (!out) continue
+            const buttonText = out.fields.getTextInputValue("name");
+            const buttonLink = out.fields.getTextInputValue("url").replace(/{id}/gi, "{id}");
+            const current = chosen;
+            if (current.text !== buttonText || current.link !== buttonLink) {
+                chosen = { text: buttonText, link: buttonLink };
+                await client.database.guilds.write(interaction.guild!.id, {
+                    ["moderation." + i.customId]: {
+                        text: buttonText,
+                        link: buttonLink
+                    }
+                });
             }
         }
     }

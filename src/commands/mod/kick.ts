@@ -86,7 +86,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .addComponents(new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.kick.text)
-                            .setURL(config.moderation.kick.link)
+                            .setURL(config.moderation.kick.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
                         )
                 )
             }

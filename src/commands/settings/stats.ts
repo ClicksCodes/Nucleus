@@ -20,7 +20,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setAutocomplete(true)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+const callback = async (interaction: CommandInteraction): Promise<unknown> => {  // TODO: This command feels unintuitive. Clicking a channel in the select menu deletes it
+    // instead, it should give a submenu to edit the channel, enable/disable or delete it
     singleNotify("statsChannelDeleted", interaction.guild!.id, true);
     const m = (await interaction.reply({
         embeds: LoadingEmbed,
@@ -30,7 +31,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let config = await client.database.guilds.read(interaction.guild!.id);
     if (interaction.options.get("name")?.value as string) {
         let channel;
-        if (Object.keys(config["stats"]).length >= 25) {
+        if (Object.keys(config.stats).length >= 25) {
             return await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -151,7 +152,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let timedOut = false;
     while (!timedOut) {
         config = await client.database.guilds.read(interaction.guild!.id);
-        const stats = config["stats"];
+        const stats = config.stats;
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId("remove")
             .setMinValues(1)
