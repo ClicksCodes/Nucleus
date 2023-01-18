@@ -310,6 +310,8 @@ export interface GuildConfig {
         };
         role: {
             role: string | null;
+            text: null;
+            link: null;
         };
     };
     tracks: {

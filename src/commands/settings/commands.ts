@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, TextInputComponent, Role, ButtonStyle } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, TextInputComponent, Role, ButtonStyle, ButtonComponent, TextInputBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -35,15 +35,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .send(true);
         if (confirmation.cancelled) return
         if (confirmation.success) {
-            await client.database.guilds.write(interaction!.guild.id, {
+            await client.database.guilds.write(interaction.guild!.id, {
                 ["moderation.mute.role"]: (interaction.options.get("role") as unknown as Role).id
             });
         }
     }
     let timedOut = false;
     while (!timedOut) {
-        const config = await client.database.guilds.read(interaction!.guild.id);
-        const moderation = config.getKey("moderation");
+        const config = await client.database.guilds.read(interaction.guild!.id);
+        const moderation = config["moderation"];
         m = await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -57,7 +57,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     )
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel("Warn")
                         .setEmoji(getEmojiByName("PUNISH.WARN.YELLOW", "id"))
@@ -74,7 +74,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("nickname")
                         .setStyle(ButtonStyle.Secondary)
                 ]),
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel("Kick")
                         .setEmoji(getEmojiByName("PUNISH.KICK.RED", "id"))
@@ -91,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("ban")
                         .setStyle(ButtonStyle.Secondary)
                 ]),
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel(clicked === "clearMuteRole" ? "Click again to confirm" : "Clear mute role")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
@@ -116,11 +116,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             timedOut = true;
             continue;
         }
-        let chosen = moderation[i.customId] ?? { text: null, url: null };
-        if (i.component.customId === "clearMuteRole") {
+        type modIDs = "mute" | "kick" | "ban" | "softban" | "warn" | "role";
+        let chosen = moderation[i.customId as modIDs] ?? { text: null, url: null };
+        if ((i.component as ButtonComponent).customId === "clearMuteRole") {
             i.deferUpdate();
             if (clicked === "clearMuteRole") {
-                await client.database.guilds.write(interaction.guild.id, {
+                await client.database.guilds.write(interaction.guild!.id, {
                     "moderation.mute.role": null
                 });
             } else {
@@ -130,36 +131,36 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         } else {
             clicked = "";
         }
-        if (i.component.customId === "timeout") {
+        if ((i.component as ButtonComponent).customId === "timeout") {
             await i.deferUpdate();
-            await client.database.guilds.write(interaction.guild.id, {
+            await client.database.guilds.write(interaction.guild!.id, {
                 "moderation.mute.timeout": !moderation.mute.timeout
             });
             continue;
         } else if (i.customId) {
             await i.showModal(
-                new Discord.Modal()
+                new Discord.ModalBuilder()
                     .setCustomId("modal")
                     .setTitle(`Options for ${i.customId}`)
                     .addComponents(
-                        new ActionRowBuilder<TextInputComponent>().addComponents(
-                            new TextInputComponent()
+                        new ActionRowBuilder<TextInputBuilder>().addComponents(
+                            new TextInputBuilder()
                                 .setCustomId("name")
                                 .setLabel("Button text")
                                 .setMaxLength(100)
                                 .setRequired(false)
-                                .setStyle("SHORT")
+                                .setStyle(Discord.TextInputStyle.Short)
                                 .setValue(chosen.text ?? "")
-                        ),
-                        new ActionRowBuilder<TextInputComponent>().addComponents(
-                            new TextInputComponent()
+                        ).toJSON(),
+                        new ActionRowBuilder<TextInputBuilder>().addComponents(
+                            new TextInputBuilder()
                                 .setCustomId("url")
                                 .setLabel("URL - Type {id} to insert the user's ID")
                                 .setMaxLength(2000)
                                 .setRequired(false)
-                                .setStyle("SHORT")
+                                .setStyle(Discord.TextInputStyle.Short)
                                 .setValue(chosen.link ?? "")
-                        )
+                        ).toJSON()
                     )
             );
             await interaction.editReply({
@@ -171,7 +172,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("GUILD.TICKET.OPEN")
                 ],
                 components: [
-                    new ActionRowBuilder().addComponents([
+                    new ActionRowBuilder<ButtonBuilder>().addComponents([
                         new ButtonBuilder()
                             .setLabel("Back")
                             .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -180,23 +181,23 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     ])
                 ]
             });
-            let out;
+            let out: Discord.ModalSubmitInteraction;
             try {
                 out = await modalInteractionCollector(
                     m,
-                    (m) => m.channel.id === interaction.channel.id,
+                    (m) => m.channel!.id === interaction.channel!.id,
                     (_) => true
-                );
+                ) as Discord.ModalSubmitInteraction;
             } catch (e) {
                 continue;
             }
-            if (out.fields) {
+            if ((out!).fields) {
                 const buttonText = out.fields.getTextInputValue("name");
                 const buttonLink = out.fields.getTextInputValue("url").replace(/{id}/gi, "{id}");
                 const current = chosen;
                 if (current.text !== buttonText || current.link !== buttonLink) {
                     chosen = { text: buttonText, link: buttonLink };
-                    await client.database.guilds.write(interaction.guild.id, {
+                    await client.database.guilds.write(interaction.guild!.id, {
                         ["moderation." + i.customId]: {
                             text: buttonText,
                             link: buttonLink
