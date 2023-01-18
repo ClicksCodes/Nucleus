@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from './../utils/getCommandMentionByName';
+import { getCommandMentionByName } from './../utils/getCommandMentionByName.js';
 import client from "../utils/client.js";
 import keyValueList from "../utils/generateKeyValueList.js";
 import singleNotify from "../utils/singleNotify.js";

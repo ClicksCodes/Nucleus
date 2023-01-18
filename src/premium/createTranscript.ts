@@ -28,7 +28,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         const fetched = await (interaction.channel as TextChannel).messages.fetch({ limit: 100 });
         const deleted = await (interaction.channel as TextChannel).bulkDelete(fetched, true);
         deletedCount = deleted.size;
-        messages = messages.concat(Array.from(deleted.values()));
+        messages = messages.concat(Array.from(deleted.values() as Iterable<Message>));
     } while (deletedCount === 100);
 
     let out = "";
