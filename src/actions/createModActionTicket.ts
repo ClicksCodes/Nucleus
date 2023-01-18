@@ -63,7 +63,7 @@ export async function create(
                             `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
                             (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                             `**Ticket ID:** \`${c.id}\`\n` +
-                            `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
+                            `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
                     )
                     .setStatus("Success")
                     .setEmoji("GUILD.TICKET.OPEN")
