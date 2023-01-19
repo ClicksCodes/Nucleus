@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder, StringSelectMenuComponent, StringSelectMenuInteraction } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder, StringSelectMenuInteraction } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import client from "../../../utils/client.js";
