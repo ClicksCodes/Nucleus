@@ -4,15 +4,17 @@ import Discord, {
     Interaction,
     Message,
     ActionRowBuilder,
-    Component,
     ButtonBuilder,
     MessageComponentInteraction,
-    SelectMenuBuilder,
     ModalSubmitInteraction,
     Role,
-    SelectMenuInteraction,
-    TextInputComponent,
-    ButtonStyle
+    ButtonStyle,
+    StringSelectMenuBuilder,
+    StringSelectMenuComponent,
+    TextInputBuilder,
+    EmbedBuilder,
+    StringSelectMenuInteraction,
+    ButtonComponent
 } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -36,10 +38,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         ephemeral: true,
         fetchReply: true
     })) as Message;
-    if (interaction.options.getRole("role")) {
+    if (interaction.options.get("role")?.role) {
         let role: Role;
         try {
-            role = interaction.options.getRole("role") as Role;
+            role = interaction.options.get("role")?.role as Role;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -64,10 +66,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.EDIT", "GUILD.ROLES.DELETE")
+            .setEmoji("GUILD.ROLES.EDIT")
             .setTitle("Verify Role")
             .setDescription(`Are you sure you want to set the verify role to <@&${role.id}>?`)
             .setColor("Warning")
+            .setFailedMessage("No changes were made", "Warning", "GUILD.ROLES.DELETE")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;
@@ -140,7 +143,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("GUILD.ROLES.CREATE")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setCustomId("clear")
                         .setLabel(clicks ? "Click again to confirm" : "Reset role")
@@ -166,14 +169,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
         i.deferUpdate();
-        if ((i.component as Component).customId === "clear") {
+        if ((i.component as ButtonComponent).customId === "clear") {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
                 await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"]);
-                role = undefined;
+                role = null;
             }
-        } else if ((i.component as Component).customId === "send") {
+        } else if ((i.component as ButtonComponent).customId === "send") {
             const verifyMessages = [
                 {
                     label: "Verify",
@@ -203,8 +206,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             .setEmoji("GUILD.ROLES.CREATE")
                     ],
                     components: [
-                        new ActionRowBuilder().addComponents([
-                            new SelectMenuBuilder()
+                        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+                            new StringSelectMenuBuilder()
                                 .setOptions(
                                     verifyMessages.map(
                                         (
@@ -229,7 +232,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 .setMinValues(1)
                                 .setPlaceholder("Select a message template")
                         ]),
-                        new ActionRowBuilder().addComponents([
+                        new ActionRowBuilder<ButtonBuilder>().addComponents([
                             new ButtonBuilder()
                                 .setCustomId("back")
                                 .setLabel("Back")
@@ -254,20 +257,20 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     innerTimedOut = true;
                     continue;
                 }
-                if ((i.component as Component).customId === "template") {
+                if ((i.component as StringSelectMenuComponent).customId === "template") {
                     i.deferUpdate();
                     await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(verifyMessages[parseInt((i as SelectMenuInteraction).values[0]!)]!.label)
+                                .setTitle(verifyMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.label)
                                 .setDescription(
-                                    verifyMessages[parseInt((i as SelectMenuInteraction).values[0]!)]!.description
+                                    verifyMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("CONTROL.BLOCKTICK")
                         ],
                         components: [
-                            new ActionRowBuilder().addComponents([
+                            new ActionRowBuilder<ButtonBuilder>().addComponents([
                                 new ButtonBuilder()
                                     .setLabel("Verify")
                                     .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
@@ -278,11 +281,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     });
                     templateSelected = true;
                     continue;
-                } else if ((i.component as Component).customId === "blank") {
+                } else if ((i.component as ButtonComponent).customId === "blank") {
                     i.deferUpdate();
                     await interaction.channel!.send({
                         components: [
-                            new ActionRowBuilder().addComponents([
+                            new ActionRowBuilder<ButtonBuilder>().addComponents([
                                 new ButtonBuilder()
                                     .setLabel("Verify")
                                     .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
@@ -293,27 +296,27 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     });
                     templateSelected = true;
                     continue;
-                } else if ((i.component as Component).customId === "custom") {
+                } else if ((i.component as ButtonComponent).customId === "custom") {
                     await i.showModal(
-                        new Discord.Modal()
+                        new Discord.ModalBuilder()
                             .setCustomId("modal")
                             .setTitle("Enter embed details")
                             .addComponents(
-                                new ActionRowBuilder<TextInputComponent>().addComponents(
-                                    new TextInputComponent()
+                                new ActionRowBuilder<TextInputBuilder>().addComponents(
+                                    new TextInputBuilder()
                                         .setCustomId("title")
                                         .setLabel("Title")
                                         .setMaxLength(256)
                                         .setRequired(true)
-                                        .setStyle("SHORT")
+                                        .setStyle(Discord.TextInputStyle.Short)
                                 ),
-                                new ActionRowBuilder<TextInputComponent>().addComponents(
-                                    new TextInputComponent()
+                                new ActionRowBuilder<TextInputBuilder>().addComponents(
+                                    new TextInputBuilder()
                                         .setCustomId("description")
                                         .setLabel("Description")
                                         .setMaxLength(4000)
                                         .setRequired(true)
-                                        .setStyle("PARAGRAPH")
+                                        .setStyle(Discord.TextInputStyle.Paragraph)
                                 )
                             )
                     );
@@ -326,7 +329,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 .setEmoji("GUILD.TICKET.OPEN")
                         ],
                         components: [
-                            new ActionRowBuilder().addComponents([
+                            new ActionRowBuilder<ButtonBuilder>().addComponents([
                                 new ButtonBuilder()
                                     .setLabel("Back")
                                     .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -360,7 +363,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                     .setEmoji("CONTROL.BLOCKTICK")
                             ],
                             components: [
-                                new ActionRowBuilder().addComponents([
+                                new ActionRowBuilder<ButtonBuilder>().addComponents([
                                     new ButtonBuilder()
                                         .setLabel("Verify")
                                         .setEmoji(getEmojiByName("CONTROL.TICK", "id"))
@@ -379,7 +382,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     }
     await interaction.editReply({
-        embeds: [m.embeds[0]!.setFooter({ text: "Message closed" })],
+        embeds: [new EmbedBuilder(m.embeds[0]!.data).setFooter({ text: "Message closed" })],
         components: []
     });
 };
