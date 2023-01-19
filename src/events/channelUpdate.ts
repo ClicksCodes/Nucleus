@@ -4,6 +4,8 @@ import type { GuildAuditLogsEntry } from 'discord.js';
 import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
+import c from "../utils/client.js";
+let entry = c.logger.entry;
 
 const channelTypeEmoji: Record<number, string> = {
     0: "Text",  // Text channel
@@ -15,24 +17,24 @@ const channelTypeEmoji: Record<number, string> = {
 };
 
 interface channelChanges {
-    channelId: { value: string | boolean | string[] | null; displayValue: string; };
-    channel: { value: string | boolean | string[] | null; displayValue: string; };
-    edited: { value: string | boolean | string[] | null; displayValue: string; };
-    editedBy: { value: string | boolean | string[] | null; displayValue: string; };
-    type?: { value: string | boolean | string[] | null; displayValue: string; };
-    name?: { value: string | boolean | string[] | null; displayValue: string; };
-    position?: { value: string | boolean | string[] | null; displayValue: string; };
-    description?: { value: string | boolean | string[] | null; displayValue: string; };
-    nsfw?: { value: string | boolean | string[] | null; displayValue: string; };
-    slowmode?: { value: string | boolean | string[] | null; displayValue: string; };
-    topic?: { value: string | boolean | string[] | null; displayValue: string; };
-    bitrate?: { value: string | boolean | string[] | null; displayValue: string; };
-    userLimit?: { value: string | boolean | string[] | null; displayValue: string; };
-    rateLimitPerUser?: { value: string | boolean | string[] | null; displayValue: string; };
-    parent?: { value: string | boolean | string[] | null; displayValue: string; };
-    permissionOverwrites?: { value: string | boolean | string[] | null; displayValue: string; };
-    region?: { value: string | boolean | string[] | null; displayValue: string; };
-    maxUsers?: { value: string | boolean | string[] | null; displayValue: string; };
+    channelId: ReturnType<typeof entry>;
+    channel: ReturnType<typeof entry>;
+    edited: ReturnType<typeof entry>;
+    editedBy: ReturnType<typeof entry>;
+    type?: ReturnType<typeof entry>;
+    name?: ReturnType<typeof entry>;
+    position?: ReturnType<typeof entry>;
+    description?: ReturnType<typeof entry>;
+    nsfw?: ReturnType<typeof entry>;
+    slowmode?: ReturnType<typeof entry>;
+    topic?: ReturnType<typeof entry>;
+    bitrate?: ReturnType<typeof entry>;
+    userLimit?: ReturnType<typeof entry>;
+    rateLimitPerUser?: ReturnType<typeof entry>;
+    parent?: ReturnType<typeof entry>;
+    permissionOverwrites?: ReturnType<typeof entry>;
+    region?: ReturnType<typeof entry>;
+    maxUsers?: ReturnType<typeof entry>;
 }
 
 
@@ -41,8 +43,8 @@ export const event = "channelUpdate";
 
 export async function callback(client: NucleusClient, oldChannel: GuildChannel, newChannel: GuildChannel) {
     const config = await client.memory.readGuildInfo(newChannel.guild.id);
-    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderChannel } = client.logger;
-
+    const { getAuditLog, log, NucleusColors, renderDelta, renderUser, renderChannel } = client.logger;
+    entry = client.logger.entry;
     if (newChannel.parent && newChannel.parent.id === config.tickets.category) return;
 
     const auditLog: GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> = (await getAuditLog(newChannel.guild, AuditLogEvent.ChannelUpdate))
