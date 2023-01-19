@@ -83,8 +83,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             continue;
         }
         i.deferUpdate();
-        if (i.customId === "logs") {
-            const selected = (i as StringSelectMenuInteraction).values;
+        if (i.isStringSelectMenu() && i.customId === "logs") {
+            const selected = i.values;
             const newLogs = toHexInteger(selected.map((e: string) => Object.keys(logs)[parseInt(e)]!));
             await client.database.guilds.write(interaction.guild!.id, {
                 "logging.logs.toLog": newLogs

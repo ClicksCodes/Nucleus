@@ -10,10 +10,8 @@ import Discord, {
     Role,
     ButtonStyle,
     StringSelectMenuBuilder,
-    StringSelectMenuComponent,
     TextInputBuilder,
     EmbedBuilder,
-    StringSelectMenuInteraction,
     ButtonComponent
 } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -170,7 +168,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         i.deferUpdate();
         if ((i.component as ButtonComponent).customId === "clear") {
-            clicks += 1;
+            clicks ++;
             if (clicks === 2) {
                 clicks = 0;
                 await client.database.guilds.write(interaction.guild.id, null, ["verify.role", "verify.enabled"]);
@@ -257,14 +255,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     innerTimedOut = true;
                     continue;
                 }
-                if ((i.component as StringSelectMenuComponent).customId === "template") {
+                if (i.isStringSelectMenu() && i.customId === "template") {
                     i.deferUpdate();
                     await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(verifyMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.label)
+                                .setTitle(verifyMessages[parseInt(i.values[0]!)]!.label)
                                 .setDescription(
-                                    verifyMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.description
+                                    verifyMessages[parseInt(i.values[0]!)]!.description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("CONTROL.BLOCKTICK")

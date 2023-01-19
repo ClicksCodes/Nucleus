@@ -75,7 +75,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                 let valid = false;
                 while (!valid) {
-                    itt += 1;
+                    itt ++;
                     code = "";
                     for (let i = 0; i < length; i++) {
                         code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -83,7 +83,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                     if (code in client.roleMenu) continue;
                     if (itt > 1000) {
                         itt = 0;
-                        length += 1;
+                        length ++;
                         continue;
                     }
                     valid = true;

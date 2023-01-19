@@ -7,7 +7,8 @@ import Discord, {
     ButtonStyle,
     NonThreadGuildBasedChannel,
     StringSelectMenuOptionBuilder,
-    StringSelectMenuBuilder
+    StringSelectMenuBuilder,
+    APIMessageComponentEmoji
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import type { GuildBasedChannel } from "discord.js";
@@ -126,8 +127,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(c)
                         .setValue((set * 25 + i).toString())
-                        // @ts-expect-error
-                        .setEmoji(getEmojiByName("ICONS.CHANNEL.CATEGORY", "id"))  // Again, this is valid but TS doesn't think so
+                        .setEmoji(getEmojiByName("ICONS.CHANNEL.CATEGORY", "id") as APIMessageComponentEmoji)  // Again, this is valid but TS doesn't think so
                         .setDefault((set * 25 + i) === page)
                 }))
             )}

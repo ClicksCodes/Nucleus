@@ -257,7 +257,7 @@ class confirmationMessage {
                     cancelled = true;
                     continue;
                 }
-                if (out === null) {
+                if (out === null  || out.isButton()) {
                     cancelled = true;
                     continue;
                 }

@@ -12,6 +12,7 @@ import Discord, {
     ButtonStyle,
     StringSelectMenuInteraction,
     TextInputStyle,
+    APIMessageComponentEmoji,
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -167,8 +168,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                         .setLabel(value.text)
                         .setValue(key)
                         .setDefault(filteredTypes.includes(key))
-                        // @ts-expect-error
-                        .setEmoji(getEmojiByName(value.emoji, "id"))  // FIXME: This gives a type error but is valid
+                        .setEmoji(getEmojiByName(value.emoji, "id") as APIMessageComponentEmoji)
             )))
         ]);
         components = components.concat([new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
@@ -270,8 +270,8 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
             continue;
         }
         i.deferUpdate();
-        if (i.customId === "filter") {
-            filteredTypes = (i as StringSelectMenuInteraction).values;
+        if (i.customId === "filter" && i.isStringSelectMenu()) {
+            filteredTypes = i.values;
             pageIndex = null;
             refresh = true;
         }
@@ -412,7 +412,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 timedOut = true;
                 continue;
             }
-            if (out === null) {
+            if (out === null || out.isButton()) {
                 continue;
             } else if (out instanceof ModalSubmitInteraction) {
                 let toAdd = out.fields.getTextInputValue("note") || null;

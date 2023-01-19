@@ -158,7 +158,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         i.deferUpdate();
         if ((i.component as unknown as ButtonInteraction).customId === "clear") {
-            clicks += 1;
+            clicks ++;
             if (clicks === 2) {
                 clicks = 0;
                 await client.database.guilds.write(interaction.guild!.id, null, ["logging.announcements.channel"]);

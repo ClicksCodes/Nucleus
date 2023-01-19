@@ -11,11 +11,9 @@ import Discord, {
     MessageComponentInteraction,
     StringSelectMenuBuilder,
     Role,
-    StringSelectMenuInteraction,
     ButtonStyle,
     TextInputBuilder,
     ButtonComponent,
-    StringSelectMenuComponent,
     ModalSubmitInteraction,
     APIMessageComponentEmoji
 } from "discord.js";
@@ -390,14 +388,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     innerTimedOut = true;
                     continue;
                 }
-                if ((i.component as StringSelectMenuComponent).customId === "template") {
+                if (i.isStringSelectMenu() && i.customId === "template") {
                     i.deferUpdate();
                     await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
-                                .setTitle(ticketMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.label)
+                                .setTitle(ticketMessages[parseInt(i.values[0]!)]!.label)
                                 .setDescription(
-                                    ticketMessages[parseInt((i as StringSelectMenuInteraction).values[0]!)]!.description
+                                    ticketMessages[parseInt(i.values[0]!)]!.description
                                 )
                                 .setStatus("Success")
                                 .setEmoji("GUILD.TICKET.OPEN")
@@ -643,16 +641,16 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             timedOut = true;
             continue;
         }
-        if ((i.component as StringSelectMenuComponent).customId === "types") {
+        if (i.isStringSelectMenu() && i.customId === "types") {
             i.deferUpdate();
-            const types = toHexInteger((i as StringSelectMenuInteraction).values, ticketTypes);
+            const types = toHexInteger(i.values, ticketTypes);
             await client.database.guilds.write(interaction.guild!.id, {
                 "tickets.types": types
             });
             data.types = types;
-        } else if ((i.component as StringSelectMenuComponent).customId === "removeTypes") {
+        } else if (i.isStringSelectMenu() && i.customId === "removeTypes") {
             i.deferUpdate();
-            const types = (i as StringSelectMenuInteraction).values;
+            const types = i.values;
             let customTypes = data.customTypes;
             if (customTypes) {
                 customTypes = customTypes.filter((t) => !types.includes(t));
@@ -708,6 +706,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             } catch (e) {
                 continue;
             }
+            if (!out || out.isButton()) continue;
             out = out as ModalSubmitInteraction;
             let toAdd = out.fields.getTextInputValue("type");
             if (!toAdd) {

@@ -1,5 +1,4 @@
 import fs from "fs";
-// @ts-expect-error
 import * as readLine from "node:readline/promises";
 
 const defaultDict: Record<string, string | string[] | boolean> = {

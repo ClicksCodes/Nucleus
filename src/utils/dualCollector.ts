@@ -1,4 +1,4 @@
-import Discord, { Client, Interaction, Message, MessageComponentInteraction } from "discord.js";
+import Discord, { ButtonInteraction, Client, Interaction, InteractionCollector, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
 import client from "./client.js";
 
 export default async function (
@@ -49,8 +49,8 @@ export async function modalInteractionCollector(
     m: Message,
     modalFilter: (i: Interaction) => boolean | Promise<boolean>,
     interactionFilter: (i: MessageComponentInteraction) => boolean | Promise<boolean>
-): Promise<null | Interaction> {
-    let out: Interaction;
+): Promise<null | ButtonInteraction | ModalSubmitInteraction> {
+    let out: ButtonInteraction | ModalSubmitInteraction;
     try {
         out = await new Promise((resolve, _reject) => {
             const int = m
@@ -58,22 +58,17 @@ export async function modalInteractionCollector(
                     filter: (i: MessageComponentInteraction) => interactionFilter(i),
                     time: 300000
                 })
-                .on("collect", (i: Interaction) => {
+                .on("collect", (i: ButtonInteraction) => {
+                    mod.stop();
                     resolve(i);
                 });
-            const mod = new Discord.InteractionCollector(client as Client, {
+            const mod = new InteractionCollector(client as Client, {
                 filter: (i: Interaction) => modalFilter(i),
                 time: 300000
-            }).on("collect", async (i: Interaction) => {
+            }).on("collect", async (i: ModalSubmitInteraction) => {
                 int.stop();
-                (i as Discord.ModalSubmitInteraction).deferUpdate();
-                resolve(i as Discord.ModalSubmitInteraction);
-            });
-            int.on("end", () => {
-                mod.stop();
-            });
-            mod.on("end", () => {
-                int.stop();
+                await i.deferUpdate();
+                resolve(i);
             });
         });
     } catch (e) {

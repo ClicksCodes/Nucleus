@@ -13,7 +13,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setTitle("Stats")
                 .setDescription(`**Servers:** ${client.guilds.cache.size}\n` + `**Ping:** \`${client.ws.ping * 2}ms\``)
                 .setStatus("Success")
-                .setEmoji("GUILD.GRAPHS")
+                .setEmoji("SETTINGS.STATS.GREEN")
         ],
         ephemeral: true
     });

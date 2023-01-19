@@ -191,7 +191,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } catch (e) {
                 continue;
             }
-            if (!out) continue
+            if (!out || out.isButton()) continue
             const buttonText = out.fields.getTextInputValue("name");
             const buttonLink = out.fields.getTextInputValue("url").replace(/{id}/gi, "{id}");
             const current = chosen;

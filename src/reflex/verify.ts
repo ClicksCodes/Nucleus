@@ -182,14 +182,14 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
     let itt = 0;
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     do {
-        itt += 1;
+        itt ++;
         code = "";
         for (let i = 0; i < length; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         if (itt > 1000) {
             itt = 0;
-            length += 1;
+            length ++;
         }
     } while (code in verify);
     const role: Role | null = await interaction.guild!.roles.fetch(config.verify.role);

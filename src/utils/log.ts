@@ -29,7 +29,8 @@ export const Logger = {
         if (typeof value === "number") value = value.toString();
         return { value: value, displayValue: displayValue };
     },
-    renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel) {
+    renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel | string) {
+        if (typeof channel === "string") channel = client.channels.cache.get(channel) as Discord.GuildChannel | Discord.ThreadChannel;
         return `${channel.name} [<#${channel.id}>]`;
     },
     renderRole(role: Discord.Role) {

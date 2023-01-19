@@ -3,7 +3,6 @@ import Discord, {
     ActionRowBuilder,
     ButtonBuilder,
     MessageComponentInteraction,
-    StringSelectMenuInteraction,
     Guild,
     CommandInteraction,
     GuildTextBasedChannel,
@@ -285,8 +284,8 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
             selectPaneOpen = false;
         } else if (i.component.customId === "select") {
             selectPaneOpen = !selectPaneOpen;
-        } else if (i.component.customId === "page") {
-            page = parseInt((i as StringSelectMenuInteraction).values[0]!);
+        } else if (i.isStringSelectMenu() && i.component.customId === "page") {
+            page = parseInt(i.values[0]!);
             selectPaneOpen = false;
         } else {
             cancelled = true;

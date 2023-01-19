@@ -309,7 +309,7 @@ const check = (interaction: CommandInteraction) => {
 };
 
 const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
-    const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"]
+    const validReplacements = ["serverName", "memberCount:all", "memberCount:bots", "memberCount:humans"]
     if (!interaction.guild) return [];
     const prompt = interaction.options.getString("message");
     const autocompletions = [];
