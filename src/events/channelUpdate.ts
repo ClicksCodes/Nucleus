@@ -5,6 +5,8 @@ import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import c from "../utils/client.js";
+import { capitalize } from "../utils/generateKeyValueList.js";
+
 let entry = c.logger.entry;
 
 const channelTypeEmoji: Record<number, string> = {
@@ -137,8 +139,8 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
                 );
             if ((oldChannel as VoiceChannel).rtcRegion !== (newChannel as VoiceChannel).rtcRegion)
                 changes.region = entry(
-                    [(oldChannel as VoiceChannel).rtcRegion ?? "Automatic", (newChannel as VoiceChannel).rtcRegion ?? "Automatic"],
-                    `${(oldChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "Automatic"} -> ${(newChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "Automatic"}`
+                    [(oldChannel as VoiceChannel).rtcRegion ?? "automatic", (newChannel as VoiceChannel).rtcRegion ?? "automatic"],
+                    `${capitalize((oldChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "automatic")} -> ${capitalize((newChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "automatic")}`
                 );
             break;
         }
@@ -209,4 +211,3 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
     };
     log(data);
 }
-//TODO: Capitialize RTC Regions
