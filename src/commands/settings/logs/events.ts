@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder, StringSelectMenuComponent, StringSelectMenuInteraction } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import client from "../../../utils/client.js";
 import { toHexArray, toHexInteger } from "../../../utils/calculate.js";
@@ -40,7 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let m: Message;
     let timedOut = false;
     do {
-        const config = await client.database.guilds.read(interaction.guild.id);
+        const config = await client.database.guilds.read(interaction.guild!.id);
         const converted = toHexArray(config.logging.logs.toLog);
         m = (await interaction.editReply({
             embeds: [
@@ -53,21 +53,21 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
-                    new SelectMenuBuilder()
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+                    new StringSelectMenuBuilder()
                         .setPlaceholder("Set events to log")
                         .setMaxValues(Object.keys(logs).length)
                         .setCustomId("logs")
                         .setMinValues(0)
                         .setOptions(
                             Object.keys(logs).map((e, i) => ({
-                                label: logs[e],
+                                label: (logs as any)[e],
                                 value: i.toString(),
                                 default: converted.includes(e)
                             }))
                         )
                 ]),
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder().setLabel("Select all").setStyle(ButtonStyle.Primary).setCustomId("all"),
                     new ButtonBuilder().setLabel("Select none").setStyle(ButtonStyle.Danger).setCustomId("none")
                 ])
@@ -85,24 +85,24 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         }
         i.deferUpdate();
         if (i.customId === "logs") {
-            const selected = i.values;
-            const newLogs = toHexInteger(selected.map((e) => Object.keys(logs)[parseInt(e)]));
-            await client.database.guilds.write(interaction.guild.id, {
+            const selected = (i as StringSelectMenuInteraction).values;
+            const newLogs = toHexInteger(selected.map((e: string) => Object.keys(logs)[parseInt(e)]!));
+            await client.database.guilds.write(interaction.guild!.id, {
                 "logging.logs.toLog": newLogs
             });
         } else if (i.customId === "all") {
             const newLogs = toHexInteger(Object.keys(logs).map((e) => e));
-            await client.database.guilds.write(interaction.guild.id, {
+            await client.database.guilds.write(interaction.guild!.id, {
                 "logging.logs.toLog": newLogs
             });
         } else if (i.customId === "none") {
-            await client.database.guilds.write(interaction.guild.id, {
+            await client.database.guilds.write(interaction.guild!.id, {
                 "logging.logs.toLog": 0
             });
         }
     } while (!timedOut);
 
-    await interaction.editReply({ embeds: [m.embeds[0]!.setFooter({ text: "Message timed out" })] });
+    await interaction.editReply({ embeds: [new EmbedBuilder(m.embeds[0]!.data).setFooter({ text: "Message timed out" })] });
     return;
 };
 

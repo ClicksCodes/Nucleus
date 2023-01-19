@@ -1,10 +1,10 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
 import { ChannelType } from "discord-api-types/v9";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction, ButtonComponent } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -24,10 +24,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         ephemeral: true,
         fetchReply: true
     })) as Discord.Message;
-    if (interaction.options.getChannel("channel")) {
+    if (interaction.options.get("channel")?.channel) {
         let channel;
         try {
-            channel = interaction.options.getChannel("channel");
+            channel = interaction.options.get("channel")?.channel;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -40,7 +40,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         channel = channel as Discord.TextChannel;
-        if (channel.guild.id !== interaction.guild.id) {
+        if (channel.guild.id !== interaction.guild!.id) {
             return interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -52,16 +52,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
+            .setEmoji("CHANNEL.TEXT.EDIT")
             .setTitle("Log Channel")
             .setDescription(`Are you sure you want to set the log channel to <#${channel.id}>?`)
             .setColor("Warning")
+            .setFailedMessage("The log channel was not changed", "Danger", "CHANNEL.TEXT.DELETE")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;
         if (confirmation.success) {
             try {
-                await client.database.guilds.write(interaction.guild.id, {
+                await client.database.guilds.write(interaction.guild!.id, {
                     "logging.logs.channel": channel.id
                 });
                 const { log, NucleusColors, entry, renderUser, renderChannel } = client.logger;
@@ -111,7 +112,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     }
     let clicks = 0;
-    const data = await client.database.guilds.read(interaction.guild.id);
+    const data = await client.database.guilds.read(interaction.guild!.id);
     let channel = data.logging.logs.channel;
     let timedOut = false;
     while (!timedOut) {
@@ -128,7 +129,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setCustomId("clear")
                         .setLabel(clicks ? "Click again to confirm" : "Reset channel")
@@ -138,22 +139,23 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ])
             ]
         });
-        let i;
+        let i: ButtonInteraction;
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
                 filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
-            });
+            }) as ButtonInteraction;
         } catch (e) {
             timedOut = true;
         }
+        i = i!
         i.deferUpdate();
-        if (i.component.customId === "clear") {
+        if ((i.component as ButtonComponent).customId === "clear") {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
-                await client.database.guilds.write(interaction.guild.id, null, ["logging.logs.channel"]);
-                channel = undefined;
+                await client.database.guilds.write(interaction.guild!.id, null, ["logging.logs.channel"]);
+                channel = null;
             }
         }
     }
@@ -171,7 +173,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 .setFooter({ text: "Message closed" })
         ],
         components: [
-            new ActionRowBuilder().addComponents([
+            new ActionRowBuilder<ButtonBuilder>().addComponents([
                 new ButtonBuilder()
                     .setCustomId("clear")
                     .setLabel("Clear")

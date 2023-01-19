@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
 import { ChannelType } from "discord-api-types/v9";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonComponent } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
@@ -26,10 +26,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         ephemeral: true,
         fetchReply: true
     })) as Discord.Message;
-    if (interaction.options.getChannel("channel")) {
+    if (interaction.options.get("channel")?.channel) {
         let channel;
         try {
-            channel = interaction.options.getChannel("channel");
+            channel = interaction.options.get("channel")?.channel;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -54,13 +54,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("CHANNEL.TEXT.EDIT", "CHANNEL.TEXT.DELETE")
+            .setEmoji("CHANNEL.TEXT.EDIT")
             .setTitle("Staff Notifications Channel")
             .setDescription(
                 "This will be the channel all notifications, updates, user reports etc. will be sent to.\n\n" +
                     `Are you sure you want to set the staff notifications channel to <#${channel.id}>?`
             )
             .setColor("Warning")
+            .setFailedMessage("Staff notifications channel not set", "Warning", "CHANNEL.TEXT.DELETE")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;
@@ -132,7 +133,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setCustomId("clear")
                         .setLabel(clicks ? "Click again to confirm" : "Reset channel")
@@ -153,12 +154,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
         i.deferUpdate();
-        if ((i.component as ButtonBuilder).customId === "clear") {
+        if ((i.component as ButtonComponent).customId === "clear") {
             clicks += 1;
             if (clicks === 2) {
                 clicks = 0;
                 await client.database.guilds.write(interaction.guild.id, null, ["logging.staff.channel"]);
-                channel = undefined;
+                channel = null;
             }
         }
     }
@@ -176,7 +177,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 .setFooter({ text: "Message closed" })
         ],
         components: [
-            new ActionRowBuilder().addComponents([
+            new ActionRowBuilder<ButtonBuilder>().addComponents([
                 new ButtonBuilder()
                     .setCustomId("clear")
                     .setLabel("Clear")
