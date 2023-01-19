@@ -22,13 +22,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption((option) => option.setName("member").setDescription("The member to view as").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    /*
-     * {
-            categoryObject: channel[],
-            categoryObject: channel[],
-            "null": channel[]
-        }
-    */
+
     const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
 
     let channels: Record<string, GuildBasedChannel[]> = {"": []};
@@ -105,7 +99,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             threads = channel.threads.cache.toJSON().map((t) => t as Discord.ThreadChannel);
         }
         const nsfw = ("nsfw" in channel ? channel.nsfw : false) && NSFWAvailable.includes(channelType)
-        const emojiName = channelTypeEmoji[channelType] + (nsfw ? "_NSFW" : "");
+        const emojiName = channelTypeEmoji[channelType.valueOf()] + (nsfw ? "_NSFW" : "");
         const emoji = getEmojiByName("ICONS.CHANNEL." + (threads.length ? "THREAD_CHANNEL" : emojiName));
         let current = `${emoji} ${channel.name}`;
         if (threads.length) {

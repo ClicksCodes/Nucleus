@@ -8,7 +8,9 @@ import Discord, {
     MessageComponentInteraction,
     Role,
     ButtonStyle,
-    AutocompleteInteraction
+    AutocompleteInteraction,
+    GuildChannel,
+    EmbedBuilder
 } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -50,17 +52,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
     let m: Message;
     if (
-        interaction.options.getRole("role") ||
-        interaction.options.getChannel("channel") ||
-        interaction.options.getString("message")
+        interaction.options.get("role")?.role ||
+        interaction.options.get("channel")?.channel ||
+        interaction.options.get("message")?.value as string
     ) {
         let role: Role | null;
         let ping: Role | null;
         let channel: Channel | null;
-        const message: string | null = interaction.options.getString("message");
+        const message: string | null = interaction.options.get("message")?.value as string | null;
         try {
-            role = interaction.options.getRole("role") as Role | null;
-            ping = interaction.options.getRole("ping") as Role | null;
+            role = interaction.options.get("role")?.role as Role | null;
+            ping = interaction.options.get("ping")?.role as Role | null;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -73,7 +75,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
         try {
-            channel = interaction.options.getChannel("channel") as Channel | null;
+            channel = interaction.options.get("channel")?.channel as Channel | null;
         } catch {
             return await interaction.editReply({
                 embeds: [
@@ -94,13 +96,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
         if (role) options.role = renderRole(role);
         if (ping) options.ping = renderRole(ping);
-        if (channel) options.channel = renderChannel(channel);
+        if (channel) options.channel = renderChannel(channel as GuildChannel);
         if (message) options.message = "\n> " + message;
         const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.EDIT", "GUILD.ROLES.DELETE")
+            .setEmoji("GUILD.ROLES.EDIT")
             .setTitle("Welcome Events")
             .setDescription(generateKeyValueList(options))
             .setColor("Warning")
+            .setFailedMessage("Cancelled", "Warning", "GUILD.ROLES.DELETE") //TODO: Actual Message Needed
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;
@@ -130,7 +133,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 };
                 if (role) list.role = entry(role.id, renderRole(role));
                 if (ping) list.ping = entry(ping.id, renderRole(ping));
-                if (channel) list.channel = entry(channel.id, renderChannel(channel.id));
+                if (channel) list.channel = entry(channel.id, renderChannel(channel as GuildChannel));
                 if (message) list.message = entry(message, `\`${message}\``);
                 const data = {
                     meta: {
@@ -185,19 +188,19 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         `**Message:** ${config.welcome.message ? `\n> ${config.welcome.message}` : "*None set*"}\n` +
                             `**Role:** ${
                                 config.welcome.role
-                                    ? renderRole(await interaction.guild!.roles.fetch(config.welcome.role))
+                                    ? renderRole((await interaction.guild!.roles.fetch(config.welcome.role))!)
                                     : "*None set*"
                             }\n` +
                             `**Ping:** ${
                                 config.welcome.ping
-                                    ? renderRole(await interaction.guild!.roles.fetch(config.welcome.ping))
+                                    ? renderRole((await interaction.guild!.roles.fetch(config.welcome.ping))!)
                                     : "*None set*"
                             }\n` +
                             `**Channel:** ${
                                 config.welcome.channel
                                     ? config.welcome.channel == "dm"
                                         ? "DM"
-                                        : renderChannel(await interaction.guild!.channels.fetch(config.welcome.channel))
+                                        : renderChannel((await interaction.guild!.channels.fetch(config.welcome.channel))!)
                                     : "*None set*"
                             }`
                     )
@@ -293,7 +296,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     } while (!timedOut);
     await interaction.editReply({
-        embeds: [m.embeds[0]!.setFooter({ text: "Message timed out" })],
+        embeds: [new EmbedBuilder(m.embeds[0]!.data).setFooter({ text: "Message timed out" })],
         components: []
     });
 };

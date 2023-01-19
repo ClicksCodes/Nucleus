@@ -1,14 +1,17 @@
-import type { Client } from 'discord.js';
+import type { NucleusClient } from '../utils/client.js';
+//@ts-expect-error
 import express from "express";
+//@ts-expect-error
 import bodyParser from "body-parser";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
+//@ts-expect-error
 import structuredClone from "@ungap/structured-clone";
 
 const jsonParser = bodyParser.json();
 const app = express();
 const port = 10000;
 
-const runServer = (client: Client) => {
+const runServer = (client: NucleusClient) => {
     app.get("/", (req, res) => {
         res.status(200).send(client.ws.ping);
     });
@@ -17,20 +20,20 @@ const runServer = (client: Client) => {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.verify[code].gID);
+            const guild = await client.guilds.fetch(client.verify[code]!.gID);
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(client.verify[code].uID);
+            const member = await guild.members.fetch(client.verify[code]!.uID);
             if (!member) {
                 return res.status(404);
             }
-            if (member.roles.cache.has(client.verify[code].rID)) {
+            if (member.roles.cache.has(client.verify[code]!.rID)) {
                 return res.status(200);
             }
-            await member.roles.add(client.verify[code].rID);
+            await member.roles.add(client.verify[code]!.rID);
 
-            const interaction = client.verify[code].interaction;
+            const interaction = client.verify[code]!.interaction;
             if (interaction) {
                 interaction.editReply({
                     embeds: [
@@ -57,7 +60,7 @@ const runServer = (client: Client) => {
                     },
                     list: {
                         memberId: entry(member.id, `\`${member.id}\``),
-                        member: entry(member.id, renderUser(member))
+                        member: entry(member.id, renderUser(member.user))
                     },
                     hidden: {
                         guild: guild.id
@@ -77,7 +80,7 @@ const runServer = (client: Client) => {
         const code = req.params.code;
         if (client.verify[code]) {
             try {
-                const interaction = client.verify[code].interaction;
+                const interaction = client.verify[code]!.interaction;
                 if (interaction) {
                     interaction.editReply({
                         embeds: [
@@ -105,11 +108,11 @@ const runServer = (client: Client) => {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.roleMenu[code].guild);
+            const guild = await client.guilds.fetch(client.roleMenu[code]!.guild);
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(client.roleMenu[code].user);
+            const member = await guild.members.fetch(client.roleMenu[code]!.user);
             if (!member) {
                 return res.status(404);
             }
@@ -123,7 +126,7 @@ const runServer = (client: Client) => {
         const code = req.params.code;
         if (client.roleMenu[code] !== undefined) {
             try {
-                const interaction = client.roleMenu[code].interaction;
+                const interaction = client.roleMenu[code]!.interaction;
                 if (interaction) {
                     interaction.editReply({
                         embeds: [
