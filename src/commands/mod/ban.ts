@@ -181,19 +181,19 @@ const check = async (interaction: CommandInteraction) => {
         apply = apply as User
     }
     // Do not allow banning the owner
-    if (member.id === interaction.guild.ownerId) throw new Error("You cannot ban the owner of the server");
+    if (member.id === interaction.guild.ownerId) return "You cannot ban the owner of the server";
     // Check if Nucleus can ban the member
-    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
+    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
     // Check if Nucleus has permission to ban
-    if (!me.permissions.has("BanMembers")) throw new Error("I do not have the *Ban Members* permission");
+    if (!me.permissions.has("BanMembers")) return "I do not have the *Ban Members* permission";
     // Do not allow banning Nucleus
-    if (member.id === me.id) throw new Error("I cannot ban myself");
+    if (member.id === me.id) return "I cannot ban myself";
     // Allow the owner to ban anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has ban_members permission
-    if (!member.permissions.has("BanMembers")) throw new Error("You do not have the *Ban Members* permission");
+    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
+    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
     // Allow ban
     return true;
 };

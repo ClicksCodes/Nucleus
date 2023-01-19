@@ -189,11 +189,10 @@ async function execute(check: Function | undefined, callback: Function | undefin
         if (typeof result === "string") {
             const { NucleusColors } = client.logger
             return data.reply({embeds: [new EmojiEmbed()
-                .setTitle("")
                 .setDescription(result)
                 .setColor(NucleusColors.red)
                 .setEmoji(getEmojiByName("CONTROL.BLOCKCROSS"))
-            ]});
+            ], ephemeral: true});
         };
     }
     callback(data);

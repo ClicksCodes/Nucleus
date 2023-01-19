@@ -103,7 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setTitle("Welcome Events")
             .setDescription(generateKeyValueList(options))
             .setColor("Warning")
-            .setFailedMessage("Cancelled", "Warning", "GUILD.ROLES.DELETE") //TODO: Actual Message Needed
+            .setFailedMessage("No changes were made", "Success", "GUILD.ROLES.CREATE")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;
@@ -324,7 +324,7 @@ const autocomplete = async (interaction: AutocompleteInteraction): Promise<strin
     if (beforeLastOpenBracket !== null) {
         if (afterLastOpenBracket !== null) {
             for (const replacement of validReplacements) {
-                if (replacement.startsWith(afterLastOpenBracket[0].slice(1))) {
+                if (replacement.startsWith(afterLastOpenBracket[0]!.slice(1))) {
                     autocompletions.push(`${beforeLastOpenBracket[1]}{${replacement}}`);
                 }
             }

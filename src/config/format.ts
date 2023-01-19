@@ -61,6 +61,13 @@ export default async function (walkthrough = false) {
         out = false;
         json = {};
     }
+    if (json) {
+        if (json.token === defaultDict["token"] || json.developmentToken === defaultDict["developmentToken"]) {
+            console.log("\x1b[31m⚠ No main.json found, creating one.");
+            console.log("  \x1b[2mYou can edit src/config/main.json directly using template written to the file.\x1b[0m\n");
+            json = {};
+        }
+    }
     for (const key in defaultDict) {
         if (!json[key]) {
             if (walkthrough) {

@@ -15,7 +15,6 @@ export const event = "channelDelete";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
-    // const audit = auditLog.entries.filter((entry: GuildAuditLogsEntry) => entry.target!.id === channel.id).first();
     const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelDelete))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id)[0];
     if (!auditLog) return;

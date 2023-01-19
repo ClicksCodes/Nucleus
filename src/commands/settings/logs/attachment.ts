@@ -60,7 +60,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     `Are you sure you want to set the attachment log channel to <#${channel.id}>?`
             )
             .setColor("Warning")
-            .setFailedMessage("Attachment log channel not set", "Warning", "CHANNEL.TEXT.DELETE")
+            .setFailedMessage("No changes were made", "Success", "CHANNEL.TEXT.CREATE")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;

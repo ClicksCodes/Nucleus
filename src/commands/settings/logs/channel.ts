@@ -56,7 +56,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setTitle("Log Channel")
             .setDescription(`Are you sure you want to set the log channel to <#${channel.id}>?`)
             .setColor("Warning")
-            .setFailedMessage("The log channel was not changed", "Danger", "CHANNEL.TEXT.DELETE")
+            .setFailedMessage("No changes were made", "Success", "CHANNEL.TEXT.CREATE")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;

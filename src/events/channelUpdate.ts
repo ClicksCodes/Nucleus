@@ -174,7 +174,7 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             if ((oldChannel as StageChannel).rtcRegion !== (newChannel as StageChannel).rtcRegion)
                 changes.region = entry(
                     [(oldChannel as StageChannel).rtcRegion ?? "Automatic", (newChannel as StageChannel).rtcRegion ?? "Automatic"],
-                    `${(oldChannel as StageChannel).rtcRegion?.toUpperCase() ?? "Automatic"} -> ${(newChannel as StageChannel).rtcRegion?.toUpperCase() ?? "Automatic"}`
+                    `${capitalize((oldChannel as StageChannel).rtcRegion?.toUpperCase() ?? "automatic")} -> ${capitalize((newChannel as StageChannel).rtcRegion?.toUpperCase() ?? "automatic")}`
                 );
             break;
         }

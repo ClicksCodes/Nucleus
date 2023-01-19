@@ -163,7 +163,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     "\nAre you sure you want to apply these settings?"
             )
             .setColor("Warning")
-            .setFailedMessage("Cancelled", "Warning", "GUILD.TICKET.CLOSE") // TODO: Set Actual Message
+            .setFailedMessage("No changes were made", "Success", "GUILD.TICKET.OPEN")
             .setInverted(true)
             .send(true);
         if (confirmation.cancelled) return;

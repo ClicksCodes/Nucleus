@@ -5,7 +5,9 @@ import Discord, {
     ActionRowBuilder,
     ButtonBuilder,
     SelectMenuBuilder,
-    ButtonStyle
+    ButtonStyle,
+    StringSelectMenuBuilder,
+    APIMessageComponentEmoji
 } from "discord.js";
 import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
@@ -171,8 +173,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const all = true;
     while (true) {
         let count = 0;
-        const affected = [];
-        const members = interaction.guild.members.cache;
+        const affected: GuildMember[] = [];
+        const members = interaction.guild!.members.cache;
         if (all) {
             members.forEach((member) => {
                 let applies = true;
@@ -224,8 +226,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
-                    new SelectMenuBuilder()
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+                    new StringSelectMenuBuilder()
                         .setOptions(
                             filters.map((f, index) => ({
                                 label: (f.inverted ? "(Not) " : "") + f.name,
@@ -237,18 +239,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("select")
                         .setPlaceholder("Remove a filter")
                 ]),
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel("Apply")
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("apply")
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("CONTROL.TICK", "id")))
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("CONTROL.TICK", "id"))! as APIMessageComponentEmoji)
                         .setDisabled(affected.length === 0),
                     new ButtonBuilder()
                         .setLabel("Add filter")
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("add")
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.FILTER", "id")))
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.FILTER", "id"))! as APIMessageComponentEmoji)
                         .setDisabled(filters.length >= 25)
                 ])
             ]
@@ -260,12 +262,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = async (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    const me = interaction.guild.me!;
-    if (!me.permissions.has("MANAGE_ROLES")) throw new Error("I do not have the *Manage Roles* permission");
+    const me = interaction.guild!.members.me!;
+    if (!me.permissions.has("ManageRoles")) return "I do not have the *Manage Roles* permission";
     // Allow the owner to role anyone
-    if (member.id === interaction.guild.ownerId) return true;
+    if (member.id === interaction.guild!.ownerId) return true;
     // Check if the user has manage_roles permission
-    if (!member.permissions.has("MANAGE_ROLES")) throw new Error("You do not have the *Manage Roles* permission");
+    if (!member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
     // Allow role
     return true;
 };

@@ -209,7 +209,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = async (interaction: CommandInteraction) => {
     const tracks = (await client.database.guilds.read(interaction.guild!.id)).tracks;
-    if (tracks.length === 0) throw new Error("This server does not have any tracks");
+    if (tracks.length === 0) return "This server does not have any tracks";
     const member = interaction.member as GuildMember;
     // Allow the owner to promote anyone
     if (member.id === interaction.guild!.ownerId) return true;
@@ -223,8 +223,7 @@ const check = async (interaction: CommandInteraction) => {
         break;
     }
     // Check if the user has manage_roles permission
-    if (!managed && !member.permissions.has("ManageRoles"))
-        throw new Error("You do not have the *Manage Roles* permission");
+    if (!managed && !member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
     // Allow track
     return true;
 };

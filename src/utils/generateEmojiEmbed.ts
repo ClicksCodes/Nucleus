@@ -13,13 +13,16 @@ class EmojiEmbed extends EmbedBuilder {
     description = "";
 
     _generateTitle() {
+        if (this._emoji && !this._title) return getEmojiByName(this._emoji)
         if (this._emoji) { return `${getEmojiByName(this._emoji)} ${this._title}`; }
-        return this._title;
+        if (this._title) { return this._title };
+        return "";
     }
 
     override setTitle(title: string) {
         this._title = title;
-        super.setTitle(this._generateTitle());
+        const proposedTitle = this._generateTitle();
+        if (proposedTitle) super.setTitle(proposedTitle);
         return this;
     }
     override setDescription(description: string) {
@@ -29,7 +32,8 @@ class EmojiEmbed extends EmbedBuilder {
     }
     setEmoji(emoji: string) {
         this._emoji = emoji;
-        super.setTitle(this._generateTitle());
+        const proposedTitle = this._generateTitle();
+        if (proposedTitle) super.setTitle(proposedTitle);
         return this;
     }
     setStatus(color: "Danger" | "Warning" | "Success") {
