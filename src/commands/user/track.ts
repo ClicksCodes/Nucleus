@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuOptionBuilder, APIMessageComponentEmoji, StringSelectMenuBuilder, MessageComponentInteraction, StringSelectMenuInteraction, Role } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuOptionBuilder, APIMessageComponentEmoji, StringSelectMenuBuilder, MessageComponentInteraction, StringSelectMenuInteraction } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -36,7 +36,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let timedOut = false;
     while (!timedOut) {
         const data = config.tracks[track]!;
-        if (data.manageableBy !== undefined)
+        if (data.manageableBy.length)
             managed = data.manageableBy.some((element: string) => {
                 return memberRoles.cache.has(element);
             });
@@ -94,7 +94,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         const conflict = data.retainPrevious ? false : selected.length > 1;
         let conflictDropdown: StringSelectMenuBuilder[] = [];
-        let conflictDropdownOptions: SelectMenuOptionBuilder[] = [];
+        const conflictDropdownOptions: SelectMenuOptionBuilder[] = [];
         let currentRoleIndex: number = -1;
         if (conflict) {
             generated += `\n\n${getEmojiByName(`PUNISH.WARN.${managed ? "YELLOW" : "RED"}`)} This user has ${
@@ -202,7 +202,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 }
             }
         } else if (component.customId === "select") {
-            track = (component as StringSelectMenuInteraction).values[0];
+            track = parseInt((component as StringSelectMenuInteraction).values[0]!);
         }
     }
 };
@@ -215,9 +215,10 @@ const check = async (interaction: CommandInteraction) => {
     if (member.id === interaction.guild!.ownerId) return true;
     // Check if the user can manage any of the tracks
     let managed = false;
+    const memberRoles = member.roles.cache.map((r) => r.id)
     for (const element of tracks) {
-        if (!element.track.manageableBy) continue;
-        if (!element.track.manageableBy.some((role: Role) => member.roles.cache.has(role.id))) continue;
+        if (!element.manageableBy.length) continue;
+        if (!element.manageableBy.some((role: string) => memberRoles.includes(role))) continue;
         managed = true;
         break;
     }

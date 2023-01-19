@@ -91,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const rulesChannel = interaction.guild!.rulesChannel?.id;
 
     async function nameFromChannel(channel: GuildBasedChannel): Promise<string> {
-        let channelType = channel.type;
+        let channelType: Discord.ChannelType | 99 = channel.type;
         if (channelType === Discord.ChannelType.GuildCategory) return "";
         if (channel.id === rulesChannel) channelType = 99
         let threads: Discord.ThreadChannel[] = [];

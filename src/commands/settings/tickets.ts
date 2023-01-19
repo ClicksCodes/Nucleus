@@ -7,7 +7,6 @@ import Discord, {
     GuildChannel,
     Message,
     ActionRowBuilder,
-    Component,
     ButtonBuilder,
     MessageComponentInteraction,
     StringSelectMenuBuilder,
@@ -74,9 +73,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     })) as Message;
     const options = {
         enabled: (interaction.options.get("enabled")?.value as string).startsWith("yes") as boolean | null,
-        category: interaction.options.get("category")?.channel,
-        maxtickets: interaction.options.get("maxticketsperuser")?.value as number,
-        supportping: interaction.options.get("supportrole")?.role as Role
+        category: interaction.options.get("category")?.channel as Discord.CategoryChannel | null,
+        maxtickets: interaction.options.get("maxticketsperuser")?.value as number | null,
+        supportping: interaction.options.get("supportrole")?.role as Role | null
     };
     if (options.enabled !== null || options.category || options.maxtickets || options.supportping) {
         if (options.category) {
@@ -94,7 +93,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     ]
                 });
             }
-            if (!channel) return;
             channel = channel as Discord.CategoryChannel;
             if (channel.guild.id !== interaction.guild.id)
                 return interaction.editReply({
@@ -202,20 +200,20 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
         }
     }
-    let data = await client.database.guilds.read(interaction.guild.id);
-    data.tickets.customTypes = (data.tickets.customTypes || []).filter(
+    const data = await client.database.guilds.read(interaction.guild.id);
+    data.tickets.customTypes = (data.tickets.customTypes ?? []).filter(
         (value: string, index: number, array: string[]) => array.indexOf(value) === index
     );
     let lastClicked = "";
-    let embed: EmojiEmbed = new EmojiEmbed();
-    let compiledData = {
+    const embed: EmojiEmbed = new EmojiEmbed();
+    const compiledData = {
         enabled: data.tickets.enabled,
         category: data.tickets.category,
         maxTickets: data.tickets.maxTickets,
         supportRole: data.tickets.supportRole,
         useCustom: data.tickets.useCustom,
         types: data.tickets.types,
-        customTypes: data.tickets.customTypes
+        customTypes: data.tickets.customTypes as string[] | null
     };
     let timedOut = false;
     while (!timedOut) {
@@ -485,29 +483,27 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         continue;
                     }
                     out = out as ModalSubmitInteraction;
-                    if (out.fields) {
-                        const title = out.fields.getTextInputValue("title");
-                        const description = out.fields.getTextInputValue("description");
-                        await interaction.channel!.send({
-                            embeds: [
-                                new EmojiEmbed()
-                                    .setTitle(title)
-                                    .setDescription(description)
-                                    .setStatus("Success")
-                                    .setEmoji("GUILD.TICKET.OPEN")
-                            ],
-                            components: [
-                                new ActionRowBuilder<ButtonBuilder>().addComponents([
-                                    new ButtonBuilder()
-                                        .setLabel("Create Ticket")
-                                        .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
-                                        .setStyle(ButtonStyle.Success)
-                                        .setCustomId("createticket")
-                                ])
-                            ]
-                        });
-                        templateSelected = true;
-                    }
+                    const title = out.fields.getTextInputValue("title");
+                    const description = out.fields.getTextInputValue("description");
+                    await interaction.channel!.send({
+                        embeds: [
+                            new EmojiEmbed()
+                                .setTitle(title)
+                                .setDescription(description)
+                                .setStatus("Success")
+                                .setEmoji("GUILD.TICKET.OPEN")
+                        ],
+                        components: [
+                            new ActionRowBuilder<ButtonBuilder>().addComponents([
+                                new ButtonBuilder()
+                                    .setLabel("Create Ticket")
+                                    .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id"))
+                                    .setStyle(ButtonStyle.Success)
+                                    .setCustomId("createticket")
+                            ])
+                        ]
+                    });
+                    templateSelected = true;
                 }
             }
         } else if ((i.component as ButtonComponent).customId === "enabled") {
@@ -516,7 +512,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
             compiledData.enabled = !compiledData.enabled;
         } else if ((i.component as ButtonComponent).customId === "manageTypes") {
-            data = await manageTypes(interaction, data, m as Message); //TODO: Fix this
+            data.tickets = await manageTypes(interaction, data.tickets, m as Message);
         }
     }
     await interaction.editReply({
@@ -713,23 +709,19 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                 continue;
             }
             out = out as ModalSubmitInteraction;
-            if (out.fields) {
-                let toAdd = out.fields.getTextInputValue("type");
-                if (!toAdd) {
-                    continue;
-                }
-                toAdd = toAdd.substring(0, 80);
-                try {
-                    await client.database.guilds.append(interaction.guild!.id, "tickets.customTypes", toAdd);
-                } catch {
-                    continue;
-                }
-                data.customTypes = data.customTypes ?? [];
-                if (!data.customTypes.includes(toAdd)) {
-                    data.customTypes.push(toAdd);
-                }
-            } else {
+            let toAdd = out.fields.getTextInputValue("type");
+            if (!toAdd) {
                 continue;
+            }
+            toAdd = toAdd.substring(0, 80);
+            try {
+                await client.database.guilds.append(interaction.guild!.id, "tickets.customTypes", toAdd);
+            } catch {
+                continue;
+            }
+            data.customTypes = data.customTypes ?? [];
+            if (!data.customTypes.includes(toAdd)) {
+                data.customTypes.push(toAdd);
             }
         } else if ((i.component as ButtonComponent).customId === "switchToDefault") {
             i.deferUpdate();

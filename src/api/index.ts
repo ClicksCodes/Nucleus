@@ -1,3 +1,4 @@
+import type { Guild, GuildMember } from 'discord.js';
 import type { NucleusClient } from '../utils/client.js';
 //@ts-expect-error
 import express from "express";
@@ -12,19 +13,19 @@ const app = express();
 const port = 10000;
 
 const runServer = (client: NucleusClient) => {
-    app.get("/", (req, res) => {
+    app.get("/", (_req: express.Request, res: express.Response) => {
         res.status(200).send(client.ws.ping);
     });
 
-    app.post("/verify/:code", jsonParser, async function (req, res) {
+    app.post("/verify/:code", jsonParser, async function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.verify[code]!.gID);
+            const guild = await client.guilds.fetch(client.verify[code]!.gID) as Guild | null;
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(client.verify[code]!.uID);
+            const member = await guild.members.fetch(client.verify[code]!.uID) as GuildMember | null;
             if (!member) {
                 return res.status(404);
             }
@@ -34,19 +35,21 @@ const runServer = (client: NucleusClient) => {
             await member.roles.add(client.verify[code]!.rID);
 
             const interaction = client.verify[code]!.interaction;
-            if (interaction) {
-                interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setTitle("Verify")
-                            .setDescription("Verification complete")
-                            .setStatus("Success")
-                            .setEmoji("MEMBER.JOIN")
-                    ],
-                    components: []
-                });
-            }
-            client.verify = client.verify.filter((v) => v.code !== code);
+            interaction.editReply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setTitle("Verify")
+                        .setDescription("Verification complete")
+                        .setStatus("Success")
+                        .setEmoji("MEMBER.JOIN")
+                ],
+                components: []
+            });
+            // client.verify.filter((v: VerifySchema) => v.code !== code);
+            // delete the key by creating a new object without the key
+            client.verify = Object.keys(client.verify)
+                .filter((k) => k !== code)
+                .reduce((obj, key) => {return { ...obj, [key]: client.verify[key]}}, {});
             const { log, NucleusColors, entry, renderUser } = client.logger;
             try {
                 const data = {
@@ -76,24 +79,22 @@ const runServer = (client: NucleusClient) => {
         }
     });
 
-    app.get("/verify/:code", jsonParser, function (req, res) {
+    app.get("/verify/:code", jsonParser, function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         if (client.verify[code]) {
             try {
                 const interaction = client.verify[code]!.interaction;
-                if (interaction) {
-                    interaction.editReply({
-                        embeds: [
-                            new EmojiEmbed()
-                                .setTitle("Verify")
-                                .setDescription(
-                                    "Verify was opened in another tab or window, please complete the CAPTCHA there to continue"
-                                )
-                                .setStatus("Success")
-                                .setEmoji("MEMBER.JOIN")
-                        ]
-                    });
-                }
+                interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed()
+                            .setTitle("Verify")
+                            .setDescription(
+                                "Verify was opened in another tab or window, please complete the CAPTCHA there to continue"
+                            )
+                            .setStatus("Success")
+                            .setEmoji("MEMBER.JOIN")
+                    ]
+                });
             } catch {
                 return res.sendStatus(410);
             }
@@ -104,15 +105,15 @@ const runServer = (client: NucleusClient) => {
         return res.sendStatus(404);
     });
 
-    app.post("/rolemenu/:code", jsonParser, async function (req, res) {
+    app.post("/rolemenu/:code", jsonParser, async function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.roleMenu[code]!.guild);
+            const guild = await client.guilds.fetch(client.roleMenu[code]!.guild) as Guild | null;
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(client.roleMenu[code]!.user);
+            const member = await guild.members.fetch(client.roleMenu[code]!.user) as GuildMember | null;
             if (!member) {
                 return res.status(404);
             }
@@ -122,25 +123,23 @@ const runServer = (client: NucleusClient) => {
         }
     });
 
-    app.get("/rolemenu/:code", jsonParser, function (req, res) {
+    app.get("/rolemenu/:code", jsonParser, function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         if (client.roleMenu[code] !== undefined) {
             try {
                 const interaction = client.roleMenu[code]!.interaction;
-                if (interaction) {
-                    interaction.editReply({
-                        embeds: [
-                            new EmojiEmbed()
-                                .setTitle("Roles")
-                                .setDescription(
-                                    "The role menu was opened in another tab or window, please select your roles there to continue"
-                                )
-                                .setStatus("Success")
-                                .setEmoji("GUILD.GREEN")
-                        ],
-                        components: []
-                    });
-                }
+                interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed()
+                            .setTitle("Roles")
+                            .setDescription(
+                                "The role menu was opened in another tab or window, please select your roles there to continue"
+                            )
+                            .setStatus("Success")
+                            .setEmoji("GUILD.GREEN")
+                    ],
+                    components: []
+                });
             } catch {
                 return res.sendStatus(410);
             }

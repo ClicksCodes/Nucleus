@@ -1,11 +1,11 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
 import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder, StringSelectMenuInteraction } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import client from "../../../utils/client.js";
 import { toHexArray, toHexInteger } from "../../../utils/calculate.js";
 
-const logs = {
+const logs: Record<string, string> = {
     channelUpdate: "Channels created, deleted or modified",
     emojiUpdate: "Server emojis modified",
     stickerUpdate: "Server stickers modified",
@@ -42,6 +42,18 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     do {
         const config = await client.database.guilds.read(interaction.guild!.id);
         const converted = toHexArray(config.logging.logs.toLog);
+        const selectPane = new StringSelectMenuBuilder()
+            .setPlaceholder("Set events to log")
+            .setMaxValues(Object.keys(logs).length)
+            .setCustomId("logs")
+            .setMinValues(0)
+        Object.keys(logs).map((e, i) => {
+            selectPane.addOptions(new StringSelectMenuOptionBuilder()
+                .setLabel(logs[e]!)
+                .setValue(i.toString())
+                .setDefault(converted.includes(e))
+            )
+        });
         m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -53,20 +65,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setEmoji("CHANNEL.TEXT.CREATE")
             ],
             components: [
-                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
-                    new StringSelectMenuBuilder()
-                        .setPlaceholder("Set events to log")
-                        .setMaxValues(Object.keys(logs).length)
-                        .setCustomId("logs")
-                        .setMinValues(0)
-                        .setOptions(
-                            Object.keys(logs).map((e, i) => ({
-                                label: (logs as any)[e],
-                                value: i.toString(),
-                                default: converted.includes(e)
-                            }))
-                        )
-                ]),
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectPane),
                 new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder().setLabel("Select all").setStyle(ButtonStyle.Primary).setCustomId("all"),
                     new ButtonBuilder().setLabel("Select none").setStyle(ButtonStyle.Danger).setCustomId("none")

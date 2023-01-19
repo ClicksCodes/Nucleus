@@ -12,17 +12,19 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
     try {
         const { getAuditLog, log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
         const auditCreate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookCreate))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0] as GuildAuditLogsEntry;
+            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0]!;
         const auditDelete = (await getAuditLog(channel.guild, AuditLogEvent.WebhookDelete))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0] as GuildAuditLogsEntry;
+            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0];
         const auditUpdate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookUpdate))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0] as GuildAuditLogsEntry;
+            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0];
 
-        if (!auditCreate && !auditUpdate && !auditDelete) return;
-        let audit = auditCreate;
+        if (!auditUpdate && !auditDelete) return;
         let action: "Create" | "Update" | "Delete" = "Create";
         let list: Record<string, ReturnType<typeof entry> | string> = {};
-        if (auditUpdate && auditUpdate.createdTimestamp > audit.createdTimestamp) {
+        const createTimestamp = auditCreate.createdTimestamp;
+        const deleteTimestamp = auditDelete ? auditDelete.createdTimestamp : 0;
+        const updateTimestamp = auditUpdate ? auditUpdate.createdTimestamp : 0;
+        if (updateTimestamp > createTimestamp && updateTimestamp > deleteTimestamp && auditUpdate) {
             const { before, after } = auditUpdate.changes.reduce((acc: accType, change) => {
                     acc.before[change.key] = change.old?.toString()!;
                     acc.after[change.key] = change.new?.toString()!;
@@ -46,9 +48,8 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
             );
             list["edited"] = entry(after["editedTimestamp"]!, renderDelta(new Date().getTime()));
             list["editedBy"] = entry(auditUpdate.executor!.id, renderUser(auditUpdate.executor!));
-            audit = auditUpdate;
             action = "Update";
-        } else if (auditDelete && auditDelete.createdTimestamp > audit.createdTimestamp) {
+        } else if (deleteTimestamp > createTimestamp && deleteTimestamp > updateTimestamp && auditDelete) {
             const { before } = auditDelete.changes.reduce((acc: accType, change) => {
                     acc.before[change.key] = change.old?.toString()!;
                     acc.after[change.key] = change.new?.toString()!;
@@ -59,17 +60,16 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
             list = {
                 name: entry(before["name"]!, `${before["name"]}`),
                 channel: entry(before["channel_id"]!, renderChannel((await client.channels.fetch(before["channel_id"]!)) as GuildChannel)),
-                created: entry((auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp, renderDelta((auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp)),
+                created: entry((auditDelete.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp, renderDelta((auditDelete.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp)),
                 deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 deletedBy: entry(
                     auditDelete.executor!.id,
                     renderUser((await channel.guild.members.fetch(auditDelete.executor!.id)).user)
                 )
             };
-            audit = auditDelete;
             action = "Delete";
         } else {
-            const { before } = auditDelete.changes.reduce((acc: accType, change) => {
+            const { before } = auditDelete!.changes.reduce((acc: accType, change) => {
                     acc.before[change.key] = change.old?.toString()!;
                     acc.after[change.key] = change.new?.toString()!;
                     return acc;
@@ -96,7 +96,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 type: "webhook" + action,
                 displayName: `Webhook ${action}d`,
                 calculateType: "webhookUpdate",
-                color: (NucleusColors as any)[cols[action]],
+                color: NucleusColors[cols[action] as keyof typeof NucleusColors],
                 emoji: "WEBHOOK." + action.toUpperCase(),
                 timestamp: new Date().getTime()
             },

@@ -11,7 +11,7 @@ export async function callback(client: NucleusClient, member: GuildMember) {
     await statsChannelRemove(client, member);
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     const auditLog = (await getAuditLog(member.guild as Guild, AuditLogEvent.MemberKick))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === member.id)[0]!;
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === member.id)[0];
     let type = "leave";
     if (auditLog) {
         if (auditLog.executor!.id === client.user!.id) return;
@@ -21,6 +21,7 @@ export async function callback(client: NucleusClient, member: GuildMember) {
     }
     let data;
     if (type === "kick") {
+        if (!auditLog) return;
         await client.database.history.create("kick", member.guild.id, member.user, auditLog.executor, auditLog.reason);
         data = {
             meta: {

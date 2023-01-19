@@ -8,7 +8,7 @@ export async function callback(client: NucleusClient, oldSticker: Sticker, newSt
 
     if (oldSticker.name === newSticker.name) return;
     const auditLog = (await getAuditLog(newSticker.guild!, AuditLogEvent.StickerUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === newSticker.id)[0] as GuildAuditLogsEntry;
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === newSticker.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
 
     const changes = {

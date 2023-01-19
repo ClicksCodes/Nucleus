@@ -42,7 +42,7 @@ async function registerCommands() {
         i++;
         console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${files.length}]${colours.none}`)
     }
-    console.log(`Loaded ${commands.length} commands, processing...`)
+    console.log(`${colours.yellow}Loaded ${commands.length} commands, processing...`)
     const processed = []
 
     for (const subcommand of commands) {
@@ -53,7 +53,7 @@ async function registerCommands() {
         }
     }
 
-    console.log(`Processed ${processed.length} commands`)
+    console.log(`${colours.green}Processed ${processed.length} commands`)
     return processed;
 
 };

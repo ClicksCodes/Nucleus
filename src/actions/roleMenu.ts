@@ -1,6 +1,5 @@
 import { unknownServerIcon } from './../utils/defaults.js';
 import {
-    Interaction,
     ButtonBuilder,
     CommandInteraction,
     ButtonStyle,
@@ -8,7 +7,8 @@ import {
     StringSelectMenuOptionBuilder,
     StringSelectMenuBuilder,
     GuildMemberRoleManager,
-    Role
+    Role,
+    ContextMenuCommandInteraction
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { ActionRowBuilder } from "discord.js";
@@ -27,7 +27,7 @@ export interface RoleMenuSchema {
     user: string;
     username: string;
     data: GuildConfig["roleMenu"]["options"];
-    interaction: Interaction;
+    interaction: CommandInteraction | ButtonInteraction | ContextMenuCommandInteraction;
 }
 
 export async function callback(interaction: CommandInteraction | ButtonInteraction) {
@@ -95,7 +95,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                     user: interaction.member!.user.id,
                     username: interaction.member!.user.username,
                     data: config.roleMenu.options,
-                    interaction: interaction as Interaction
+                    interaction: interaction as CommandInteraction | ButtonInteraction
                 };
             }
             await interaction.editReply({

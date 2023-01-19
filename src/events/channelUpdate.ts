@@ -92,9 +92,9 @@ console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextCha
             if ((oldChannel as TextChannel).topic !== (newChannel as TextChannel).topic)
                 changes.description = entry([(oldChannel as TextChannel).topic ?? "", (newChannel as TextChannel).topic ?? ""], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
             if ((oldChannel as TextChannel).nsfw !== (newChannel as TextChannel).nsfw) changes.nsfw = entry([(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"], `${nsfw[0]} -> ${nsfw[1]}`);
-            if ((oldChannel as TextChannel).rateLimitPerUser !== (newChannel as TextChannel).rateLimitPerUser && (oldChannel as TextChannel).rateLimitPerUser !== undefined)
+            if ((oldChannel as TextChannel).rateLimitPerUser !== (newChannel as TextChannel).rateLimitPerUser && (oldChannel as TextChannel).rateLimitPerUser !== 0)
                 changes.rateLimitPerUser = entry(
-                    [((oldChannel as TextChannel).rateLimitPerUser ?? 0).toString(), ((newChannel as TextChannel).rateLimitPerUser ?? 0).toString()],
+                    [((oldChannel as TextChannel).rateLimitPerUser).toString(), ((newChannel as TextChannel).rateLimitPerUser).toString()],
                     `${humanizeDuration((oldChannel as TextChannel).rateLimitPerUser * 1000)} -> ${humanizeDuration((newChannel as TextChannel).rateLimitPerUser * 1000)}`
                 );
 
@@ -103,7 +103,7 @@ console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextCha
         case ChannelType.GuildAnnouncement: {
             emoji = "CHANNEL.TEXT.EDIT";
             readableType = "Announcement";
-            displayName = "Announcment Channel";
+            displayName = "Announcement Channel";
             let oldTopic = (oldChannel as TextChannel).topic,
                 newTopic = (newChannel as TextChannel).topic;
             if (oldTopic) {
@@ -138,7 +138,7 @@ console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextCha
             if ((oldChannel as VoiceChannel).rtcRegion !== (newChannel as VoiceChannel).rtcRegion)
                 changes.region = entry(
                     [(oldChannel as VoiceChannel).rtcRegion ?? "Automatic", (newChannel as VoiceChannel).rtcRegion ?? "Automatic"],
-                    `${(oldChannel as VoiceChannel).rtcRegion?.toUpperCase() || "Automatic"} -> ${(newChannel as VoiceChannel).rtcRegion?.toUpperCase() || "Automatic"}`
+                    `${(oldChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "Automatic"} -> ${(newChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "Automatic"}`
                 );
             break;
         }
@@ -172,7 +172,7 @@ console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextCha
             if ((oldChannel as StageChannel).rtcRegion !== (newChannel as StageChannel).rtcRegion)
                 changes.region = entry(
                     [(oldChannel as StageChannel).rtcRegion ?? "Automatic", (newChannel as StageChannel).rtcRegion ?? "Automatic"],
-                    `${(oldChannel as StageChannel).rtcRegion?.toUpperCase() || "Automatic"} -> ${(newChannel as StageChannel).rtcRegion?.toUpperCase() || "Automatic"}`
+                    `${(oldChannel as StageChannel).rtcRegion?.toUpperCase() ?? "Automatic"} -> ${(newChannel as StageChannel).rtcRegion?.toUpperCase() ?? "Automatic"}`
                 );
             break;
         }
@@ -188,7 +188,7 @@ console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextCha
             displayName = "Channel";
         }
     }
-    let ocType = channelTypeEmoji[oldChannel.type],
+    const ocType = channelTypeEmoji[oldChannel.type],
         ncType = channelTypeEmoji[newChannel.type];
     if (oldChannel.type !== newChannel.type)
         changes.type = entry([ocType!, ncType!], `${ocType!} -> ${readableType}`);
