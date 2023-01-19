@@ -39,18 +39,16 @@ const runServer = (client: NucleusClient) => {
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Verify")
-                        .setDescription("Verification complete")
+                        .setDescription("Verification complete! You can now dismiss this message")
                         .setStatus("Success")
                         .setEmoji("MEMBER.JOIN")
                 ],
                 components: []
             });
-            // client.verify.filter((v: VerifySchema) => v.code !== code);
-            // delete the key by creating a new object without the key
             client.verify = Object.keys(client.verify)
                 .filter((k) => k !== code)
                 .reduce((obj, key) => {return { ...obj, [key]: client.verify[key]}}, {});
-            const { log, NucleusColors, entry, renderUser } = client.logger;
+            const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             try {
                 const data = {
                     meta: {
@@ -62,8 +60,8 @@ const runServer = (client: NucleusClient) => {
                         timestamp: new Date().getTime()
                     },
                     list: {
-                        memberId: entry(member.id, `\`${member.id}\``),
-                        member: entry(member.id, renderUser(member.user))
+                        member: entry(member.id, renderUser(member.user)),
+                        verified: entry(member.joinedTimestamp, renderDelta(member.joinedTimestamp!))
                     },
                     hidden: {
                         guild: guild.id
@@ -89,7 +87,7 @@ const runServer = (client: NucleusClient) => {
                         new EmojiEmbed()
                             .setTitle("Verify")
                             .setDescription(
-                                "Verify was opened in another tab or window, please complete the CAPTCHA there to continue"
+                                "Verify was opened in another tab or window, please complete the check there to continue"
                             )
                             .setStatus("Success")
                             .setEmoji("MEMBER.JOIN")

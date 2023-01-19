@@ -47,8 +47,9 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
     entry = client.logger.entry;
     if (newChannel.parent && newChannel.parent.id === config.tickets.category) return;
 
-    const auditLog: GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> = (await getAuditLog(newChannel.guild, AuditLogEvent.ChannelUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildChannel)!.id === newChannel.id)[0] as GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate>;
+    const auditLog: null | GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> = (await getAuditLog(newChannel.guild, AuditLogEvent.ChannelUpdate))
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildChannel)!.id === newChannel.id)[0] as GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> | null;
+    if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
 
     let emoji: string;
@@ -86,7 +87,6 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
                 newTopic = "None";
             }
             const nsfw = ["", ""];
-console.log((oldChannel as TextChannel).rateLimitPerUser, (newChannel as TextChannel).rateLimitPerUser);
             nsfw[0] = (oldChannel as TextChannel).nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
             nsfw[1] = (newChannel as TextChannel).nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
             if ((oldChannel as TextChannel).topic !== (newChannel as TextChannel).topic)

@@ -128,7 +128,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                     new EmojiEmbed()
                         .setTitle("Verify")
                         .setDescription(
-                            "Your avatar was detected as NSFW, which we do not allow in this server.\nPlease contact one of our staff members if you believe this is a mistake" +
+                            "Your avatar was detected as NSFW, which we do not allow in this server.\nPlease contact a staff members if you believe this is a mistake" +
                                 step(1)
                         )
                         .setStatus("Danger")
