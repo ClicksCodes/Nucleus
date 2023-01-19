@@ -4,7 +4,6 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../utils/client.js";
 import convertCurlyBracketString from "../../utils/convertCurlyBracketString.js";
-import { callback as statsChannelAddCallback } from "../../reflex/statsChannelUpdate.js";
 import singleNotify from "../../utils/singleNotify.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";

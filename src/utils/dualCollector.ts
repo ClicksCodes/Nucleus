@@ -1,4 +1,4 @@
-import Discord, { ButtonInteraction, Client, Interaction, InteractionCollector, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
+import { ButtonInteraction, Client, Interaction, InteractionCollector, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
 import client from "./client.js";
 
 export default async function (
