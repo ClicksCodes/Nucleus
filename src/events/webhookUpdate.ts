@@ -1,7 +1,12 @@
-import { AuditLogEvent, GuildAuditLogsEntry, Webhook } from "discord.js";
+import { AuditLogEvent, GuildAuditLogsEntry, GuildChannel, Webhook } from "discord.js";
 import type Discord from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 export const event = "webhookUpdate";
+
+interface accType {
+    before: Record<string, string>;
+    after: Record<string, string>;
+}
 
 export async function callback(client: NucleusClient, channel: Discord.GuildChannel) {
     try {
@@ -18,77 +23,65 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
         let action: "Create" | "Update" | "Delete" = "Create";
         let list: Record<string, ReturnType<typeof entry> | string> = {};
         if (auditUpdate && auditUpdate.createdTimestamp > audit.createdTimestamp) {
-            const { before, after } = auditUpdate.changes.reduce(
-                (
-                    acc: { before: Record<string, string>; after: Record<string, string> },
-                    change: { key: string; new: string; old: string }
-                ) => {
-                    acc.before[change.key] = change.old;
-                    acc.after[change.key] = change.new;
+            const { before, after } = auditUpdate.changes.reduce((acc: accType, change) => {
+                    acc.before[change.key] = change.old?.toString()!;
+                    acc.after[change.key] = change.new?.toString()!;
                     return acc;
                 },
                 { before: {}, after: {} }
             );
-            if (before.name !== after.name)
-                list["name"] = entry([before.name, after.name], `${before.name} -> ${after.name}`);
-            if (before.channel_id !== after.channel_id)
+            if (before["name"] !== after["name"])
+                list["name"] = entry([before["name"]!, after["name"]!], `${before["name"]} -> ${after["name"]}`);
+            if (before["channel_id"] !== after["channel_id"])
                 list["channel"] = entry(
-                    [before.channel_id, after.channel_id],
-                    renderChannel(await client.channels.fetch(before.channel_id)) +
+                    [before["channel_id"]!, after["channel_id"]!],
+                    renderChannel(await client.channels.fetch(before["channel_id"]!) as GuildChannel) +
                         " -> " +
-                        renderChannel(await client.channels.fetch(after.channel_id))
+                        renderChannel(await client.channels.fetch(after["channel_id"]!) as GuildChannel)
                 );
             if (!Object.keys(list).length) return;
             list["created"] = entry(
-                auditUpdate.target.createdTimestamp,
-                renderDelta(auditUpdate.target.createdTimestamp)
+                (auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp,
+                renderDelta((auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp)
             );
-            list["edited"] = entry(after.editedTimestamp, renderDelta(new Date().getTime()));
-            list["editedBy"] = entry(auditUpdate.executor.id, renderUser(auditUpdate.executor));
+            list["edited"] = entry(after["editedTimestamp"]!, renderDelta(new Date().getTime()));
+            list["editedBy"] = entry(auditUpdate.executor!.id, renderUser(auditUpdate.executor!));
             audit = auditUpdate;
             action = "Update";
         } else if (auditDelete && auditDelete.createdTimestamp > audit.createdTimestamp) {
-            const { before } = auditDelete.changes.reduce(
-                (
-                    acc: { before: Record<string, string>; after: Record<string, string> },
-                    change: { key: string; new: string; old: string }
-                ) => {
-                    acc.before[change.key] = change.old;
-                    acc.after[change.key] = change.new;
+            const { before } = auditDelete.changes.reduce((acc: accType, change) => {
+                    acc.before[change.key] = change.old?.toString()!;
+                    acc.after[change.key] = change.new?.toString()!;
                     return acc;
                 },
                 { before: {}, after: {} }
             );
             list = {
-                name: entry(before.name, `${before.name}`),
-                channel: entry(before.channel_id, renderChannel(await client.channels.fetch(before.channel_id))),
-                created: entry(auditDelete.target.createdTimestamp, renderDelta(auditDelete.target.createdTimestamp)),
+                name: entry(before["name"]!, `${before["name"]}`),
+                channel: entry(before["channel_id"]!, renderChannel((await client.channels.fetch(before["channel_id"]!)) as GuildChannel)),
+                created: entry((auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp, renderDelta((auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp)),
                 deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
                 deletedBy: entry(
-                    auditDelete.executor.id,
-                    renderUser((await channel.guild.members.fetch(auditDelete.executor.id)).user)
+                    auditDelete.executor!.id,
+                    renderUser((await channel.guild.members.fetch(auditDelete.executor!.id)).user)
                 )
             };
             audit = auditDelete;
             action = "Delete";
         } else {
-            const { before } = auditDelete.changes.reduce(
-                (
-                    acc: { before: Record<string, string>; after: Record<string, string> },
-                    change: { key: string; new: string; old: string }
-                ) => {
-                    acc.before[change.key] = change.old;
-                    acc.after[change.key] = change.new;
+            const { before } = auditDelete.changes.reduce((acc: accType, change) => {
+                    acc.before[change.key] = change.old?.toString()!;
+                    acc.after[change.key] = change.new?.toString()!;
                     return acc;
                 },
                 { before: {}, after: {} }
             );
             list = {
-                name: entry(before.name, `${before.name}`),
-                channel: entry(before.channel_id, renderChannel(await client.channels.fetch(before.channel_id))),
+                name: entry(before["name"]!, `${before["name"]}`),
+                channel: entry(before["channel_id"]!, renderChannel(await client.channels.fetch(before["channel_id"]!) as GuildChannel)),
                 createdBy: entry(
-                    auditCreate.executor.id,
-                    renderUser((await channel.guild.members.fetch(auditCreate.executor.id)).user)
+                    auditCreate.executor!.id,
+                    renderUser((await channel.guild.members.fetch(auditCreate.executor!.id)).user)
                 ),
                 created: entry(new Date().getTime(), renderDelta(new Date().getTime()))
             };
@@ -103,7 +96,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 type: "webhook" + action,
                 displayName: `Webhook ${action}d`,
                 calculateType: "webhookUpdate",
-                color: NucleusColors[cols[action]],
+                color: (NucleusColors as any)[cols[action]],
                 emoji: "WEBHOOK." + action.toUpperCase(),
                 timestamp: new Date().getTime()
             },
