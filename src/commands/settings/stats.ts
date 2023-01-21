@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, APIMessageComponentEmoji, TextInputBuilder, StringSelectMenuInteraction, ButtonInteraction } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, APIMessageComponentEmoji, TextInputBuilder, StringSelectMenuInteraction, ButtonInteraction, MessageComponentInteraction, ChannelSelectMenuBuilder, ChannelSelectMenuInteraction } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import client from "../../utils/client.js";
@@ -16,7 +16,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Controls channels which update when someone joins or leaves the server")
 
 
-const showModal = async (interaction: StringSelectMenuInteraction, current: { enabled: boolean; name: string; }) => {
+const showModal = async (interaction: MessageComponentInteraction, current: { enabled: boolean; name: string; }) => {
     await interaction.showModal(
         new Discord.ModalBuilder()
             .setCustomId("modal")
@@ -71,6 +71,144 @@ const showModal = async (interaction: StringSelectMenuInteraction, current: { en
     );
 }
 
+type ObjectSchema = Record<string, {name: string, enabled: boolean}>
+
+/*
+let out: Discord.ModalSubmitInteraction | null = null;
+try {
+    out = await modalInteractionCollector(
+        m,
+        (m) => m.channel!.id === interaction.channel!.id,
+        (_) => true
+    ) as Discord.ModalSubmitInteraction | null;
+} catch (e) {
+    continue;
+}
+if (!out) continue
+out = out!;
+if (!out.fields) continue;
+if (out.isButton()) continue;
+const name = out.fields.getTextInputValue("text")
+*/
+
+const addStatsChannel = async (interaction: CommandInteraction, m: Message, currentObject: ObjectSchema): Promise<ObjectSchema> => {
+    let closed = false;
+    let cancelled = false;
+    const originalObject = Object.fromEntries(Object.entries(currentObject).map(([k, v]) => [k, {...v}]));
+    let newChannel: string | undefined;
+    let newChannelName: string = "{memberCount:all}-members";
+    let newChannelEnabled: boolean = true;
+    do {
+        await interaction.editReply({
+            embeds: [new EmojiEmbed()
+                .setTitle("Stats Channel")
+                .setDescription(
+                    `New stats channel` + (newChannel ? ` in <#${newChannel}>` : "") + "\n\n" +
+                    `**Name:** \`${newChannelName}\`\n` +
+                    `**Preview:** ${await convertCurlyBracketString(newChannelName, interaction.user!.id, interaction.user.username, interaction.guild!.name, interaction.guild!.members)}\n` +
+                    `**Enabled:** ${newChannelEnabled ? "Yes" : "No"}\n\n`
+                )
+                .setEmoji("SETTINGS.STATS.GREEN")
+                .setStatus("Success")
+            ], components: [
+                new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId("channel")
+                ),
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder()
+                        .setLabel("Cancel")
+                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
+                        .setStyle(ButtonStyle.Danger)
+                        .setCustomId("back"),
+                    new ButtonBuilder()
+                        .setLabel("Save")
+                        .setEmoji(getEmojiByName("ICONS.SAVE", "id"))
+                        .setStyle(ButtonStyle.Success)
+                        .setCustomId("save"),
+                    new ButtonBuilder()
+                        .setLabel("Edit name")
+                        .setEmoji(getEmojiByName("ICONS.EDIT", "id"))
+                        .setStyle(ButtonStyle.Primary)
+                        .setCustomId("editName"),
+                    new ButtonBuilder()
+                        .setLabel(newChannelEnabled ? "Enabled" : "Disabled")
+                        .setEmoji(getEmojiByName(newChannelEnabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id"))
+                        .setStyle(ButtonStyle.Secondary)
+                        .setCustomId("toggleEnabled")
+                )
+            ]
+        });
+        let i: ButtonInteraction | ChannelSelectMenuInteraction;
+        try {
+            i = await m.awaitMessageComponent({ time: 300000, filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }}) as ButtonInteraction | ChannelSelectMenuInteraction;
+        } catch (e) {
+            closed = true;
+            cancelled = true;
+            break;
+        }
+        if (i.isButton()) {
+            switch (i.customId) {
+                case "back":
+                    if(!i.deferred) await i.deferUpdate();
+                    closed = true;
+                    break;
+                case "save":
+                    if(!i.deferred) await i.deferUpdate(); //I'm lost...
+                    if (newChannel) {
+                        currentObject[newChannel] = {
+                            name: newChannelName,
+                            enabled: newChannelEnabled
+                        }
+                    }
+                    closed = true;
+                    break;
+                case "editName":
+                    await interaction.editReply({
+                        embeds: [new EmojiEmbed()
+                                    .setTitle("Stats Channel")
+                                    .setDescription("Modal opened. If you can't see it, click back and try again.")
+                                    .setStatus("Success")
+                                    .setEmoji("SETTINGS.STATS.GREEN")
+                        ],
+                        components: [
+                            new ActionRowBuilder<ButtonBuilder>().addComponents(
+                                new ButtonBuilder()
+                                    .setLabel("Back")
+                                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                                    .setStyle(ButtonStyle.Primary)
+                                    .setCustomId("back")
+                            )
+                        ]
+                    });
+                    showModal(i, {name: newChannelName, enabled: newChannelEnabled})
+
+                    const out = await modalInteractionCollector(
+                        m,
+                        (m) => m.channel!.id === interaction.channel!.id,
+                        (_) => true
+                    ) as Discord.ModalSubmitInteraction | null;
+                    if (!out) continue;
+                    if (!out.fields) continue;
+                    if (out.isButton()) continue;
+                    newChannelName = out.fields.getTextInputValue("text");
+                    break;
+                case "toggleEnabled":
+                    if(!i.deferred) await i.deferUpdate();
+                    newChannelEnabled = !newChannelEnabled;
+                    break;
+            }
+        } else {
+            if(!i.deferred) await i.deferUpdate();
+            if (i.customId === "channel") {
+                newChannel = i.values[0];
+            }
+        }
+    } while (!closed)
+    if (cancelled) return originalObject;
+    if (!(newChannel && newChannelName && newChannelEnabled)) return originalObject;
+    return currentObject; // check 157
+}
 const callback = async (interaction: CommandInteraction) => {
     if (!interaction.guild) return;
     const { renderChannel } = client.logger;
@@ -78,7 +216,7 @@ const callback = async (interaction: CommandInteraction) => {
     let page = 0;
     let closed = false;
     const config = await client.database.guilds.read(interaction.guild.id);
-    const currentObject = config.stats;
+    let currentObject: ObjectSchema = config.stats;
     let modified = false;
     do {
         let embed = new EmojiEmbed()
@@ -209,6 +347,20 @@ const callback = async (interaction: CommandInteraction) => {
                                     )
                                 ]
                             });
+                            let out: Discord.ModalSubmitInteraction | null;
+                            try {
+                                out = await modalInteractionCollector(
+                                    m,
+                                    (m) => m.channel!.id === interaction.channel!.id,
+                                    (_) => true
+                                ) as Discord.ModalSubmitInteraction | null;
+                            } catch (e) {
+                                continue;
+                            }
+                            if (!out) continue
+                            if (!out.fields) continue
+                            if (out.isButton()) continue;
+                            currentObject[Object.keys(currentObject)[page]!]!.name = out.fields.getTextInputValue("text");
                             break;
                         }
                         case "toggleEnabled": {
@@ -236,6 +388,7 @@ const callback = async (interaction: CommandInteraction) => {
                     page++;
                     break;
                 case "add":
+                    currentObject = await addStatsChannel(interaction, m, currentObject);
                     break;
                 case "save":
                     client.database.guilds.write(interaction.guild.id, {stats: currentObject});
