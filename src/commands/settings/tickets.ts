@@ -279,13 +279,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if ((i.component as ButtonComponent).customId === "clearCategory") {
             if (lastClicked === "cat") {
                 lastClicked = "";
@@ -382,14 +382,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 try {
                     i = await m.awaitMessageComponent({
                         time: 300000,
-                        filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                        filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
                     });
                 } catch (e) {
                     innerTimedOut = true;
                     continue;
                 }
                 if (i.isStringSelectMenu() && i.customId === "template") {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
@@ -413,7 +413,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     templateSelected = true;
                     continue;
                 } else if ((i.component as ButtonComponent).customId === "blank") {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     await interaction.channel!.send({
                         components: [
                             new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -635,21 +635,21 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
             continue;
         }
         if (i.isStringSelectMenu() && i.customId === "types") {
-            i.deferUpdate();
+            await i.deferUpdate();
             const types = toHexInteger(i.values, ticketTypes);
             await client.database.guilds.write(interaction.guild!.id, {
                 "tickets.types": types
             });
             data.types = types;
         } else if (i.isStringSelectMenu() && i.customId === "removeTypes") {
-            i.deferUpdate();
+            await i.deferUpdate();
             const types = i.values;
             let customTypes = data.customTypes;
             if (customTypes) {
@@ -723,15 +723,15 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                 data.customTypes.push(toAdd);
             }
         } else if ((i.component as ButtonComponent).customId === "switchToDefault") {
-            i.deferUpdate();
+          await i.deferUpdate();
             await client.database.guilds.write(interaction.guild!.id, { "tickets.useCustom": false }, []);
             data.useCustom = false;
         } else if ((i.component as ButtonComponent).customId === "switchToCustom") {
-            i.deferUpdate();
+            await i.deferUpdate();
             await client.database.guilds.write(interaction.guild!.id, { "tickets.useCustom": true }, []);
             data.useCustom = true;
         } else {
-            i.deferUpdate();
+            await i.deferUpdate();
             backPressed = true;
         }
     }

@@ -1,28 +1,30 @@
 import { LoadingEmbed } from "../utils/defaults.js";
-import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, SelectMenuBuilder, ButtonStyle } from "discord.js";
+import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, StringSelectMenuBuilder, APIMessageComponentEmoji } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import client from "../utils/client.js";
 import addPlural from "../utils/plurals.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-const command = new SlashCommandBuilder().setName("categorise").setDescription("Categorises your servers channels");
+const command = new SlashCommandBuilder().setName("categorize").setDescription("Categorizes your servers channels");
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const channels = interaction.guild.channels.cache.filter((c) => c.type !== "GUILD_CATEGORY");
-    const categorised = {};
+    const channels = interaction.guild!.channels.cache.filter((c) => c.type !== ChannelType.GuildCategory);
+    const categorized = {};
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
     const predicted = {};
     const types = {
-        general: ["general", "muted", "main", "topic", "discuss"],
+        important: ["rule", "announcement", "alert", "info"],
+        general: ["general", "main", "topic", "discuss"],
         commands: ["bot", "command", "music"],
-        images: ["pic", "selfies", "image"],
-        nsfw: ["porn", "nsfw", "sex"],
-        links: ["links"],
-        advertising: ["ads", "advert", "server", "partner"],
-        staff: ["staff", "mod", "admin"],
-        spam: ["spam"],
-        other: ["random"]
+        images: ["pic", "selfies", "image", "gallery", "meme", "media"],
+        nsfw: ["porn", "nsfw", "sex", "lewd", "fetish"],
+        links: ["link"],
+        advertising: ["ads", "advert", "partner", "bump"],
+        staff: ["staff", "mod", "admin", "helper", "train"],
+        spam: ["spam", "count"],
+        logs: ["log"],
+        other: ["random", "starboard"],
     };
     for (const c of channels.values()) {
         for (const type in types) {
@@ -38,14 +40,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     for (const c of channels) {
         // convert channel to a channel if its a string
         let channel: string | GuildChannel;
-        if (typeof c === "string") channel = interaction.guild.channels.cache.get(channel as string).id;
+        if (typeof c === "string") channel = interaction.guild!.channels.cache.get(c as string)!.id;
         else channel = (c[0] as unknown as GuildChannel).id;
         console.log(channel);
         if (!predicted[channel]) predicted[channel] = [];
         m = await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
-                    .setTitle("Categorise")
+                    .setTitle("Categorize")
                     .setDescription(
                         `Select all types that apply to <#${channel}>.\n\n` +
                             `${addPlural(predicted[channel].length, "Suggestion")}: ${predicted[channel].join(", ")}`
@@ -54,8 +56,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
             ],
             components: [
-                new ActionRowBuilder().addComponents([
-                    new SelectMenuBuilder()
+                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([
+                    new StringSelectMenuBuilder()
                         .setCustomId("selected")
                         .setMaxValues(Object.keys(types).length)
                         .setMinValues(1)
@@ -67,18 +69,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             }))
                         )
                 ]),
-                new ActionRowBuilder().addComponents([
+                new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
                         .setLabel("Accept Suggestion")
                         .setCustomId("accept")
                         .setStyle(ButtonStyle.Success)
                         .setDisabled(predicted[channel].length === 0)
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.TICK", "id"))),
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.TICK", "id")) as APIMessageComponentEmoji),
                     new ButtonBuilder()
                         .setLabel('Use "Other"')
                         .setCustomId("reject")
                         .setStyle(ButtonStyle.Secondary)
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.CROSS", "id")))
+                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.CROSS", "id")) as APIMessageComponentEmoji)
                 ])
             ]
         });
@@ -86,13 +88,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id}
             });
         } catch (e) {
             return await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
-                        .setTitle("Categorise")
+                        .setTitle("Categorize")
                         .setEmoji("CHANNEL.CATEGORY.DELETE")
                         .setStatus("Danger")
                         .setDescription(
@@ -105,7 +107,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ]
             });
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         let selected;
         if (i.customId === "select") {
             selected = i.values;
@@ -116,9 +118,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (i.customId === "reject") {
             selected = ["other"];
         }
-        categorised[channel] = selected;
+        categorized[channel] = selected;
     }
-    console.log(categorised);
+    console.log(categorized);
 };
 
 const check = () => {

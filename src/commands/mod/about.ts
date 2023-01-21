@@ -10,7 +10,6 @@ import Discord, {
     MessageComponentInteraction,
     ModalSubmitInteraction,
     ButtonStyle,
-    StringSelectMenuInteraction,
     TextInputStyle,
     APIMessageComponentEmoji,
 } from "discord.js";
@@ -253,7 +252,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             interaction.editReply({
@@ -269,7 +268,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId === "filter" && i.isStringSelectMenu()) {
             filteredTypes = i.values;
             pageIndex = null;
@@ -359,7 +358,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
@@ -423,7 +422,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 continue;
             }
         } else if (i.customId === "history") {
-            i.deferUpdate();
+            await i.deferUpdate();
             if (!(await showHistory(member, interaction))) return;
         }
     }

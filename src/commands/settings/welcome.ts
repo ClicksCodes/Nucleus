@@ -245,13 +245,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId == "clear-message") {
             if (lastClicked == "clear-message") {
                 await client.database.guilds.write(interaction.guild!.id, {

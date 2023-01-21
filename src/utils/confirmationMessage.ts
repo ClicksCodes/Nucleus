@@ -183,7 +183,7 @@ class confirmationMessage {
             let component;
             try {
                 component = await m.awaitMessageComponent({
-                    filter: (m) => m.user.id === this.interaction.user.id && m.channel!.id === this.interaction.channel!.id,
+                    filter: (i) => i.user.id === this.interaction.user.id && i.channel!.id === this.interaction.channel!.id && i.id === m.id,
                     time: 300000
                 });
             } catch (e) {
@@ -287,7 +287,7 @@ class confirmationMessage {
             await this.interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setTitle(this.title)
-                    .setDescription(this.failedMessage ?? "")
+                    .setDescription(this.failedMessage ?? "*Message timed out*")
                     .setStatus(this.failedStatus ?? "Danger")
                     .setEmoji(this.failedEmoji ?? this.redEmoji ?? this.emoji)
                 ], components: []

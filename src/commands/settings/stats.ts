@@ -73,23 +73,7 @@ const showModal = async (interaction: MessageComponentInteraction, current: { en
 
 type ObjectSchema = Record<string, {name: string, enabled: boolean}>
 
-/*
-let out: Discord.ModalSubmitInteraction | null = null;
-try {
-    out = await modalInteractionCollector(
-        m,
-        (m) => m.channel!.id === interaction.channel!.id,
-        (_) => true
-    ) as Discord.ModalSubmitInteraction | null;
-} catch (e) {
-    continue;
-}
-if (!out) continue
-out = out!;
-if (!out.fields) continue;
-if (out.isButton()) continue;
-const name = out.fields.getTextInputValue("text")
-*/
+
 
 const addStatsChannel = async (interaction: CommandInteraction, m: Message, currentObject: ObjectSchema): Promise<ObjectSchema> => {
     let closed = false;
@@ -99,7 +83,7 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
     let newChannelName: string = "{memberCount:all}-members";
     let newChannelEnabled: boolean = true;
     do {
-        await interaction.editReply({
+        m = await interaction.editReply({
             embeds: [new EmojiEmbed()
                 .setTitle("Stats Channel")
                 .setDescription(
@@ -114,6 +98,7 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
                 new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
                     new ChannelSelectMenuBuilder()
                         .setCustomId("channel")
+                        .setPlaceholder("Select a channel to use")
                 ),
                 new ActionRowBuilder<ButtonBuilder>().addComponents(
                     new ButtonBuilder()
@@ -141,7 +126,9 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
         });
         let i: ButtonInteraction | ChannelSelectMenuInteraction;
         try {
-            i = await m.awaitMessageComponent({ time: 300000, filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }}) as ButtonInteraction | ChannelSelectMenuInteraction;
+            i = await m.awaitMessageComponent({ time: 300000, filter: (i) => {
+                return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id;
+            }}) as ButtonInteraction | ChannelSelectMenuInteraction;
         } catch (e) {
             closed = true;
             cancelled = true;
@@ -150,11 +137,11 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
         if (i.isButton()) {
             switch (i.customId) {
                 case "back":
-                    if(!i.deferred) await i.deferUpdate();
+                    await i.deferUpdate();
                     closed = true;
                     break;
                 case "save":
-                    if(!i.deferred) await i.deferUpdate(); //I'm lost...
+                    await i.deferUpdate();
                     if (newChannel) {
                         currentObject[newChannel] = {
                             name: newChannelName,
@@ -185,8 +172,8 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
 
                     const out = await modalInteractionCollector(
                         m,
-                        (m) => m.channel!.id === interaction.channel!.id,
-                        (_) => true
+                        (m) => m.channel!.id === interaction.channel!.id && m.user!.id === interaction.user!.id,
+                        (i) => i.channel!.id === interaction.channel!.id && i.user!.id === interaction.user!.id && i.message!.id === m.id
                     ) as Discord.ModalSubmitInteraction | null;
                     if (!out) continue;
                     if (!out.fields) continue;
@@ -194,12 +181,12 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
                     newChannelName = out.fields.getTextInputValue("text");
                     break;
                 case "toggleEnabled":
-                    if(!i.deferred) await i.deferUpdate();
+                    await i.deferUpdate();
                     newChannelEnabled = !newChannelEnabled;
                     break;
             }
         } else {
-            if(!i.deferred) await i.deferUpdate();
+            await i.deferUpdate();
             if (i.customId === "channel") {
                 newChannel = i.values[0];
             }
@@ -207,7 +194,7 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
     } while (!closed)
     if (cancelled) return originalObject;
     if (!(newChannel && newChannelName && newChannelEnabled)) return originalObject;
-    return currentObject; // check 157
+    return currentObject;
 }
 const callback = async (interaction: CommandInteraction) => {
     if (!interaction.guild) return;
@@ -322,6 +309,7 @@ const callback = async (interaction: CommandInteraction) => {
         if(i.isStringSelectMenu()) {
             switch(i.customId) {
                 case "page":
+                    await i.deferUpdate();
                     page = Object.keys(currentObject).indexOf(i.values[0]!);
                     break;
                 case "action":
@@ -364,14 +352,15 @@ const callback = async (interaction: CommandInteraction) => {
                             break;
                         }
                         case "toggleEnabled": {
-                            i.deferUpdate();
+                            await i.deferUpdate();
                             currentObject[Object.keys(currentObject)[page]!]!.enabled = !currentObject[Object.keys(currentObject)[page]!]!.enabled;
                             modified = true;
                             break;
                         }
                         case "delete": {
-                            i.deferUpdate();
+                            await i.deferUpdate();
                             delete currentObject[Object.keys(currentObject)[page]!];
+                            page = Math.min(page, Object.keys(currentObject).length - 1);
                             modified = true;
                             break;
                         }
@@ -379,7 +368,7 @@ const callback = async (interaction: CommandInteraction) => {
                     break;
             }
         } else {
-            i.deferUpdate();
+            await i.deferUpdate();
             switch(i.customId) {
                 case "back":
                     page--;
@@ -389,6 +378,7 @@ const callback = async (interaction: CommandInteraction) => {
                     break;
                 case "add":
                     currentObject = await addStatsChannel(interaction, m, currentObject);
+                    page = Object.keys(currentObject).length - 1;
                     break;
                 case "save":
                     client.database.guilds.write(interaction.guild.id, {stats: currentObject});

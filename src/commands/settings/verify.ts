@@ -160,13 +160,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if ((i.component as ButtonComponent).customId === "clear") {
             clicks ++;
             if (clicks === 2) {
@@ -249,14 +249,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 try {
                     i = await m.awaitMessageComponent({
                         time: 300000,
-                        filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                        filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
                     });
                 } catch (e) {
                     innerTimedOut = true;
                     continue;
                 }
                 if (i.isStringSelectMenu() && i.customId === "template") {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     await interaction.channel!.send({
                         embeds: [
                             new EmojiEmbed()
@@ -280,7 +280,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     templateSelected = true;
                     continue;
                 } else if ((i.component as ButtonComponent).customId === "blank") {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     await interaction.channel!.send({
                         components: [
                             new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -375,7 +375,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 }
             }
         } else {
-            i.deferUpdate();
+            await i.deferUpdate();
             break;
         }
     }

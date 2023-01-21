@@ -139,7 +139,7 @@ const callback = async (interaction: CommandInteraction) => {
         });
         let i: MessageComponentInteraction;
         try {
-            i = await m.awaitMessageComponent({ filter: (i) => i.user.id === interaction.user.id, time: 30000 });
+            i = await m.awaitMessageComponent({ filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id, time: 30000 });
         } catch (e) {
             closed = true;
             continue;
@@ -148,7 +148,7 @@ const callback = async (interaction: CommandInteraction) => {
             switch(i.customId) {
                 case "page":
                     page = Object.keys(stats).indexOf(i.values[0]!);
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     break;
                 case "action":
                     if(!changes[currentID]) changes[currentID] = {};
@@ -243,17 +243,17 @@ const callback = async (interaction: CommandInteraction) => {
                             break;
                         case "delete":
                             changes[currentID] = {};
-                            i.deferUpdate();
+                            await i.deferUpdate();
                             break;
                         case "toggleEnabled":
                             changes[currentID]!.enabled = !stats[currentID]!.enabled;
-                            i.deferUpdate();
+                            await i.deferUpdate();
                             break;
                     }
                     break;
             }
         } else if (i.isButton()) {
-            i.deferUpdate();
+            await i.deferUpdate();
             switch(i.customId) {
                 case "back":
                     page--;

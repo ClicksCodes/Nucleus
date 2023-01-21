@@ -13,7 +13,7 @@ const command = new ContextMenuCommandBuilder()
 async function waitForButton(m: Discord.Message, member: Discord.GuildMember): Promise<boolean> {
     let component;
     try {
-        component = m.awaitMessageComponent({ time: 200000, filter: (i) => i.user.id === member.id && i.channel!.id === m.channel.id });
+        component = m.awaitMessageComponent({ time: 200000, filter: (i) => i.user.id === member.id && i.channel!.id === m.channel.id && i.message.id === m.id });
     } catch (e) {
         return false;
     }
@@ -211,7 +211,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
     let component;
     try {
         component = await m.awaitMessageComponent({
-            filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
+            filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
             time: 300000
         });
     } catch {

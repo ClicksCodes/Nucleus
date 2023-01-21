@@ -67,7 +67,6 @@ export class Guilds {
         value: any,
         innerKey?: string | null
     ) {
-        console.log(Array.isArray(value));
         if (innerKey) {
             await this.guilds.updateOne(
                 { id: guild },
@@ -191,6 +190,10 @@ export class ModNotes {
         const entry = await this.modNotes.findOne({ guild: guild, user: user });
         return entry?.note ?? null;
     }
+
+    async delete(guild: string) {
+        await this.modNotes.deleteMany({ guild: guild });
+    }
 }
 
 export class Premium {
@@ -204,7 +207,18 @@ export class Premium {
         const entry = await this.premium.findOne({
             appliesTo: { $in: [guild] }
         });
-        return entry !== null;
+        if (!entry) return false;
+        return entry.expires.valueOf() > Date.now();
+    }
+
+    async fetchTotal(user: string): Promise<number> {
+        const entry = await this.premium.findOne({ user: user });
+        if (!entry) return 0;
+        return entry.appliesTo.length;
+    }
+
+    setPremium(user: string, guild: string) {
+        return this.premium.updateOne({ user: user }, { $addToSet: { appliesTo: guild } }, { upsert: true });
     }
 }
 

@@ -273,7 +273,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (!("customId" in i.component)) {
             continue;
         } else if (i.component.customId === "left") {

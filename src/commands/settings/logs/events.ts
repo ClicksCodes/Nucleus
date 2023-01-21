@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder, StringSelectMenuInteraction } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder } from "discord.js";
 import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import client from "../../../utils/client.js";
@@ -76,13 +76,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.isStringSelectMenu() && i.customId === "logs") {
             const selected = i.values;
             const newLogs = toHexInteger(selected.map((e: string) => Object.keys(logs)[parseInt(e)]!));

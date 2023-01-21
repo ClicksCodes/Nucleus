@@ -18,7 +18,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (config) {
         attachmentJump = ` [[View attachments]](${config})`;
     }
-    if (newContent === oldContent && newMessage.attachments.size === oldMessage.attachments.size) {
+    if (newMessage.crosspostable !== oldMessage.crosspostable) {
         if (!replyTo) {
             const data = {
                 meta: {

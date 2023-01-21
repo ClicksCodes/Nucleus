@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, Role, ButtonStyle, ButtonComponent, TextInputBuilder } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, Role, ButtonStyle, ButtonComponent, TextInputBuilder, Message } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
@@ -20,7 +20,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         ephemeral: true,
         fetchReply: true
     });
-    let m;
+    let m: Message;
     let clicked = "";
     if (interaction.options.get("role")) {
         const confirmation = await new confirmationMessage(interaction)
@@ -110,7 +110,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
@@ -119,7 +119,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         type modIDs = "mute" | "kick" | "ban" | "softban" | "warn" | "role";
         let chosen = moderation[i.customId as modIDs];
         if ((i.component as ButtonComponent).customId === "clearMuteRole") {
-            i.deferUpdate();
+            await i.deferUpdate();
             if (clicked === "clearMuteRole") {
                 await client.database.guilds.write(interaction.guild!.id, {
                     "moderation.mute.role": null

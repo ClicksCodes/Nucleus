@@ -8,7 +8,8 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
     const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderRole } = client.logger;
 
     const auditLog = (await getAuditLog(newRole.guild as Guild, AuditLogEvent.RoleUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === newRole.id)[0]!;
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === newRole.id)[0];
+    if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
 
     const changes: Record<string, ReturnType<typeof entry>> = {

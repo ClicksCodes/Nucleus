@@ -157,12 +157,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id, time: 30000});
+            i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id, time: 30000});
         } catch (e) {
             closed = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId === "back") page--;
         else if (i.customId === "right") page++;
         else if (i.customId === "category" && i.isStringSelectMenu()) page = parseInt(i.values[0]!);

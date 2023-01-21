@@ -124,7 +124,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             try {
                 component = await m.awaitMessageComponent({
                     time: 300000,
-                    filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                    filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id  && i.message.id === m.id}
                 });
             } catch (e) {
                 return;
@@ -199,7 +199,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
         try {
             component = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id}
             });
         } catch (e) {
             return;

@@ -258,13 +258,13 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;

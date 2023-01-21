@@ -150,14 +150,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
             continue;
         }
         nextFooter = null;
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
@@ -180,11 +180,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setColor("Danger")
                 .send(true);
             if (confirmation.cancelled) {
-                break;
+                continue;
             }
             if (confirmation.success) {
                 client.database.guilds.delete(interaction.guild!.id);
                 client.database.history.delete(interaction.guild!.id);
+                client.database.notes.delete(interaction.guild!.id);
                 nextFooter = "All data cleared";
                 continue;
             } else {

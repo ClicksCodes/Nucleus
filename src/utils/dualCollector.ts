@@ -60,15 +60,17 @@ export async function modalInteractionCollector(
                 })
                 .on("collect", async (i: ButtonInteraction) => {
                     mod.stop();
-                    if (!i.deferred) await i.deferUpdate();
+                    int.stop();
+                    await i.deferUpdate();
                     resolve(i);
                 });
             const mod = new InteractionCollector(client as Client, {
-                filter: (i: Interaction) => modalFilter(i),
+                filter: (i: Interaction) => modalFilter(i) && i.isModalSubmit(),
                 time: 300000
             }).on("collect", async (i: ModalSubmitInteraction) => {
                 int.stop();
-                if (!i.deferred) await i.deferUpdate();
+                mod.stop();
+                await i.deferUpdate();
                 resolve(i);
             });
         });
