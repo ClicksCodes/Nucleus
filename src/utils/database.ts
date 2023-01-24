@@ -217,8 +217,12 @@ export class Premium {
         return entry.appliesTo.length;
     }
 
-    setPremium(user: string, guild: string) {
+    addPremium(user: string, guild: string) {
         return this.premium.updateOne({ user: user }, { $addToSet: { appliesTo: guild } }, { upsert: true });
+    }
+
+    removePremium(user: string, guild: string) {
+        return this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
 }
 

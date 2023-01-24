@@ -12,7 +12,7 @@ import type { GuildConfig } from "../../utils/database.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-        .setName("stats")
+        .setName("oldstats")
         .setDescription("Controls channels which update when someone joins or leaves the server")
 
 type ChangesType = Record<string, { name?: string; enabled?: boolean; }>

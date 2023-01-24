@@ -15,3 +15,6 @@ process.on("uncaughtException", (err) => { console.error(err) });
 await client.login(config.enableDevelopment ? config.developmentToken : config.token)
 
 await recordPerformance();
+
+import { getCommandMentionByName} from "./utils/getCommandMentionByName.js";
+console.log(await getCommandMentionByName("nucleus/premium"))
