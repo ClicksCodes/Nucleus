@@ -47,13 +47,13 @@ const callback = async (interaction: CommandInteraction) => {
             enabled: false
         };
         let description = "";
-        let pageSelect = new StringSelectMenuBuilder()
+        const pageSelect = new StringSelectMenuBuilder()
             .setCustomId("page")
             .setPlaceholder("Select a stats channel to manage")
             .setDisabled(Object.keys(stats).length === 0)
             .setMinValues(1)
             .setMaxValues(1);
-        let actionSelect = new StringSelectMenuBuilder()
+        const actionSelect = new StringSelectMenuBuilder()
             .setCustomId("action")
             .setPlaceholder("Perform an action")
             .setMinValues(1)
@@ -123,7 +123,7 @@ const callback = async (interaction: CommandInteraction) => {
                     .setDisabled(Object.keys(changes).length === 0),
             );
 
-        let embed = new EmojiEmbed()
+        const embed = new EmojiEmbed()
             .setTitle("Stats Channels")
             .setDescription(description + "\n\n" + createPageIndicator(Object.keys(stats).length, page))
             .setEmoji("SETTINGS.STATS.GREEN")
@@ -264,7 +264,7 @@ const callback = async (interaction: CommandInteraction) => {
                 case "add":
                     break;
                 case "save":
-                    let changed = applyChanges(config.stats, changes);
+                    const changed = applyChanges(config.stats, changes);
                     singleNotify("statsChannelDeleted", interaction.guild.id, true)
                     config.stats = changed;
                     changes = {}

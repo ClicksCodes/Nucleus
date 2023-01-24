@@ -42,7 +42,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         count = 3;
     }
 
-    let closed = false;
+    const closed = false;
     do {
         interaction.editReply({
             embeds: [

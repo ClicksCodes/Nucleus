@@ -206,7 +206,7 @@ const callback = async (interaction: CommandInteraction) => {
     let currentObject: ObjectSchema = config.stats;
     let modified = false;
     do {
-        let embed = new EmojiEmbed()
+        const embed = new EmojiEmbed()
             .setTitle("Stats Settings")
             .setEmoji("SETTINGS.STATS.GREEN")
             .setStatus("Success");
