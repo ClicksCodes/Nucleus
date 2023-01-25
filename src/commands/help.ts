@@ -53,10 +53,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 `**${current.name}**\n\n` +
                 `${current.description}`
             )
-            if(current.options.filter((option) => option.type === ApplicationCommandOptionType.SubcommandGroup).length > 0) {
+            const subcommands = current.options.filter((option) => option.type === ApplicationCommandOptionType.Subcommand);
+            const subcommandGroups = current.options.filter((option) => option.type === ApplicationCommandOptionType.SubcommandGroup);
+            if(subcommandGroups.length > 0) {
                 subcommandGroupRow.components[0]!
                     .addOptions(
-                        current.options.filter((option) => option.type === ApplicationCommandOptionType.SubcommandGroup).map((option) => {
+                        subcommandGroups.map((option) => {
                             return {
                                 label: option.name,
                                 value: option.name
@@ -64,10 +66,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         })
                     )
             } else {
-                if(current.options.filter((option) => option.type === ApplicationCommandOptionType.Subcommand).length > 0) {
+                if(subcommands.length > 0) {
                     subcommandRow.components[0]!
                         .addOptions(
-                            current.options.filter((option) => option.type === ApplicationCommandOptionType.Subcommand).map((option) => {
+                            subcommands.map((option) => {
                                 return {
                                     label: option.name,
                                     value: option.name
