@@ -188,8 +188,7 @@ class confirmationMessage {
                 });
             } catch (e) {
                 success = false;
-                returnComponents = true;
-                continue;
+                break;
             }
             if (component.customId === "yes") {
                 component.deferUpdate();
@@ -277,8 +276,6 @@ class confirmationMessage {
         }
         const returnValue: Awaited<ReturnType<typeof this.send>> = {};
 
-        if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
-        if (success !== undefined) returnValue.success = success;
         if (cancelled) {
             await this.timeoutError()
             returnValue.cancelled = true;
@@ -294,6 +291,8 @@ class confirmationMessage {
             });
             return {success: false}
         }
+        if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
+        if (success !== undefined) returnValue.success = success;
         if (newReason) returnValue.newReason = newReason;
 
         const typedReturnValue = returnValue as {cancelled: true} |

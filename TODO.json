@@ -22,6 +22,21 @@
             "roles": true
         }
     },
-    "roleMenu": [],
-    "tracks": []
+    "tracks": [],
+    "rolemenu": {
+        "enabled": false,
+        "allowWebUI": false,
+        "options": [
+            {
+                "name": false,
+                "description": false,
+                "options": [
+                    {
+                        "name": false,
+                        "description": false
+                    }
+                ]
+            }
+        ]
+    }
 }

@@ -213,6 +213,7 @@ export default async function register() {
             await client.application?.commands.set(commandList);
         }
     }
+
     await registerCommandHandler();
     await registerEvents();
     console.log(`${colours.green}Registered commands, events and context menus${colours.none}`)

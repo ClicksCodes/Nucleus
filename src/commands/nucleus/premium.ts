@@ -91,7 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             .setDescription(
                                 `You have already activated premium on the maximum amount of servers!` + firstDescription
                             )
-                            .setEmoji("NUCLEUS.LOGO")
+                            .setEmoji("NUCLEUS.PREMIUMACTIVATE")
                             .setStatus("Danger")
                     ],
                     components: []

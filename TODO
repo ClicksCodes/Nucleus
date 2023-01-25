@@ -1,16 +1,4 @@
-Role all
+? Role all
 Server rules
 verificationRequired on welcome
 // TODO !IMPORTANT! URL + image hash + file hash database
-
-ROLE MENU SETTINGS
-
-**Title**
-> Description
-name: role
-name: role
-name: role
-
-[ Select an option to remove                        ]
-[ Reorder roles                                     ]
-< Previous page | Add role | Delete page | Add page >

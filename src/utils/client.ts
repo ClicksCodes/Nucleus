@@ -1,4 +1,4 @@
-import Discord, { Client, Interaction, AutocompleteInteraction, GatewayIntentBits } from 'discord.js';
+import Discord, { Client, Interaction, AutocompleteInteraction, GatewayIntentBits, Collection } from 'discord.js';
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
 import type { VerifySchema } from "../reflex/verify.js";
@@ -32,7 +32,7 @@ class NucleusClient extends Client {
         check: (interaction: Interaction) => Promise<boolean> | boolean,
         autocomplete: (interaction: AutocompleteInteraction) => Promise<string[]>
     }> = {};
-
+    fetchedCommands: Collection<string, Discord.ApplicationCommand> = new Collection();
     constructor(database: typeof NucleusClient.prototype.database) {
         super({ intents: [
             GatewayIntentBits.Guilds,

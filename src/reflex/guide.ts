@@ -178,7 +178,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                             "**Attachment logs**\n> When a message with attachments is edited or deleted, the logs will also include the images sent.\n" +
                             "\nPremium is not yet available. Check `/nucleus premium` for updates on features and pricing"
                     )
-                    .setEmoji("NUCLEUS.COMMANDS.LOCK")
+                    .setEmoji("NUCLEUS.PREMIUM")
                     .setStatus("Danger")
             )
             .setTitle("Premium")

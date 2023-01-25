@@ -232,29 +232,29 @@ const callback = async (interaction: CommandInteraction) => {
                     .setEmoji(getEmojiByName("TICKETS.ISSUE", "id") as APIMessageComponentEmoji)
         );
         const buttonRow = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId("back")
-                        .setStyle(ButtonStyle.Primary)
-                        .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji)
-                        .setDisabled(page === 0),
-                    new ButtonBuilder()
-                        .setCustomId("next")
-                        .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
-                        .setStyle(ButtonStyle.Primary)
-                        .setDisabled(page === Object.keys(currentObject).length - 1),
-                    new ButtonBuilder()
-                        .setCustomId("add")
-                        .setLabel("Create new")
-                        .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id") as APIMessageComponentEmoji)
-                        .setStyle(ButtonStyle.Secondary)
-                        .setDisabled(Object.keys(currentObject).length >= 24),
-                    new ButtonBuilder()
-                        .setCustomId("save")
-                        .setLabel("Save")
-                        .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
-                        .setStyle(ButtonStyle.Success)
-                        .setDisabled(modified),
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("back")
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji)
+                    .setDisabled(page === 0),
+                new ButtonBuilder()
+                    .setCustomId("next")
+                    .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
+                    .setStyle(ButtonStyle.Primary)
+                    .setDisabled(page === Object.keys(currentObject).length - 1),
+                new ButtonBuilder()
+                    .setCustomId("add")
+                    .setLabel("Create new")
+                    .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id") as APIMessageComponentEmoji)
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(Object.keys(currentObject).length >= 24),
+                new ButtonBuilder()
+                    .setCustomId("save")
+                    .setLabel("Save")
+                    .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
+                    .setStyle(ButtonStyle.Success)
+                    .setDisabled(modified),
             );
         if (noStatsChannels) {
             embed.setDescription("No stats channels have been set up yet. Use the button below to add one.\n\n" +
@@ -275,7 +275,6 @@ const callback = async (interaction: CommandInteraction) => {
                 .setDescription(`Currently ${current.enabled ? "Enabled" : "Disabled"}, click to ${current.enabled ? "disable" : "enable"} this channel`)
                 .setEmoji(getEmojiByName(current.enabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id") as APIMessageComponentEmoji)
             );
-
             embed.setDescription(`**Currently Editing:** ${renderChannel(Object.keys(currentObject)[page]!)}\n\n` +
                 `${getEmojiByName(current.enabled ? "CONTROL.TICK" : "CONTROL.CROSS")} Currently ${current.enabled ? "Enabled" : "Disabled"}\n` +
                 `**Name:** \`${current.name}\`\n` +
