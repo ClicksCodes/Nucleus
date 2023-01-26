@@ -9,7 +9,7 @@ import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-        .setName("channel")
+        .setName("general")
         .setDescription("Sets or shows the log channel")
         .addChannelOption((option) =>
             option

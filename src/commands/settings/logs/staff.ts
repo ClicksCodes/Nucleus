@@ -9,7 +9,7 @@ import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-        .setName("staff")
+        .setName("warnings")
         .setDescription("Settings for the staff notifications channel")
         .addChannelOption((option) =>
             option

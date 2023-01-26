@@ -208,12 +208,20 @@ export default async function register() {
             const guild = await client.guilds.fetch(config.developmentGuildID);
             console.log(`${colours.purple}Registering commands in ${guild!.name}${colours.none}`)
             await guild.commands.set(commandList);
+            client.commandList = guild.commands.cache;
         } else {
             console.log(`${colours.blue}Registering commands in production mode${colours.none}`)
             await client.application?.commands.set(commandList);
         }
     }
-
+    if (config.enableDevelopment) {
+        const guild = await client.guilds.fetch(config.developmentGuildID);
+        await guild.commands.fetch();
+        client.commandList = guild.commands.cache;
+    } else {
+        await client.application?.commands.fetch();
+        client.commandList = client.application?.commands.cache!;
+    }
     await registerCommandHandler();
     await registerEvents();
     console.log(`${colours.green}Registered commands, events and context menus${colours.none}`)

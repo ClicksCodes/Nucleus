@@ -22,8 +22,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(
                         "Nucleus is a bot that naturally needs to store data about servers.\n" +
                             "We are entirely [open source](https://github.com/ClicksMinutePer/Nucleus), so you can check exactly what we store, and how it works.\n\n" +
-                            "If you are a server administrator, you can view the options page in the dropdown under this message.\n\n" +
-                            "Any questions about Nucleus, how it works and data stored can be asked in [our server](https://discord.gg/bPaNnxe)."
+                            "If you are a server administrator, you can view the options page in the dropdown under this message.\n\n" +  // TODO
+                            "Any questions about Nucleus, how it works, and what data is stored can be asked in [our server](https://discord.gg/bPaNnxe)."
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")

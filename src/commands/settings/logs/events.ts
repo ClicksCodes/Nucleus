@@ -31,7 +31,7 @@ const logs: Record<string, string> = {
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("events").setDescription("Sets what events should be logged");
 
-const callback = async (interaction: CommandInteraction): Promise<void> => {
+const callback = async (interaction: CommandInteraction): Promise<void> => {  // TODO: Maybe merge this into /settings log general
     await interaction.reply({
         embeds: LoadingEmbed,
         fetchReply: true,
