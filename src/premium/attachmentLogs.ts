@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from './../utils/getCommandMentionByName.js';
+import { getCommandMentionByName } from './../utils/getCommandDataByName.js';
 import client from "../utils/client.js";
 import keyValueList from "../utils/generateKeyValueList.js";
 import singleNotify from "../utils/singleNotify.js";
@@ -38,7 +38,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
             singleNotify(
                 "noAttachmentLogChannel",
                 message.guild.id,
-                `No channel set for attachment logging. You can set one with ${await getCommandMentionByName("settings/logs/attachments")}`,
+                `No channel set for attachment logging. You can set one with ${getCommandMentionByName("settings/logs/attachments")}`,
                 "Warning"
             );
             return { files: attachments };
@@ -48,7 +48,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
             singleNotify(
                 "attachmentLogChannelDeleted",
                 message.guild.id,
-                `Your attachment history channel was deleted or is not longer accessible. You can set a new one with ${await getCommandMentionByName("settings/logs/attachments")}`,
+                `Your attachment history channel was deleted or is not longer accessible. You can set a new one with ${getCommandMentionByName("settings/logs/attachments")}`,
                 "Warning"
             );
             return { files: attachments };

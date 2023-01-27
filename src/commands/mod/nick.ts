@@ -1,6 +1,6 @@
 import { LinkWarningFooter } from './../../utils/defaults.js';
 import { ActionRowBuilder, ButtonBuilder, CommandInteraction, GuildMember, ButtonStyle, Message } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -189,8 +189,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, partial: boolean = false) => {
     const member = interaction.member as GuildMember;
+    // Check if the user has manage_nicknames permission
+    if (!member.permissions.has("ManageNicknames")) return "You do not have the *Manage Nicknames* permission";
+    if (partial) return true;
     const me = interaction.guild!.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
@@ -205,9 +208,6 @@ const check = (interaction: CommandInteraction) => {
     if (!me.permissions.has("ManageNicknames")) return "I do not have the *Manage Nicknames* permission";
     // Allow the owner to change anyone's nickname
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has manage_nicknames permission
-    if (!member.permissions.has("ManageNicknames"))
-        return "You do not have the *Manage Nicknames* permission";
     // Allow changing your own nickname
     if (member === apply) return true;
     // Check if the user is below on the role list

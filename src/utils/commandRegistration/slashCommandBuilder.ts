@@ -1,4 +1,4 @@
-import type { SlashCommandSubcommandGroupBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandGroupBuilder } from "discord.js";
 import type { SlashCommandBuilder } from "discord.js";
 import config from "../../config/main.json" assert { type: "json" };
 import getSubcommandsInFolder from "./getFilesInFolder.js";
@@ -64,6 +64,7 @@ export async function command(
                 bitfield.add(userPermissions)
             command.setDefaultMemberPermissions(bitfield.bitfield)
         }
+        client.commands[commandString!] = [undefined, { name: name, description: description }]
 
         for (const subcommand of fetched.subcommands) {
             let fetchedCommand;
@@ -72,11 +73,12 @@ export async function command(
             } else {
                 fetchedCommand = subcommand.command;
             }
-            client.commands[commandString! + "/" + fetchedCommand.name] = subcommand
+            client.commands[commandString! + "/" + fetchedCommand.name] = [subcommand, { name: fetchedCommand.name, description: fetchedCommand.description }]
             command.addSubcommand(fetchedCommand);
         }
         for (const group of fetched.subcommandGroups) {
             command.addSubcommandGroup(group.command);
+            client.commands[commandString! + "/" + group.command.name] = [undefined, { name: group.command.name, description: group.command.description }]
         };
         return command;
     };

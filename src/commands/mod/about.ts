@@ -12,8 +12,8 @@ import Discord, {
     ButtonStyle,
     TextInputStyle,
     APIMessageComponentEmoji,
+    SlashCommandSubcommandBuilder
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";

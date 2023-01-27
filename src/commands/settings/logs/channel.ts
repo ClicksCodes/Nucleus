@@ -4,7 +4,7 @@ import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonSty
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../../utils/confirmationMessage.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -185,7 +185,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
         return "You must have the *Manage Server* permission to use this command";

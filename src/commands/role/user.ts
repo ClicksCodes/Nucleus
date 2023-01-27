@@ -1,5 +1,5 @@
 import type { CommandInteraction, GuildMember, Role, User } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../utils/client.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -78,8 +78,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     const member = interaction.member as GuildMember;
+    // Check if the user has manage_roles permission
+    if (!member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
+    if (partial) return true;
     if (!interaction.guild) return
     const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember | null;
@@ -88,8 +91,6 @@ const check = (interaction: CommandInteraction) => {
     if (!me.permissions.has("ManageRoles")) return "I do not have the *Manage Roles* permission";
     // Allow the owner to role anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has manage_roles permission
-    if (!member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
     // Allow role
     return true;
 };

@@ -1,6 +1,6 @@
 import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from '../../utils/logTranscripts.js';
 import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -391,16 +391,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return false;
     const member = interaction.member as GuildMember;
+    // Check if the user has manage_messages permission
+    if (!member.permissions.has("ManageMessages")) return "You do not have the *Manage Messages* permission";
+    if (partial) return true;
     const me = interaction.guild.members.me!;
     // Check if nucleus has the manage_messages permission
     if (!me.permissions.has("ManageMessages")) return "I do not have the *Manage Messages* permission";
     // Allow the owner to purge
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has manage_messages permission
-    if (!member.permissions.has("ManageMessages")) return "You do not have the *Manage Messages* permission";
     // Allow purge
     return true;
 };

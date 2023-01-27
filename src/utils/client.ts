@@ -1,4 +1,3 @@
-import { ApplicationCommand, ApplicationCommandResolvable, DataManager } from 'discord.js';
 import Discord, { Client, Interaction, AutocompleteInteraction, GatewayIntentBits, Collection } from 'discord.js';
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
@@ -24,16 +23,15 @@ class NucleusClient extends Client {
         eventScheduler: EventScheduler;
         performanceTest: PerformanceTest;
     };
-    commandList?: Discord.Collection<string, Discord.ApplicationCommand>;
     preloadPage: Record<string, {command: string, argument: string}> = {};  // e.g. { channelID: { command: privacy, page: 3}}
-    commands: Record<string, {
+    commands: Record<string, [{
         command: Discord.SlashCommandBuilder |
                 ((builder: Discord.SlashCommandBuilder) => Discord.SlashCommandBuilder) |
                 Discord.SlashCommandSubcommandBuilder | ((builder: Discord.SlashCommandSubcommandBuilder) => Discord.SlashCommandSubcommandBuilder) | Discord.SlashCommandSubcommandGroupBuilder | ((builder: Discord.SlashCommandSubcommandGroupBuilder) => Discord.SlashCommandSubcommandGroupBuilder),
         callback: (interaction: Interaction) => Promise<void>,
-        check: (interaction: Interaction) => Promise<boolean> | boolean,
+        check: (interaction: Interaction, partial: boolean) => Promise<boolean> | boolean,
         autocomplete: (interaction: AutocompleteInteraction) => Promise<string[]>
-    }> = {};
+    } | undefined,{name: string, description: string}]> = {};
     fetchedCommands: Collection<string, Discord.ApplicationCommand> = new Collection();
     constructor(database: typeof NucleusClient.prototype.database) {
         super({ intents: [

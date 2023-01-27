@@ -10,7 +10,7 @@ import Discord, {
     StringSelectMenuBuilder,
     APIMessageComponentEmoji
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import type { GuildBasedChannel } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -169,7 +169,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
     return true;

@@ -35,9 +35,12 @@ async function registerCommands() {
             fetched.command.setDMPermission(fetched.allowedInDMs ?? false)
             fetched.command.setNameLocalizations(fetched.nameLocalizations ?? {})
             fetched.command.setDescriptionLocalizations(fetched.descriptionLocalizations ?? {})
-            if (fetched.nameLocalizations || fetched.descriptionLocalizations) console.log("AAAAA")
+            // if (fetched.nameLocalizations || fetched.descriptionLocalizations)
             commands.push(fetched.command);
-            client.commands["commands/" + fetched.command.name] = fetched;
+            client.commands["commands/" + fetched.command.name] = [
+                fetched,
+                {name: fetched.name ?? fetched.command.name, description: fetched.description ?? fetched.command.description}
+            ];
         }
         i++;
         console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colours.green}Loaded ${file.name} [${i} / ${files.length}]${colours.none}`)
@@ -142,11 +145,11 @@ async function registerCommandHandler() {
     client.on("interactionCreate", async (interaction: Interaction) => {
         if (interaction.isUserContextMenuCommand()) {;
             const commandName = "contextCommands/user/" + interaction.commandName;
-            execute(client.commands[commandName]?.check, client.commands[commandName]?.callback, interaction)
+            execute(client.commands[commandName]![0]?.check, client.commands[commandName]![0]?.callback, interaction)
             return;
         } else if (interaction.isMessageContextMenuCommand()) {
             const commandName = "contextCommands/message/" + interaction.commandName;
-            execute(client.commands[commandName]?.check, client.commands[commandName]?.callback, interaction)
+            execute(client.commands[commandName]![0]?.check, client.commands[commandName]![0]?.callback, interaction)
             return;
         } else if (interaction.isAutocomplete()) {
             const commandName = interaction.commandName;
@@ -155,7 +158,7 @@ async function registerCommandHandler() {
 
             const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
 
-            const choices = await client.commands[fullCommandName]?.autocomplete(interaction);
+            const choices = await client.commands[fullCommandName]![0]?.autocomplete(interaction);
 
             const formatted = (choices ?? []).map(choice => {
                 return { name: choice, value: choice }
@@ -168,7 +171,7 @@ async function registerCommandHandler() {
 
             const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
 
-            const command = client.commands[fullCommandName];
+            const command = client.commands[fullCommandName]![0];
             const callback = command?.callback;
             const check = command?.check;
             execute(check, callback, interaction);
@@ -208,19 +211,10 @@ export default async function register() {
             const guild = await client.guilds.fetch(config.developmentGuildID);
             console.log(`${colours.purple}Registering commands in ${guild!.name}${colours.none}`)
             await guild.commands.set(commandList);
-            client.commandList = guild.commands.cache;
         } else {
             console.log(`${colours.blue}Registering commands in production mode${colours.none}`)
             await client.application?.commands.set(commandList);
         }
-    }
-    if (config.enableDevelopment) {
-        const guild = await client.guilds.fetch(config.developmentGuildID);
-        await guild.commands.fetch();
-        client.commandList = guild.commands.cache;
-    } else {
-        await client.application?.commands.fetch();
-        client.commandList = client.application?.commands.cache!;
     }
     await registerCommandHandler();
     await registerEvents();

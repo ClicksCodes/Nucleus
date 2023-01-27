@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from './../utils/getCommandMentionByName.js';
+import { getCommandMentionByName } from './../utils/getCommandDataByName.js';
 import { LoadingEmbed } from "../utils/defaults.js";
 import Discord, {
     ActionRowBuilder,
@@ -71,12 +71,12 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                         "Nucleus can log server events and keep you informed with what content is being posted to your server.\n" +
                             "We have 2 different types of logs, which each can be configured to send to a channel of your choice:\n" +
                             "**General:** These are events like kicks and channel changes etc.\n" +
-                            `> These are standard logs and can be set with ${await getCommandMentionByName("settings/logs/general")}\n` +
+                            `> These are standard logs and can be set with ${getCommandMentionByName("settings/logs/general")}\n` +
                             "**Warnings:** Warnings like NSFW avatars and spam etc. that may require action by a server staff member.\n" +
-                            `> These may require special action by a moderator. You can set the channel with ${await getCommandMentionByName("settings/logs/warnings")}\n` +  // TODO
+                            `> These may require special action by a moderator. You can set the channel with ${getCommandMentionByName("settings/logs/warnings")}\n` +  // TODO
                             "**Attachments:** All images sent in the server - Used to keep a record of deleted images\n" +
-                            `> Sent to a separate log channel to avoid spam. This can be set with ${await getCommandMentionByName("settings/logs/attachments")}\n` +
-                            `> ${getEmojiByName("NUCLEUS.PREMIUM")} Please note this feature is only available with ${await getCommandMentionByName("nucleus/premium")}`
+                            `> Sent to a separate log channel to avoid spam. This can be set with ${getCommandMentionByName("settings/logs/attachments")}\n` +
+                            `> ${getEmojiByName("NUCLEUS.PREMIUM")} Please note this feature is only available with ${getCommandMentionByName("nucleus/premium")}`
                     )
                     .setEmoji("ICONS.LOGGING")
                     .setStatus("Danger")
@@ -90,15 +90,15 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setTitle("Moderation")
                     .setDescription(
                         "Nucleus has a number of commands that can be used to moderate your server.\n" +
-                            `These commands are all found under ${await getCommandMentionByName(("mod"))}, and they include:\n` +
-                            `${getEmojiByName("PUNISH.WARN.YELLOW")} ${await getCommandMentionByName("mod/warn")}: The user is warned (via DM) that they violated server rules. More options given if DMs are disabled.\n` +
-                            `${getEmojiByName("PUNISH.CLEARHISTORY")} ${await getCommandMentionByName("mod/purge")}: Deletes messages in a channel, giving options to only delete messages by a certain user.\n` +
-                            `${getEmojiByName("PUNISH.MUTE.YELLOW")} ${await getCommandMentionByName("mod/mute")}: Stops users sending messages or joining voice chats.\n` +
-                            `${getEmojiByName("PUNISH.MUTE.GREEN")} ${await getCommandMentionByName("mod/unmute")}: Allows user to send messages and join voice chats.\n` +
-                            `${getEmojiByName("PUNISH.KICK.RED")} ${await getCommandMentionByName("mod/kick")}: Removes a member from the server. They will be able to rejoin.\n` +
-                            `${getEmojiByName("PUNISH.SOFTBAN")} ${await getCommandMentionByName("mod/softban")}: Kicks the user, deleting their messages from every channel in a given time frame.\n` +
-                            `${getEmojiByName("PUNISH.BAN.RED")} ${await getCommandMentionByName("mod/ban")}: Removes the user from the server, deleting messages from every channel and stops them from rejoining.\n` +
-                            `${getEmojiByName("PUNISH.BAN.GREEN")} ${await getCommandMentionByName("mod/unban")}: Allows a member to rejoin the server after being banned.`
+                            `These commands are all found under ${getCommandMentionByName(("mod"))}, and they include:\n` +
+                            `${getEmojiByName("PUNISH.WARN.YELLOW")} ${getCommandMentionByName("mod/warn")}: The user is warned (via DM) that they violated server rules. More options given if DMs are disabled.\n` +
+                            `${getEmojiByName("PUNISH.CLEARHISTORY")} ${getCommandMentionByName("mod/purge")}: Deletes messages in a channel, giving options to only delete messages by a certain user.\n` +
+                            `${getEmojiByName("PUNISH.MUTE.YELLOW")} ${getCommandMentionByName("mod/mute")}: Stops users sending messages or joining voice chats.\n` +
+                            `${getEmojiByName("PUNISH.MUTE.GREEN")} ${getCommandMentionByName("mod/unmute")}: Allows user to send messages and join voice chats.\n` +
+                            `${getEmojiByName("PUNISH.KICK.RED")} ${getCommandMentionByName("mod/kick")}: Removes a member from the server. They will be able to rejoin.\n` +
+                            `${getEmojiByName("PUNISH.SOFTBAN")} ${getCommandMentionByName("mod/softban")}: Kicks the user, deleting their messages from every channel in a given time frame.\n` +
+                            `${getEmojiByName("PUNISH.BAN.RED")} ${getCommandMentionByName("mod/ban")}: Removes the user from the server, deleting messages from every channel and stops them from rejoining.\n` +
+                            `${getEmojiByName("PUNISH.BAN.GREEN")} ${getCommandMentionByName("mod/unban")}: Allows a member to rejoin the server after being banned.`
                     )
                     .setEmoji("PUNISH.BAN.RED")
                     .setStatus("Danger")
@@ -112,9 +112,9 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setTitle("Verify")
                     .setDescription(
                         "Nucleus has a verification system that allows users to prove they aren't bots.\n" +
-                            `This is done by running ${await getCommandMentionByName("verify")} which sends a message only the user can see, giving them a link to a website to verify.\n` +
+                            `This is done by running ${getCommandMentionByName("verify")} which sends a message only the user can see, giving them a link to a website to verify.\n` +
                             "After the user complete's the check, they are given a role, which can be set to unlock specific channels.\n" +
-                            `You can set the role given with ${await getCommandMentionByName("settings/verify")}`
+                            `You can set the role given with ${getCommandMentionByName("settings/verify")}`
                     )
                     .setEmoji("CONTROL.REDTICK")
                     .setStatus("Danger")
@@ -129,7 +129,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setDescription(
                         "Nucleus has a content scanning system that automatically scans links and images sent by users.\n" +
                             "The staff team can be notified when an NSFW image is detected, or malicious links are sent.\n" +
-                            `You can check and manage what to moderate in ${await getCommandMentionByName("settings/filters")}`
+                            `You can check and manage what to moderate in ${getCommandMentionByName("settings/filters")}`
                     )
                     .setEmoji("MOD.IMAGES.TOOSMALL")
                     .setStatus("Danger")
@@ -143,11 +143,11 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setTitle("Tickets")
                     .setDescription(
                         "Nucleus has a ticket system which allows users to create tickets and talk to the server staff or support team.\n" +
-                            `Tickets can be created by users with ${await getCommandMentionByName("ticket/create")}, or by clicking a button created by moderators.\n` +
+                            `Tickets can be created by users with ${getCommandMentionByName("ticket/create")}, or by clicking a button created by moderators.\n` +
                             `After being created, a new channel or thread is created, and the user and support team are pinged. \n` +
-                            `The category or channel to create threads in can be set with ${await getCommandMentionByName("settings/tickets")}\n` +
-                            `When the ticket is resolved, anyone can run ${await getCommandMentionByName("ticket/close")} (or click the button) to close it.\n` +
-                            `Running ${await getCommandMentionByName("ticket/close")} again will delete the ticket.`
+                            `The category or channel to create threads in can be set with ${getCommandMentionByName("settings/tickets")}\n` +
+                            `When the ticket is resolved, anyone can run ${getCommandMentionByName("ticket/close")} (or click the button) to close it.\n` +
+                            `Running ${getCommandMentionByName("ticket/close")} again will delete the ticket.`
                     )
                     .setEmoji("GUILD.TICKET.CLOSE")
                     .setStatus("Danger")
@@ -161,9 +161,9 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setTitle("Tags")
                     .setDescription(
                         "Nucleus allows you to create tags, which allow a message to be sent when a specific tag is typed.\n" +
-                            `Tags can be created with ${await getCommandMentionByName("tags/create")}, and can be edited with ${await getCommandMentionByName("tags/edit")}\n` +
-                            `Tags can be deleted with ${await getCommandMentionByName("tags/delete")}, and can be listed with ${await getCommandMentionByName("tags/list")}\n` +
-                            `To use a tag, you can type ${await getCommandMentionByName("tag")}, followed by the tag to send`
+                            `Tags can be created with ${getCommandMentionByName("tags/create")}, and can be edited with ${getCommandMentionByName("tags/edit")}\n` +
+                            `Tags can be deleted with ${getCommandMentionByName("tags/delete")}, and can be listed with ${getCommandMentionByName("tags/list")}\n` +
+                            `To use a tag, you can type ${getCommandMentionByName("tag")}, followed by the tag to send`
                     )
                     .setEmoji("PUNISH.NICKNAME.RED")
                     .setStatus("Danger")

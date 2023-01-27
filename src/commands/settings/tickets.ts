@@ -17,7 +17,7 @@ import Discord, {
     ModalSubmitInteraction,
     APIMessageComponentEmoji
 } from "discord.js";
-import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import { ChannelType } from "discord-api-types/v9";
 import client from "../../utils/client.js";
 import { toHexInteger, toHexArray, tickets as ticketTypes } from "../../utils/calculate.js";
@@ -738,7 +738,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
     return data;
 }
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
         return "You must have the *Manage Server* permission to use this command";

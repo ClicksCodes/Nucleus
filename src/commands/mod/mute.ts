@@ -1,6 +1,6 @@
 import { LinkWarningFooter, LoadingEmbed } from "../../utils/defaults.js";
 import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -361,9 +361,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    // Check if the user has moderate_members permission
+    if (!member.permissions.has("ModerateMembers")) return "You do not have the *Moderate Members* permission";
+    if (partial) return true;
     const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
@@ -379,9 +382,6 @@ const check = (interaction: CommandInteraction) => {
     if (member.id === me.id) return "I cannot mute myself";
     // Allow the owner to mute anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has moderate_members permission
-    if (!member.permissions.has("ModerateMembers"))
-        return "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
     if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
     // Allow mute

@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
 import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuOptionBuilder, APIMessageComponentEmoji, StringSelectMenuBuilder, MessageComponentInteraction, StringSelectMenuInteraction } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import addPlural from "../../utils/plurals.js";
@@ -207,7 +207,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = async (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, _partial: boolean = false) => {
     const tracks = (await client.database.guilds.read(interaction.guild!.id)).tracks;
     if (tracks.length === 0) return "This server does not have any tracks";
     const member = interaction.member as GuildMember;

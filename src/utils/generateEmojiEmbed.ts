@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "@discordjs/builders";
+import { EmbedBuilder } from "discord.js";
 import getEmojiByName from "./getEmojiByName.js";
 
 const colors = {

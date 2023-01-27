@@ -1,5 +1,5 @@
 import type { CommandInteraction } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import create from "../../actions/tickets/create.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -14,10 +14,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     await create(interaction);
 };
 
-const check = () => {
-    return true;
-};
 
 export { command };
 export { callback };
-export { check };

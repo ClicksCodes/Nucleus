@@ -12,7 +12,7 @@ import Discord, {
     GuildChannel,
     EmbedBuilder
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -198,7 +198,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                             }\n` +
                             `**Channel:** ${
                                 config.welcome.channel
-                                    ? config.welcome.channel == "dm"
+                                    ? config.welcome.channel === "dm"
                                         ? "DM"
                                         : renderChannel((await interaction.guild!.channels.fetch(config.welcome.channel))!)
                                     : "*None set*"
@@ -210,25 +210,25 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-message" ? "Click again to confirm" : "Clear Message")
+                        .setLabel(lastClicked === "clear-message" ? "Click again to confirm" : "Clear Message")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-message")
                         .setDisabled(!config.welcome.message)
                         .setStyle(ButtonStyle.Danger),
                     new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-role" ? "Click again to confirm" : "Clear Role")
+                        .setLabel(lastClicked === "clear-role" ? "Click again to confirm" : "Clear Role")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-role")
                         .setDisabled(!config.welcome.role)
                         .setStyle(ButtonStyle.Danger),
                     new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-ping" ? "Click again to confirm" : "Clear Ping")
+                        .setLabel(lastClicked === "clear-ping" ? "Click again to confirm" : "Clear Ping")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-ping")
                         .setDisabled(!config.welcome.ping)
                         .setStyle(ButtonStyle.Danger),
                     new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-channel" ? "Click again to confirm" : "Clear Channel")
+                        .setLabel(lastClicked === "clear-channel" ? "Click again to confirm" : "Clear Channel")
                         .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                         .setCustomId("clear-channel")
                         .setDisabled(!config.welcome.channel)
@@ -236,7 +236,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     new ButtonBuilder()
                         .setLabel("Set Channel to DM")
                         .setCustomId("set-channel-dm")
-                        .setDisabled(config.welcome.channel == "dm")
+                        .setDisabled(config.welcome.channel === "dm")
                         .setStyle(ButtonStyle.Secondary)
                 ])
             ]
@@ -252,8 +252,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
         await i.deferUpdate();
-        if (i.customId == "clear-message") {
-            if (lastClicked == "clear-message") {
+        if (i.customId === "clear-message") {
+            if (lastClicked === "clear-message") {
                 await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.message": null
                 });
@@ -261,8 +261,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } else {
                 lastClicked = "clear-message";
             }
-        } else if (i.customId == "clear-role") {
-            if (lastClicked == "clear-role") {
+        } else if (i.customId === "clear-role") {
+            if (lastClicked === "clear-role") {
                 await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.role": null
                 });
@@ -270,8 +270,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } else {
                 lastClicked = "clear-role";
             }
-        } else if (i.customId == "clear-ping") {
-            if (lastClicked == "clear-ping") {
+        } else if (i.customId === "clear-ping") {
+            if (lastClicked === "clear-ping") {
                 await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.ping": null
                 });
@@ -279,8 +279,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } else {
                 lastClicked = "clear-ping";
             }
-        } else if (i.customId == "clear-channel") {
-            if (lastClicked == "clear-channel") {
+        } else if (i.customId === "clear-channel") {
+            if (lastClicked === "clear-channel") {
                 await client.database.guilds.write(interaction.guild!.id, {
                     "welcome.channel": null
                 });
@@ -288,7 +288,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } else {
                 lastClicked = "clear-channel";
             }
-        } else if (i.customId == "set-channel-dm") {
+        } else if (i.customId === "set-channel-dm") {
             await client.database.guilds.write(interaction.guild!.id, {
                 "welcome.channel": "dm"
             });
@@ -301,7 +301,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
         return "You must have the *Manage Server* permission to use this command";

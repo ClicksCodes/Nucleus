@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from '../../utils/getCommandMentionByName.js';
+import { getCommandMentionByName } from '../../utils/getCommandDataByName.js';
 import Discord, { ActionRowBuilder, ButtonBuilder, ButtonInteraction, PrivateThreadChannel, TextChannel, ButtonStyle, CategoryChannel } from "discord.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -84,9 +84,9 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Archived Ticket")
-                    .setDescription(`This ticket has been Archived. Type ${await getCommandMentionByName("ticket/close")} to delete it.` +
+                    .setDescription(`This ticket has been Archived. Type ${getCommandMentionByName("ticket/close")} to delete it.` +
                         await client.database.premium.hasPremium(interaction.guild.id) ?
-                        `\n\nFor more info on transcripts, check ${await getCommandMentionByName("privacy")}` :
+                        `\n\nFor more info on transcripts, check ${getCommandMentionByName("privacy")}` :
                         "")
                     .setStatus("Warning")
                     .setEmoji("GUILD.TICKET.ARCHIVED")

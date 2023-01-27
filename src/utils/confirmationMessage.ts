@@ -1,4 +1,4 @@
-import { TextInputBuilder } from "@discordjs/builders";
+import { TextInputBuilder } from "discord.js";
 import Discord, {
     CommandInteraction,
     Interaction,
@@ -280,7 +280,7 @@ class confirmationMessage {
             await this.timeoutError()
             returnValue.cancelled = true;
         }
-        if (success == false) {
+        if (success === false) {
             await this.interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setTitle(this.title)

@@ -9,7 +9,7 @@ import Discord, {
     StringSelectMenuBuilder,
     APIMessageComponentEmoji
 } from "discord.js";
-import { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import addPlural from "../utils/plurals.js";

@@ -1,5 +1,4 @@
-import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle, SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -166,9 +165,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = async (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    // Check if the user has ban_members permission
+    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
+    if(partial) return true;
     const me = interaction.guild.members.me!;
     let apply = interaction.options.getUser("user") as User | GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
@@ -190,8 +192,6 @@ const check = async (interaction: CommandInteraction) => {
     if (member.id === me.id) return "I cannot ban myself";
     // Allow the owner to ban anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has ban_members permission
-    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
     // Check if the user is below on the role list
     if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
     // Allow ban

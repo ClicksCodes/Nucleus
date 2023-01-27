@@ -10,7 +10,7 @@ import Discord, {
     APISelectMenuOption,
     StringSelectMenuBuilder
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
@@ -286,11 +286,6 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
     });
 };
 
-const check = () => {
-    return true;
-};
-
 export { command };
 export { callback };
-export { check };
 export { userAbout };

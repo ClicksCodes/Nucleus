@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
@@ -118,10 +118,5 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     } while (!closed);
 };
 
-const check = () => {
-    return true;
-};
-
 export { command };
 export { callback };
-export { check };

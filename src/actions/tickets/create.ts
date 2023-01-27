@@ -3,7 +3,7 @@ import { tickets, toHexArray } from "../../utils/calculate.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import { getCommandMentionByName } from "../../utils/getCommandMentionByName.js";
+import { getCommandMentionByName } from "../../utils/getCommandDataByName.js";
 
 function capitalize(s: string) {
     s = s.replace(/([A-Z])/g, " $1");
@@ -225,7 +225,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                                     chosenType !== null ? emoji + " " + capitalize(chosenType) : "General"
                                 }\n` +
                                 `**Ticket ID:** \`${c.id}\`\n${content ?? ""}\n` +
-                                `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
+                                `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -289,7 +289,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                                     chosenType !== null ? emoji + " " + capitalize(chosenType) : "General"
                                 }\n` +
                                 `**Ticket ID:** \`${c.id}\`\n${content ?? ""}\n` +
-                                `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
+                                `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")

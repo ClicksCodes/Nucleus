@@ -1,6 +1,6 @@
 import type Discord from "discord.js";
 import { ActionRowBuilder, APIMessageComponentEmoji, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Message, ModalBuilder, RoleSelectMenuBuilder, RoleSelectMenuInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
 import client from "../../utils/client.js";
@@ -347,7 +347,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     } while (!closed)
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageRoles"))
         return "You must have the *Manage Roles* permission to use this command";

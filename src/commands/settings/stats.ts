@@ -1,7 +1,7 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
 import Discord, { CommandInteraction, Message, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, APIMessageComponentEmoji, TextInputBuilder, StringSelectMenuInteraction, ButtonInteraction, MessageComponentInteraction, ChannelSelectMenuBuilder, ChannelSelectMenuInteraction } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../utils/client.js";
 import convertCurlyBracketString from "../../utils/convertCurlyBracketString.js";
 import singleNotify from "../../utils/singleNotify.js";
@@ -390,7 +390,7 @@ const callback = async (interaction: CommandInteraction) => {
     } while (!closed);
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageChannels"))
         return "You must have the *Manage Channels* permission to use this command";

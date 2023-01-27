@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "../utils/defaults.js";
 import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, StringSelectMenuBuilder, APIMessageComponentEmoji } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import client from "../utils/client.js";
 import addPlural from "../utils/plurals.js";
