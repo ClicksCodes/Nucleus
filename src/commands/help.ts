@@ -39,7 +39,7 @@ const styles: Record<string, {emoji: string}> = {
     "tags": {emoji: "PUNISH.NICKNAME.RED"},
     "ticket": {emoji: "GUILD.TICKET.CLOSE"},
     "user": {emoji: "MEMBER.LEAVE"},
-    "verify": {emoji: "CONTROL.BLOCKTICK"}
+    "verify": {emoji: "CONTROL.REDTICK"}
 }
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
@@ -47,7 +47,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const commands = client.fetchedCommands;
 
     let closed = false;
-    let currentPath: [string, string, string] = ["","",""]
+    let currentPath: [string, string, string] = ["", "", ""]
     do {
         const commandRow = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(

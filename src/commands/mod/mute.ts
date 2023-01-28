@@ -389,3 +389,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Stops a member from being able to send messages or join voice channels for a specified amount of time.",
+    premiumOnly: true,
+}

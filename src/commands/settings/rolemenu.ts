@@ -9,7 +9,9 @@ import createPageIndicator from "../../utils/createPageIndicator.js";
 import { configToDropdown } from "../../actions/roleMenu.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import lodash from 'lodash';
+
 const isEqual = lodash.isEqual;
+
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("rolemenu")
@@ -35,6 +37,60 @@ const defaultRolePageConfig = {
     options: [
         {name: "Role 1", description: null, role: "No role set"}
     ]
+}
+
+const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message, currentObj: ObjectSchema[]) => {
+    let reorderRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId("reorder")
+                .setPlaceholder("Select a page to move...")
+                .setMinValues(1)
+                .addOptions(
+                    currentObj.map((o, i) => new StringSelectMenuOptionBuilder()
+                        .setLabel(o.name)
+                        .setValue(i.toString())
+                    )
+                )
+        );
+    let buttonRow = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId("back")
+                .setLabel("Back")
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji)
+        )
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setTitle("Role Menu")
+                .setDescription("Select pages in the order you want them to appear.")
+                .setStatus("Success")
+        ],
+        components: [reorderRow, buttonRow]
+    });
+    let out: StringSelectMenuInteraction | ButtonInteraction | null;
+    try {
+        out = await m.awaitMessageComponent({
+            filter: (i) => i.channel!.id === interaction.channel!.id,
+            time: 300000
+        }) as StringSelectMenuInteraction | ButtonInteraction | null;
+    } catch (e) {
+        console.error(e);
+        out = null;
+    }
+    if(!out) return;
+    if (out.isButton()) return;
+    if(!out.values) return;
+    const values = out.values;
+
+    const newOrder: ObjectSchema[] = currentObj.map((_, i) => {
+        const index = values.findIndex(v => v === i.toString());
+        return currentObj[index];
+    }) as ObjectSchema[];
+
+    return newOrder;
 }
 
 const editNameDescription = async (i: ButtonInteraction, interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data: {name?: string, description?: string}) => {
@@ -374,6 +430,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     page = currentObject.length - 1;
                     break;
                 case "reorder":
+                    let reordered = await reorderRoleMenuPages(interaction, m, currentObject);
+                    if(!reordered) break;
+                    currentObject = reordered;
                     break;
                 case "save":
                     client.database.guilds.write(interaction.guild.id, {"roleMenu.options": currentObject});

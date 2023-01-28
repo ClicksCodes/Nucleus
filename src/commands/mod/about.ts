@@ -435,6 +435,8 @@ const check = (interaction: CommandInteraction) => {
     return true;
 };
 
-export { command };
-export { callback };
-export { check };
+export { command, callback, check };
+export const metadata = {
+    longDescription: "Shows the moderation history (all previous bans, kicks, warns etc.), and moderator notes for a user.",
+    premiumOnly: true,
+}

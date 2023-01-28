@@ -197,3 +197,7 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Removes a member from the server. They will be able to rejoin if they have an invite link.",
+    premiumOnly: true,
+}

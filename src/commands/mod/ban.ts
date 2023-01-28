@@ -199,3 +199,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Removes a member from the server - this will prevent them from rejoining until they are unbanned, and will delete a specified number of days of messages from them.",
+    premiumOnly: true,
+}

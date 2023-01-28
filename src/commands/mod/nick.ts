@@ -217,3 +217,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Changes the nickname of a member. This is the name that shows in the member list and on messages.",
+    premiumOnly: true,
+}

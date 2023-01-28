@@ -407,3 +407,7 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Deletes a specified amount of messages from a channel, optionally from a specific user. Without an amount, you can repeatedly choose a number of messages to delete.",
+    premiumOnly: true,
+}

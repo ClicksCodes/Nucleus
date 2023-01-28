@@ -80,7 +80,7 @@ export async function testLink(link: string): Promise<{ safe: boolean; tags: str
 }
 
 export async function saveAttachment(link: string): Promise<string> {
-    const image = (await (await fetch(link)).buffer()).toString("base64");
+    const image = (await fetch(link)).arrayBuffer().toString();
     const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
     writeFileSync(fileName, image, "base64");
     return fileName;

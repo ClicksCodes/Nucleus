@@ -88,3 +88,7 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Stops members from being able to send messages without waiting a certain amount of time between messages.",
+    premiumOnly: true,
+}
