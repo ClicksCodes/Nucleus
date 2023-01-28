@@ -120,7 +120,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         new StringSelectMenuOptionBuilder().setLabel("Select a subcommand").setValue("none").setDefault(currentPath[1] === "none"),
                         ...subcommandGroups.map((option) => new StringSelectMenuOptionBuilder().setLabel(capitalize(option.name)).setValue(option.name).setDefault(currentPath[1] === option.name))
                     )
-                if(subcommandGroupRow.components[0]!.options.find((option) => option.data.default)) {
+                if(subcommandGroupRow.components[0]!.options.find((option) => option.data.default && option.data.value !== "none")) {
                     let subsubcommands = (subcommandGroups.find((option) => option.name === currentPath[1])! as ApplicationCommandSubGroup).options?.filter((option) => option.type === ApplicationCommandOptionType.Subcommand) || [];
                     subcommandRow.components[0]!
                         .addOptions(
@@ -163,7 +163,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 currentPath[2] = value;
                 break;
         }
-        console.log(currentPath)
 
     } while (!closed);
 };

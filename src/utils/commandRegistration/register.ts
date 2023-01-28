@@ -27,8 +27,8 @@ async function registerCommands() {
         const last = i === files.length - 1 ? "└" : "├";
         if (file.isDirectory()) {
             console.log(`${last}─ ${colours.yellow}Loading subcommands of ${file.name}${colours.none}`)
-            const fetched = (await import(`../../../${config.commandsFolder}/${file.name}/_meta.js`)).command;
-            commands.push(fetched);
+            const fetched = (await import(`../../../${config.commandsFolder}/${file.name}/_meta.js`));
+            commands.push(fetched.command);
         } else if (file.name.endsWith(".js")) {
             console.log(`${last}─ ${colours.yellow}Loading command ${file.name}${colours.none}`)
             const fetched = (await import(`../../../${config.commandsFolder}/${file.name}`));
@@ -171,6 +171,7 @@ async function registerCommandHandler() {
 
             const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
 
+            console.log(fullCommandName, client.commands[fullCommandName])
             const command = client.commands[fullCommandName]![0];
             const callback = command?.callback;
             const check = command?.check;
@@ -222,4 +223,5 @@ export default async function register() {
     console.log(
         (config.enableDevelopment ? `${colours.purple}Bot started in Development mode` :
         `${colours.blue}Bot started in Production mode`) + colours.none)
+    console.log(client.commands)
 };

@@ -1,4 +1,4 @@
-import type { SlashCommandSubcommandGroupBuilder } from "discord.js";
+import { SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from "discord.js";
 import type { SlashCommandBuilder } from "discord.js";
 import config from "../../config/main.json" assert { type: "json" };
 import getSubcommandsInFolder from "./getFilesInFolder.js";
@@ -32,7 +32,9 @@ export async function group(
         if (descriptionLocalizations) { subcommandGroup.setDescriptionLocalizations(descriptionLocalizations) }
 
         for (const subcommand of fetched.subcommands) {
-            subcommandGroup.addSubcommand(subcommand.command);
+            let processedCommand = subcommand.command(new SlashCommandSubcommandBuilder());
+            client.commands["commands/" + path + "/" + processedCommand.name] = [subcommand, { name: processedCommand.name, description: processedCommand.description }]
+            subcommandGroup.addSubcommand(processedCommand);
         };
 
         return subcommandGroup;
@@ -53,6 +55,8 @@ export async function command(
     commandString = "commands/" + (commandString ?? path);
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path);
     console.log(`│  ├─ ${fetched.errors ? colours.red : colours.green}Loaded ${fetched.subcommands.length} subcommands and ${fetched.subcommandGroups.length} subcommand groups for ${name} (${fetched.errors} failed)${colours.none}`)
+    console.log({name: name, description: description})
+    client.commands[commandString!] = [undefined, { name: name, description: description }]
     return (command: SlashCommandBuilder) => {
         command.setName(name)
         command.setDescription(description)
@@ -64,12 +68,11 @@ export async function command(
                 bitfield.add(userPermissions)
             command.setDefaultMemberPermissions(bitfield.bitfield)
         }
-        client.commands[commandString!] = [undefined, { name: name, description: description }]
 
         for (const subcommand of fetched.subcommands) {
             let fetchedCommand;
             if (subcommand.command instanceof Function) {
-                fetchedCommand = subcommand.command(new Discord.SlashCommandSubcommandBuilder());
+                fetchedCommand = subcommand.command(new SlashCommandSubcommandBuilder());
             } else {
                 fetchedCommand = subcommand.command;
             }
@@ -77,8 +80,9 @@ export async function command(
             command.addSubcommand(fetchedCommand);
         }
         for (const group of fetched.subcommandGroups) {
-            command.addSubcommandGroup(group.command);
-            client.commands[commandString! + "/" + group.command.name] = [undefined, { name: group.command.name, description: group.command.description }]
+            let processedCommand = group.command(new SlashCommandSubcommandGroupBuilder());
+            client.commands[commandString! + "/" + processedCommand.name] = [undefined, { name: processedCommand.name, description: processedCommand.description }]
+            command.addSubcommandGroup(processedCommand);
         };
         return command;
     };

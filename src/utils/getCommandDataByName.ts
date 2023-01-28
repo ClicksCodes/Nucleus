@@ -18,6 +18,7 @@ export const getCommandByName = (name: string): {name: string, description: stri
 
     const split = name.replaceAll(" ", "/")
     const command = client.commands["commands/" + split]!;
+    console.log(command)
     const mention = getCommandMentionByName(name);
     return {
         name: command[1].name,
