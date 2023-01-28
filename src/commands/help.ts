@@ -96,11 +96,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 descriptionLocalized?: string;
             })[] = [];
             //options
-            if(subcommandRow.components[0]!.options.find(option => option.data.default)) {
+            if(currentPath[1] !== "" && currentPath[1] !== "none" && currentPath[2] !== "" && currentPath[2] !== "none") {
                 let Op = current.options.find(option => option.name === currentPath[1])! as ApplicationCommandSubGroup
                 let Op2 = Op.options!.find(option => option.name === currentPath[2])!
                 options = Op2.options || []
-            } else if(subcommandGroupRow.components[0]!.options.find(option => option.data.default)) {
+            } else if(currentPath[1] !== "" && currentPath[1] !== "none") {
                 let Op = current.options.find(option => option.name === currentPath[1])!
                 if(Op.type === ApplicationCommandOptionType.SubcommandGroup) {
                     options = []
@@ -112,7 +112,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 options = current.options.filter(option => option.type !== ApplicationCommandOptionType.SubcommandGroup && option.type !== ApplicationCommandOptionType.Subcommand) || [];
             }
             for(const option of options) {
-                optionString += `> ${option.name} (${option.type})- ${option.description}\n`
+                optionString += `> ${option.name} (${ApplicationCommandOptionType[option.type]})- ${option.description}\n`
             }
             const APICommand = client.commands["commands/" + currentPath.filter(value => value !== "" && value !== "none").join("/")]![0]
             let allowedToRun = true;

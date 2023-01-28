@@ -55,7 +55,7 @@ export async function command(
     commandString = "commands/" + (commandString ?? path);
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path);
     console.log(`│  ├─ ${fetched.errors ? colours.red : colours.green}Loaded ${fetched.subcommands.length} subcommands and ${fetched.subcommandGroups.length} subcommand groups for ${name} (${fetched.errors} failed)${colours.none}`)
-    console.log({name: name, description: description})
+    // console.log({name: name, description: description})
     client.commands[commandString!] = [undefined, { name: name, description: description }]
     return (command: SlashCommandBuilder) => {
         command.setName(name)

@@ -171,7 +171,7 @@ async function registerCommandHandler() {
 
             const fullCommandName = "commands/" + commandName + (subcommandGroupName ? `/${subcommandGroupName}` : "") + (subcommandName ? `/${subcommandName}` : "");
 
-            console.log(fullCommandName, client.commands[fullCommandName])
+            // console.log(fullCommandName, client.commands[fullCommandName])
             const command = client.commands[fullCommandName]![0];
             const callback = command?.callback;
             const check = command?.check;
@@ -223,5 +223,5 @@ export default async function register() {
     console.log(
         (config.enableDevelopment ? `${colours.purple}Bot started in Development mode` :
         `${colours.blue}Bot started in Production mode`) + colours.none)
-    console.log(client.commands)
+    // console.log(client.commands)
 };
