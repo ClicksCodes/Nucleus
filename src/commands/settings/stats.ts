@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, APIMessageComponentEmoji, TextInputBuilder, StringSelectMenuInteraction, ButtonInteraction, MessageComponentInteraction, ChannelSelectMenuBuilder, ChannelSelectMenuInteraction } from "discord.js";
+import Discord, { CommandInteraction, Message, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, APIMessageComponentEmoji, TextInputBuilder, StringSelectMenuInteraction, ButtonInteraction, MessageComponentInteraction, ChannelSelectMenuBuilder, ChannelSelectMenuInteraction, ModalBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../utils/client.js";
@@ -18,7 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const showModal = async (interaction: MessageComponentInteraction, current: { enabled: boolean; name: string; }) => {
     await interaction.showModal(
-        new Discord.ModalBuilder()
+        new ModalBuilder()
             .setCustomId("modal")
             .setTitle(`Stats channel name`)
             .addComponents(

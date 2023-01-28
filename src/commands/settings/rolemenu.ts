@@ -7,7 +7,9 @@ import client from "../../utils/client.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
 import { configToDropdown } from "../../actions/roleMenu.js";
-
+import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import lodash from 'lodash';
+const isEqual = lodash.isEqual;
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("rolemenu")
@@ -25,7 +27,17 @@ interface ObjectSchema {
     }[];
 }
 
-const editNameDescription = async (interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data: {name?: string, description?: string}) => {
+const defaultRolePageConfig = {
+    name: "Role Menu Page",
+    description: "A new role menu page",
+    min: 0,
+    max: 0,
+    options: [
+        {name: "Role 1", description: null, role: "No role set"}
+    ]
+}
+
+const editNameDescription = async (i: ButtonInteraction, interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data: {name?: string, description?: string}) => {
 
     let {name, description} = data;
     const modal = new ModalBuilder()
@@ -35,14 +47,21 @@ const editNameDescription = async (interaction: StringSelectMenuInteraction | Bu
             new ActionRowBuilder<TextInputBuilder>()
                 .addComponents(
                     new TextInputBuilder()
+                        .setLabel("Name")
                         .setCustomId("name")
-                        .setPlaceholder(name ?? "")
+                        .setPlaceholder("Name here...") // TODO: Make better placeholder
                         .setStyle(TextInputStyle.Short)
-                        .setRequired(true),
+                        .setValue(name ?? "")
+                        .setRequired(true)
+                ),
+            new ActionRowBuilder<TextInputBuilder>()
+                .addComponents(
                     new TextInputBuilder()
+                        .setLabel("Description")
                         .setCustomId("description")
-                        .setPlaceholder(description ?? "")
+                        .setPlaceholder("Description here...") // TODO: Make better placeholder
                         .setStyle(TextInputStyle.Short)
+                        .setValue(description ?? "")
                 )
         )
     const button = new ActionRowBuilder<ButtonBuilder>()
@@ -54,6 +73,33 @@ const editNameDescription = async (interaction: StringSelectMenuInteraction | Bu
                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji)
         )
 
+    await i.showModal(modal)
+    await interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setTitle("Role Menu")
+                .setDescription("Modal opened. If you can't see it, click back and try again.")
+                .setStatus("Success")
+        ],
+        components: [button]
+    });
+
+    let out: Discord.ModalSubmitInteraction | null;
+    try {
+        out = await modalInteractionCollector(
+            m,
+            (m) => m.channel!.id === interaction.channel!.id,
+            (_) => true
+        ) as Discord.ModalSubmitInteraction | null;
+    } catch (e) {
+        console.error(e);
+        out = null;
+    }
+    if(!out) return [name, description];
+    if (out.isButton()) return [name, description];
+    if(!out.fields) return [name, description];
+    name = out.fields.fields.find((f) => f.customId === "name")?.value ?? name;
+    description = out.fields.fields.find((f) => f.customId === "description")?.value ?? description;
     return [name, description]
 
 }
@@ -63,7 +109,7 @@ const ellipsis = (str: string, max: number): string => {
     return str.slice(0, max - 3) + "...";
 }
 
-const createRoleMenuPage = async (interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data?: ObjectSchema) => {
+const createRoleMenuPage = async (interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data?: ObjectSchema): Promise<ObjectSchema | null> => {
     if (!data) data = {
         name: "Role Menu Page",
         description: "A new role menu page",
@@ -91,6 +137,11 @@ const createRoleMenuPage = async (interaction: StringSelectMenuInteraction | But
         );
 
     let back = false
+    if(data.options.length === 0) {
+        data.options = [
+            {name: "Role 1", description: null, role: "No role set"}
+        ]
+    }
     do {
         const previewSelect = configToDropdown("Edit Roles", {name: data.name, description: data.description, min: 1, max: 1, options: data.options});
         const embed = new EmojiEmbed()
@@ -117,23 +168,25 @@ const createRoleMenuPage = async (interaction: StringSelectMenuInteraction | But
                 await createRoleMenuOptionPage(interaction, m, data.options.find((o) => o.role === (i as StringSelectMenuInteraction).values[0]));
             }
         } else if (i.isButton()) {
-            await i.deferUpdate();
             switch (i.customId) {
                 case "back":
+                    await i.deferUpdate();
                     back = true;
                     break;
                 case "edit":
-                    let [name, description] = await editNameDescription(interaction, m, data);
+                    let [name, description] = await editNameDescription(i, interaction, m, data);
                     data.name = name ? name : data.name;
                     data.description = description ? description : data.description;
                     break;
                 case "addRole":
+                    await i.deferUpdate();
                     data.options.push(await createRoleMenuOptionPage(interaction, m));
                     break;
             }
         }
 
     } while (!back);
+    if(isEqual(data, defaultRolePageConfig)) return null;
     return data;
 }
 
@@ -184,14 +237,14 @@ const createRoleMenuOptionPage = async (interaction: StringSelectMenuInteraction
                 data.role = (i as RoleSelectMenuInteraction).values[0]!;
             }
         } else if (i.isButton()) {
-            await i.deferUpdate();
             switch (i.customId) {
                 case "back":
+                    await i.deferUpdate();
                     back = true;
                     break;
                 case "edit":
                     await i.deferUpdate();
-                    let [name, description] = await editNameDescription(interaction, m, data as {name: string; description: string});
+                    let [name, description] = await editNameDescription(i, interaction, m, data as {name: string; description: string});
                     data.name = name ? name : data.name;
                     data.description = description ? description : data.description;
                     break;
@@ -315,7 +368,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     page++;
                     break;
                 case "add":
-                    currentObject.push(await createRoleMenuPage(i, m));
+                    let newPage = await createRoleMenuPage(i, m)
+                    if(!newPage) break;
+                    currentObject.push();
                     page = currentObject.length - 1;
                     break;
                 case "reorder":
@@ -330,10 +385,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 case "action":
                     switch(i.values[0]) {
                         case "edit":
-                            currentObject[page] = await createRoleMenuPage(i, m, current!);
+                            let edited = await createRoleMenuPage(i, m, current!);
+                            if(!edited) break;
+                            currentObject[page] = edited;
                             modified = true;
                             break;
                         case "delete":
+                            if(page === 0 && currentObject.keys.length - 1 > 0) page++;
+                            else page--;
                             currentObject.splice(page, 1);
                             break;
                     }
