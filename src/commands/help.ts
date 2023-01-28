@@ -96,6 +96,21 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 descriptionLocalized?: string;
             })[] = [];
             //options
+            if(subcommandRow.components[0]!.options.find(option => option.data.default)) {
+                let Op = current.options.find(option => option.name === currentPath[1])! as ApplicationCommandSubGroup
+                let Op2 = Op.options!.find(option => option.name === currentPath[2])!
+                options = Op2.options || []
+            } else if(subcommandGroupRow.components[0]!.options.find(option => option.data.default)) {
+                let Op = current.options.find(option => option.name === currentPath[1])!
+                if(Op.type === ApplicationCommandOptionType.SubcommandGroup) {
+                    options = []
+                } else {
+                    Op = Op as ApplicationCommandSubCommand
+                    options = Op.options || []
+                }
+            } else {
+                options = current.options.filter(option => option.type !== ApplicationCommandOptionType.SubcommandGroup && option.type !== ApplicationCommandOptionType.Subcommand) || [];
+            }
             for(const option of options) {
                 optionString += `> ${option.name} (${option.type})- ${option.description}\n`
             }
