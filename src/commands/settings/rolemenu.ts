@@ -8,6 +8,7 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
 import { configToDropdown } from "../../actions/roleMenu.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import ellipsis from "../../utils/ellipsis.js";
 import lodash from 'lodash';
 
 const isEqual = lodash.isEqual;
@@ -44,8 +45,9 @@ const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message,
         .addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId("reorder")
-                .setPlaceholder("Select a page to move...")
-                .setMinValues(1)
+                .setPlaceholder("Select all pages in the order you want them to appear.")
+                .setMinValues(currentObj.length)
+                .setMaxValues(currentObj.length)
                 .addOptions(
                     currentObj.map((o, i) => new StringSelectMenuOptionBuilder()
                         .setLabel(o.name)
@@ -81,6 +83,7 @@ const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message,
         out = null;
     }
     if(!out) return;
+    out.deferUpdate();
     if (out.isButton()) return;
     if(!out.values) return;
     const values = out.values;
@@ -160,12 +163,7 @@ const editNameDescription = async (i: ButtonInteraction, interaction: StringSele
 
 }
 
-const ellipsis = (str: string, max: number): string => {
-    if (str.length <= max) return str;
-    return str.slice(0, max - 3) + "...";
-}
-
-const createRoleMenuPage = async (interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data?: ObjectSchema): Promise<ObjectSchema | null> => {
+const editRoleMenuPage = async (interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data?: ObjectSchema): Promise<ObjectSchema | null> => {
     if (!data) data = {
         name: "Role Menu Page",
         description: "A new role menu page",
@@ -321,7 +319,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let modified = false;
     do {
         const embed = new EmojiEmbed()
-            .setTitle("Role Menu Settings")
+            .setTitle("Role Menu")
             .setEmoji("GUILD.GREEN")
             .setStatus("Success");
         const noRoleMenus = currentObject.length === 0;
@@ -377,7 +375,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDisabled(!modified),
             );
         if(noRoleMenus) {
-            embed.setDescription("No role menu page have been set up yet. Use the button below to add one.\n\n" +
+            embed.setDescription("No role menu pages have been set up yet. Use the button below to add one.\n\n" +
                 createPageIndicator(1, 1, undefined, true)
             );
             pageSelect.setDisabled(true);
@@ -390,7 +388,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             page = Math.min(page, Object.keys(currentObject).length - 1);
             current = currentObject[page]!;
             embed.setDescription(`**Currently Editing:** ${current.name}\n\n` +
-                `**Description:** \`${current.description}\`\n` +
+                `**Description:**\n> ${current.description}\n` +
                 `\n\n${createPageIndicator(Object.keys(config.roleMenu.options).length, page)}`
             );
 
@@ -424,7 +422,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     page++;
                     break;
                 case "add":
-                    let newPage = await createRoleMenuPage(i, m)
+                    let newPage = await editRoleMenuPage(i, m)
                     if(!newPage) break;
                     currentObject.push();
                     page = currentObject.length - 1;
@@ -444,7 +442,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 case "action":
                     switch(i.values[0]) {
                         case "edit":
-                            let edited = await createRoleMenuPage(i, m, current!);
+                            let edited = await editRoleMenuPage(i, m, current!);
                             if(!edited) break;
                             currentObject[page] = edited;
                             modified = true;

@@ -13,6 +13,6 @@
         "skipLibCheck": true,
         "noImplicitReturns": false
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "src/index.d.ts"],
     "exclude": ["src/Unfinished/**/*"]
 }

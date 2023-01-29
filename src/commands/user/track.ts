@@ -1,10 +1,11 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, SelectMenuOptionBuilder, APIMessageComponentEmoji, StringSelectMenuBuilder, MessageComponentInteraction, StringSelectMenuInteraction } from "discord.js";
+import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, APIMessageComponentEmoji, StringSelectMenuBuilder, MessageComponentInteraction, StringSelectMenuInteraction, StringSelectMenuOptionBuilder } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import addPlural from "../../utils/plurals.js";
 import client from "../../utils/client.js";
+import { createVerticalTrack } from "../../utils/createPageIndicator.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -12,17 +13,8 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Moves a user along a role track")
         .addUserOption((option) => option.setName("user").setDescription("The user to manage").setRequired(true));
 
-const generateFromTrack = (position: number, active: string | boolean, size: number, disabled: string | boolean) => {
-    active = active ? "ACTIVE" : "INACTIVE";
-    disabled = disabled ? "GREY." : "";
-    if (position === 0 && size === 1) return "TRACKS.SINGLE." + disabled + active;
-    if (position === size - 1) return "TRACKS.VERTICAL.BOTTOM." + disabled + active;
-    if (position === 0) return "TRACKS.VERTICAL.TOP." + disabled + active;
-    return "TRACKS.VERTICAL.MIDDLE." + disabled + active;
-};
-
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const { renderUser } = client.logger;
+    const { renderUser, renderRole} = client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
     const guild = interaction.guild;
     if (!guild) return;
@@ -44,10 +36,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         const dropdown = new Discord.StringSelectMenuBuilder()
             .addOptions(
                 config.tracks.map((option, index) => {
-                    const hasRoleInTrack = option.track.some((element: string) => {
+                    const hasRoleInTrack: boolean = option.track.some((element: string) => {
                         return memberRoles.cache.has(element);
                     });
-                    return new SelectMenuOptionBuilder({
+                    return new StringSelectMenuOptionBuilder({
                         default: index === track,
                         label: option.name,
                         value: index.toString(),
@@ -68,33 +60,23 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             (data.retainPrevious
                 ? "When promoted, the user keeps previous roles"
                 : "Members will lose their current role when promoted") + "\n";
-        generated +=
-            "\n" +
-            data.track
-                .map((role, index) => {
-                    const allow: boolean =
-                        roles.get(role)!.position >= (interaction.member as GuildMember).roles.highest.position &&
-                        !managed;
-                    allowed.push(!allow);
-                    return (
-                        getEmojiByName(
-                            generateFromTrack(index, memberRoles.cache.has(role), data.track.length, allow)
-                        ) +
-                        " " +
-                        roles.get(role)!.name +
-                        " [<@&" +
-                        roles.get(role)!.id +
-                        ">]"
-                    );
-                })
-                .join("\n");
+        for (const role of data.track) {
+            const disabled: boolean =
+                roles.get(role)!.position >= (interaction.member as GuildMember).roles.highest.position && !managed;
+            allowed.push(!disabled)
+        }
+        generated += "\n" + createVerticalTrack(
+            data.track.map((role) => renderRole(roles.get(role)!)),
+            data.track.map((role) => memberRoles.cache.has(role)),
+            allowed.map((allow) => !allow)
+        );
         const selected = [];
         for (const position of data.track) {
             if (memberRoles.cache.has(position)) selected.push(position);
         }
         const conflict = data.retainPrevious ? false : selected.length > 1;
         let conflictDropdown: StringSelectMenuBuilder[] = [];
-        const conflictDropdownOptions: SelectMenuOptionBuilder[] = [];
+        const conflictDropdownOptions: StringSelectMenuOptionBuilder[] = [];
         let currentRoleIndex: number = -1;
         if (conflict) {
             generated += `\n\n${getEmojiByName(`PUNISH.WARN.${managed ? "YELLOW" : "RED"}`)} This user has ${
@@ -106,10 +88,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     "In order to promote or demote this user, you must select which role the member should keep.";
                 selected.forEach((role) => {
                     conflictDropdownOptions.push(
-                        new SelectMenuOptionBuilder({
-                            label: roles.get(role)!.name,
-                            value: roles.get(role)!.id
-                        })
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel(roles.get(role)!.name)
+                            .setValue(roles.get(role)!.id)
                     );
                 });
                 conflictDropdown = [

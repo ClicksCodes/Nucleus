@@ -39,7 +39,7 @@ const record = async () => {
         singleNotify(
             "performanceTest",
             config.developmentGuildID,
-            `Discord ping time: \`${results.discord}ms\`\nDatabase read time: \`${results.databaseRead}ms\`\nCPU usage: \`${results.resources.cpu}%\`\nMemory usage: \`${results.resources.memory}MB\`\nCPU temperature: \`${results.resources.temperature}°C\``,
+            `Discord ping time: \`${results.discord}ms\`\nDatabase read time: \`${results.databaseRead}ms\`\nCPU usage: \`${results.resources.cpu}%\`\nMemory usage: \`${Math.round(results.resources.memory)}MB\`\nCPU temperature: \`${results.resources.temperature}°C\``,
             "Critical",
             config.owners
         )

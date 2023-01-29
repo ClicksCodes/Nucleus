@@ -1,10 +1,11 @@
 import fetch from "node-fetch";
 import FormData from "form-data";
-import { writeFileSync, createReadStream } from "fs";
+import fs, { writeFileSync, createReadStream } from "fs";
 import generateFileName from "../utils/temp/generateFileName.js";
 import Tesseract from "node-tesseract-ocr";
 import type Discord from "discord.js";
 import client from "../utils/client.js";
+import { createHash } from "crypto";
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -14,7 +15,11 @@ interface MalwareSchema {
 }
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
-    const p = await saveAttachment(link);
+    const [p, hash] = await saveAttachment(link);
+    console.log("Checking an image")
+    let alreadyHaveCheck = await client.database.scanCache.read(hash)
+    if(alreadyHaveCheck) return { nsfw: alreadyHaveCheck.data };
+    console.log("Was not in db")
     const data = new FormData();
     console.log(link);
     data.append("file", createReadStream(p));
@@ -32,13 +37,17 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
             return { nsfw: false };
         });
     console.log(result);
+    client.database.scanCache.write(hash, result.nsfw);
     return { nsfw: result.nsfw };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
-    const p = await saveAttachment(link);
-    const data = new FormData();
-    data.append("file", createReadStream(p));
+    const [p, hash] = await saveAttachment(link);
+    let alreadyHaveCheck = await client.database.scanCache.read(hash)
+    if(alreadyHaveCheck) return { safe: alreadyHaveCheck.data };
+    const data = new URLSearchParams();
+    let f = createReadStream(p);
+    data.append("file", f.read(fs.statSync(p).size));
     console.log(link);
     const result = await fetch("https://unscan.p.rapidapi.com/malware", {
         method: "POST",
@@ -54,12 +63,15 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
             return { safe: true };
         });
     console.log(result);
+    client.database.scanCache.write(hash, result.safe);
     return { safe: result.safe };
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
     console.log(link);
-    const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/malware", {
+    let alreadyHaveCheck = await client.database.scanCache.read(link)
+    if(alreadyHaveCheck) return { safe: alreadyHaveCheck.data, tags: [] };
+    const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
         method: "POST",
         headers: {
             "X-RapidAPI-Key": client.config.rapidApiKey,
@@ -73,17 +85,18 @@ export async function testLink(link: string): Promise<{ safe: boolean; tags: str
             return { safe: true, tags: [] };
         });
     console.log(scanned);
+    client.database.scanCache.write(link, scanned.safe ?? true, []);
     return {
         safe: scanned.safe ?? true,
         tags: scanned.tags ?? []
     };
 }
 
-export async function saveAttachment(link: string): Promise<string> {
+export async function saveAttachment(link: string): Promise<[string, string]> {
     const image = (await fetch(link)).arrayBuffer().toString();
     const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
     writeFileSync(fileName, image, "base64");
-    return fileName;
+    return [fileName, createHash('sha512').update(image, 'base64').digest('base64')];
 }
 
 const linkTypes = {
@@ -139,8 +152,7 @@ export async function LinkCheck(message: Discord.Message): Promise<string[]> {
 
 export async function NSFWCheck(element: string): Promise<boolean> {
     try {
-        const test = await testNSFW(element);
-        return test.nsfw;
+        return (await testNSFW(element)).nsfw;
     } catch {
         return false;
     }

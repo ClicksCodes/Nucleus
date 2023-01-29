@@ -148,6 +148,33 @@ export class History {
     }
 }
 
+interface ScanCacheSchema {
+    addedAt: Date;
+    hash: string;
+    data: boolean;
+    tags: string[];
+}
+
+export class ScanCache {
+    scanCache: Collection<ScanCacheSchema>;
+
+    constructor() {
+        this.scanCache = database.collection<ScanCacheSchema>("scanCache");
+    }
+
+    async read(hash: string) {
+        return await this.scanCache.findOne({ hash: hash });
+    }
+
+    async write(hash: string, data: boolean, tags?: string[]) {
+        await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() });  // TODO: cleanup function maybe
+    }
+
+    async cleanup() {
+        await this.scanCache.deleteMany({ addedAt: { $lt: new Date(Date.now() - (1000 * 60 * 60 * 24 * 31)) }, hash: { $not$text: "http"} });
+    }
+}
+
 export class PerformanceTest {
     performanceData: Collection<PerformanceDataSchema>;
 
