@@ -364,7 +364,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new ButtonBuilder()
                     .setCustomId("reorder")
                     .setLabel("Reorder Pages")
-                    .setEmoji(getEmojiByName("ICONS.SHUFFLE", "id") as APIMessageComponentEmoji)
+                    .setEmoji(getEmojiByName("ICONS.REORDER", "id") as APIMessageComponentEmoji)
                     .setStyle(ButtonStyle.Secondary)
                     .setDisabled(Object.keys(currentObject).length <= 1),
                 new ButtonBuilder()

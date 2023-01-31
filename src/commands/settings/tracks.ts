@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APIMessageComponentEmoji, ButtonBuilder, ButtonInteraction, ButtonStyle, Collection, CommandInteraction, GuildMember, Message, ModalBuilder, ModalSubmitInteraction, Role, RoleSelectMenuBuilder, RoleSelectMenuInteraction, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import { ActionRowBuilder, APIMessageComponentEmoji, ButtonBuilder, ButtonInteraction, ButtonStyle, Collection, CommandInteraction, GuildMember, Message, ModalBuilder, ModalSubmitInteraction, PermissionsBitField, Role, RoleSelectMenuBuilder, RoleSelectMenuInteraction, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
 import client from "../../utils/client.js";
 import createPageIndicator, { createVerticalTrack } from "../../utils/createPageIndicator.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
@@ -6,6 +6,8 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import ellipsis from "../../utils/ellipsis.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
+
+const { renderRole } = client.logger
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -19,6 +21,7 @@ interface ObjectSchema {
     track: string[];
     manageableBy: string[];
 }
+
 
 const editName = async (i: ButtonInteraction, interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, current?: string) => {
 
@@ -134,6 +137,7 @@ const reorderTracks = async (interaction: ButtonInteraction, m: Message, roles: 
 }
 
 const editTrack = async (interaction: ButtonInteraction | StringSelectMenuInteraction, message: Message, roles: Collection<string, Role>, current?: ObjectSchema) => {
+    const isAdmin = (interaction.member!.permissions as PermissionsBitField).has("Administrator");
     if(!current) {
         current = {
             name: "",
@@ -143,40 +147,25 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
             manageableBy: []
         }
     }
-    const buttons = new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId("back")
-                .setLabel("Back")
-                .setStyle(ButtonStyle.Secondary)
-                .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji),
-            new ButtonBuilder()
-                .setCustomId("edit")
-                .setLabel("Edit Name")
-                .setStyle(ButtonStyle.Primary)
-                .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
-            new ButtonBuilder()
-                .setCustomId("reorder")
-                .setLabel("Reorder")
-                .setStyle(ButtonStyle.Primary)
-                .setEmoji(getEmojiByName("ICONS.REORDER", "id") as APIMessageComponentEmoji),
-        );
+
     const roleSelect = new ActionRowBuilder<RoleSelectMenuBuilder>()
         .addComponents(
             new RoleSelectMenuBuilder()
                 .setCustomId("addRole")
                 .setPlaceholder("Select a role to add")
+                .setDisabled(!isAdmin)
         );
     let closed = false;
     do {
         const editableRoles: string[] = current.track.map((r) => {
-            if(!(roles.get(r)!.position >= (interaction.member as GuildMember).roles.highest.position)) return r;
+            if(!(roles.get(r)!.position >= (interaction.member as GuildMember).roles.highest.position)) return roles.get(r)!.name;
         }).filter(v => v !== undefined) as string[];
         const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(
                 new StringSelectMenuBuilder()
                     .setCustomId("removeRole")
                     .setPlaceholder("Select a role to remove")
+                    .setDisabled(!isAdmin)
                     .addOptions(
                         editableRoles.map((r, i) => {
                             return new StringSelectMenuOptionBuilder()
@@ -185,23 +174,56 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
                         )
                     )
             );
+        const buttons = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("back")
+                    .setLabel("Back")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("edit")
+                    .setLabel("Edit Name")
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("reorder")
+                    .setLabel("Reorder")
+                    .setDisabled(!isAdmin)
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji(getEmojiByName("ICONS.REORDER", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("retainPrevious")
+                    .setLabel("Retain Previous")
+                    .setStyle(current.retainPrevious ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(getEmojiByName("CONTROL." + (current.retainPrevious ? "TICK" : "CROSS"), "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("nullable")
+                    .setLabel(`Role ${current.nullable ? "Not " : ""}Required`)
+                    .setStyle(current.nullable ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(getEmojiByName("CONTROL." + (current.nullable ? "TICK" : "CROSS"), "id") as APIMessageComponentEmoji)
+        );
+
         let allowed: boolean[] = [];
         for (const role of current.track) {
             const disabled: boolean =
                 roles.get(role)!.position >= (interaction.member as GuildMember).roles.highest.position;
             allowed.push(disabled)
         }
+        const mapped = current.track.map(role => roles.find(aRole => aRole.id === role)!);
 
         const embed = new EmojiEmbed()
             .setTitle("Tracks")
             .setDescription(
                 `**Currently Editing:** ${current.name}\n\n` +
-                `${getEmojiByName} Members ${current.nullable ? "don't " : ""}need a role in this track` +
-                `${getEmojiByName} Members ${current.retainPrevious ? "don't " : ""}keep all roles below their current highest` +
-                createVerticalTrack(current.track, new Array(current.track.length).fill(false), allowed)
+                `${getEmojiByName("CONTROL." + (current.nullable ? "CROSS" : "TICK"))} Members ${current.nullable ? "don't " : ""}need a role in this track\n` +
+                `${getEmojiByName("CONTROL." + (current.retainPrevious ? "TICK" : "CROSS"))} Members ${current.retainPrevious ? "" : "don't "}keep all roles below their current highest\n\n` +
+                createVerticalTrack(
+                    mapped.map(role => renderRole(role)), new Array(current.track.length).fill(false), allowed)
             )
+            .setStatus("Success")
 
-        interaction.editReply({embeds: [embed], components: [buttons, roleSelect, selectMenu]});
+        interaction.editReply({embeds: [embed], components: [roleSelect, selectMenu, buttons]});
 
         let out: ButtonInteraction | RoleSelectMenuInteraction | StringSelectMenuInteraction | null;
 
@@ -227,6 +249,13 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
                     break;
                 case "reorder":
                     current.track = (await reorderTracks(out, message, roles, current.track))!;
+                    break;
+                case "retainPrevious":
+                    current.retainPrevious = !current.retainPrevious;
+                    break;
+                case "nullable":
+                    current.nullable = !current.nullable;
+                    break;
             }
         } else if (out.isStringSelectMenu()) {
             out.deferUpdate();
@@ -258,8 +287,6 @@ const callback = async (interaction: CommandInteraction) => {
     const config = await client.database.guilds.read(interaction.guild!.id);
     const tracks: ObjectSchema[] = config.tracks;
     const roles = await interaction.guild!.roles.fetch();
-    const memberRoles = interaction.member!.roles;
-    const member = interaction.member as GuildMember;
 
     let page = 0;
     let closed = false;
@@ -329,10 +356,11 @@ const callback = async (interaction: CommandInteraction) => {
         } else {
             page = Math.min(page, Object.keys(tracks).length - 1);
             current = tracks[page]!;
+            const mapped = current.track.map(role => roles.find(aRole => aRole.id === role)!);
             embed.setDescription(`**Currently Editing:** ${current.name}\n\n` +
                 `${getEmojiByName("CONTROL." + (current.nullable ? "CROSS" : "TICK"))} Members ${current.nullable ? "don't " : ""}need a role in this track\n` +
                 `${getEmojiByName("CONTROL." + (current.retainPrevious ? "TICK" : "CROSS"))} Members ${current.retainPrevious ? "" : "don't "}keep all roles below their current highest\n\n` +
-                createVerticalTrack(current.track, new Array(current.track.length).fill(false)) +
+                createVerticalTrack(mapped.map(role => renderRole(role)), new Array(current.track.length).fill(false)) +
                 `\n${createPageIndicator(config.tracks.length, page)}`
             );
 
@@ -372,7 +400,7 @@ const callback = async (interaction: CommandInteraction) => {
                     page = tracks.length - 1;
                     break;
                 case "save":
-                    // client.database.guilds.write(interaction.guild!.id, {"roleMenu.options": tracks});  // TODO
+                    client.database.guilds.write(interaction.guild!.id, {tracks: tracks});
                     modified = false;
                     break;
             }

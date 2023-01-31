@@ -15,12 +15,17 @@
             "words": {
                 "strict": [],
                 "loose": []
+            },
+            "allowed": {
+                "user": [],
+                "roles": [],
+                "channels": []
             }
         },
         "invite": {
             "enabled": false,
             "allowed": {
-                "users": [],
+                "user": [],
                 "roles": [],
                 "channels": []
             }
@@ -28,7 +33,13 @@
         "pings": {
             "mass": 5,
             "everyone": true,
-            "roles": true
+            "roles": true,
+            "allowed": {
+                "user": [],
+                "roles": [],
+                "channels": [],
+                "rolesToMention": []
+            }
         }
     },
     "welcome": {

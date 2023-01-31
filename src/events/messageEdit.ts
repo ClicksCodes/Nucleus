@@ -6,6 +6,7 @@ export const event = "messageUpdate";
 
 export async function callback(client: NucleusClient, oldMessage: Message, newMessage: Message) {
     if (newMessage.author.id === client.user!.id) return;
+    if (newMessage.author.bot) return;
     if (!newMessage.guild) return;
     const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;
     const replyTo: MessageReference | null = newMessage.reference;

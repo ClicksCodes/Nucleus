@@ -1,10 +1,5 @@
 {
     "filters": {
-        "images": {
-            "NSFW": false,
-            "size": false
-        },
-        "malware": false,
         "wordFilter": {
             "enabled": true,
             "words": {

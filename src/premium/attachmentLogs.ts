@@ -13,7 +13,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
     const attachments = [];
     for (const attachment of message.attachments.values()) {
         attachments.push({
-            local: await saveAttachment(attachment.url),
+            local: (await saveAttachment(attachment.url))[0],
             url: attachment.url,
             height: attachment.height,
             width: attachment.width,
@@ -24,7 +24,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
     for (const link of links) {
         if (link.toLowerCase().match(/\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/gi)) {
             attachments.push({
-                local: await saveAttachment(link),
+                local: (await saveAttachment(link))[0],
                 url: link,
                 height: null,
                 width: null
@@ -70,7 +70,6 @@ export default async function logAttachment(message: Message): Promise<Attachmen
             ],
             files: attachments.map((file) => file.local)
         });
-        // await client.database.guilds.write(interaction.guild.id, {[`tags.${name}`]: value});
         client.database.guilds.write(message.guild.id, {
             [`logging.attachments.saved.${message.channel.id}${message.id}`]: m.url
         });
