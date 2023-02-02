@@ -33,7 +33,8 @@ export const Logger = {
         if (typeof channel === "string") channel = client.channels.cache.get(channel) as Discord.GuildChannel | Discord.ThreadChannel;
         return `${channel.name} [<#${channel.id}>]`;
     },
-    renderRole(role: Discord.Role) {
+    renderRole(role: Discord.Role | string, guild?: Discord.Guild | string) {
+        if (typeof role === "string") role = (typeof guild === "string" ? client.guilds.cache.get(guild) : guild)!.roles.cache.get(role) as Discord.Role;
         return `${role.name} [<@&${role.id}>]`;
     },
     renderEmoji(emoji: Discord.GuildEmoji) {
