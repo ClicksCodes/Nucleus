@@ -25,23 +25,23 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Join").setURL("https://discord.gg/bPaNnxe"))] });
         return;
     }
-    const dbMember = await client.database.premium.fetchTotal(interaction.user.id)
-    let premium;
+    const dbMember = await client.database.premium.fetchUser(interaction.user.id)
+    let premium = `You do not have premium! You can't activate premium on any servers.`;
     let count = 0;
-    if (member.roles.cache.has("1066468879309750313")) {
+    const {level, appliesTo} = dbMember || {level: 0, appliesTo: []}
+    if (level === 99) {
         premium = `You have Infinite Premium! You have been gifted this by the developers as a thank you. You can give premium to any and all servers you are in.`;
         count = 200;
-    } else if (member.roles.cache.has("1066465491713003520")) {
-        premium = `You have Premium tier 1! You can give premium to ${1 - dbMember}.`;
+    } else if (level === 1) {
+        premium = `You have Premium tier 1! You can give premium to ${1 - appliesTo.length} more servers.`;
         count = 1;
-    } else if (member.roles.cache.has("1066439526496604194")) {
-        premium = `You have Premium tier 2! You can give premium to ${3 - dbMember}.`;
+    } else if (level === 2) {
+        premium = `You have Premium tier 2! You can give premium to ${3 - appliesTo.length} more servers.`;
         count = 3;
-    } else if (member.roles.cache.has("1066464134322978912")) {
-        premium = `You have Premium Mod! You already give premium to all servers you have a "manage" permission in.`
+    } else if (level === 3) {
+        premium = `You have Premium Mod! You can give premium to ${3 - appliesTo.length} more servers, as well as automatically giving premium to all servers you have a "manage" permission in.`
         count = 3;
     }
-
     const hasPremium = await client.database.premium.hasPremium(interaction.guild!.id);
     let premiumGuild = ""
     if (hasPremium) {
@@ -82,8 +82,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         if (i) {
             i.deferUpdate();
             let guild = i.guild!;
-            let m = await client.database.premium.fetchTotal(interaction.user.id);
-            if (count - m <= 0) {
+            if (count - appliesTo.length <= 0) {
                 interaction.editReply({
                     embeds: [
                         new EmojiEmbed()

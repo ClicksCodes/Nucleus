@@ -1,5 +1,4 @@
 import fetch from "node-fetch";
-import FormData from "form-data";
 import fs, { writeFileSync, createReadStream } from "fs";
 import generateFileName from "../utils/temp/generateFileName.js";
 import Tesseract from "node-tesseract-ocr";
@@ -20,8 +19,9 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
     const [p, hash] = await saveAttachment(link);
     let alreadyHaveCheck = await client.database.scanCache.read(hash)
     if(alreadyHaveCheck) return { nsfw: alreadyHaveCheck.data };
-    const data = new FormData();
-    data.append("file", createReadStream(p));
+    const data = new URLSearchParams();
+    let r = createReadStream(p)
+    data.append("file", r.read(fs.statSync(p).size));
     const result = await fetch("https://unscan.p.rapidapi.com/", {
         method: "POST",
         headers: {

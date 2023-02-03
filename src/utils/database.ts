@@ -1,6 +1,7 @@
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.json" assert { type: "json" };
+import client from "../utils/client.js";
 
 const mongoClient = new MongoClient(config.mongoUrl);
 await mongoClient.connect();
@@ -230,18 +231,55 @@ export class Premium {
         this.premium = database.collection<PremiumSchema>("premium");
     }
 
+    async updateUser(user: string, level: number) {
+        if(!(await this.userExists(user))) await this.createUser(user, level);
+        await this.premium.updateOne({ user: user }, { $set: { level: level } }, { upsert: true });
+    }
+
+    async userExists(user: string): Promise<boolean> {
+        const entry = await this.premium.findOne({ user: user });
+        return entry ? true : false;
+    }
+
+    async createUser(user: string, level: number) {
+        await this.premium.insertOne({ user: user, appliesTo: [], level: level });
+    }
+
     async hasPremium(guild: string) {
         const entry = await this.premium.findOne({
             appliesTo: { $in: [guild] }
         });
-        if (!entry) return false;
-        return entry.expires.valueOf() > Date.now();
+        return entry ? true : false;
     }
 
-    async fetchTotal(user: string): Promise<number> {
+    async fetchUser(user: string): Promise<PremiumSchema | null> {
         const entry = await this.premium.findOne({ user: user });
-        if (!entry) return 0;
-        return entry.appliesTo.length;
+        if (!entry) return null;
+        return entry;
+    }
+
+    async checkAllPremium() {
+        const entries = await this.premium.find({}).toArray();
+        for(const {user, expiresAt} of entries) {
+            if(expiresAt) expiresAt < new Date().getTime() ? await this.premium.deleteOne({user: user}) : null;
+            const member = await (await client.guilds.fetch("684492926528651336")).members.fetch(user)
+            let level: number = 0;
+            if (member.roles.cache.has("1066468879309750313")) {
+                level = 99;
+            } else if (member.roles.cache.has("1066465491713003520")) {
+                level = 1;
+            } else if (member.roles.cache.has("1066439526496604194")) {
+                level = 2;
+            } else if (member.roles.cache.has("1066464134322978912")) {
+                level = 3;
+            }
+
+            if (level > 0) {
+                await this.updateUser(user, level);
+            } else {
+                await this.premium.updateOne({ user: user }, { expiresAt: (new Date().getTime() + (1000*60*60*24*3)) })
+            }
+        }
     }
 
     addPremium(user: string, guild: string) {
@@ -409,6 +447,6 @@ export interface ModNoteSchema {
 export interface PremiumSchema {
     user: string;
     level: number;
-    expires: Date;
     appliesTo: string[];
+    expiresAt?: number;
 }
