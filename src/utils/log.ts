@@ -10,7 +10,7 @@ const wait = promisify(setTimeout);
 
 export const Logger = {
     renderUser(user: Discord.User | string) {
-        if (typeof user === "string") return `${user} [<@${user}>]`;
+        if (typeof user === "string") user = client.users.cache.get(user) as Discord.User;
         return `${user.username} [<@${user.id}>]`;
     },
     renderTime(t: number) {
@@ -55,7 +55,6 @@ export const Logger = {
         const config = await client.database.guilds.read(log.hidden.guild);
         if (!config.logging.logs.enabled) return;
         if (!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) {
-            console.log("Not logging this type of event");
             return;
         }
         if (config.logging.logs.channel) {

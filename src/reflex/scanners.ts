@@ -9,19 +9,18 @@ import { createHash } from "crypto";
 
 interface NSFWSchema {
     nsfw: boolean;
+    errored?: boolean;
 }
 interface MalwareSchema {
     safe: boolean;
+    errored?: boolean;
 }
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const [p, hash] = await saveAttachment(link);
-    console.log("Checking an image")
     let alreadyHaveCheck = await client.database.scanCache.read(hash)
     if(alreadyHaveCheck) return { nsfw: alreadyHaveCheck.data };
-    console.log("Was not in db")
     const data = new FormData();
-    console.log(link);
     data.append("file", createReadStream(p));
     const result = await fetch("https://unscan.p.rapidapi.com/", {
         method: "POST",
@@ -31,13 +30,14 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
         },
         body: data
     })
-        .then((response) => response.json() as Promise<NSFWSchema>)
+        .then((response) => response.status === 200 ? response.json() as Promise<NSFWSchema> : { nsfw: false, errored: true })
         .catch((err) => {
             console.error(err);
-            return { nsfw: false };
+            return { nsfw: false, errored: true };
         });
-    console.log(result);
-    client.database.scanCache.write(hash, result.nsfw);
+    if(!result.errored) {
+        client.database.scanCache.write(hash, result.nsfw);
+    }
     return { nsfw: result.nsfw };
 }
 
@@ -48,7 +48,6 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
     const data = new URLSearchParams();
     let f = createReadStream(p);
     data.append("file", f.read(fs.statSync(p).size));
-    console.log(link);
     const result = await fetch("https://unscan.p.rapidapi.com/malware", {
         method: "POST",
         headers: {
@@ -57,18 +56,18 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
         },
         body: data
     })
-        .then((response) => response.json() as Promise<MalwareSchema>)
+        .then((response) => response.status === 200 ? response.json() as Promise<MalwareSchema> : { safe: true, errored: true })
         .catch((err) => {
             console.error(err);
-            return { safe: true };
+            return { safe: true, errored: true };
         });
-    console.log(result);
-    client.database.scanCache.write(hash, result.safe);
+    if (!result.errored) {
+        client.database.scanCache.write(hash, result.safe);
+    }
     return { safe: result.safe };
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
-    console.log(link);
     let alreadyHaveCheck = await client.database.scanCache.read(link)
     if(alreadyHaveCheck) return { safe: alreadyHaveCheck.data, tags: [] };
     const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
@@ -84,7 +83,6 @@ export async function testLink(link: string): Promise<{ safe: boolean; tags: str
             console.error(err);
             return { safe: true, tags: [] };
         });
-    console.log(scanned);
     client.database.scanCache.write(link, scanned.safe ?? true, []);
     return {
         safe: scanned.safe ?? true,
@@ -93,10 +91,11 @@ export async function testLink(link: string): Promise<{ safe: boolean; tags: str
 }
 
 export async function saveAttachment(link: string): Promise<[string, string]> {
-    const image = (await fetch(link)).arrayBuffer().toString();
+    const image = await (await fetch(link)).arrayBuffer()
     const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
-    writeFileSync(fileName, image, "base64");
-    return [fileName, createHash('sha512').update(image, 'base64').digest('base64')];
+    const enc = new TextDecoder("utf-8");
+    writeFileSync(fileName, new DataView(image), "base64");
+    return [fileName, createHash('sha512').update(enc.decode(image), 'base64').digest('base64')];
 }
 
 const linkTypes = {

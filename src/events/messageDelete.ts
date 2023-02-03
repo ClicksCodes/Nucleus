@@ -6,7 +6,7 @@ export const event = "messageDelete";
 export async function callback(client: NucleusClient, message: Message) {
     if (message.author.id === client.user!.id) return;
     if (message.author.bot) return;
-    if (client.noLog.includes(`${message.id}/${message.channel.id}/${message.id}`)) return;
+    if (client.noLog.includes(`${message.guild!.id}/${message.channel.id}/${message.id}`)) return;
     const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
     const auditLog = (await getAuditLog(message.guild!, AuditLogEvent.MemberBanAdd))
         .filter((entry: GuildAuditLogsEntry) => (entry.target! as User).id === message.author.id)[0];

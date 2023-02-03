@@ -1,10 +1,34 @@
 import type Discord from "discord.js";
-import { ActionRowBuilder, AnyComponent, AnyComponentBuilder, AnySelectMenuInteraction, APIMessageComponentEmoji, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelSelectMenuBuilder, ChannelSelectMenuInteraction, CommandInteraction, Guild, GuildMember, GuildTextBasedChannel, MentionableSelectMenuBuilder, Message, Role, RoleSelectMenuBuilder, RoleSelectMenuInteraction, SelectMenuBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction, StringSelectMenuOptionBuilder, UserSelectMenuBuilder, UserSelectMenuInteraction } from "discord.js";
+import { ActionRowBuilder,
+    AnySelectMenuInteraction,
+    APIMessageComponentEmoji,
+    ButtonBuilder,
+    ButtonInteraction,
+    ButtonStyle,
+    ChannelSelectMenuBuilder,
+    ChannelSelectMenuInteraction,
+    CommandInteraction,
+    Interaction,
+    Message,
+    MessageComponentInteraction,
+    ModalBuilder,
+    ModalSubmitInteraction,
+    RoleSelectMenuBuilder,
+    RoleSelectMenuInteraction,
+    StringSelectMenuBuilder,
+    StringSelectMenuInteraction,
+    StringSelectMenuOptionBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    UserSelectMenuBuilder,
+    UserSelectMenuInteraction
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
+import { modalInteractionCollector } from "../../utils/dualCollector.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -75,7 +99,7 @@ const toSelectMenu = async (interaction: StringSelectMenuInteraction, m: Message
 
         let i: AnySelectMenuInteraction | ButtonInteraction;
         try {
-            i = await interaction.channel!.awaitMessageComponent({filter: i => i.user.id === interaction.user.id, time: 300000});
+            i = await m.awaitMessageComponent({filter: i => i.user.id === interaction.user.id, time: 300000});
         } catch(e) {
             closed = true;
             break;
@@ -177,7 +201,152 @@ const wordMenu = async (interaction: StringSelectMenuInteraction, m: Message, cu
 }> => {
     let closed = false;
     do {
-        closed = true;
+        const buttons = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("back")
+                    .setLabel("Back")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("enabled")
+                    .setLabel("Enabled")
+                    .setStyle(current.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(emojiFromBoolean(current.enabled, "id") as APIMessageComponentEmoji),
+            );
+
+        const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
+            .addComponents(
+                new StringSelectMenuBuilder()
+                    .setCustomId("edit")
+                    .setPlaceholder("Edit... ")
+                    .addOptions(
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Words")
+                            .setDescription("Edit your list of words to filter")
+                            .setValue("words"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Allowed Users")
+                            .setDescription("Users who will be unaffected by the word filter")
+                            .setValue("allowedUsers"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Allowed Roles")
+                            .setDescription("Roles that will be unaffected by the word filter")
+                            .setValue("allowedRoles"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Allowed Channels")
+                            .setDescription("Channels where the word filter will not apply")
+                            .setValue("allowedChannels")
+                    )
+                    .setDisabled(!current.enabled)
+            );
+
+        const embed = new EmojiEmbed()
+            .setTitle("Word Filters")
+            .setDescription(
+                `${emojiFromBoolean(current.enabled)} **Enabled**\n` +
+                `**Strict Words:** ${listToAndMore(current.words.strict, 5)}\n` +
+                `**Loose Words:** ${listToAndMore(current.words.loose, 5)}\n\n` +
+                `**Users:** ` + listToAndMore(current.allowed.users.map(user => `<@${user}>`), 5) + `\n` +
+                `**Roles:** ` + listToAndMore(current.allowed.roles.map(role => `<@&${role}>`), 5) + `\n` +
+                `**Channels:** ` + listToAndMore(current.allowed.channels.map(channel => `<#${channel}>`), 5)
+            )
+            .setStatus("Success")
+            .setEmoji("GUILD.SETTINGS.GREEN")
+
+        await interaction.editReply({embeds: [embed], components: [selectMenu, buttons]});
+
+        let i: ButtonInteraction | StringSelectMenuInteraction;
+        try {
+            i = await m.awaitMessageComponent({filter: (i) => interaction.user.id === i.user.id && i.message.id === m.id, time: 300000}) as ButtonInteraction | StringSelectMenuInteraction;
+        } catch (e) {
+            closed = true;
+            break;
+        }
+
+        if(i.isButton()) {
+            await i.deferUpdate();
+            switch(i.customId) {
+                case "back":
+                    closed = true;
+                    break;
+                case "enabled":
+                    current.enabled = !current.enabled;
+                    break;
+            }
+        } else {
+            switch(i.values[0]) {
+                case "words":
+                    await interaction.editReply({embeds: [new EmojiEmbed()
+                        .setTitle("Word Filter")
+                        .setDescription("Modal opened. If you can't see it, click back and try again.")
+                        .setStatus("Success")
+                        .setEmoji("GUILD.SETTINGS.GREEN")
+                    ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder()
+                        .setLabel("Back")
+                        .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                        .setStyle(ButtonStyle.Primary)
+                        .setCustomId("back")
+                    )]})
+                    const modal = new ModalBuilder()
+                        .setTitle("Word Filter")
+                        .setCustomId("wordFilter")
+                        .addComponents(
+                            new ActionRowBuilder<TextInputBuilder>()
+                                .addComponents(
+                                    new TextInputBuilder()
+                                        .setCustomId("wordStrict")
+                                        .setLabel("Strict Words")
+                                        .setPlaceholder("Matches anywhere in the message, including surrounded by other characters")
+                                        .setValue(current.words.strict.join(", ") ?? "")
+                                        .setStyle(TextInputStyle.Paragraph)
+                                        .setRequired(false)
+                                ),
+                            new ActionRowBuilder<TextInputBuilder>()
+                                .addComponents(
+                                    new TextInputBuilder()
+                                        .setCustomId("wordLoose")
+                                        .setLabel("Loose Words")
+                                        .setPlaceholder("Matches only if the word is by itself, surrounded by spaces or punctuation")
+                                        .setValue(current.words.loose.join(", ") ?? "")
+                                        .setStyle(TextInputStyle.Paragraph)
+                                        .setRequired(false)
+                                )
+                        )
+
+                    await i.showModal(modal);
+                    let out;
+                    try {
+                        out = await modalInteractionCollector(
+                            m,
+                            (m: Interaction) =>
+                                (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
+                            (m) => m.customId === "back"
+                        );
+                    } catch (e) {
+                        break;
+                    }
+                    if (!out) break;
+                    if(out.isButton()) break;
+                    current.words.strict = out.fields.getTextInputValue("wordStrict")
+                        .split(",").map(s => s.trim()).filter(s => s.length > 0);
+                    current.words.loose = out.fields.getTextInputValue("wordLoose")
+                        .split(",").map(s => s.trim()).filter(s => s.length > 0);
+                    break;
+                case "allowedUsers":
+                    await i.deferUpdate();
+                    current.allowed.users = await toSelectMenu(interaction, m, current.allowed.users, "member", "Word Filter");
+                    break;
+                case "allowedRoles":
+                    await i.deferUpdate();
+                    current.allowed.roles = await toSelectMenu(interaction, m, current.allowed.roles, "role", "Word Filter");
+                    break;
+                case "allowedChannels":
+                    await i.deferUpdate();
+                    current.allowed.channels = await toSelectMenu(interaction, m, current.allowed.channels, "channel", "Word Filter");
+                    break;
+            }
+        }
     } while(!closed);
     return current;
 }
@@ -231,15 +400,15 @@ const inviteMenu = async (interaction: StringSelectMenuInteraction, m: Message, 
             .setDescription(
                 "Automatically deletes invites sent by users (outside of staff members and self promotion channels)" + `\n\n` +
                 `${emojiFromBoolean(current.enabled)} **${current.enabled ? "Enabled" : "Disabled"}**\n\n` +
-                `**Users:** ` + listToAndMore(current.allowed.users.map(user => `> <@${user}>`), 5) + `\n` +
-                `**Roles:** ` + listToAndMore(current.allowed.roles.map(role => `> <@&${role}>`), 5) + `\n` +
-                `**Channels:** ` + listToAndMore(current.allowed.channels.map(channel => `> <#${channel}>`), 5)
+                `**Users:** ` + listToAndMore(current.allowed.users.map(user => `<@${user}>`), 5) + `\n` +
+                `**Roles:** ` + listToAndMore(current.allowed.roles.map(role => `<@&${role}>`), 5) + `\n` +
+                `**Channels:** ` + listToAndMore(current.allowed.channels.map(channel => `<#${channel}>`), 5)
             )
             .setStatus("Success")
             .setEmoji("GUILD.SETTINGS.GREEN")
 
 
-        await interaction.editReply({embeds: [embed], components: [buttons, menu]});
+        await interaction.editReply({embeds: [embed], components: [menu, buttons]});
 
         let i: ButtonInteraction | StringSelectMenuInteraction;
         try {
@@ -301,7 +470,172 @@ const mentionMenu = async (interaction: StringSelectMenuInteraction, m: Message,
     let closed = false;
 
     do {
-        closed = true;
+
+        const buttons = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("back")
+                    .setLabel("Back")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("everyone")
+                    .setLabel(current.everyone ? "Everyone" : "No one")
+                    .setStyle(current.everyone ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(emojiFromBoolean(current.everyone, "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("roles")
+                    .setLabel(current.roles ? "Roles" : "No roles")
+                    .setStyle(current.roles ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(emojiFromBoolean(current.roles, "id") as APIMessageComponentEmoji)
+            );
+        const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
+            .addComponents(
+                new StringSelectMenuBuilder()
+                    .setCustomId("toEdit")
+                    .setPlaceholder("Edit mention settings")
+                    .addOptions(
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Mass Mention Amount")
+                            .setDescription("The amount of mentions before the bot will delete the message")
+                            .setValue("mass"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Roles")
+                            .setDescription("Roles that are able to be mentioned")
+                            .setValue("roles"),
+                    )
+            )
+
+        const allowedMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
+            .addComponents(
+                new StringSelectMenuBuilder()
+                    .setCustomId("allowed")
+                    .setPlaceholder("Edit exceptions")
+                    .addOptions(
+                        new StringSelectMenuOptionBuilder()
+                                .setLabel("Users")
+                                .setDescription("Users that are unaffected by the mention filter")
+                                .setValue("users"),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Roles")
+                                .setDescription("Roles that are unaffected by the mention filter")
+                                .setValue("roles"),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Channels")
+                                .setDescription("Channels where anyone is unaffected by the mention filter")
+                                .setValue("channels")
+                    )
+            )
+
+        const embed = new EmojiEmbed()
+            .setTitle("Mention Settings")
+            .setDescription(
+                `Log when members mention:\n` +
+                `${emojiFromBoolean(true)} **${current.mass}+ members** in one message\n` +
+                `${emojiFromBoolean(current.everyone)} **Everyone**\n` +
+                `${emojiFromBoolean(current.roles)} **Roles**\n` +
+                (current.allowed.rolesToMention.length > 0 ? `> *Except for ${listToAndMore(current.allowed.rolesToMention.map(r => `<@&${r}>`), 3)}*\n` : "") +
+                "\n" +
+                `Except if...\n` +
+                `> ${current.allowed.users.length > 0 ? `Member is: ${listToAndMore(current.allowed.users.map(u => `<@${u}>`), 3)}\n` : ""}` +
+                `> ${current.allowed.roles.length > 0 ? `Member has role: ${listToAndMore(current.allowed.roles.map(r => `<@&${r}>`), 3)}\n` : ""}` +
+                `> ${current.allowed.channels.length > 0 ? `In channel: ${listToAndMore(current.allowed.channels.map(c => `<#${c}>`), 3)}\n` : ""}`
+            )
+            .setStatus("Success")
+            .setEmoji("GUILD.SETTINGS.GREEN")
+
+        await interaction.editReply({embeds: [embed], components: [menu, allowedMenu, buttons]});
+
+        let i: ButtonInteraction | StringSelectMenuInteraction;
+        try {
+            i = await m.awaitMessageComponent({filter: (i) => interaction.user.id === i.user.id && i.message.id === m.id, time: 300000}) as ButtonInteraction | StringSelectMenuInteraction;
+        } catch (e) {
+            closed = true;
+            break;
+        }
+
+        if(i.isButton()) {
+            await i.deferUpdate();
+            switch (i.customId) {
+                case "back":
+                    closed = true;
+                    break;
+                case "everyone":
+                    current.everyone = !current.everyone;
+                    break;
+                case "roles":
+                    current.roles = !current.roles;
+                    break;
+            }
+        } else {
+            switch (i.customId) {
+                case "toEdit":
+                    switch (i.values[0]) {
+                        case "mass":
+                            await interaction.editReply({embeds: [new EmojiEmbed()
+                                .setTitle("Word Filter")
+                                .setDescription("Modal opened. If you can't see it, click back and try again.")
+                                .setStatus("Success")
+                                .setEmoji("GUILD.SETTINGS.GREEN")
+                            ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder()
+                                .setLabel("Back")
+                                .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                                .setStyle(ButtonStyle.Primary)
+                                .setCustomId("back")
+                            )]})
+                            const modal = new ModalBuilder()
+                                .setTitle("Mass Mention Amount")
+                                .setCustomId("mass")
+                                .addComponents(
+                                    new ActionRowBuilder<TextInputBuilder>()
+                                        .addComponents(
+                                            new TextInputBuilder()
+                                                .setCustomId("mass")
+                                                .setPlaceholder("Amount")
+                                                .setMinLength(1)
+                                                .setMaxLength(3)
+                                                .setStyle(TextInputStyle.Short)
+                                        )
+                                )
+                            await i.showModal(modal);
+                            let out;
+                            try {
+                                out = await modalInteractionCollector(
+                                    m,
+                                    (m: Interaction) =>
+                                        (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
+                                    (m) => m.customId === "back"
+                                );
+                            } catch (e) {
+                                break;
+                            }
+                            if (!out) break;
+                            if(out.isButton()) break;
+                            current.mass = parseInt(out.fields.getTextInputValue("mass"));
+                            break;
+                        case "roles":
+                            await i.deferUpdate();
+                            current.allowed.rolesToMention = await toSelectMenu(interaction, m, current.allowed.rolesToMention, "role", "Mention Settings");
+                            break;
+                    }
+                    break;
+                case "allowed":
+                    await i.deferUpdate();
+                    switch (i.values[0]) {
+                        case "users":
+                            current.allowed.users = await toSelectMenu(interaction, m, current.allowed.users, "member", "Mention Settings");
+                            break;
+                        case "roles":
+                            current.allowed.roles = await toSelectMenu(interaction, m, current.allowed.roles, "role", "Mention Settings");
+                            break;
+                        case "channels":
+                            current.allowed.channels = await toSelectMenu(interaction, m, current.allowed.channels, "channel", "Mention Settings");
+                            break;
+                    }
+                    break;
+            }
+        }
+
     } while(!closed);
     return current
 }
