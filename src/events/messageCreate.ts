@@ -78,7 +78,8 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (fileNames.files.length > 0) {
         for (const element of fileNames.files) {
             const url = element.url ? element.url : element.local;
-            if (/\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/.test(url)) {
+            if (/\.(j(pe?g|fif)|a?png|gifv?|w(eb[mp]|av)|mp([34]|eg-\d)|ogg|avi|h\.26(4|5)|cda)$/.test(url.toLowerCase())) {
+                // jpg|jpeg|png|apng|gif|gifv|webm|webp|mp4|wav|mp3|ogg|jfif|MPEG-#|avi|h.264|h.265
                 if (
                     config.filters.images.NSFW &&
                     !(message.channel instanceof ThreadChannel ? message.channel.parent?.nsfw : message.channel.nsfw)
