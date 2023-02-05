@@ -136,11 +136,12 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
         }
         if (i.isButton()) {
             switch (i.customId) {
-                case "back":
+                case "back": {
                     await i.deferUpdate();
                     closed = true;
                     break;
-                case "save":
+                }
+                case "save": {
                     await i.deferUpdate();
                     if (newChannel) {
                         currentObject[newChannel] = {
@@ -150,7 +151,8 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
                     }
                     closed = true;
                     break;
-                case "editName":
+                }
+                case "editName": {
                     await interaction.editReply({
                         embeds: [new EmojiEmbed()
                                     .setTitle("Stats Channel")
@@ -170,20 +172,21 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
                     });
                     showModal(i, {name: newChannelName, enabled: newChannelEnabled})
 
-                    const out = await modalInteractionCollector(
+                    const out: Discord.ModalSubmitInteraction | ButtonInteraction| null = await modalInteractionCollector(
                         m,
                         (m) => m.channel!.id === interaction.channel!.id && m.user!.id === interaction.user!.id,
                         (i) => i.channel!.id === interaction.channel!.id && i.user!.id === interaction.user!.id && i.message!.id === m.id
-                    ) as Discord.ModalSubmitInteraction | null;
+                    );
                     if (!out) continue;
-                    if (!out.fields) continue;
                     if (out.isButton()) continue;
                     newChannelName = out.fields.getTextInputValue("text");
                     break;
-                case "toggleEnabled":
+                }
+                case "toggleEnabled": {
                     await i.deferUpdate();
                     newChannelEnabled = !newChannelEnabled;
                     break;
+                }
             }
         } else {
             await i.deferUpdate();
@@ -307,11 +310,12 @@ const callback = async (interaction: CommandInteraction) => {
 
         if(i.isStringSelectMenu()) {
             switch(i.customId) {
-                case "page":
+                case "page": {
                     await i.deferUpdate();
                     page = Object.keys(currentObject).indexOf(i.values[0]!);
                     break;
-                case "action":
+                }
+                case "action": {
                     modified = true;
                     switch(i.values[0]!) {
                         case "edit": {
@@ -345,7 +349,6 @@ const callback = async (interaction: CommandInteraction) => {
                                 continue;
                             }
                             if (!out) continue
-                            if (!out.fields) continue
                             if (out.isButton()) continue;
                             currentObject[Object.keys(currentObject)[page]!]!.name = out.fields.getTextInputValue("text");
                             break;
@@ -358,32 +361,37 @@ const callback = async (interaction: CommandInteraction) => {
                         }
                         case "delete": {
                             await i.deferUpdate();
-                            delete currentObject[Object.keys(currentObject)[page]!];
+                            currentObject = Object.fromEntries(Object.entries(currentObject).filter(([k]) => k !== Object.keys(currentObject)[page]!));
                             page = Math.min(page, Object.keys(currentObject).length - 1);
                             modified = true;
                             break;
                         }
                     }
                     break;
+                }
             }
         } else {
             await i.deferUpdate();
             switch(i.customId) {
-                case "back":
+                case "back": {
                     page--;
                     break;
-                case "next":
+                }
+                case "next": {
                     page++;
                     break;
-                case "add":
+                }
+                case "add": {
                     currentObject = await addStatsChannel(interaction, m, currentObject);
                     page = Object.keys(currentObject).length - 1;
                     break;
-                case "save":
+                }
+                case "save": {
                     client.database.guilds.write(interaction.guild.id, {stats: currentObject});
                     singleNotify("statsChannelDeleted", interaction.guild.id, true);
                     modified = false;
                     break;
+                }
             }
         }
 

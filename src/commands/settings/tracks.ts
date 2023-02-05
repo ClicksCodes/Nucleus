@@ -37,7 +37,7 @@ const editName = async (i: ButtonInteraction, interaction: StringSelectMenuInter
                         .setCustomId("name")
                         .setPlaceholder("Name here...") // TODO: Make better placeholder
                         .setStyle(TextInputStyle.Short)
-                        .setValue(name ?? "")
+                        .setValue(name)
                         .setRequired(true)
                 )
         )
@@ -74,14 +74,13 @@ const editName = async (i: ButtonInteraction, interaction: StringSelectMenuInter
     }
     if(!out) return name;
     if (out.isButton()) return name;
-    if(!out.fields) return name;
     name = out.fields.fields.find((f) => f.customId === "name")?.value ?? name;
     return name
 
 }
 
 const reorderTracks = async (interaction: ButtonInteraction, m: Message, roles: Collection<string, Role>, currentObj: string[]) => {
-    let reorderRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+    const reorderRow = new ActionRowBuilder<StringSelectMenuBuilder>()
         .addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId("reorder")
@@ -95,7 +94,7 @@ const reorderTracks = async (interaction: ButtonInteraction, m: Message, roles: 
                     )
                 )
         );
-    let buttonRow = new ActionRowBuilder<ButtonBuilder>()
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
             new ButtonBuilder()
                 .setCustomId("back")
@@ -125,7 +124,6 @@ const reorderTracks = async (interaction: ButtonInteraction, m: Message, roles: 
     if(!out) return;
     out.deferUpdate();
     if (out.isButton()) return;
-    if(!out.values) return;
     const values = out.values;
 
     const newOrder: string[] = currentObj.map((_, i) => {
@@ -204,7 +202,7 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
                     .setEmoji(getEmojiByName("CONTROL." + (current.nullable ? "TICK" : "CROSS"), "id") as APIMessageComponentEmoji)
         );
 
-        let allowed: boolean[] = [];
+        const allowed: boolean[] = [];
         for (const role of current.track) {
             const disabled: boolean =
                 roles.get(role)!.position >= (interaction.member as GuildMember).roles.highest.position;
@@ -241,39 +239,46 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
         if (out.isButton()) {
             out.deferUpdate();
             switch(out.customId) {
-                case "back":
+                case "back": {
                     closed = true;
                     break;
-                case "edit":
+                }
+                case "edit": {
                     current.name = (await editName(out, interaction, message, current.name))!;
                     break;
-                case "reorder":
+                }
+                case "reorder": {
                     current.track = (await reorderTracks(out, message, roles, current.track))!;
                     break;
-                case "retainPrevious":
+                }
+                case "retainPrevious": {
                     current.retainPrevious = !current.retainPrevious;
                     break;
-                case "nullable":
+                }
+                case "nullable": {
                     current.nullable = !current.nullable;
                     break;
+                }
             }
         } else if (out.isStringSelectMenu()) {
             out.deferUpdate();
             switch(out.customId) {
-                case "removeRole":
+                case "removeRole": {
                     const index = current.track.findIndex(v => v === editableRoles[parseInt((out! as StringSelectMenuInteraction).values![0]!)]);
                     current.track.splice(index, 1);
                     break;
+                }
             }
         } else {
             switch(out.customId) {
-                case "addRole":
+                case "addRole": {
                     const role = out.values![0]!;
                     if(!current.track.includes(role)) {
                         current.track.push(role);
                     }
                     out.reply({content: "That role is already on this track", ephemeral: true})
                     break;
+                }
             }
         }
 
@@ -381,54 +386,61 @@ const callback = async (interaction: CommandInteraction) => {
             i = await m.awaitMessageComponent({ time: 300000, filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id && i.channelId === interaction.channelId}) as ButtonInteraction | StringSelectMenuInteraction;
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
 
         await i.deferUpdate();
         if (i.isButton()) {
             switch (i.customId) {
-                case "back":
+                case "back": {
                     page--;
                     break;
-                case "next":
+                }
+                case "next": {
                     page++;
                     break;
-                case "add":
-                    let newPage = await editTrack(i, m, roles)
+                }
+                case "add": {
+                    const newPage = await editTrack(i, m, roles)
                     if(!newPage) break;
                     tracks.push();
                     page = tracks.length - 1;
                     break;
-                case "save":
+                }
+                case "save": {
                     client.database.guilds.write(interaction.guild!.id, {tracks: tracks});
                     modified = false;
                     break;
+                }
             }
         } else if (i.isStringSelectMenu()) {
             switch (i.customId) {
-                case "action":
+                case "action": {
                     switch(i.values[0]) {
-                        case "edit":
-                            let edited = await editTrack(i, m, roles, current!);
+                        case "edit": {
+                            const edited = await editTrack(i, m, roles, current!);
                             if(!edited) break;
                             tracks[page] = edited;
                             modified = true;
                             break;
-                        case "delete":
+                        }
+                        case "delete": {
                             if(page === 0 && tracks.keys.length - 1 > 0) page++;
                             else page--;
                             tracks.splice(page, 1);
                             break;
+                        }
                     }
                     break;
-                case "page":
+                }
+                case "page": {
                     page = parseInt(i.values[0]!);
                     break;
+                }
             }
         }
 
     } while (!closed)
-
 }
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

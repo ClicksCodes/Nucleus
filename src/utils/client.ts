@@ -33,7 +33,7 @@ class NucleusClient extends Client {
         check: (interaction: Interaction, partial: boolean) => Promise<boolean> | boolean,
         autocomplete: (interaction: AutocompleteInteraction) => Promise<string[]>
     } | undefined,{name: string, description: string}]> = {};
-    fetchedCommands: Collection<string, Discord.ApplicationCommand> = new Collection();
+    fetchedCommands = new Collection<string, Discord.ApplicationCommand>();
     constructor(database: typeof NucleusClient.prototype.database) {
         super({ intents: [
             GatewayIntentBits.Guilds,

@@ -723,7 +723,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                 data.customTypes.push(toAdd);
             }
         } else if ((i.component as ButtonComponent).customId === "switchToDefault") {
-          await i.deferUpdate();
+            await i.deferUpdate();
             await client.database.guilds.write(interaction.guild!.id, { "tickets.useCustom": false }, []);
             data.useCustom = false;
         } else if ((i.component as ButtonComponent).customId === "switchToCustom") {

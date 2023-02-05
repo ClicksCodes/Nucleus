@@ -17,10 +17,10 @@ interface MalwareSchema {
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const [p, hash] = await saveAttachment(link);
-    let alreadyHaveCheck = await client.database.scanCache.read(hash)
+    const alreadyHaveCheck = await client.database.scanCache.read(hash)
     if(alreadyHaveCheck) return { nsfw: alreadyHaveCheck.data };
     const data = new URLSearchParams();
-    let r = createReadStream(p)
+    const r = createReadStream(p)
     data.append("file", r.read(fs.statSync(p).size));
     const result = await fetch("https://unscan.p.rapidapi.com/", {
         method: "POST",
@@ -43,10 +43,10 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
     const [p, hash] = await saveAttachment(link);
-    let alreadyHaveCheck = await client.database.scanCache.read(hash)
+    const alreadyHaveCheck = await client.database.scanCache.read(hash)
     if(alreadyHaveCheck) return { safe: alreadyHaveCheck.data };
     const data = new URLSearchParams();
-    let f = createReadStream(p);
+    const f = createReadStream(p);
     data.append("file", f.read(fs.statSync(p).size));
     const result = await fetch("https://unscan.p.rapidapi.com/malware", {
         method: "POST",
@@ -68,7 +68,7 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
-    let alreadyHaveCheck = await client.database.scanCache.read(link)
+    const alreadyHaveCheck = await client.database.scanCache.read(link)
     if(alreadyHaveCheck) return { safe: alreadyHaveCheck.data, tags: [] };
     const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
         method: "POST",

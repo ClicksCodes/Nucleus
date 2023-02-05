@@ -10,7 +10,7 @@ const wait = promisify(setTimeout);
 
 export const Logger = {
     renderUser(user: Discord.User | string) {
-        if (typeof user === "string") user = client.users.cache.get(user) as Discord.User;
+        if (typeof user === "string") user = client.users.cache.get(user)!;
         return `${user.username} [<@${user.id}>]`;
     },
     renderTime(t: number) {
@@ -34,7 +34,7 @@ export const Logger = {
         return `${channel.name} [<#${channel.id}>]`;
     },
     renderRole(role: Discord.Role | string, guild?: Discord.Guild | string) {
-        if (typeof role === "string") role = (typeof guild === "string" ? client.guilds.cache.get(guild) : guild)!.roles.cache.get(role) as Discord.Role;
+        if (typeof role === "string") role = (typeof guild === "string" ? client.guilds.cache.get(guild) : guild)!.roles.cache.get(role)!;
         return `${role.name} [<@&${role.id}>]`;
     },
     renderEmoji(emoji: Discord.GuildEmoji) {

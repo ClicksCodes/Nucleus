@@ -48,28 +48,30 @@ const listToAndMore = (list: string[], max: number) => {
 const toSelectMenu = async (interaction: StringSelectMenuInteraction, m: Message, ids: string[], type: "member" | "role" | "channel", title: string): Promise<string[]> => {
 
     const back = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId("back").setLabel("Back").setStyle(ButtonStyle.Secondary).setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji));
-
     let closed;
     do {
         let render: string[] = []
         let mapped: string[] = [];
         let menu: UserSelectMenuBuilder | RoleSelectMenuBuilder | ChannelSelectMenuBuilder;
         switch(type) {
-            case "member":
+            case "member": {
                 menu = new UserSelectMenuBuilder().setCustomId("user").setPlaceholder("Select users").setMaxValues(25);
                 mapped = await Promise.all(ids.map(async (id) => { return (await client.users.fetch(id).then(user => user.tag)) || "Unknown User" }));
                 render = ids.map(id => client.logger.renderUser(id))
                 break;
-            case "role":
+            }
+            case "role": {
                 menu = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select roles").setMaxValues(25);
-                mapped = await Promise.all(ids.map(async (id) => { return (await interaction.guild!.roles.fetch(id).then(role => role?.name)) || "Unknown Role" }));
+                mapped = await Promise.all(ids.map(async (id) => { return (await interaction.guild!.roles.fetch(id).then(role => role?.name ?? "Unknown Role"))}));
                 render = ids.map(id => client.logger.renderRole(id, interaction.guild!))
                 break;
-            case "channel":
+            }
+            case "channel": {
                 menu = new ChannelSelectMenuBuilder().setCustomId("channel").setPlaceholder("Select channels").setMaxValues(25);
-                mapped = await Promise.all(ids.map(async (id) => { return (await interaction.guild!.channels.fetch(id).then(channel => channel?.name)) || "Unknown Channel" }));
+                mapped = await Promise.all(ids.map(async (id) => { return (await interaction.guild!.channels.fetch(id).then(channel => channel?.name ?? "Unknown Role")) }));
                 render = ids.map(id => client.logger.renderChannel(id))
                 break;
+            }
         }
         const removeOptions = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(
@@ -85,7 +87,7 @@ const toSelectMenu = async (interaction: StringSelectMenuInteraction, m: Message
             .setEmoji(getEmojiByName("GUILD.SETTINGS.GREEN"))
             .setDescription(`Select ${type}s:\n\nCurrent:\n` + (render.length > 0 ? render.join("\n") : "None"))
             .setStatus("Success");
-        let components: ActionRowBuilder<
+        const components: ActionRowBuilder<
             StringSelectMenuBuilder |
             ButtonBuilder |
             ChannelSelectMenuBuilder |
@@ -102,7 +104,7 @@ const toSelectMenu = async (interaction: StringSelectMenuInteraction, m: Message
             i = await m.awaitMessageComponent({filter: i => i.user.id === interaction.user.id, time: 300000});
         } catch(e) {
             closed = true;
-            break;
+            continue;
         }
 
         if(i.isButton()) {
@@ -176,15 +178,18 @@ const imageMenu = async (interaction: StringSelectMenuInteraction, m: Message, c
         }
         await i.deferUpdate();
         switch(i.customId) {
-            case "back":
+            case "back": {
                 closed = true;
                 break;
-            case "nsfw":
+            }
+            case "nsfw": {
                 current.NSFW = !current.NSFW;
                 break;
-            case "size":
+            }
+            case "size": {
                 current.size = !current.size;
                 break;
+            }
         }
     } while(!closed);
     return current;
@@ -267,16 +272,18 @@ const wordMenu = async (interaction: StringSelectMenuInteraction, m: Message, cu
         if(i.isButton()) {
             await i.deferUpdate();
             switch(i.customId) {
-                case "back":
+                case "back": {
                     closed = true;
                     break;
-                case "enabled":
+                }
+                case "enabled": {
                     current.enabled = !current.enabled;
                     break;
+                }
             }
         } else {
             switch(i.values[0]) {
-                case "words":
+                case "words": {
                     await interaction.editReply({embeds: [new EmojiEmbed()
                         .setTitle("Word Filter")
                         .setDescription("Modal opened. If you can't see it, click back and try again.")
@@ -298,7 +305,7 @@ const wordMenu = async (interaction: StringSelectMenuInteraction, m: Message, cu
                                         .setCustomId("wordStrict")
                                         .setLabel("Strict Words")
                                         .setPlaceholder("Matches anywhere in the message, including surrounded by other characters")
-                                        .setValue(current.words.strict.join(", ") ?? "")
+                                        .setValue(current.words.strict.join(", "))
                                         .setStyle(TextInputStyle.Paragraph)
                                         .setRequired(false)
                                 ),
@@ -308,7 +315,7 @@ const wordMenu = async (interaction: StringSelectMenuInteraction, m: Message, cu
                                         .setCustomId("wordLoose")
                                         .setLabel("Loose Words")
                                         .setPlaceholder("Matches only if the word is by itself, surrounded by spaces or punctuation")
-                                        .setValue(current.words.loose.join(", ") ?? "")
+                                        .setValue(current.words.loose.join(", "))
                                         .setStyle(TextInputStyle.Paragraph)
                                         .setRequired(false)
                                 )
@@ -333,18 +340,22 @@ const wordMenu = async (interaction: StringSelectMenuInteraction, m: Message, cu
                     current.words.loose = out.fields.getTextInputValue("wordLoose")
                         .split(",").map(s => s.trim()).filter(s => s.length > 0);
                     break;
-                case "allowedUsers":
+                }
+                case "allowedUsers": {
                     await i.deferUpdate();
                     current.allowed.users = await toSelectMenu(interaction, m, current.allowed.users, "member", "Word Filter");
                     break;
-                case "allowedRoles":
+                }
+                case "allowedRoles": {
                     await i.deferUpdate();
                     current.allowed.roles = await toSelectMenu(interaction, m, current.allowed.roles, "role", "Word Filter");
                     break;
-                case "allowedChannels":
+                }
+                case "allowedChannels": {
                     await i.deferUpdate();
                     current.allowed.channels = await toSelectMenu(interaction, m, current.allowed.channels, "channel", "Word Filter");
                     break;
+                }
             }
         }
     } while(!closed);
@@ -420,25 +431,30 @@ const inviteMenu = async (interaction: StringSelectMenuInteraction, m: Message, 
         if(i.isButton()) {
             await i.deferUpdate();
             switch(i.customId) {
-                case "back":
+                case "back": {
                     closed = true;
                     break;
-                case "enabled":
+                }
+                case "enabled": {
                     current.enabled = !current.enabled;
                     break;
+                }
             }
         } else {
             await i.deferUpdate();
             switch(i.values[0]) {
-                case "users":
+                case "users": {
                     current.allowed.users = await toSelectMenu(interaction, m, current.allowed.users, "member", "Invite Settings");
                     break;
-                case "roles":
+                }
+                case "roles": {
                     current.allowed.roles = await toSelectMenu(interaction, m, current.allowed.roles, "role", "Invite Settings");
                     break;
-                case "channels":
+                }
+                case "channels": {
                     current.allowed.channels = await toSelectMenu(interaction, m, current.allowed.channels, "channel", "Invite Settings");
                     break;
+                }
             }
         }
 
@@ -557,21 +573,24 @@ const mentionMenu = async (interaction: StringSelectMenuInteraction, m: Message,
         if(i.isButton()) {
             await i.deferUpdate();
             switch (i.customId) {
-                case "back":
+                case "back": {
                     closed = true;
                     break;
-                case "everyone":
+                }
+                case "everyone": {
                     current.everyone = !current.everyone;
                     break;
-                case "roles":
+                }
+                case "roles": {
                     current.roles = !current.roles;
                     break;
+                }
             }
         } else {
             switch (i.customId) {
-                case "toEdit":
+                case "toEdit": {
                     switch (i.values[0]) {
-                        case "mass":
+                        case "mass": {
                             await interaction.editReply({embeds: [new EmojiEmbed()
                                 .setTitle("Word Filter")
                                 .setDescription("Modal opened. If you can't see it, click back and try again.")
@@ -613,26 +632,33 @@ const mentionMenu = async (interaction: StringSelectMenuInteraction, m: Message,
                             if(out.isButton()) break;
                             current.mass = parseInt(out.fields.getTextInputValue("mass"));
                             break;
-                        case "roles":
+                        }
+                        case "roles": {
                             await i.deferUpdate();
                             current.allowed.rolesToMention = await toSelectMenu(interaction, m, current.allowed.rolesToMention, "role", "Mention Settings");
                             break;
+                        }
                     }
                     break;
-                case "allowed":
+                }
+                case "allowed": {
                     await i.deferUpdate();
                     switch (i.values[0]) {
-                        case "users":
+                        case "users": {
                             current.allowed.users = await toSelectMenu(interaction, m, current.allowed.users, "member", "Mention Settings");
                             break;
-                        case "roles":
+                        }
+                        case "roles": {
                             current.allowed.roles = await toSelectMenu(interaction, m, current.allowed.roles, "role", "Mention Settings");
                             break;
-                        case "channels":
+                        }
+                        case "channels": {
                             current.allowed.channels = await toSelectMenu(interaction, m, current.allowed.channels, "channel", "Mention Settings");
                             break;
+                        }
                     }
                     break;
+                }
             }
         }
 
@@ -706,34 +732,38 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id, time: 300000}) as StringSelectMenuInteraction | ButtonInteraction;
         } catch (e) {
             closed = true;
-            return;
+            continue;
         }
-        if(!i) return;
         if(i.isButton()) {
             await i.deferUpdate();
             await client.database.guilds.write(interaction.guild.id, {filters: config});
         } else {
             switch(i.values[0]) {
-                case "invites":
+                case "invites": {
                     await i.deferUpdate();
                     config.invite = await inviteMenu(i, m, config.invite);
                     break;
-                case "mentions":
+                }
+                case "mentions": {
                     await i.deferUpdate();
                     config.pings = await mentionMenu(i, m, config.pings);
                     break;
-                case "words":
+                }
+                case "words": {
                     await i.deferUpdate();
                     config.wordFilter = await wordMenu(i, m, config.wordFilter);
                     break;
-                case "malware":
+                }
+                case "malware": {
                     await i.deferUpdate();
                     config.malware = !config.malware;
                     break;
-                case "images":
-                    let next = await imageMenu(i, m, config.images);
-                    if(next) config.images = next;
+                }
+                case "images": {
+                    const next = await imageMenu(i, m, config.images);
+                    config.images = next;
                     break;
+                }
             }
         }
 

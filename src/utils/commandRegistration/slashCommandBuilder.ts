@@ -32,7 +32,7 @@ export async function group(
         if (descriptionLocalizations) { subcommandGroup.setDescriptionLocalizations(descriptionLocalizations) }
 
         for (const subcommand of fetched.subcommands) {
-            let processedCommand = subcommand.command(new SlashCommandSubcommandBuilder());
+            const processedCommand = subcommand.command(new SlashCommandSubcommandBuilder());
             client.commands["commands/" + path + "/" + processedCommand.name] = [subcommand, { name: processedCommand.name, description: processedCommand.description }]
             subcommandGroup.addSubcommand(processedCommand);
         };
@@ -80,7 +80,7 @@ export async function command(
             command.addSubcommand(fetchedCommand);
         }
         for (const group of fetched.subcommandGroups) {
-            let processedCommand = group.command(new SlashCommandSubcommandGroupBuilder());
+            const processedCommand = group.command(new SlashCommandSubcommandGroupBuilder());
             client.commands[commandString! + "/" + processedCommand.name] = [undefined, { name: processedCommand.name, description: processedCommand.description }]
             command.addSubcommandGroup(processedCommand);
         };

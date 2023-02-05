@@ -87,8 +87,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 `Select a command to get started${(interaction.member?.permissions as PermissionsBitField).has("ManageGuild") ? `, or run ${getCommandMentionByName("nucleus/guide")} for commands to set up your server` : ``}`  // FIXME
             )
         } else {
-            let currentData = getCommandByName(currentPath.filter(value => value !== "" && value !== "none").join('/'));
-            let current = commands.find((command) => command.name === currentPath[0])!;
+            const currentData = getCommandByName(currentPath.filter(value => value !== "" && value !== "none").join('/'));
+            const current = commands.find((command) => command.name === currentPath[0])!;
 
             let optionString = ``
             let options: (ApplicationCommandOption & {
@@ -97,16 +97,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             })[] = [];
             //options
             if(currentPath[1] !== "" && currentPath[1] !== "none" && currentPath[2] !== "" && currentPath[2] !== "none") {
-                let Op = current.options.find(option => option.name === currentPath[1])! as ApplicationCommandSubGroup
-                let Op2 = Op.options!.find(option => option.name === currentPath[2])!
-                options = Op2.options || []
+                const Op = current.options.find(option => option.name === currentPath[1])! as ApplicationCommandSubGroup
+                const Op2 = Op.options!.find(option => option.name === currentPath[2])!
+                options = Op2.options ?? []
             } else if(currentPath[1] !== "" && currentPath[1] !== "none") {
                 let Op = current.options.find(option => option.name === currentPath[1])!
                 if(Op.type === ApplicationCommandOptionType.SubcommandGroup) {
                     options = []
                 } else {
                     Op = Op as ApplicationCommandSubCommand
-                    options = Op.options || []
+                    options = Op.options ?? []
                 }
             } else {
                 options = current.options.filter(option => option.type !== ApplicationCommandOptionType.SubcommandGroup && option.type !== ApplicationCommandOptionType.Subcommand) || [];
@@ -117,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             const APICommand = client.commands["commands/" + currentPath.filter(value => value !== "" && value !== "none").join("/")]![0]
             let allowedToRun = true;
             if(APICommand?.check) {
-                APICommand?.check(interaction as Interaction, true)
+                allowedToRun = await APICommand.check(interaction as Interaction, true)
             }
             embed.setDescription(
                 `${getEmojiByName(styles[currentPath[0]]!.emoji)} **${capitalize(currentData.name)}**\n> ${currentData.mention}\n\n` +
@@ -136,7 +136,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         ...subcommandGroups.map((option) => new StringSelectMenuOptionBuilder().setLabel(capitalize(option.name)).setValue(option.name).setDefault(currentPath[1] === option.name))
                     )
                 if(subcommandGroupRow.components[0]!.options.find((option) => option.data.default && option.data.value !== "none")) {
-                    let subsubcommands = (subcommandGroups.find((option) => option.name === currentPath[1])! as ApplicationCommandSubGroup).options?.filter((option) => option.type === ApplicationCommandOptionType.Subcommand) || [];
+                    const subsubcommands = (subcommandGroups.find((option) => option.name === currentPath[1])! as ApplicationCommandSubGroup).options?.filter((option) => option.type === ApplicationCommandOptionType.Subcommand) ?? [];
                     subcommandRow.components[0]!
                         .addOptions(
                             new StringSelectMenuOptionBuilder().setLabel("Select a subcommand").setValue("none").setDefault(currentPath[2] === "none"),
@@ -152,7 +152,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }
         }
 
-        let cmps = [commandRow];
+        const cmps = [commandRow];
         if(subcommandGroupRow.components[0]!.options.length > 0) cmps.push(subcommandGroupRow);
         if(subcommandRow.components[0]!.options.length > 0) cmps.push(subcommandRow);
 
@@ -163,20 +163,23 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             i = await m.awaitMessageComponent<ComponentType.StringSelect>({filter: (newInteraction) => interaction.user.id === newInteraction.user.id,time: 300000})
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
         await i.deferUpdate();
-        let value = i.values[0]!;
+        const value = i.values[0]!;
         switch(i.customId) {
-            case "commandRow":
+            case "commandRow": {
                 currentPath = [value, "", ""];
                 break;
-            case "subcommandGroupRow":
+            }
+            case "subcommandGroupRow": {
                 currentPath = [currentPath[0], value , ""];
                 break;
-            case "subcommandRow":
+            }
+            case "subcommandRow": {
                 currentPath[2] = value;
                 break;
+            }
         }
 
     } while (!closed);

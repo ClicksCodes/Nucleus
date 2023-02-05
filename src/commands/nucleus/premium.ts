@@ -79,39 +79,37 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } catch (e) {
             return;
         }
-        if (i) {
-            i.deferUpdate();
-            let guild = i.guild!;
-            if (count - appliesTo.length <= 0) {
-                interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setTitle("Premium")
-                            .setDescription(
-                                `You have already activated premium on the maximum amount of servers!` + firstDescription
-                            )
-                            .setEmoji("NUCLEUS.PREMIUMACTIVATE")
-                            .setStatus("Danger")
-                    ],
-                    components: []
-                });
-                closed = true;
-            } else {
-                client.database.premium.addPremium(interaction.user.id, guild.id);
-                interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setTitle("Premium")
-                            .setDescription(
-                                `You have activated premium on this server!` + firstDescription
-                            )
-                            .setEmoji("NUCLEUS.LOGO")
-                            .setStatus("Danger")
-                    ],
-                    components: []
-                });
-                closed = true;
-            }
+        i.deferUpdate();
+        const guild = i.guild!;
+        if (count - appliesTo.length <= 0) {
+            interaction.editReply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setTitle("Premium")
+                        .setDescription(
+                            `You have already activated premium on the maximum amount of servers!` + firstDescription
+                        )
+                        .setEmoji("NUCLEUS.PREMIUMACTIVATE")
+                        .setStatus("Danger")
+                ],
+                components: []
+            });
+            closed = true;
+        } else {
+            client.database.premium.addPremium(interaction.user.id, guild.id);
+            interaction.editReply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setTitle("Premium")
+                        .setDescription(
+                            `You have activated premium on this server!` + firstDescription
+                        )
+                        .setEmoji("NUCLEUS.LOGO")
+                        .setStatus("Danger")
+                ],
+                components: []
+            });
+            closed = true;
         }
 
     } while (!closed);

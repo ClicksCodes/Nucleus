@@ -41,7 +41,7 @@ const defaultRolePageConfig = {
 }
 
 const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message, currentObj: ObjectSchema[]) => {
-    let reorderRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+    const reorderRow = new ActionRowBuilder<StringSelectMenuBuilder>()
         .addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId("reorder")
@@ -55,7 +55,7 @@ const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message,
                     )
                 )
         );
-    let buttonRow = new ActionRowBuilder<ButtonBuilder>()
+    const buttonRow = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
             new ButtonBuilder()
                 .setCustomId("back")
@@ -85,7 +85,6 @@ const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message,
     if(!out) return;
     out.deferUpdate();
     if (out.isButton()) return;
-    if(!out.values) return;
     const values = out.values;
 
     const newOrder: ObjectSchema[] = currentObj.map((_, i) => {
@@ -156,7 +155,6 @@ const editNameDescription = async (i: ButtonInteraction, interaction: StringSele
     }
     if(!out) return [name, description];
     if (out.isButton()) return [name, description];
-    if(!out.fields) return [name, description];
     name = out.fields.fields.find((f) => f.customId === "name")?.value ?? name;
     description = out.fields.fields.find((f) => f.customId === "description")?.value ?? description;
     return [name, description]
@@ -223,19 +221,22 @@ const editRoleMenuPage = async (interaction: StringSelectMenuInteraction | Butto
             }
         } else if (i.isButton()) {
             switch (i.customId) {
-                case "back":
+                case "back": {
                     await i.deferUpdate();
                     back = true;
                     break;
-                case "edit":
-                    let [name, description] = await editNameDescription(i, interaction, m, data);
+                }
+                case "edit": {
+                    const [name, description] = await editNameDescription(i, interaction, m, data);
                     data.name = name ? name : data.name;
                     data.description = description ? description : data.description;
                     break;
-                case "addRole":
+                }
+                case "addRole": {
                     await i.deferUpdate();
                     data.options.push(await createRoleMenuOptionPage(interaction, m));
                     break;
+                }
             }
         }
 
@@ -247,9 +248,9 @@ const editRoleMenuPage = async (interaction: StringSelectMenuInteraction | Butto
 const createRoleMenuOptionPage = async (interaction: StringSelectMenuInteraction | ButtonInteraction, m: Message, data?: {name: string; description: string | null; role: string}) => {
     const { renderRole} = client.logger;
     if (!data) data = {
-        name: "Role Menu Option",
+        name: "New role Menu Option",
         description: null,
-        role: "No role set"
+        role: ""
     };
     let back = false;
     const buttons = new ActionRowBuilder<ButtonBuilder>()
@@ -268,11 +269,11 @@ const createRoleMenuOptionPage = async (interaction: StringSelectMenuInteraction
     do {
         const roleSelect = new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder(data.role ? "Set role to" : "Set the role");
         const embed = new EmojiEmbed()
-            .setTitle(`${data.name ?? "New Role Menu Option"}`)
+            .setTitle(`${data.name}`)
             .setStatus("Success")
             .setDescription(
                 `**Description:**\n> ${data.description ?? "No description set"}\n\n` +
-                `**Role:** ${renderRole((await interaction.guild!.roles.fetch(data.role))!) ?? "No role set"}\n`
+                `**Role:** ${data.role ? renderRole((await interaction.guild!.roles.fetch(data.role))!) : "No role set"}\n`
             )
 
         interaction.editReply({embeds: [embed], components: [new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleSelect), buttons]});
@@ -292,16 +293,18 @@ const createRoleMenuOptionPage = async (interaction: StringSelectMenuInteraction
             }
         } else if (i.isButton()) {
             switch (i.customId) {
-                case "back":
+                case "back": {
                     await i.deferUpdate();
                     back = true;
                     break;
-                case "edit":
+                }
+                case "edit": {
                     await i.deferUpdate();
-                    let [name, description] = await editNameDescription(i, interaction, m, data as {name: string; description: string});
+                    const [name, description] = await editNameDescription(i, interaction, m, data as {name: string; description: string});
                     data.name = name ? name : data.name;
                     data.description = description ? description : data.description;
                     break;
+                }
             }
         }
     } while (!back);
@@ -409,54 +412,63 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             i = await m.awaitMessageComponent({ time: 300000, filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id && i.channelId === interaction.channelId}) as ButtonInteraction | StringSelectMenuInteraction;
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
 
         await i.deferUpdate();
         if (i.isButton()) {
             switch (i.customId) {
-                case "back":
+                case "back": {
                     page--;
                     break;
-                case "next":
+                }
+                case "next": {
                     page++;
                     break;
-                case "add":
-                    let newPage = await editRoleMenuPage(i, m)
+                }
+                case "add": {
+                    const newPage = await editRoleMenuPage(i, m)
                     if(!newPage) break;
                     currentObject.push();
                     page = currentObject.length - 1;
                     break;
-                case "reorder":
-                    let reordered = await reorderRoleMenuPages(interaction, m, currentObject);
+                }
+                case "reorder": {
+                    const reordered = await reorderRoleMenuPages(interaction, m, currentObject);
                     if(!reordered) break;
                     currentObject = reordered;
                     break;
-                case "save":
+                }
+                case "save": {
                     client.database.guilds.write(interaction.guild.id, {"roleMenu.options": currentObject});
                     modified = false;
                     break;
+                }
             }
         } else if (i.isStringSelectMenu()) {
             switch (i.customId) {
-                case "action":
+                case "action": {
                     switch(i.values[0]) {
-                        case "edit":
-                            let edited = await editRoleMenuPage(i, m, current!);
+                        case "edit": {
+                            const edited = await editRoleMenuPage(i, m, current!);
                             if(!edited) break;
                             currentObject[page] = edited;
                             modified = true;
                             break;
-                        case "delete":
+                        }
+                        case "delete": {
                             if(page === 0 && currentObject.keys.length - 1 > 0) page++;
                             else page--;
                             currentObject.splice(page, 1);
                             break;
+                        }
                     }
                     break;
-                case "page":
+                }
+                case "page": {
                     page = parseInt(i.values[0]!);
                     break;
+                }
             }
         }
 
