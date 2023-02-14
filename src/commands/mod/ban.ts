@@ -25,7 +25,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (!interaction.guild) return;
     const { renderUser } = client.logger;
-    // TODO:[Modals] Replace this with a modal
+    // TODO:[Modals] Replace the command arguments with a modal
     let reason = null;
     let notify = true;
     let confirmation;

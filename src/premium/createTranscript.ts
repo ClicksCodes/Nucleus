@@ -7,7 +7,8 @@ import {
     MessageComponentInteraction,
     TextChannel,
     ButtonStyle,
-    User
+    User,
+    ComponentType
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -15,6 +16,64 @@ import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import client from "../utils/client.js";
 
 const pbClient = new PasteClient(client.config.pastebinApiKey);
+
+interface TranscriptEmbed {
+    title?: string;
+    description?: string;
+    fields?: {
+        name: string;
+        value: string;
+        inline: boolean;
+    }[];
+    footer?: {
+        text: string;
+        iconURL?: string;
+    };
+}
+
+interface TranscriptComponent {
+    type: number;
+    style?: ButtonStyle;
+    label?: string;
+    description?: string;
+    placeholder?: string;
+    emojiURL?: string;
+}
+
+interface TranscriptAuthor {
+    username: string;
+    discriminator: number;
+    nickname?: string;
+    id: string;
+    iconURL?: string;
+    topRole: {
+        color: number;
+        badgeURL?: string;
+    }
+}
+
+interface TranscriptMessage {
+    id: string;
+    author: TranscriptAuthor;
+    content?: string;
+    embeds?: TranscriptEmbed[];
+    components?: TranscriptComponent[][];
+    editedTimestamp?: number;
+    createdTimestamp: number;
+    flags?: string[];
+    attachments?: unknown; //FIXME
+    stickerURLs?: string[];
+    referencedMessage?: string | [string, string, string];
+}
+
+interface Transcript {
+    type: "ticket" | "purge"
+    guild: string;
+    channel: string;
+    messages: TranscriptMessage[];
+    createdTimestamp: number;
+    createdBy: TranscriptAuthor;
+}
 
 export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
     if (interaction.channel === null) return;
@@ -45,6 +104,75 @@ export default async function (interaction: CommandInteraction | MessageComponen
             out += "\n\n";
         }
     });
+
+    let interactionMember = await interaction.guild?.members.fetch(interaction.user.id)
+
+    let newOut: Transcript = {
+        type: "ticket",
+        guild: interaction.guild!.id,
+        channel: interaction.channel!.id,
+        messages: [],
+        createdTimestamp: Date.now(),
+        createdBy: {
+            username: interaction.user.username,
+            discriminator: parseInt(interaction.user.discriminator),
+            id: interaction.user.id,
+            topRole: {
+                color: interactionMember?.roles.highest.color ?? 0x000000
+            }
+        }
+    }
+    if(interactionMember?.roles.icon) newOut.createdBy.topRole.badgeURL = interactionMember.roles.icon.iconURL()!;
+    messages.reverse().forEach((message) => {
+        let msg: TranscriptMessage = {
+            id: message.id,
+            author: {
+                username: message.author.username,
+                discriminator: parseInt(message.author.discriminator),
+                id: message.author.id,
+                topRole: {
+                    color: message.member!.roles.highest.color
+                }
+            },
+            createdTimestamp: message.createdTimestamp
+        };
+        if (message.member!.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
+        if (message.content) msg.content = message.content;
+        if (message.embeds.length > 0) msg.embeds = message.embeds.map(embed => {
+            let obj: TranscriptEmbed = {};
+            if (embed.title) obj.title = embed.title;
+            if (embed.description) obj.description = embed.description;
+            if (embed.fields.length > 0) obj.fields = embed.fields.map(field => {
+                return {
+                    name: field.name,
+                    value: field.value,
+                    inline: field.inline ?? false
+                }
+            });
+            if (embed.footer) obj.footer = {
+                text: embed.footer.text,
+            };
+            if (embed.footer?.iconURL) obj.footer!.iconURL = embed.footer.iconURL;
+            return obj;
+        });
+        if (message.components.length > 0) msg.components = message.components.map(component => component.components.map(child => {
+            let obj: TranscriptComponent = {
+                type: child.type
+            }
+            if (child.type === ComponentType.Button) {
+                obj.style = child.style;
+                obj.label = child.label ?? "";
+            }
+            return obj
+        }));
+        if (message.editedTimestamp) msg.editedTimestamp = message.editedTimestamp;
+        if (message.flags) msg.flags = message.flags.toArray();
+
+        if (message.stickers.size > 0) msg.stickerURLs = message.stickers.map(sticker => sticker.url);
+        if (message.reference) msg.referencedMessage = [message.reference.guildId ?? "", message.reference.channelId, message.reference.messageId ?? ""];
+
+    });
+
     const topic = interaction.channel.topic;
     let member: GuildMember | null = null;
     if (topic !== null) {
