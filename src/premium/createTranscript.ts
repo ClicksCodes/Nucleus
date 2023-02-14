@@ -8,7 +8,9 @@ import {
     TextChannel,
     ButtonStyle,
     User,
-    ComponentType
+    ComponentType,
+    APIBaseSelectMenuComponent,
+    SelectMenuComponent
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -162,6 +164,8 @@ export default async function (interaction: CommandInteraction | MessageComponen
             if (child.type === ComponentType.Button) {
                 obj.style = child.style;
                 obj.label = child.label ?? "";
+            } else if (child.type > 2) {
+                obj.placeholder = child.placeholder ?? "";
             }
             return obj
         }));
