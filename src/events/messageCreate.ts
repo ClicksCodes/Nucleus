@@ -25,6 +25,12 @@ export async function callback(_client: NucleusClient, message: Message) {
 
     const content = message.content.toLowerCase() || "";
     const config = await client.memory.readGuildInfo(message.guild.id);
+    if(config.filters.clean.channels.includes(message.channel.id)) {
+        let memberRoles = message.member!.roles.cache.map(role => role.id);
+        let roleAllow = config.filters.clean.allowed.roles.some(role => memberRoles.includes(role));
+        let userAllow = config.filters.clean.allowed.user.includes(message.author.id);
+        if(!roleAllow && !userAllow) return await message.delete();
+    }
     const filter = getEmojiByName("ICONS.FILTER");
     let attachmentJump = "";
     if (config.logging.attachments.saved[message.channel.id + message.id]) {

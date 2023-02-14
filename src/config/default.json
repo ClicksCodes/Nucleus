@@ -40,6 +40,13 @@
                 "channels": [],
                 "rolesToMention": []
             }
+        },
+        "clean": {
+            "channels": [],
+            "allowed": {
+                "user": [],
+                "roles": []
+            }
         }
     },
     "welcome": {

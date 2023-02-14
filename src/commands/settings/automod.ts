@@ -666,6 +666,152 @@ const mentionMenu = async (interaction: StringSelectMenuInteraction, m: Message,
     return current
 }
 
+const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, current: {
+    channels: string[],
+    allowed: {
+        roles: string[],
+        user: string[]
+    }
+}): Promise<{
+    channels: string[],
+    allowed: {
+        roles: string[],
+        user: string[]
+    }
+}> => {
+    let closed = false;
+    if(!current) current = {channels: [], allowed: {roles: [], user: []}};
+    if(!current.channels) current.channels = [];
+    if(!current.allowed) current.allowed = {roles: [], user: []};
+
+    const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>()
+        .addComponents(
+            new ChannelSelectMenuBuilder()
+                .setCustomId("toAdd")
+                .setPlaceholder("Select a channel")
+        )
+
+    const allowedMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId("allowed")
+                .setPlaceholder("Edit exceptions")
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                            .setLabel("Users")
+                            .setDescription("Users that are unaffected by the mention filter")
+                            .setValue("users"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Roles")
+                            .setDescription("Roles that are unaffected by the mention filter")
+                            .setValue("roles")
+                )
+        )
+
+    do {
+
+        const buttons = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("back")
+                    .setLabel("Back")
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+            )
+
+        const embed = new EmojiEmbed()
+            .setTitle("Clean Settings")
+            .setEmoji("GUILD.SETTINGS.GREEN")
+            .setDescription(
+                `Current clean channels:\n\n` +
+                `${current.channels.length > 0 ? listToAndMore(current.channels.map(c => `<#${c}>`), 10) : "None"}\n\n`
+            )
+            .setStatus("Success")
+
+
+        await interaction.editReply({embeds: [embed], components: [channelMenu, allowedMenu, buttons]});
+
+        let i: ButtonInteraction | ChannelSelectMenuInteraction;
+        try {
+            i = await m.awaitMessageComponent({filter: (i) => interaction.user.id === i.user.id && i.message.id === m.id, time: 300000}) as ButtonInteraction | ChannelSelectMenuInteraction;
+        } catch (e) {
+            closed = true;
+            break;
+        }
+        await i.deferUpdate();
+        if(i.isButton()) {
+            switch (i.customId) {
+                case "back": {
+                    closed = true;
+                    break;
+                }
+            }
+        } else {
+            switch (i.customId) {
+                case "toAdd": {
+                    let channelEmbed = new EmojiEmbed()
+                        .setTitle("Clean Settings")
+                        .setDescription(`Editing <#${i.values[0]}>`)
+                        .setEmoji("GUILD.SETTINGS.GREEN")
+                        .setStatus("Success")
+                    let channelButtons = new ActionRowBuilder<ButtonBuilder>()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setCustomId("back")
+                                .setLabel("Back")
+                                .setStyle(ButtonStyle.Primary)
+                                .setEmoji(getEmojiByName("CONTROL.LEFT", "id")),
+                            new ButtonBuilder()
+                                .setCustomId("switch")
+                                .setLabel(current.channels.includes(i.values[0]!) ? "Remove" : "Add")
+                                .setStyle(current.channels.includes(i.values[0]!) ? ButtonStyle.Danger : ButtonStyle.Success)
+                        )
+
+                    await i.editReply({embeds: [channelEmbed], components: [channelButtons]});
+                    let j: ButtonInteraction;
+                    try {
+                        j = await m.awaitMessageComponent({filter: (i) => interaction.user.id === i.user.id && i.message.id === m.id, time: 300000}) as ButtonInteraction;
+                    } catch (e) {
+                        closed = true;
+                        break;
+                    }
+                    await j.deferUpdate();
+                    switch (j.customId) {
+                        case "back": {
+                            break;
+                        }
+                        case "switch": {
+                            if(current.channels.includes(i.values[0]!)) {
+                                current.channels.splice(current.channels.indexOf(i.values[0]!), 1);
+                            } else {
+                                current.channels.push(i.values[0]!);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case "allowed": {
+                    switch (i.values[0]) {
+                        case "users": {
+                            current.allowed.user = await toSelectMenu(interaction, m, current.allowed.user, "member", "Mention Settings");
+                            break;
+                        }
+                        case "roles": {
+                            current.allowed.roles = await toSelectMenu(interaction, m, current.allowed.roles, "role", "Mention Settings");
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+    } while(!closed);
+
+    return current;
+
+}
+
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (!interaction.guild) return;
     const m = await interaction.reply({embeds: LoadingEmbed, fetchReply: true, ephemeral: true});
@@ -708,7 +854,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         new StringSelectMenuOptionBuilder()
                             .setLabel("Images")
                             .setDescription("Checks performed on images (NSFW, size checking, etc.)")
-                            .setValue("images")
+                            .setValue("images"),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel("Clean")
+                            .setDescription("Automatically delete new messages in specific channels")
+                            .setValue("clean")
                     )
             );
 
@@ -719,7 +869,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 `${emojiFromBoolean(config.pings.everyone || config.pings.mass > 0 || config.pings.roles)} **Mentions**\n` +
                 `${emojiFromBoolean(config.wordFilter.enabled)} **Words**\n` +
                 `${emojiFromBoolean(config.malware)} **Malware**\n` +
-                `${emojiFromBoolean(config.images.NSFW || config.images.size)} **Images**\n`
+                `${emojiFromBoolean(config.images.NSFW || config.images.size)} **Images**\n` +
+                `${emojiFromBoolean(config.clean.channels.length > 0)} **Clean**\n`
             )
             .setStatus("Success")
             .setEmoji("GUILD.SETTINGS.GREEN")
@@ -734,34 +885,35 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             closed = true;
             continue;
         }
+        await i.deferUpdate();
         if(i.isButton()) {
-            await i.deferUpdate();
             await client.database.guilds.write(interaction.guild.id, {filters: config});
         } else {
             switch(i.values[0]) {
                 case "invites": {
-                    await i.deferUpdate();
                     config.invite = await inviteMenu(i, m, config.invite);
                     break;
                 }
                 case "mentions": {
-                    await i.deferUpdate();
                     config.pings = await mentionMenu(i, m, config.pings);
                     break;
                 }
                 case "words": {
-                    await i.deferUpdate();
                     config.wordFilter = await wordMenu(i, m, config.wordFilter);
                     break;
                 }
                 case "malware": {
-                    await i.deferUpdate();
                     config.malware = !config.malware;
                     break;
                 }
                 case "images": {
                     const next = await imageMenu(i, m, config.images);
                     config.images = next;
+                    break;
+                }
+                case "clean": {
+                    const next = await cleanMenu(i, m, config.clean);
+                    config.clean = next;
                     break;
                 }
             }

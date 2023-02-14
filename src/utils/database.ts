@@ -332,6 +332,13 @@ export interface GuildConfig {
                 channels: string[];
             };
         };
+        clean: {
+            channels: string[];
+            allowed: {
+                user: string[];
+                roles: string[];
+            }
+        }
     };
     welcome: {
         enabled: boolean;
