@@ -47,7 +47,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }) + "Are you sure you want to set the slowmode in this channel?"
         )
         .setColor("Danger")
-        .setFailedMessage("No changes were made", "Danger", "CHANNEL.SLOWMODE.ON")
+        .setFailedMessage("No changes were made", "Success", "CHANNEL.SLOWMODE.ON")
         .send();
     if (confirmation.cancelled || !confirmation.success) return;
     try {

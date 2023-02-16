@@ -107,7 +107,7 @@ const editNameDescription = async (i: ButtonInteraction, interaction: StringSele
                     new TextInputBuilder()
                         .setLabel("Name")
                         .setCustomId("name")
-                        .setPlaceholder("Name here...") // TODO: Make better placeholder
+                        .setPlaceholder("The name of the role (e.g. Programmer)")
                         .setStyle(TextInputStyle.Short)
                         .setValue(name ?? "")
                         .setRequired(true)
@@ -117,7 +117,7 @@ const editNameDescription = async (i: ButtonInteraction, interaction: StringSele
                     new TextInputBuilder()
                         .setLabel("Description")
                         .setCustomId("description")
-                        .setPlaceholder("Description here...") // TODO: Make better placeholder
+                        .setPlaceholder("A short description of the role (e.g. A role for people who code)")
                         .setStyle(TextInputStyle.Short)
                         .setValue(description ?? "")
                 )

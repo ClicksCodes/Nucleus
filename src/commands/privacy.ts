@@ -21,7 +21,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(
                         "Nucleus is a bot that naturally needs to store data about servers.\n" +
                             "We are entirely [open source](https://github.com/ClicksMinutePer/Nucleus), so you can check exactly what we store, and how it works.\n\n" +
-                            "If you are a server administrator, you can view the options page in the dropdown under this message.\n\n" +  // TODO
                             "Any questions about Nucleus, how it works, and what data is stored can be asked in [our server](https://discord.gg/bPaNnxe)."
                     )
                     .setEmoji("NUCLEUS.LOGO")
@@ -51,7 +50,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(
                         "**Facebook** - Facebook trackers include data such as your date of birth, and guess your age if not entered, your preferences, who you interact with and more.\n" +
                             "**AMP** - AMP is a technology that allows websites to be served by Google. This means Google can store and track data, and are pushing this to as many pages as possible.\n\n" +
-                            "Transcripts allow you to store all messages sent in a channel. This could be an issue in some cases, as they are hosted on [Pastebin](https://pastebin.com), so a leaked link could show all messages sent in the channel.\n"  // TODO: Not on pastebin
+                            "Transcripts allow you to store all messages sent in a channel. This is stored in our database along with the rest of the servers settings but is accessible by anyone with the link, so a leaked link could show all messages sent in the channel.\n"
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
@@ -62,26 +61,26 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     ].concat(
         (interaction.member as Discord.GuildMember).permissions.has("Administrator")
             ? [
-                  new Embed()
-                      .setEmbed(
-                          new EmojiEmbed()
-                              .setTitle("Options")
-                              .setDescription("Below are buttons for controlling this servers privacy settings")
-                              .setEmoji("NUCLEUS.LOGO")
-                              .setStatus("Danger")
-                      )
-                      .setTitle("Options")
-                      .setDescription("Options")
-                      .setPageId(3)
-                      .setComponents([
-                          new ActionRowBuilder<ButtonBuilder>().addComponents([
-                              new ButtonBuilder()
-                                  .setLabel("Clear all data")
-                                  .setCustomId("clear-all-data")
-                                  .setStyle(ButtonStyle.Danger)
-                          ])
-                      ])
-              ]
+                new Embed()
+                    .setEmbed(
+                        new EmojiEmbed()
+                            .setTitle("Options")
+                            .setDescription("Below are buttons for controlling this servers privacy settings")
+                            .setEmoji("NUCLEUS.LOGO")
+                            .setStatus("Danger")
+                    )
+                    .setTitle("Options")
+                    .setDescription("Options")
+                    .setPageId(3)
+                    .setComponents([
+                        new ActionRowBuilder<ButtonBuilder>().addComponents([
+                            new ButtonBuilder()
+                                .setLabel("Clear all data")
+                                .setCustomId("clear-all-data")
+                                .setStyle(ButtonStyle.Danger)
+                        ])
+                    ])
+            ]
             : []
     );
     const m = await interaction.reply({

@@ -43,7 +43,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
             );
             return { files: attachments };
         }
-        const channelObj = await client.channels.fetch(channel);
+        const channelObj = await message.guild.channels.fetch(channel);
         if (!channelObj) {
             singleNotify(
                 "attachmentLogChannelDeleted",

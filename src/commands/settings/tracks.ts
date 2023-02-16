@@ -35,7 +35,7 @@ const editName = async (i: ButtonInteraction, interaction: StringSelectMenuInter
                     new TextInputBuilder()
                         .setLabel("Name")
                         .setCustomId("name")
-                        .setPlaceholder("Name here...") // TODO: Make better placeholder
+                        .setPlaceholder("The name of the track (e.g. Moderators)")
                         .setStyle(TextInputStyle.Short)
                         .setValue(name)
                         .setRequired(true)

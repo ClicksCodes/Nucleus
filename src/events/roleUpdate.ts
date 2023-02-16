@@ -32,6 +32,12 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
         changes["mentionable"] = entry([oldRole.mentionable, newRole.mentionable], `${mentionable[0]} -> ${mentionable[1]}`);
     if (oldRole.hexColor !== newRole.hexColor)
         changes["color"] = entry([oldRole.hexColor, newRole.hexColor], `\`${oldRole.hexColor}\` -> \`${newRole.hexColor}\``);
+    if (oldRole.permissions.bitfield !== newRole.permissions.bitfield) {
+        changes["permissions"] = entry(
+            [oldRole.permissions.bitfield.toString(), newRole.permissions.bitfield.toString()],
+            `[[Old]](https://discordapi.com/permissions.html#${oldRole.permissions.bitfield.toString()}) -> [[New]](https://discordapi.com/permissions.html#${newRole.permissions.bitfield.toString()})`
+        );
+    }
 
     if (Object.keys(changes).length === 4) return;
 
@@ -48,6 +54,6 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
         hidden: {
             guild: newRole.guild.id
         }
-    }; // TODO: show perms changed (webpage)
+    }; // TODO: make our own page for this
     log(data);
 }

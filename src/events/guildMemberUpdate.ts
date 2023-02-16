@@ -43,7 +43,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
         log(data);
     } else if (
         (before.communicationDisabledUntilTimestamp ?? 0) < new Date().getTime() &&
-        (after.communicationDisabledUntil ?? 0) > new Date().getTime() // TODO: test this
+        (after.communicationDisabledUntil ?? 0) > new Date().getTime()
     ) {
         await client.database.history.create(
             "mute",

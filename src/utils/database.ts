@@ -168,7 +168,7 @@ export class ScanCache {
     }
 
     async write(hash: string, data: boolean, tags?: string[]) {
-        await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() });  // TODO: cleanup function maybe
+        await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() });
     }
 
     async cleanup() {

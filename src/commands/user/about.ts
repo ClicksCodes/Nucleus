@@ -173,11 +173,8 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
                         generateKeyValueList({
                             member: renderUser(member.user),
                             id: `\`${member.id}\``,
-                            roles: `${member.roles.cache.size - 1}`  // FIXME
-                        }) +
-                            "\n" +
-                            (s.length > 0 ? s : "*None*") +
-                            "\n"
+                            roles: `${member.roles.cache.size - 1}`
+                        }) + "\n" + (s.length > 0 ? s : "*None*") + "\n"
                     )
             )
             .setTitle("Roles")

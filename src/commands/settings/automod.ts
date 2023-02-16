@@ -29,6 +29,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import listToAndMore from "../../utils/listToAndMore.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -36,14 +37,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 
 const emojiFromBoolean = (bool: boolean, id?: string) => bool ? getEmojiByName("CONTROL.TICK", id) : getEmojiByName("CONTROL.CROSS", id);
-
-const listToAndMore = (list: string[], max: number) => {
-    // PineappleFan, Coded, Mini (and 10 more)
-    if(list.length > max) {
-        return list.slice(0, max).join(", ") + ` (and ${list.length - max} more)`;
-    }
-    return list.join(", ");
-}
 
 const toSelectMenu = async (interaction: StringSelectMenuInteraction, m: Message, ids: string[], type: "member" | "role" | "channel", title: string): Promise<string[]> => {
 

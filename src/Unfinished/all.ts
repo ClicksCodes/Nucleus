@@ -16,7 +16,7 @@ import addPlural from "../utils/plurals.js";
 import client from "../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder // TODO: DON'T RELEASE THIS
+    builder
         .setName("all")
         .setDescription("Gives or removes a role from everyone");
 

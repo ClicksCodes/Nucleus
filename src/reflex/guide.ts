@@ -73,7 +73,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                             "**General:** These are events like kicks and channel changes etc.\n" +
                             `> These are standard logs and can be set with ${getCommandMentionByName("settings/logs/general")}\n` +
                             "**Warnings:** Warnings like NSFW avatars and spam etc. that may require action by a server staff member.\n" +
-                            `> These may require special action by a moderator. You can set the channel with ${getCommandMentionByName("settings/logs/warnings")}\n` +  // TODO
+                            `> These may require special action by a moderator. You can set the channel with ${getCommandMentionByName("settings/logs/warnings")}\n` +
                             "**Attachments:** All images sent in the server - Used to keep a record of deleted images\n" +
                             `> Sent to a separate log channel to avoid spam. This can be set with ${getCommandMentionByName("settings/logs/attachments")}\n` +
                             `> ${getEmojiByName("NUCLEUS.PREMIUM")} Please note this feature is only available with ${getCommandMentionByName("nucleus/premium")}`

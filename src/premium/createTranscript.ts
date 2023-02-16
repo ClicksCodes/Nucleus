@@ -8,9 +8,7 @@ import {
     TextChannel,
     ButtonStyle,
     User,
-    ComponentType,
-    APIBaseSelectMenuComponent,
-    SelectMenuComponent
+    ComponentType
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -54,6 +52,13 @@ interface TranscriptAuthor {
     }
 }
 
+interface TranscriptAttachment {
+    url: string;
+    filename: string;
+    size: number;
+    log?: string;
+}
+
 interface TranscriptMessage {
     id: string;
     author: TranscriptAuthor;
@@ -63,7 +68,7 @@ interface TranscriptMessage {
     editedTimestamp?: number;
     createdTimestamp: number;
     flags?: string[];
-    attachments?: unknown; //FIXME
+    attachments?: TranscriptAttachment[];
     stickerURLs?: string[];
     referencedMessage?: string | [string, string, string];
 }

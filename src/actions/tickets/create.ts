@@ -257,7 +257,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                                                 type: Discord.ChannelType.PrivateThread,
                                                 reason: "Creating ticket"
                                                 }) as Discord.PrivateThreadChannel;
-        c.members.add(interaction.member!.user.id);  // TODO: When a thread is used, and a support role is added, automatically set channel permissions
+        c.members.add(interaction.member!.user.id);
         try {
             await c.send({
                 content:

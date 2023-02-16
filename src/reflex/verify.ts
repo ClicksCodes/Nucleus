@@ -13,6 +13,8 @@ import fetch from "node-fetch";
 import { TestString, NSFWCheck } from "./scanners.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
 import client from "../utils/client.js";
+import singleNotify from "../utils/singleNotify.js";
+import { getCommandMentionByName } from "../utils/getCommandDataByName.js";
 
 export interface VerifySchema {
     uID: string;
@@ -206,7 +208,8 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                     .setEmoji("CONTROL.BLOCKCROSS")
             ]
         });
-        return; // TODO: SEN
+        singleNotify("verifyRoleDeleted", interaction.guild!.id, `The role given when a member is verified has been deleted. Use ${getCommandMentionByName("settings/verify")} to set a new one`, "Critical")
+        return;
     }
     verify[code] = {
         uID: interaction.member!.user.id,

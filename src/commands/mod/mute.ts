@@ -103,7 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (i) => {return i.user.id === interaction.user.id && i.id === m.id},
+                filter: (i) => {return i.user.id === interaction.user.id && i.channelId === interaction.channelId},
                 time: 300000
             });
         } catch {

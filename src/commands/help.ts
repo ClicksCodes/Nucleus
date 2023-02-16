@@ -84,7 +84,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         if(currentPath[0] === "" || currentPath[0] === "help") {
             embed.setDescription(
                 `Welcome to Nucleus\n\n` +
-                `Select a command to get started${(interaction.member?.permissions as PermissionsBitField).has("ManageGuild") ? `, or run ${getCommandMentionByName("nucleus/guide")} for commands to set up your server` : ``}`  // FIXME
+                `Select a command to get started${
+                    (interaction.member?.permissions as PermissionsBitField).has("ManageGuild") ?
+                        `, or run ${getCommandMentionByName("nucleus/guide")} for commands to set up your server` : ``
+                    }\n\n\n` +
+                `Nucleus is fully [open source](https://github.com/clicksminuteper/Nucleus), and all currently free features will remain free forever.\n\n` +
+                `You can invite Nucleus to your server using ${getCommandMentionByName("nucleus/invite")}`
             )
         } else {
             const currentData = getCommandByName(currentPath.filter(value => value !== "" && value !== "none").join('/'));
@@ -95,7 +100,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 nameLocalized?: string;
                 descriptionLocalized?: string;
             })[] = [];
-            //options
+            //o ptions
             if(currentPath[1] !== "" && currentPath[1] !== "none" && currentPath[2] !== "" && currentPath[2] !== "none") {
                 const Op = current.options.find(option => option.name === currentPath[1])! as ApplicationCommandSubGroup
                 const Op2 = Op.options!.find(option => option.name === currentPath[2])!
