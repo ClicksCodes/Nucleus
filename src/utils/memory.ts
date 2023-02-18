@@ -7,6 +7,7 @@ interface GuildData {
     logging: GuildConfig["logging"];
     tickets: GuildConfig["tickets"];
     tags: GuildConfig["tags"];
+    autoPublish: GuildConfig["autoPublish"];
 }
 
 class Memory {
@@ -31,7 +32,8 @@ class Memory {
                 filters: guildData.filters,
                 logging: guildData.logging,
                 tickets: guildData.tickets,
-                tags: guildData.tags
+                tags: guildData.tags,
+                autoPublish: guildData.autoPublish
             });
         }
         return this.memory.get(guild)!;

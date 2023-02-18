@@ -114,5 +114,9 @@
     },
     "tracks": [],
     "roleMenu": [],
-    "tags": {}
+    "tags": {},
+    "autoPublish": {
+        "enabled": false,
+        "channels": []
+    }
 }

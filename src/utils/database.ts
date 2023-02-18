@@ -340,6 +340,10 @@ export interface GuildConfig {
             }
         }
     };
+    autoPublish: {
+        enabled: boolean;
+        channels: string[];
+    }
     welcome: {
         enabled: boolean;
         role: string | null;

@@ -31,6 +31,11 @@ export async function callback(_client: NucleusClient, message: Message) {
         let userAllow = config.filters.clean.allowed.user.includes(message.author.id);
         if(!roleAllow && !userAllow) return await message.delete();
     }
+
+    if (config.autoPublish.enabled && config.autoPublish.channels.includes(message.channel.id)) {
+        await message.crosspost();
+    }
+
     const filter = getEmojiByName("ICONS.FILTER");
     let attachmentJump = "";
     if (config.logging.attachments.saved[message.channel.id + message.id]) {
