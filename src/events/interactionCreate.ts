@@ -31,14 +31,14 @@ async function modifySuggestion(interaction: Discord.MessageComponentInteraction
     await message.fetch();
     if (message.embeds.length === 0) return;
     const embed = message.embeds[0];
-    const newColour = accept ? "Success" : "Danger";
+    const newcolor = accept ? "Success" : "Danger";
     const footer = {text: `Suggestion ${accept ? "accepted" : "denied"} by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL()};
 
     const newEmbed = new EmojiEmbed()
         .setTitle(embed!.title!)
         .setDescription(embed!.description!)
         .setFooter(footer)
-        .setStatus(newColour);
+        .setStatus(newcolor);
 
     await interaction.update({embeds: [newEmbed], components: []});
 }

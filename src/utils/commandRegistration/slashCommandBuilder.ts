@@ -6,7 +6,7 @@ import client from "../client.js";
 import Discord from "discord.js";
 
 
-const colours = {
+const colors = {
     red: "\x1b[31m",
     green: "\x1b[32m",
     none: "\x1b[0m"
@@ -23,7 +23,7 @@ export async function group(
     // If the name of the command does not match the path (e.g. attachment.ts has /attachments), use commandString
     console.log(`│  ├─ Loading group ${name}`)
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path, "│  ")
-    console.log(`│  │  └─ ${fetched.errors ? colours.red : colours.green}Loaded ${fetched.subcommands.length} subcommands for ${name} (${fetched.errors} failed)${colours.none}`)
+    console.log(`│  │  └─ ${fetched.errors ? colors.red : colors.green}Loaded ${fetched.subcommands.length} subcommands for ${name} (${fetched.errors} failed)${colors.none}`)
     return (subcommandGroup: SlashCommandSubcommandGroupBuilder) => {
         subcommandGroup
             .setName(name)
@@ -54,7 +54,7 @@ export async function command(
     // If the name of the command does not match the path (e.g. attachment.ts has /attachments), use commandString
     commandString = "commands/" + (commandString ?? path);
     const fetched = await getSubcommandsInFolder(config.commandsFolder + "/" + path);
-    console.log(`│  ├─ ${fetched.errors ? colours.red : colours.green}Loaded ${fetched.subcommands.length} subcommands and ${fetched.subcommandGroups.length} subcommand groups for ${name} (${fetched.errors} failed)${colours.none}`)
+    console.log(`│  ├─ ${fetched.errors ? colors.red : colors.green}Loaded ${fetched.subcommands.length} subcommands and ${fetched.subcommandGroups.length} subcommand groups for ${name} (${fetched.errors} failed)${colors.none}`)
     // console.log({name: name, description: description})
     client.commands[commandString!] = [undefined, { name: name, description: description }]
     return (command: SlashCommandBuilder) => {

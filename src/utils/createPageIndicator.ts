@@ -2,7 +2,7 @@ import getEmojiByName from "./getEmojiByName.js";
 
 function pageIndicator(amount: number, selected: number, showDetails?: boolean, disabled?: boolean | string) {
     let out = "";
-    disabled = disabled ? "GREY." : ""
+    disabled = disabled ? "GRAY." : ""
     if (amount === 1) {
         out += getEmojiByName("TRACKS.SINGLE." + (disabled) + (selected === 0 ? "ACTIVE" : "INACTIVE"));
     } else {
@@ -23,7 +23,7 @@ function pageIndicator(amount: number, selected: number, showDetails?: boolean, 
 
 export const verticalTrackIndicator = (position: number, active: string | boolean, size: number, disabled: string | boolean) => {
     active = active ? "ACTIVE" : "INACTIVE";
-    disabled = disabled ? "GREY." : "";
+    disabled = disabled ? "GRAY." : "";
     if (position === 0 && size === 1) return "TRACKS.SINGLE." + disabled + active;
     if (position === size - 1) return "TRACKS.VERTICAL.BOTTOM." + disabled + active;
     if (position === 0) return "TRACKS.VERTICAL.TOP." + disabled + active;
