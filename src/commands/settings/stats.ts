@@ -74,7 +74,6 @@ const showModal = async (interaction: MessageComponentInteraction, current: { en
 type ObjectSchema = Record<string, {name: string, enabled: boolean}>
 
 
-
 const addStatsChannel = async (interaction: CommandInteraction, m: Message, currentObject: ObjectSchema): Promise<ObjectSchema> => {
     let closed = false;
     let cancelled = false;
@@ -172,11 +171,7 @@ const addStatsChannel = async (interaction: CommandInteraction, m: Message, curr
                     });
                     showModal(i, {name: newChannelName, enabled: newChannelEnabled})
 
-                    const out: Discord.ModalSubmitInteraction | ButtonInteraction| null = await modalInteractionCollector(
-                        m,
-                        (m) => m.channel!.id === interaction.channel!.id && m.user!.id === interaction.user!.id,
-                        (i) => i.channel!.id === interaction.channel!.id && i.user!.id === interaction.user!.id && i.message!.id === m.id
-                    );
+                    const out: Discord.ModalSubmitInteraction | ButtonInteraction| null = await modalInteractionCollector(m, interaction.user);
                     if (!out) continue;
                     if (out.isButton()) continue;
                     newChannelName = out.fields.getTextInputValue("text");
@@ -340,11 +335,7 @@ const callback = async (interaction: CommandInteraction) => {
                             });
                             let out: Discord.ModalSubmitInteraction | null;
                             try {
-                                out = await modalInteractionCollector(
-                                    m,
-                                    (m) => m.channel!.id === interaction.channel!.id,
-                                    (_) => true
-                                ) as Discord.ModalSubmitInteraction | null;
+                                out = await modalInteractionCollector(m, interaction.user) as Discord.ModalSubmitInteraction | null;
                             } catch (e) {
                                 continue;
                             }
@@ -396,6 +387,7 @@ const callback = async (interaction: CommandInteraction) => {
         }
 
     } while (!closed);
+    await interaction.deleteReply()
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonComponent, TextInputBuilder, Message, RoleSelectMenuBuilder } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonComponent, TextInputBuilder, RoleSelectMenuBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
@@ -12,17 +12,16 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Links and text shown to a user after a moderator action is performed")
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    await interaction.reply({
+    const m = await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
     });
-    let m: Message;
     let timedOut = false;
     while (!timedOut) {
         const config = await client.database.guilds.read(interaction.guild!.id);
         const moderation = config.moderation;
-        m = await interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Moderation Commands")
@@ -152,11 +151,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             });
             let out: Discord.ModalSubmitInteraction | null;
             try {
-                out = await modalInteractionCollector(
-                    m,
-                    (m) => m.channel!.id === interaction.channel!.id,
-                    (_) => true
-                ) as Discord.ModalSubmitInteraction | null;
+                out = await modalInteractionCollector(m, interaction.user) as Discord.ModalSubmitInteraction | null;
             } catch (e) {
                 continue;
             }
@@ -175,6 +170,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }
         }
     }
+    await interaction.deleteReply()
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

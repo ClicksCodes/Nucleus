@@ -56,7 +56,7 @@ async function registerCommands() {
         }
     }
 
-    console.log(`${colours.green}Processed ${processed.length} commands`)
+    console.log(`${colours.green}Processed ${processed.length} commands${colours.none}`)
     return processed;
 
 };

@@ -1,4 +1,4 @@
-import { ButtonInteraction, Client, Interaction, InteractionCollector, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
+import { ButtonInteraction, Client, User, Interaction, InteractionCollector, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
 import client from "./client.js";
 
 export default async function (
@@ -45,17 +45,25 @@ export default async function (
     return out;
 }
 
+function defaultInteractionFilter(i: MessageComponentInteraction, user: User, m: Message) {
+    return i.channel!.id === m.channel!.id && i.user.id === user.id
+}
+function defaultModalFilter(i: ModalSubmitInteraction, user: User, m: Message) {
+    return i.channel!.id === m.channel!.id && i.user.id === user.id
+}
+
+
 export async function modalInteractionCollector(
-    m: Message,
-    modalFilter: (i: Interaction) => boolean | Promise<boolean>,
-    interactionFilter: (i: MessageComponentInteraction) => boolean | Promise<boolean>
+    m: Message, user: User,
+    modalFilter?: (i: Interaction) => boolean | Promise<boolean>,
+    interactionFilter?: (i: MessageComponentInteraction) => boolean | Promise<boolean>
 ): Promise<null | ButtonInteraction | ModalSubmitInteraction> {
     let out: ButtonInteraction | ModalSubmitInteraction;
     try {
         out = await new Promise((resolve, _reject) => {
             const int = m
                 .createMessageComponentCollector({
-                    filter: (i: MessageComponentInteraction) => interactionFilter(i),
+                    filter: (i: MessageComponentInteraction) => (interactionFilter ? interactionFilter(i) : true) && defaultInteractionFilter(i, user, m),
                     time: 300000
                 })
                 .on("collect", async (i: ButtonInteraction) => {
@@ -65,7 +73,7 @@ export async function modalInteractionCollector(
                     resolve(i);
                 });
             const mod = new InteractionCollector(client as Client, {
-                filter: (i: Interaction) => modalFilter(i) && i.isModalSubmit(),
+                filter: (i: Interaction) => (modalFilter ? modalFilter(i) : true) && i.isModalSubmit() && defaultModalFilter(i, user, m),
                 time: 300000
             }).on("collect", async (i: ModalSubmitInteraction) => {
                 int.stop();
@@ -75,6 +83,7 @@ export async function modalInteractionCollector(
             });
         });
     } catch (e) {
+        console.log(e);
         return null;
     }
     return out;

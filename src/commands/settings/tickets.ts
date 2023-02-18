@@ -181,11 +181,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     });
                     let out;
                     try {
-                        out = await modalInteractionCollector(
-                            m,
-                            (m) => m.user.id === interaction.user.id,
-                            (m) => m.customId === "back"
-                        );
+                        out = await modalInteractionCollector(m, interaction.user);
                     } catch (e) {
                         continue;
                     }
@@ -207,6 +203,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         }
     }
+    await interaction.deleteReply()
 };
 
 
@@ -384,11 +381,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             });
             let out;
             try {
-                out = await modalInteractionCollector(
-                    m,
-                    (m) => m.user.id === interaction.user.id,
-                    (m) => m.customId === "back"
-                );
+                out = await modalInteractionCollector(m, interaction.user);
             } catch (e) {
                 continue;
             }

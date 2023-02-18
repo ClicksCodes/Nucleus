@@ -33,7 +33,7 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                 try {
                     await channel.send({
                         embeds: [new EmojiEmbed().setDescription(string).setStatus("Success")],
-                        content: (config.welcome.ping ? `<@${config.welcome.ping}>` : "") + `<@${member.id}>`
+                        content: (config.welcome.ping ? `<@&${config.welcome.ping}>` : "") + `<@${member.id}>`
                     });
                 } catch (err) {
                     singleNotify(

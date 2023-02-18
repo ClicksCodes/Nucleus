@@ -1,11 +1,9 @@
 import { TextInputBuilder } from "discord.js";
 import Discord, {
     CommandInteraction,
-    Interaction,
     Message,
     ActionRowBuilder,
     ButtonBuilder,
-    MessageComponentInteraction,
     ModalSubmitInteraction,
     ButtonStyle,
     TextInputStyle
@@ -246,12 +244,7 @@ class confirmationMessage {
                 });
                 let out;
                 try {
-                    out = await modalInteractionCollector(
-                        m,
-                        (m: Interaction) =>
-                            (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === this.interaction.channelId,
-                        (m) => m.customId === "reason"
-                    );
+                    out = await modalInteractionCollector(m, this.interaction.user) as Discord.ModalSubmitInteraction | null;
                 } catch (e) {
                     cancelled = true;
                     continue;

@@ -8,11 +8,8 @@ import { ActionRowBuilder,
     ChannelSelectMenuBuilder,
     ChannelSelectMenuInteraction,
     CommandInteraction,
-    Interaction,
     Message,
-    MessageComponentInteraction,
     ModalBuilder,
-    ModalSubmitInteraction,
     RoleSelectMenuBuilder,
     RoleSelectMenuInteraction,
     StringSelectMenuBuilder,
@@ -317,12 +314,7 @@ const wordMenu = async (interaction: StringSelectMenuInteraction, m: Message, cu
                     await i.showModal(modal);
                     let out;
                     try {
-                        out = await modalInteractionCollector(
-                            m,
-                            (m: Interaction) =>
-                                (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
-                            (m) => m.customId === "back"
-                        );
+                        out = await modalInteractionCollector(m, interaction.user);
                     } catch (e) {
                         break;
                     }
@@ -612,12 +604,7 @@ const mentionMenu = async (interaction: StringSelectMenuInteraction, m: Message,
                             await i.showModal(modal);
                             let out;
                             try {
-                                out = await modalInteractionCollector(
-                                    m,
-                                    (m: Interaction) =>
-                                        (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
-                                    (m) => m.customId === "back"
-                                );
+                                out = await modalInteractionCollector(m, interaction.user);
                             } catch (e) {
                                 break;
                             }
@@ -912,7 +899,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }
         }
 
-    } while(!closed)
+    } while(!closed);
+    await interaction.deleteReply()
 
 };
 

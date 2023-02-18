@@ -3,7 +3,6 @@ import type { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
-    Interaction,
     Message,
     ActionRowBuilder,
     ButtonBuilder,
@@ -401,12 +400,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
             let out;
             try {
-                out = await modalInteractionCollector(
-                    m,
-                    (m: Interaction) =>
-                        (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
-                    (m) => m.customId === "modify"
-                );
+                out = await modalInteractionCollector(m, interaction.user);
             } catch (e) {
                 timedOut = true;
                 continue;

@@ -144,11 +144,7 @@ const editNameDescription = async (i: ButtonInteraction, interaction: StringSele
 
     let out: Discord.ModalSubmitInteraction | null;
     try {
-        out = await modalInteractionCollector(
-            m,
-            (m) => m.channel!.id === interaction.channel!.id,
-            (_) => true
-        ) as Discord.ModalSubmitInteraction | null;
+        out = await modalInteractionCollector(m, interaction.user) as Discord.ModalSubmitInteraction | null;
     } catch (e) {
         console.error(e);
         out = null;
@@ -472,7 +468,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }
         }
 
-    } while (!closed)
+    } while (!closed);
+    await interaction.deleteReply()
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {
