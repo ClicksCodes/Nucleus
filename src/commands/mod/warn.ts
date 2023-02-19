@@ -291,7 +291,7 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow warn
     return true;
 };

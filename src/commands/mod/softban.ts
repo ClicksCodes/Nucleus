@@ -187,7 +187,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     // Do not allow banning the owner
     if (member.id === interaction.guild.ownerId) return "You cannot softban the owner of the server";
     // Check if Nucleus can ban the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to ban
     if (!me.permissions.has("BanMembers")) return "I do not have the *Ban Members* permission";
     // Do not allow banning Nucleus
@@ -195,7 +195,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     // Allow the owner to ban anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow ban
     return true;
 };

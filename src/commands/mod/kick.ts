@@ -187,11 +187,11 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
     // Do not allow kicking the owner
     if (member.id === interaction.guild.ownerId) return "You cannot kick the owner of the server";
     // Check if Nucleus can kick the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Do not allow kicking Nucleus
     if (member.id === interaction.guild.members.me!.id) return "I cannot kick myself";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow kick
     return true;
 };

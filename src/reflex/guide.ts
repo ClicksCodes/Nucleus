@@ -129,7 +129,7 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
                     .setDescription(
                         "Nucleus has a content scanning system that automatically scans links and images sent by users.\n" +
                             "The staff team can be notified when an NSFW image is detected, or malicious links are sent.\n" +
-                            `You can check and manage what to moderate in ${getCommandMentionByName("settings/filters")}`
+                            `You can check and manage what to moderate in ${getCommandMentionByName("settings/automod")}`
                     )
                     .setEmoji("MOD.IMAGES.TOOSMALL")
                     .setStatus("Danger")

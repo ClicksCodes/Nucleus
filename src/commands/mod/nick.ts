@@ -203,7 +203,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     // Do not allow any changing of the owner
     if (member.id === interaction.guild.ownerId) return "You cannot change the owner's nickname";
     // Check if Nucleus can change the nickname
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to change the nickname
     if (!me.permissions.has("ManageNicknames")) return "I do not have the *Manage Nicknames* permission";
     // Allow the owner to change anyone's nickname
@@ -211,7 +211,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     // Allow changing your own nickname
     if (member === apply) return true;
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow change
     return true;
 };

@@ -146,13 +146,13 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
     // Do not allow unmuting the owner
     if (member.id === interaction.guild.ownerId) return "You cannot unmute the owner of the server";
     // Check if Nucleus can unmute the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to unmute
     if (!me.permissions.has("ModerateMembers")) return "I do not have the *Moderate Members* permission";
     // Allow the owner to unmute anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow unmute
     return true;
 };

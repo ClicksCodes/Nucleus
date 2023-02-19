@@ -182,8 +182,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                 `**${currentPageData.name}**\n` +
                 `> ${currentPageData.description}\n\n` +
                 (currentPageData.min === currentPageData.max ? `Select ${addPlural(currentPageData.min, "role")}` :
-                    `Select between ${currentPageData.min} and ${currentPageData.max} roles` + (
-                        currentPageData.min === 0 ? ` or press next` : "")) + "\n\n" +
+                    `Select between ${currentPageData.min} and ${currentPageData.max} roles then press next`) + "\n\n" +
                 createPageIndicator(maxPage, page)
             )
             .setStatus("Success")

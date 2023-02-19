@@ -375,7 +375,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     // Do not allow muting the owner
     if (member.id === interaction.guild.ownerId) return "You cannot mute the owner of the server";
     // Check if Nucleus can mute the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to mute
     if (!me.permissions.has("ModerateMembers")) return "I do not have the *Moderate Members* permission";
     // Do not allow muting Nucleus
@@ -383,7 +383,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     // Allow the owner to mute anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow mute
     return true;
 };
