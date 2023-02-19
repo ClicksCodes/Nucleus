@@ -13,7 +13,7 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../utils/client.js";
 import { getCommandMentionByName } from "../../utils/getCommandDataByName.js";
-
+import lodash from "lodash";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -33,7 +33,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let config = await client.database.guilds.read(interaction.guild.id);
     let data = Object.assign({}, config.verify);
     do {
-        console.log(config.verify, data)
         const selectMenu = new ActionRowBuilder<RoleSelectMenuBuilder>()
         .addComponents(
             new RoleSelectMenuBuilder()
@@ -45,15 +44,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId("switch")
-                    .setLabel(data.enabled ? "Disabled" : "Enabled")
-                    .setStyle(data.enabled ? ButtonStyle.Danger : ButtonStyle.Success)
+                    .setLabel(data.enabled ? "Enabled" : "Disabled")
+                    .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
                     .setEmoji(getEmojiByName(data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id") as APIMessageComponentEmoji),
                 new ButtonBuilder()
                     .setCustomId("save")
                     .setLabel("Save")
                     .setStyle(ButtonStyle.Success)
                     .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
-                    .setDisabled(data.role === config.verify.role && data.enabled === config.verify.enabled)
+                    .setDisabled(lodash.isEqual(config.verify, data))
             );
 
         const embed = new EmojiEmbed()
@@ -88,6 +87,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 case "save": {
                     client.database.guilds.write(interaction.guild.id, {"verify": data} )
                     config = await client.database.guilds.read(interaction.guild.id);
+                    data = Object.assign({}, config.verify);
                     break
                 }
                 case "switch": {
