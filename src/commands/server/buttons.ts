@@ -224,7 +224,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 }
             }
         } else if(i.isStringSelectMenu()) {
-            await i.deferUpdate();
+            try {await i.deferUpdate();} catch (err) {}
             switch(i.customId) {
                 case "color": {
                     data.color = colors[i.values[0]!]!;
