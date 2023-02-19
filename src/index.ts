@@ -13,6 +13,9 @@ client.on("ready", async () => {
     } else {
         client.fetchedCommands = await client.application?.commands.fetch()!;
     }
+    setInterval(async () => {
+        await client.database.premium.checkAllPremium();
+    }, 1000 * 60 * 3);
 });
 process.on("unhandledRejection", (err) => { console.error(err) });
 process.on("uncaughtException", (err) => { console.error(err) });

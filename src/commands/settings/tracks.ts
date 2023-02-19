@@ -152,7 +152,7 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
     let closed = false;
     do {
         const editableRoles: string[] = current.track.map((r) => {
-            if(!(roles.get(r)!.position >= (interaction.member as GuildMember).roles.highest.position)) return roles.get(r)!.name;
+            if(!(roles.get(r)!.position >= (interaction.member as GuildMember).roles.highest.position) || interaction.user.id === interaction.guild?.ownerId) return roles.get(r)!.name;
         }).filter(v => v !== undefined) as string[];
         const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
             .addComponents(
@@ -217,7 +217,10 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
             )
             .setStatus("Success")
 
-        interaction.editReply({embeds: [embed], components: [roleSelect, selectMenu, buttons]});
+        let comps: ActionRowBuilder<RoleSelectMenuBuilder | ButtonBuilder | StringSelectMenuBuilder>[] = [roleSelect, buttons];
+        if(current.track.length >= 1) comps.splice(1, 0, selectMenu);
+
+        interaction.editReply({embeds: [embed], components: comps});
 
         let out: ButtonInteraction | RoleSelectMenuInteraction | StringSelectMenuInteraction | null;
 
@@ -233,9 +236,9 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
 
         if(!out) return;
         if (out.isButton()) {
-            out.deferUpdate();
             switch(out.customId) {
                 case "back": {
+                    out.deferUpdate();
                     closed = true;
                     break;
                 }
@@ -244,14 +247,17 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
                     break;
                 }
                 case "reorder": {
+                    out.deferUpdate();
                     current.track = (await reorderTracks(out, message, roles, current.track))!;
                     break;
                 }
                 case "retainPrevious": {
+                    out.deferUpdate();
                     current.retainPrevious = !current.retainPrevious;
                     break;
                 }
                 case "nullable": {
+                    out.deferUpdate();
                     current.nullable = !current.nullable;
                     break;
                 }
@@ -271,8 +277,9 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
                     const role = out.values![0]!;
                     if(!current.track.includes(role)) {
                         current.track.push(role);
+                    } else {
+                        out.reply({content: "That role is already on this track", ephemeral: true})
                     }
-                    out.reply({content: "That role is already on this track", ephemeral: true})
                     break;
                 }
             }
@@ -330,7 +337,7 @@ const callback = async (interaction: CommandInteraction) => {
                     .setCustomId("next")
                     .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
                     .setStyle(ButtonStyle.Primary)
-                    .setDisabled(page === Object.keys(tracks).length - 1),
+                    .setDisabled(page === tracks.length - 1),
                 new ButtonBuilder()
                     .setCustomId("add")
                     .setLabel("New Track")

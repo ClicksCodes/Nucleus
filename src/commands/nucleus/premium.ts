@@ -9,7 +9,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true})
-    const member = await (await interaction.client.guilds.fetch("684492926528651336")).members.fetch(interaction.user.id)
+    const member = (await interaction.client.guilds.fetch("684492926528651336")).members.cache.get(interaction.user.id)
     const firstDescription = "\n\nPremium allows your server to get access to extra features, for a fixed price per month.\nThis includes:\n" +
         "- Attachment logs - Stores attachments so they can be viewed after a message is deleted.\n" +
         "- Ticket Transcripts - Gives a link to view the history of a ticket after it has been closed.\n"
