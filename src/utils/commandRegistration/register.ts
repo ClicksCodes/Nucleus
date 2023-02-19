@@ -215,7 +215,7 @@ export default async function register() {
         } else {
             console.log(`${colors.blue}Registering commands in production mode${colors.none}`)
             const guild = await client.guilds.fetch(config.developmentGuildID);
-            await guild.commands.set([]);
+            await guild.commands.set([]); // TODO: Why isn't this removing guild commands?
             await client.application?.commands.set(commandList);
         }
     }
