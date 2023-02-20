@@ -7,7 +7,7 @@ export async function callback(client: NucleusClient, oldEmoji: GuildEmoji, newE
     const { getAuditLog, log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = client.logger;
     if (!(await isLogging(newEmoji.guild.id, "emojiUpdate"))) return;
 
-    const auditLog = (await getAuditLog(newEmoji.guild, AuditLogEvent.EmojiCreate))
+    const auditLog = (await getAuditLog(newEmoji.guild, AuditLogEvent.EmojiUpdate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === newEmoji.id)[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;

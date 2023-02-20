@@ -1,15 +1,60 @@
 import { AuditLogEvent, GuildAuditLogsEntry, GuildMember } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
+import type { LoggerOptions } from "../utils/log.js";
 
 export const event = "guildMemberUpdate";
 
 export async function callback(client: NucleusClient, before: GuildMember, after: GuildMember) {
-    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
-    if (!await isLogging(after.guild.id, "memberUpdate")) return;
-    const auditLog = (await getAuditLog(after.guild, AuditLogEvent.EmojiCreate))
+    const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
+
+    const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberUpdate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id)[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
+    if(!before.roles.cache.equals(after.roles.cache)) {
+        let rolesAdded = after.roles.cache.filter(role => !before.roles.cache.has(role.id));
+        let rolesRemoved = before.roles.cache.filter(role => !after.roles.cache.has(role.id));
+        let displayName = "Roles Removed";
+        let color = NucleusColors.red;
+        let emoji = "GUILD.ROLES.DELETE";
+        if(rolesAdded.size > 0 && rolesRemoved.size > 0) {displayName = "Roles Changed"; color = NucleusColors.yellow; emoji = "GUILD.ROLES.EDIT";}
+        else if(rolesAdded.size > 0) {displayName = "Roles Added"; color = NucleusColors.green; emoji = "GUILD.ROLES.CREATE";}
+        let removedEntry = rolesRemoved.map(role => role.id);
+        let addedEntry = rolesAdded.map(role => role.id);
+
+        let list = {
+            memberId: entry(after.id, `\`${after.id}\``),
+            name: entry(after.user.id, renderUser(after.user)),
+            changed: entry(Date.now(), renderDelta(Date.now())),
+            changedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!))
+        };
+
+        let data: LoggerOptions = {
+            meta: {
+                type: "memberUpdate",
+                displayName: displayName,
+                calculateType: "guildMemberUpdate",
+                color: color,
+                emoji: emoji,
+                timestamp: Date.now()
+            },
+            list: {
+
+            },
+            hidden: {
+                guild: after.guild.id
+            }
+        };
+
+        if(rolesAdded.size > 0) {
+            list = Object.assign(list, {rolesAdded: entry(addedEntry, addedEntry.map(id => `<@&${id}>`).join(", "))});
+        }
+        if(rolesRemoved.size > 0) {
+            list = Object.assign(list, {rolesRemoved: entry(removedEntry, removedEntry.map(id => `<@&${id}>`).join(", "))});
+        }
+        data = Object.assign(data, {list: list});
+        log(data);
+    }
     if (before.nickname !== after.nickname) {
         await client.database.history.create(
             "nickname",
@@ -42,7 +87,8 @@ export async function callback(client: NucleusClient, before: GuildMember, after
             }
         };
         log(data);
-    } else if (
+    }
+    if (
         (before.communicationDisabledUntilTimestamp ?? 0) < Date.now() &&
         (after.communicationDisabledUntil ?? 0) > Date.now()
     ) {
@@ -86,7 +132,8 @@ export async function callback(client: NucleusClient, before: GuildMember, after
             user: after.id,
             expires: after.communicationDisabledUntilTimestamp
         });
-    } else if (
+    }
+    if (
         after.communicationDisabledUntil === null &&
         before.communicationDisabledUntilTimestamp !== null &&
         Date.now() >= auditLog.createdTimestamp

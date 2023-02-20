@@ -6,7 +6,7 @@ export const event = "stickerDelete";
 export async function callback(client: NucleusClient, sticker: Sticker) {
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (!await isLogging(sticker.guild!.id, "stickerUpdate")) return;
-    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.EmojiCreate))
+    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.StickerCreate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
     const data = {
