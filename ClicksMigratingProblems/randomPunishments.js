@@ -11,7 +11,7 @@ for (let i = 0; i < 100; i++) {
         Math.floor(Math.random() * 9)
     ];
     // Select a random date in the last year
-    let date = new Date(new Date().getTime() - Math.floor(Math.random() * 31536000000));
+    let date = new Date(Date.now() - Math.floor(Math.random() * 31536000000));
     // Add to database
     await collection.insertOne({
         type: type,

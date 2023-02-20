@@ -5,7 +5,8 @@ import { AuditLogEvent, Guild, GuildAuditLogsEntry, Role } from "discord.js";
 export const event = "roleDelete";
 
 export async function callback(client: NucleusClient, role: Role) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    if (!await isLogging(role.guild.id, "guildRoleUpdate")) return;
     if (role.managed) return;
     const auditLog = (await getAuditLog(role.guild as Guild, AuditLogEvent.RoleDelete))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === role.id)[0]!;
@@ -34,7 +35,7 @@ export async function callback(client: NucleusClient, role: Role) {
             members: entry(role.members.size, `${role.members.size}`),
             deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
             created: entry(role.createdTimestamp, renderDelta(role.createdTimestamp)),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
+            deleted: entry(Date.now(), renderDelta(Date.now()))
         },
         hidden: {
             guild: role.guild.id

@@ -43,12 +43,12 @@ class EventScheduler {
                     calculateType: "guildMemberPunish",
                     color: NucleusColors.green,
                     emoji: "PUNISH.MUTE.GREEN",
-                    timestamp: new Date().getTime()
+                    timestamp: Date.now()
                 },
                 list: {
                     memberId: entry(user.user.id, `\`${user.user.id}\``),
                     name: entry(user.user.id, renderUser(user.user)),
-                    unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                    unmuted: entry(Date.now().toString(), renderDelta(Date.now())),
                     unmutedBy: entry(null, "*Time out ended*")
                 },
                 hidden: {

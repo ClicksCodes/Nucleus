@@ -235,8 +235,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setDescription(
                             `You have been muted in ${interaction.guild.name}` +
                                 (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") + "\n\n" +
-                            `You will be unmuted at: <t:${Math.round(new Date().getTime() / 1000) + muteTime}:D> at ` +
-                            `<t:${Math.round(new Date().getTime() / 1000) + muteTime}:T> (<t:${Math.round(new Date().getTime() / 1000) + muteTime
+                            `You will be unmuted at: <t:${Math.round(Date.now() / 1000) + muteTime}:D> at ` +
+                            `<t:${Math.round(Date.now() / 1000) + muteTime}:T> (<t:${Math.round(Date.now() / 1000) + muteTime
                             }:R>)` + "\n\n" +
                             (createAppealTicket
                                 ? `You can appeal this in the ticket created in <#${confirmation.components!["appeal"]!.response}>`
@@ -267,10 +267,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             await member.timeout(muteTime * 1000, reason || "*No reason provided*");
             if (config.moderation.mute.role !== null) {
                 await member.roles.add(config.moderation.mute.role);
-                await client.database.eventScheduler.schedule("naturalUnmute", (new Date().getTime() + muteTime * 1000).toString(), {
+                await client.database.eventScheduler.schedule("naturalUnmute", (Date.now() + muteTime * 1000).toString(), {
                     guild: interaction.guild.id,
                     user: member.id,
-                    expires: new Date().getTime() + muteTime * 1000
+                    expires: Date.now() + muteTime * 1000
                 });
             }
         } else {
@@ -282,7 +282,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     try {
         if (config.moderation.mute.role !== null) {
             await member.roles.add(config.moderation.mute.role);
-            await client.database.eventScheduler.schedule("unmuteRole", (new Date().getTime() + muteTime * 1000).toString(), {
+            await client.database.eventScheduler.schedule("unmuteRole", (Date.now() + muteTime * 1000).toString(), {
                 guild: interaction.guild.id,
                 user: member.id,
                 role: config.moderation.mute.role
@@ -325,16 +325,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberPunish",
             color: NucleusColors.yellow,
             emoji: "PUNISH.WARN.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(member.user.id, `\`${member.user.id}\``),
             name: entry(member.user.id, renderUser(member.user)),
             mutedUntil: entry(
-                (new Date().getTime() + muteTime * 1000).toString(),
-                renderDelta(new Date().getTime() + muteTime * 1000)
+                (Date.now() + muteTime * 1000).toString(),
+                renderDelta(Date.now() + muteTime * 1000)
             ),
-            muted: entry(new Date().getTime.toString(), renderDelta(new Date().getTime() - 1000)),
+            muted: entry(new Date().getTime.toString(), renderDelta(Date.now() - 1000)),
             mutedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
             reason: entry(reason, reason ? reason : "*No reason provided*")
         },

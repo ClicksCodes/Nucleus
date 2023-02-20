@@ -265,12 +265,12 @@ export default async function (interaction: CommandInteraction | MessageComponen
             calculateType: "ticketUpdate",
             color: NucleusColors.red,
             emoji: "GUILD.TICKET.CLOSE",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: member ? entry(member.id, renderUser(member.user)) : entry(null, "*Unknown*"),
             deletedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as User)),
-            deleted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime()))
+            deleted: entry(Date.now().toString(), renderDelta(Date.now()))
         },
         hidden: {
             guild: interaction.guild!.id

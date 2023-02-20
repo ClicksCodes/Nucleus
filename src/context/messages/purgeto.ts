@@ -171,7 +171,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
             calculateType: "messageDelete",
             color: NucleusColors.red,
             emoji: "PUNISH.BAN.RED",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),

@@ -57,7 +57,7 @@ const runServer = (client: NucleusClient) => {
                         calculateType: "guildMemberVerify",
                         color: NucleusColors.green,
                         emoji: "CONTROL.BLOCKTICK",
-                        timestamp: new Date().getTime()
+                        timestamp: Date.now()
                     },
                     list: {
                         member: entry(member.id, renderUser(member.user)),

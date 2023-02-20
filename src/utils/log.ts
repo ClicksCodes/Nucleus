@@ -7,6 +7,33 @@ import client from "./client.js";
 
 const wait = promisify(setTimeout);
 
+export interface LoggerOptions {
+    meta: {
+        type: string;
+        displayName: string;
+        calculateType: string;
+        color: number;
+        emoji: string;
+        timestamp: number;
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    list: any;
+    hidden: {
+        guild: string;
+    },
+    separate?: {
+        start?: string;
+        end?: string;
+    }
+}
+
+async function isLogging(guild: string, type: string): Promise<boolean> {
+    const config = await client.database.guilds.read(guild);
+    if (!config.logging.logs.enabled) return false;
+    if (!config.logging.logs.channel) return false;
+    if (!toHexArray(config.logging.logs.toLog).includes(type)) { return false; }
+    return true;
+}
 
 export const Logger = {
     renderUser(user: Discord.User | string) {
@@ -50,13 +77,9 @@ export const Logger = {
         const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map(m => m)
         return auditLog as Discord.GuildAuditLogsEntry[];
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async log(log: any): Promise<void> {
+    async log(log: LoggerOptions): Promise<void> {
+        if (!await isLogging(log.hidden.guild, log.meta.calculateType)) return;
         const config = await client.database.guilds.read(log.hidden.guild);
-        if (!config.logging.logs.enabled) return;
-        if (!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) {
-            return;
-        }
         if (config.logging.logs.channel) {
             const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
             const description: Record<string, string> = {};
@@ -84,8 +107,8 @@ export const Logger = {
                 channel.send({ embeds: [embed] });
             }
         }
-    }
+    },
+    isLogging
 };
-
 
 export default {};

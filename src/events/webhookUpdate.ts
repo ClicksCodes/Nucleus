@@ -10,7 +10,8 @@ interface accType {
 
 export async function callback(client: NucleusClient, channel: Discord.GuildChannel) {
     try {
-        const { getAuditLog, log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
+        const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
+        if (!await isLogging(channel.guild.id, "webhookUpdate")) return;
         const auditCreate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookCreate))
             .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0]!;
         const auditDelete = (await getAuditLog(channel.guild, AuditLogEvent.WebhookDelete))
@@ -46,7 +47,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 (auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp,
                 renderDelta((auditUpdate.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp)
             );
-            list["edited"] = entry(after["editedTimestamp"]!, renderDelta(new Date().getTime()));
+            list["edited"] = entry(after["editedTimestamp"]!, renderDelta(Date.now()));
             list["editedBy"] = entry(auditUpdate.executor!.id, renderUser(auditUpdate.executor!));
             action = "Update";
         } else if (deleteTimestamp > createTimestamp && deleteTimestamp > updateTimestamp && auditDelete) {
@@ -61,7 +62,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 name: entry(before["name"]!, `${before["name"]}`),
                 channel: entry(before["channel_id"]!, renderChannel((await client.channels.fetch(before["channel_id"]!)) as GuildChannel)),
                 created: entry((auditDelete.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp, renderDelta((auditDelete.target! as Extract<GuildAuditLogsEntry, {createdTimestamp: number}>).createdTimestamp)),
-                deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                deleted: entry(Date.now(), renderDelta(Date.now())),
                 deletedBy: entry(
                     auditDelete.executor!.id,
                     renderUser((await channel.guild.members.fetch(auditDelete.executor!.id)).user)
@@ -83,7 +84,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                     auditCreate.executor!.id,
                     renderUser((await channel.guild.members.fetch(auditCreate.executor!.id)).user)
                 ),
-                created: entry(new Date().getTime(), renderDelta(new Date().getTime()))
+                created: entry(Date.now(), renderDelta(Date.now()))
             };
         }
         const cols = {
@@ -98,7 +99,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 calculateType: "webhookUpdate",
                 color: NucleusColors[cols[action] as keyof typeof NucleusColors],
                 emoji: "WEBHOOK." + action.toUpperCase(),
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: list,
             hidden: {

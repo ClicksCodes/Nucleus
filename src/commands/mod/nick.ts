@@ -156,13 +156,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberUpdate",
             color: NucleusColors.yellow,
             emoji: "PUNISH.NICKNAME.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(member.id, `\`${member.id}\``),
             before: entry(before, before ?? "*No nickname set*"),
             after: entry(nickname ?? null, nickname ?? "*No nickname set*"),
-            updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            updated: entry(Date.now(), renderDelta(Date.now())),
             updatedBy: entry(interaction.user.id, renderUser(interaction.user))
         },
         hidden: {

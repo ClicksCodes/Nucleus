@@ -157,12 +157,12 @@ export async function create(
             calculateType: "ticketUpdate",
             color: NucleusColors.green,
             emoji: "GUILD.TICKET.OPEN",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: entry(user.id, renderUser(user)),
             createdBy: entry(createdBy.id, renderUser(createdBy)),
-            created: entry((new Date().getTime()).toString(), renderDelta(new Date().getTime())),
+            created: entry((Date.now()).toString(), renderDelta(Date.now())),
             ticketChannel: entry(c.id, renderChannel(c))
         },
         hidden: {

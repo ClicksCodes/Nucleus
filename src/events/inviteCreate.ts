@@ -7,7 +7,8 @@ export const event = "inviteCreate";
 
 export async function callback(client: NucleusClient, invite: Invite) {
     if(!invite.guild) return; // This is a DM invite (not a guild invite
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    if (!await isLogging(invite.guild.id, "guildUpdate")) return;
     const auditLog = (await getAuditLog(invite.guild as Guild, AuditLogEvent.InviteCreate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Invite)!.code === invite.code)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
@@ -18,7 +19,7 @@ export async function callback(client: NucleusClient, invite: Invite) {
             calculateType: "guildUpdate",
             color: NucleusColors.green,
             emoji: "INVITE.CREATE",
-            timestamp: invite.createdTimestamp
+            timestamp: invite.createdTimestamp ?? Date.now()
         },
         list: {
             channel: entry(invite.channel!.id, renderChannel(invite.channel as GuildChannel)),

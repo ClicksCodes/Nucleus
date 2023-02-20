@@ -5,8 +5,8 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 export const event = "roleUpdate";
 
 export async function callback(client: NucleusClient, oldRole: Role, newRole: Role) {
-    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderRole } = client.logger;
-
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderDelta, renderUser, renderRole } = client.logger;
+    if (!await isLogging(newRole.guild.id, "guildRoleUpdate")) return;
     const auditLog = (await getAuditLog(newRole.guild as Guild, AuditLogEvent.RoleUpdate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === newRole.id)[0];
     if (!auditLog) return;
@@ -15,7 +15,7 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
     const changes: Record<string, ReturnType<typeof entry>> = {
         roleId: entry(newRole.id, `\`${newRole.id}\``),
         role: entry(newRole.id, renderRole(newRole)),
-        edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+        edited: entry(Date.now(), renderDelta(Date.now())),
         editedBy: entry(auditLog.executor!.id, renderUser((await newRole.guild.members.fetch(auditLog.executor!.id)).user))
     };
     const mentionable = ["", ""];

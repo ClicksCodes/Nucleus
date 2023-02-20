@@ -261,7 +261,7 @@ export class Premium {
     async checkAllPremium() {
         const entries = await this.premium.find({}).toArray();
         for(const {user, expiresAt} of entries) {
-            if(expiresAt) expiresAt < new Date().getTime() ? await this.premium.deleteOne({user: user}) : null;
+            if(expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({user: user}) : null;
             const member = await (await client.guilds.fetch("684492926528651336")).members.fetch(user)
             let level: number = 0;
             if (member.roles.cache.has("1066468879309750313")) {
@@ -277,7 +277,7 @@ export class Premium {
             if (level > 0) {
                 await this.updateUser(user, level);
             } else {
-                await this.premium.updateOne({ user: user }, { expiresAt: (new Date().getTime() + (1000*60*60*24*3)) })
+                await this.premium.updateOne({ user: user }, { expiresAt: (Date.now() + (1000*60*60*24*3)) })
             }
         }
     }

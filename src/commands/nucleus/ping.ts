@@ -10,9 +10,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     // WEBSOCKET | Nucleus -> Discord
     // EDITING   | Nucleus -> discord -> nucleus | edit time / 2
-    const initial = new Date().getTime();
+    const initial = Date.now();
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
-    const ping = new Date().getTime() - initial;
+    const ping = Date.now() - initial;
     interaction.editReply({
         embeds: [
             new EmojiEmbed()

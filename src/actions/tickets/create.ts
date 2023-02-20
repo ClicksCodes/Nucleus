@@ -323,11 +323,11 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             calculateType: "ticketUpdate",
             color: NucleusColors.green,
             emoji: "GUILD.TICKET.OPEN",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: entry(interaction.member!.user.id, renderUser(interaction.member!.user! as Discord.User)),
-            created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            created: entry(Date.now(), renderDelta(Date.now())),
             ticketChannel: entry(c.id, renderChannel(c))
         },
         hidden: {

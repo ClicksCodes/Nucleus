@@ -4,7 +4,8 @@ import { AuditLogEvent, Guild, GuildAuditLogsEntry, Role } from "discord.js";
 export const event = "roleCreate";
 
 export async function callback(client: NucleusClient, role: Role) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderRole } = client.logger;
+    if (!await isLogging(role.guild.id, "guildRoleUpdate")) return;
     if (role.managed) return;
     const auditLog = (await getAuditLog(role.guild as Guild, AuditLogEvent.RoleCreate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === role.id)[0]!;

@@ -148,7 +148,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 calculateType: "messageDelete",
                 color: NucleusColors.red,
                 emoji: "CHANNEL.PURGE.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
@@ -296,7 +296,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 calculateType: "messageDelete",
                 color: NucleusColors.red,
                 emoji: "CHANNEL.PURGE.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),

@@ -4,7 +4,8 @@ import type { NucleusClient } from "../utils/client.js";
 export const event = "guildMemberUpdate";
 
 export async function callback(client: NucleusClient, before: GuildMember, after: GuildMember) {
-    const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
+    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
+    if (!await isLogging(after.guild.id, "memberUpdate")) return;
     const auditLog = (await getAuditLog(after.guild, AuditLogEvent.EmojiCreate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id)[0];
     if (!auditLog) return;
@@ -26,14 +27,14 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 calculateType: "guildMemberUpdate",
                 color: NucleusColors.yellow,
                 emoji: "PUNISH.NICKNAME.YELLOW",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(after.id, `\`${after.id}\``),
                 name: entry(after.user.id, renderUser(after.user)),
                 before: entry(before.nickname, before.nickname ? before.nickname : "*None*"),
                 after: entry(after.nickname, after.nickname ? after.nickname : "*None*"),
-                changed: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                changed: entry(Date.now(), renderDelta(Date.now())),
                 changedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!))
             },
             hidden: {
@@ -42,8 +43,8 @@ export async function callback(client: NucleusClient, before: GuildMember, after
         };
         log(data);
     } else if (
-        (before.communicationDisabledUntilTimestamp ?? 0) < new Date().getTime() &&
-        (after.communicationDisabledUntil ?? 0) > new Date().getTime()
+        (before.communicationDisabledUntilTimestamp ?? 0) < Date.now() &&
+        (after.communicationDisabledUntil ?? 0) > Date.now()
     ) {
         await client.database.history.create(
             "mute",
@@ -62,7 +63,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 calculateType: "guildMemberPunish",
                 color: NucleusColors.yellow,
                 emoji: "PUNISH.MUTE.YELLOW",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(after.id, `\`${after.id}\``),
@@ -71,7 +72,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                     after.communicationDisabledUntilTimestamp,
                     renderDelta(after.communicationDisabledUntilTimestamp!)
                 ),
-                muted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                muted: entry(Date.now(), renderDelta(Date.now())),
                 mutedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
                 reason: entry(auditLog.reason, auditLog.reason ? auditLog.reason : "\n> *No reason provided*")
             },
@@ -88,7 +89,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
     } else if (
         after.communicationDisabledUntil === null &&
         before.communicationDisabledUntilTimestamp !== null &&
-        new Date().getTime() >= auditLog.createdTimestamp
+        Date.now() >= auditLog.createdTimestamp
     ) {
         await client.database.history.create(
             "unmute",
@@ -107,12 +108,12 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 calculateType: "guildMemberPunish",
                 color: NucleusColors.green,
                 emoji: "PUNISH.MUTE.GREEN",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(after.id, `\`${after.id}\``),
                 name: entry(after.user.id, renderUser(after.user)),
-                unmuted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                unmuted: entry(Date.now(), renderDelta(Date.now())),
                 unmutedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!))
             },
             hidden: {

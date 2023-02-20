@@ -19,7 +19,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         console.log(e);
     }
 
-    const { log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
 
     const fileNames = await logAttachment(message);
 
@@ -45,7 +45,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         messageId: entry(message.id, `\`${message.id}\``),
         sentBy: entry(message.author.id, renderUser(message.author)),
         sentIn: entry(message.channel.id, renderChannel(message.channel)),
-        deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+        deleted: entry(Date.now(), renderDelta(Date.now())),
         mentions: message.mentions.users.size,
         attachments: entry(message.attachments.size, message.attachments.size + attachmentJump),
         repliedTo: entry(
@@ -68,7 +68,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                         calculateType: "autoModeratorDeleted",
                         color: NucleusColors.red,
                         emoji: "MESSAGE.DELETE",
-                        timestamp: new Date().getTime()
+                        timestamp: Date.now()
                     },
                     separate: {
                         start:
@@ -105,7 +105,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                                 calculateType: "autoModeratorDeleted",
                                 color: NucleusColors.red,
                                 emoji: "MESSAGE.DELETE",
-                                timestamp: new Date().getTime()
+                                timestamp: Date.now()
                             },
                             separate: {
                                 start:
@@ -140,7 +140,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                                 calculateType: "autoModeratorDeleted",
                                 color: NucleusColors.red,
                                 emoji: "MESSAGE.DELETE",
-                                timestamp: new Date().getTime()
+                                timestamp: Date.now()
                             },
                             separate: {
                                 start:
@@ -170,7 +170,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                                     calculateType: "autoModeratorDeleted",
                                     color: NucleusColors.red,
                                     emoji: "MESSAGE.DELETE",
-                                    timestamp: new Date().getTime()
+                                    timestamp: Date.now()
                                 },
                                 separate: {
                                     start:
@@ -201,7 +201,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                             calculateType: "autoModeratorDeleted",
                             color: NucleusColors.red,
                             emoji: "MESSAGE.DELETE",
-                            timestamp: new Date().getTime()
+                            timestamp: Date.now()
                         },
                         separate: {
                             start:
@@ -233,7 +233,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 calculateType: "autoModeratorDeleted",
                 color: NucleusColors.red,
                 emoji: "MESSAGE.DELETE",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             separate: {
                 start:
@@ -265,7 +265,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                     calculateType: "autoModeratorDeleted",
                     color: NucleusColors.red,
                     emoji: "MESSAGE.DELETE",
-                    timestamp: new Date().getTime()
+                    timestamp: Date.now()
                 },
                 separate: {
                     start:
@@ -283,6 +283,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     }
 
     if (config.filters.pings.everyone && message.mentions.everyone) {
+        if(!await isLogging(message.guild.id, "messageMassPing")) return;
         const data = {
             meta: {
                 type: "everyonePing",
@@ -290,7 +291,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 calculateType: "messageMassPing",
                 color: NucleusColors.yellow,
                 emoji: "MESSAGE.PING.EVERYONE",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             separate: {
                 start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
@@ -307,6 +308,7 @@ export async function callback(_client: NucleusClient, message: Message) {
             if (!config.filters.pings.allowed.roles.includes(roleId)) {
                 messageException(message.guild.id, message.channel.id, message.id);
                 await message.delete();
+                if(!await isLogging(message.guild.id, "messageMassPing")) return;
                 const data = {
                     meta: {
                         type: "rolePing",
@@ -314,7 +316,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                         calculateType: "messageMassPing",
                         color: NucleusColors.yellow,
                         emoji: "MESSAGE.PING.ROLE",
-                        timestamp: new Date().getTime()
+                        timestamp: Date.now()
                     },
                     separate: {
                         start: content
@@ -333,6 +335,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
         messageException(message.guild.id, message.channel.id, message.id);
         await message.delete();
+        if(!await isLogging(message.guild.id, "messageMassPing")) return;
         const data = {
             meta: {
                 type: "massPing",
@@ -340,7 +343,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 calculateType: "messageMassPing",
                 color: NucleusColors.yellow,
                 emoji: "MESSAGE.PING.MASS",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             separate: {
                 start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"

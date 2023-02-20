@@ -116,7 +116,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberPunish",
             color: NucleusColors.yellow,
             emoji: "PUNISH.WARN.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             user: entry(

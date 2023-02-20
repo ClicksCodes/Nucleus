@@ -50,7 +50,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 calculateType: "ticketUpdate",
                 color: NucleusColors.red,
                 emoji: "GUILD.TICKET.CLOSE",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 ticketFor: entry(
@@ -58,7 +58,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                     renderUser((await interaction.guild.members.fetch(uID!)).user)
                 ),
                 closedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
-                closed: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                closed: entry(Date.now(), renderDelta(Date.now())),
                 ticketChannel: entry(channel.id, channel.name)
             },
             hidden: {
@@ -120,7 +120,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 calculateType: "ticketUpdate",
                 color: NucleusColors.yellow,
                 emoji: "GUILD.TICKET.ARCHIVED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 ticketFor: entry(
@@ -128,7 +128,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                     renderUser((await interaction.guild.members.fetch(uID!)).user)
                 ),
                 archivedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
-                archived: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                archived: entry(Date.now(), renderDelta(Date.now())),
                 ticketChannel: entry(channel.id, renderChannel(channel))
             },
             hidden: {
@@ -183,12 +183,12 @@ async function purgeByUser(member: string, guild: string) {
             calculateType: "ticketUpdate",
             color: NucleusColors.red,
             emoji: "GUILD.TICKET.DELETE",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: entry(member, renderUser(member)),
             deletedBy: entry(null, "Member left server"),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            deleted: entry(Date.now(), renderDelta(Date.now())),
             ticketsDeleted: deleted
         },
         hidden: {

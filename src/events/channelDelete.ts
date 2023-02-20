@@ -14,7 +14,8 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 export const event = "channelDelete";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
-    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
+    const { getAuditLog, log, isLogging, NucleusColors, entry, renderDelta, renderUser } = client.logger;
+    if (!await isLogging(channel.guild.id, "channelUpdate")) return;
     const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelDelete))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id)[0];
     if (!auditLog) return;
@@ -81,7 +82,7 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
         ),
         nsfw: null,
         created: entry(channel.createdTimestamp, renderDelta(channel.createdTimestamp!)),
-        deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+        deleted: entry(Date.now(), renderDelta(Date.now())),
         deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!))
     };
     if ((channel instanceof BaseGuildTextChannel || channel instanceof StageChannel) && channel.topic !== null)

@@ -101,8 +101,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
         const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
         const timeInServer = member.joinedTimestamp ? entry(
-            (new Date().getTime() - member.joinedTimestamp).toString(),
-            humanizeDuration(new Date().getTime() - member.joinedTimestamp, {
+            (Date.now() - member.joinedTimestamp).toString(),
+            humanizeDuration(Date.now() - member.joinedTimestamp, {
                 round: true
             })
         ) : entry(null, "*Unknown*")
@@ -113,13 +113,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 calculateType: "guildMemberPunish",
                 color: NucleusColors.red,
                 emoji: "PUNISH.KICK.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(member.id, `\`${member.id}\``),
                 name: entry(member.id, renderUser(member.user)),
                 joined: undefined as (unknown | typeof entry),
-                kicked: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                kicked: entry(Date.now().toString(), renderDelta(Date.now())),
                 kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                 timeInServer: timeInServer,

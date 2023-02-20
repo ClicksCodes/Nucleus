@@ -124,12 +124,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 calculateType: "guildMemberPunish",
                 color: NucleusColors.yellow,
                 emoji: "PUNISH.BAN.YELLOW",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(member.user.id, `\`${member.user.id}\``),
                 name: entry(member.user.id, renderUser(member.user)),
-                softbanned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                softbanned: entry(Date.now().toString(), renderDelta(Date.now())),
                 softbannedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                 accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp)),

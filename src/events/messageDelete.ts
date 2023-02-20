@@ -7,11 +7,12 @@ export async function callback(client: NucleusClient, message: Message) {
     if (message.author.id === client.user!.id) return;
     if (message.author.bot) return;
     if (client.noLog.includes(`${message.guild!.id}/${message.channel.id}/${message.id}`)) return;
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    if (!await isLogging(message.guild!.id, "messageDelete")) return;
     const auditLog = (await getAuditLog(message.guild!, AuditLogEvent.MemberBanAdd))
         .filter((entry: GuildAuditLogsEntry) => (entry.target! as User).id === message.author.id)[0];
     if (auditLog) {
-        if (auditLog.createdTimestamp - 1000 < new Date().getTime()) return;
+        if (auditLog.createdTimestamp - 1000 < Date.now()) return;
     }
     const replyTo = message.reference;
     let content = message.cleanContent;
@@ -35,7 +36,7 @@ export async function callback(client: NucleusClient, message: Message) {
             calculateType: "messageDelete",
             color: NucleusColors.red,
             emoji: "MESSAGE.DELETE",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         separate: {
             start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
@@ -44,7 +45,7 @@ export async function callback(client: NucleusClient, message: Message) {
             messageId: entry(message.id, `\`${message.id}\``),
             sentBy: entry(message.author.id, renderUser(message.author)),
             sentIn: entry(message.channel.id, renderChannel(message.channel as Discord.GuildChannel | Discord.ThreadChannel)),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            deleted: entry(Date.now(), renderDelta(Date.now())),
             mentions: message.mentions.users.size,
             attachments: entry(attachments, attachments + attachmentJump),
             repliedTo: entry(

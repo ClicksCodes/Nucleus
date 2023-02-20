@@ -1,4 +1,4 @@
-import Discord, { Client, Interaction, AutocompleteInteraction, GatewayIntentBits, Collection } from 'discord.js';
+import Discord, { Client, Interaction, AutocompleteInteraction, Collection } from 'discord.js';
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
 import type { VerifySchema } from "../reflex/verify.js";
@@ -35,13 +35,7 @@ class NucleusClient extends Client {
     } | undefined,{name: string, description: string}]> = {};
     fetchedCommands = new Collection<string, Discord.ApplicationCommand>();
     constructor(database: typeof NucleusClient.prototype.database) {
-        super({ intents: [
-            GatewayIntentBits.Guilds,
-            GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
-            GatewayIntentBits.GuildPresences,
-            GatewayIntentBits.GuildMembers
-        ]});
+        super({ intents: 0b1100011011011111111111});
         this.database = database;
     }
 }
