@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -28,7 +28,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const dbMember = await client.database.premium.fetchUser(interaction.user.id)
     let premium = `You do not have premium! You can't activate premium on any servers.`;
     let count = 0;
-    const {level, appliesTo} = dbMember || {level: 0, appliesTo: []}
+    const {level, appliesTo} = dbMember ?? {level: 0, appliesTo: []}
     if (level === 99) {
         premium = `You have Infinite Premium! You have been gifted this by the developers as a thank you. You can give premium to any and all servers you are in.`;
         count = 200;
@@ -48,71 +48,65 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         premiumGuild = `\n\n**This server has premium!**`
     }
 
-    let closed = false;
-    do {
+    interaction.editReply({
+        embeds: [
+            new EmojiEmbed()
+                .setTitle("Premium")
+                .setDescription(
+                    premium + firstDescription + premiumGuild
+                )
+                .setEmoji("NUCLEUS.LOGO")
+                .setStatus("Danger")
+        ],
+        components: [
+            new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setStyle(ButtonStyle.Primary)
+                        .setLabel("Activate Premium here")
+                        .setCustomId("premiumActivate")
+                        .setDisabled(count <= 0 && hasPremium)
+                )
+        ]
+    });
+
+    const filter = (i: ButtonInteraction) => i.customId === "premiumActivate" && i.user.id === interaction.user.id;
+    let i;
+    try {
+        i = await interaction.channel!.awaitMessageComponent<2>({ filter, time: 60000 });
+    } catch (e) {
+        return;
+    }
+    i.deferUpdate();
+    const guild = i.guild!;
+    if (count - appliesTo.length <= 0) {
         interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Premium")
                     .setDescription(
-                        premium + firstDescription + premiumGuild
+                        `You have already activated premium on the maximum amount of servers!` + firstDescription
+                    )
+                    .setEmoji("NUCLEUS.PREMIUMACTIVATE")
+                    .setStatus("Danger")
+            ],
+            components: []
+        });
+    } else {
+        client.database.premium.addPremium(interaction.user.id, guild.id);
+        interaction.editReply({
+            embeds: [
+                new EmojiEmbed()
+                    .setTitle("Premium")
+                    .setDescription(
+                        `You have activated premium on this server!` + firstDescription
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
             ],
-            components: [
-                new ActionRowBuilder<ButtonBuilder>()
-                    .addComponents(
-                        new ButtonBuilder()
-                            .setStyle(ButtonStyle.Primary)
-                            .setLabel("Activate Premium here")
-                            .setCustomId("premiumActivate")
-                            .setDisabled(count <= 0 && hasPremium)
-                    )
-            ]
+            components: []
         });
-
-        const filter = (i: any) => i.customId === "premiumActivate" && i.user.id === interaction.user.id;
-        let i;
-        try {
-            i = await interaction.channel!.awaitMessageComponent({ filter, time: 60000 });
-        } catch (e) {
-            return;
-        }
-        i.deferUpdate();
-        const guild = i.guild!;
-        if (count - appliesTo.length <= 0) {
-            interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Premium")
-                        .setDescription(
-                            `You have already activated premium on the maximum amount of servers!` + firstDescription
-                        )
-                        .setEmoji("NUCLEUS.PREMIUMACTIVATE")
-                        .setStatus("Danger")
-                ],
-                components: []
-            });
-            closed = true;
-        } else {
-            client.database.premium.addPremium(interaction.user.id, guild.id);
-            interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Premium")
-                        .setDescription(
-                            `You have activated premium on this server!` + firstDescription
-                        )
-                        .setEmoji("NUCLEUS.LOGO")
-                        .setStatus("Danger")
-                ],
-                components: []
-            });
-            closed = true;
-        }
-
-    } while (!closed);
+    }
 };
 
 export { command };

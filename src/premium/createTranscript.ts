@@ -112,9 +112,9 @@ export default async function (interaction: CommandInteraction | MessageComponen
         }
     });
 
-    let interactionMember = await interaction.guild?.members.fetch(interaction.user.id)
+    const interactionMember = await interaction.guild?.members.fetch(interaction.user.id)
 
-    let newOut: Transcript = {
+    const newOut: Transcript = {
         type: "ticket",
         guild: interaction.guild!.id,
         channel: interaction.channel!.id,
@@ -131,7 +131,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
     }
     if(interactionMember?.roles.icon) newOut.createdBy.topRole.badgeURL = interactionMember.roles.icon.iconURL()!;
     messages.reverse().forEach((message) => {
-        let msg: TranscriptMessage = {
+        const msg: TranscriptMessage = {
             id: message.id,
             author: {
                 username: message.author.username,
@@ -146,7 +146,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         if (message.member!.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
         if (message.content) msg.content = message.content;
         if (message.embeds.length > 0) msg.embeds = message.embeds.map(embed => {
-            let obj: TranscriptEmbed = {};
+            const obj: TranscriptEmbed = {};
             if (embed.title) obj.title = embed.title;
             if (embed.description) obj.description = embed.description;
             if (embed.fields.length > 0) obj.fields = embed.fields.map(field => {
@@ -163,7 +163,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
             return obj;
         });
         if (message.components.length > 0) msg.components = message.components.map(component => component.components.map(child => {
-            let obj: TranscriptComponent = {
+            const obj: TranscriptComponent = {
                 type: child.type
             }
             if (child.type === ComponentType.Button) {
@@ -175,7 +175,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
             return obj
         }));
         if (message.editedTimestamp) msg.editedTimestamp = message.editedTimestamp;
-        if (message.flags) msg.flags = message.flags.toArray();
+        msg.flags = message.flags.toArray();
 
         if (message.stickers.size > 0) msg.stickerURLs = message.stickers.map(sticker => sticker.url);
         if (message.reference) msg.referencedMessage = [message.reference.guildId ?? "", message.reference.channelId, message.reference.messageId ?? ""];

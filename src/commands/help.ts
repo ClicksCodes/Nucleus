@@ -100,7 +100,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 nameLocalized?: string;
                 descriptionLocalized?: string;
             })[] = [];
-            //o ptions
+            //options
             if(currentPath[1] !== "" && currentPath[1] !== "none" && currentPath[2] !== "" && currentPath[2] !== "none") {
                 const Op = current.options.find(option => option.name === currentPath[1])! as ApplicationCommandSubGroup
                 const Op2 = Op.options!.find(option => option.name === currentPath[2])!
@@ -114,7 +114,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     options = Op.options ?? []
                 }
             } else {
-                options = current.options.filter(option => option.type !== ApplicationCommandOptionType.SubcommandGroup && option.type !== ApplicationCommandOptionType.Subcommand) || [];
+                options = current.options.filter(option => (option.type !== ApplicationCommandOptionType.SubcommandGroup) && (option.type !== ApplicationCommandOptionType.Subcommand));
             }
             for(const option of options) {
                 optionString += `> ${option.name} (${ApplicationCommandOptionType[option.type]})- ${option.description}\n`
@@ -141,7 +141,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         ...subcommandGroups.map((option) => new StringSelectMenuOptionBuilder().setLabel(capitalize(option.name)).setValue(option.name).setDefault(currentPath[1] === option.name))
                     )
                 if(subcommandGroupRow.components[0]!.options.find((option) => option.data.default && option.data.value !== "none")) {
-                    const subsubcommands = (subcommandGroups.find((option) => option.name === currentPath[1])! as ApplicationCommandSubGroup).options?.filter((option) => option.type === ApplicationCommandOptionType.Subcommand) ?? [];
+                    const subsubcommands = (subcommandGroups.find((option) => option.name === currentPath[1])! as ApplicationCommandSubGroup).options ?? [];
                     subcommandRow.components[0]!
                         .addOptions(
                             new StringSelectMenuOptionBuilder().setLabel("Select a subcommand").setValue("none").setDefault(currentPath[2] === "none"),

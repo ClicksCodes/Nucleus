@@ -58,7 +58,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
             }) as Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction;
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
 
         if(i.isButton()) {
@@ -87,7 +87,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
 
 export const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
-    const me = interaction.guild!.members.me as Discord.GuildMember;
+    const me = interaction.guild!.members.me!;
     if (!member.permissions.has("ManageMessages"))
         return "You must have the *Manage Messages* permission to use this command";
     if (_partial) return true;

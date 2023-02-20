@@ -18,7 +18,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         fetchReply: true
     })
 
-    if(!client.database.premium.hasPremium(interaction.guild!.id)) return interaction.editReply({
+    if(!await client.database.premium.hasPremium(interaction.guild!.id)) return interaction.editReply({
         embeds: [
             new EmojiEmbed()
                 .setTitle("Premium Required")
@@ -77,7 +77,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             })) as Discord.ButtonInteraction | Discord.SelectMenuInteraction;
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
         await i.deferUpdate();
         if(i.isButton()) {

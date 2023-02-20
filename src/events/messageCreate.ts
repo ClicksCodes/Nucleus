@@ -26,9 +26,9 @@ export async function callback(_client: NucleusClient, message: Message) {
     const content = message.content.toLowerCase() || "";
     const config = await client.memory.readGuildInfo(message.guild.id);
     if(config.filters.clean.channels.includes(message.channel.id)) {
-        let memberRoles = message.member!.roles.cache.map(role => role.id);
-        let roleAllow = config.filters.clean.allowed.roles.some(role => memberRoles.includes(role));
-        let userAllow = config.filters.clean.allowed.user.includes(message.author.id);
+        const memberRoles = message.member!.roles.cache.map(role => role.id);
+        const roleAllow = config.filters.clean.allowed.roles.some(role => memberRoles.includes(role));
+        const userAllow = config.filters.clean.allowed.user.includes(message.author.id);
         if(!roleAllow && !userAllow) return await message.delete();
     }
 

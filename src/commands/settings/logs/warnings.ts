@@ -66,7 +66,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             })) as Discord.ButtonInteraction | Discord.SelectMenuInteraction;
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
         await i.deferUpdate();
         if(i.isButton()) {

@@ -646,9 +646,9 @@ const mentionMenu = async (interaction: StringSelectMenuInteraction, m: Message,
     return current
 }
 
-const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, current: {
-    channels: string[],
-    allowed: {
+const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, current?: {
+    channels?: string[],
+    allowed?: {
         roles: string[],
         user: string[]
     }
@@ -729,12 +729,12 @@ const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, c
         } else {
             switch (i.customId) {
                 case "toAdd": {
-                    let channelEmbed = new EmojiEmbed()
+                    const channelEmbed = new EmojiEmbed()
                         .setTitle("Clean Settings")
                         .setDescription(`Editing <#${i.values[0]}>`)
                         .setEmoji("GUILD.SETTINGS.GREEN")
                         .setStatus("Success")
-                    let channelButtons = new ActionRowBuilder<ButtonBuilder>()
+                    const channelButtons = new ActionRowBuilder<ButtonBuilder>()
                         .addComponents(
                             new ButtonBuilder()
                                 .setCustomId("back")
@@ -788,7 +788,13 @@ const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, c
 
     } while(!closed);
 
-    return current;
+    return current as {
+        channels: string[],
+        allowed: {
+            roles: string[],
+            user: string[]
+        }
+    };
 
 }
 

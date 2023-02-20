@@ -215,7 +215,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         out = null;
                     }
                     if(!out) break;
-                    data.message = out.fields.getTextInputValue("message") ?? null;
+                    data.message = out.fields.getTextInputValue("message");
                     break;
                 }
                 case "save": {

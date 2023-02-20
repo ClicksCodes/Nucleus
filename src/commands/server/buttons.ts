@@ -44,7 +44,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
     });
 
     let closed = false;
-    let data: Data = {
+    const data: Data = {
         buttons: [],
         title: null,
         description: null,
@@ -201,9 +201,9 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 }
                 case "send": {
                     await i.deferUpdate();
-                    let channel = interaction.guild!.channels.cache.get(data.channel!) as Discord.TextChannel;
-                    let components = new ActionRowBuilder<ButtonBuilder>();
-                    for(let button of data.buttons) {
+                    const channel = interaction.guild!.channels.cache.get(data.channel!) as Discord.TextChannel;
+                    const components = new ActionRowBuilder<ButtonBuilder>();
+                    for(const button of data.buttons) {
                         components.addComponents(
                             new ButtonBuilder()
                             .setCustomId(button)
@@ -211,9 +211,9 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                             .setStyle(ButtonStyle.Primary)
                             );
                         }
-                    let messageData: MessageCreateOptions = {components: [components]}
+                    const messageData: MessageCreateOptions = {components: [components]}
                     if (data.title || data.description) {
-                        let e = new EmojiEmbed()
+                        const e = new EmojiEmbed()
                         if(data.title) e.setTitle(data.title);
                         if(data.description) e.setDescription(data.description);
                         if(data.color) e.setColor(data.color);
@@ -224,7 +224,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 }
             }
         } else if(i.isStringSelectMenu()) {
-            try {await i.deferUpdate();} catch (err) {}
+            try {await i.deferUpdate();} catch (err) {console.log(err)}
             switch(i.customId) {
                 case "color": {
                     data.color = colors[i.values[0]!]!;

@@ -19,9 +19,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
-    const name = interaction.options.get("name")?.value as string;
-    const value = interaction.options.get("value")?.value as string ?? "";
-    const newname = interaction.options.get("newname")?.value as string ?? "";
+    const name = (interaction.options.get("name")?.value ?? "") as string;
+    const value = (interaction.options.get("value")?.value ?? "") as string;
+    const newname = (interaction.options.get("newname")?.value ?? "") as string;
     if (!newname && !value)
         return await interaction.reply({
             embeds: [

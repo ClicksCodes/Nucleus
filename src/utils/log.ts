@@ -94,7 +94,7 @@ export const Logger = {
                 }
             });
             if (channel) {
-                log.separate = log.separate || {};
+                log.separate = log.separate ?? {};
                 const embed = new Discord.EmbedBuilder()
                     .setTitle(`${getEmojiByName(log.meta.emoji)} ${log.meta.displayName}`)
                     .setDescription(

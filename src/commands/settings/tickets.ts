@@ -154,7 +154,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                         .setCustomId("maxTickets")
                                         .setPlaceholder("Enter a number")
                                         .setRequired(false)
-                                        .setValue(ticketData.maxTickets.toString() ?? "")
+                                        .setValue(ticketData.maxTickets.toString())
                                         .setMinLength(1)
                                         .setMaxLength(3)
                                         .setStyle(TextInputStyle.Short)
@@ -187,7 +187,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     }
                     if (!out || out.isButton()) continue;
                     out = out as ModalSubmitInteraction;
-                    let toAdd = out.fields.getTextInputValue("maxTickets");
+                    const toAdd = out.fields.getTextInputValue("maxTickets");
                     if(isNaN(parseInt(toAdd))) {
                         errorMessage = "You entered an invalid number - No changes were made";
                         break;
@@ -394,11 +394,10 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             toAdd = toAdd.substring(0, 80);
             try {
                 if(!data.customTypes) data.customTypes = [];
-                data.customTypes?.push(toAdd);
+                data.customTypes.push(toAdd);
             } catch {
                 continue;
             }
-            data.customTypes = data.customTypes ?? [];
             if (!data.customTypes.includes(toAdd)) {
                 data.customTypes.push(toAdd);
             }

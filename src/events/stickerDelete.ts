@@ -16,7 +16,7 @@ export async function callback(client: NucleusClient, sticker: Sticker) {
             calculateType: "stickerUpdate",
             color: NucleusColors.red,
             emoji: "GUILD.STICKER.DELETE",
-            timestamp: auditLog.createdTimestamp ?? Date.now()
+            timestamp: auditLog.createdTimestamp
         },
         list: {
             stickerId: entry(sticker.id, `\`${sticker.id}\``),

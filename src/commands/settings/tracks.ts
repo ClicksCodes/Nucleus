@@ -217,7 +217,7 @@ const editTrack = async (interaction: ButtonInteraction | StringSelectMenuIntera
             )
             .setStatus("Success")
 
-        let comps: ActionRowBuilder<RoleSelectMenuBuilder | ButtonBuilder | StringSelectMenuBuilder>[] = [roleSelect, buttons];
+        const comps: ActionRowBuilder<RoleSelectMenuBuilder | ButtonBuilder | StringSelectMenuBuilder>[] = [roleSelect, buttons];
         if(current.track.length >= 1) comps.splice(1, 0, selectMenu);
 
         interaction.editReply({embeds: [embed], components: comps});

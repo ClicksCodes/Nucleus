@@ -27,12 +27,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let member = interaction.options.getMember("user") as GuildMember | null;
 
     if(!member) {
-        let memberEmbed = new EmojiEmbed()
+        const memberEmbed = new EmojiEmbed()
             .setTitle("Role")
             .setDescription(`Please choose a member to edit the roles of.`)
             .setEmoji("GUILD.ROLES.CREATE")
             .setStatus("Success");
-        let memberChooser = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
+        const memberChooser = new ActionRowBuilder<UserSelectMenuBuilder>().addComponents(
             new UserSelectMenuBuilder()
                 .setCustomId("memberChooser")
                 .setPlaceholder("Select a member")
@@ -48,7 +48,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             return;
         }
 
-        if(!i) return;
         memberEmbed.setDescription(`Editing roles for ${renderUser(i.values[0]!)}`);
         await i.deferUpdate();
         await interaction.editReply({ embeds: LoadingEmbed, components: [] })
@@ -67,14 +66,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         );
 
     do {
+
+        const removing = rolesToChange.filter((r) => member!.roles.cache.has(r)).map((r) => canEdit(interaction.guild?.roles.cache.get(r)!, interaction.member as GuildMember, interaction.guild?.members.me!)[0])
+        const adding = rolesToChange.filter((r) => !member!.roles.cache.has(r)).map((r) => canEdit(interaction.guild?.roles.cache.get(r)!, interaction.member as GuildMember, interaction.guild?.members.me!)[0])
         const embed = new EmojiEmbed()
         .setTitle("Role")
         .setDescription(
             `${getEmojiByName("ICONS.EDIT")} Editing roles for <@${member.id}>\n\n` +
             `Adding:\n` +
-            `${listToAndMore(rolesToChange.filter((r) => !member!.roles.cache.has(r)).map((r) => canEdit(interaction.guild?.roles.cache.get(r)!, interaction.member as GuildMember, interaction.guild?.members.me!)[0]) || ["None"], 5)}\n` +
+            `${listToAndMore(adding.length > 0 ? adding : ["None"], 5)}\n` +
             `Removing:\n` +
-            `${listToAndMore(rolesToChange.filter((r) => member!.roles.cache.has(r)).map((r) => canEdit(interaction.guild?.roles.cache.get(r)!, interaction.member as GuildMember, interaction.guild?.members.me!)[0]) || ["None"], 5)}\n`
+            `${listToAndMore(removing.length > 0 ? removing : ["None"], 5)}\n`
         )
         .setEmoji("GUILD.ROLES.CREATE")
         .setStatus("Success");
@@ -99,18 +101,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({ filter: (i) => i.user.id === interaction.user.id, time: 300000 }) as RoleSelectMenuInteraction | ButtonInteraction;
         } catch (e) {
-            return;
+            closed = true;
+            continue;
         }
 
-        if(!i) return;
         i.deferUpdate();
         if(i.isButton()) {
             switch(i.customId) {
-                case "roleSave":
+                case "roleSave": {
                     const roles = rolesToChange.map((r) => interaction.guild?.roles.cache.get(r)!);
                     await interaction.editReply({ embeds: LoadingEmbed, components: [] });
-                    let rolesToAdd: Role[] = [];
-                    let rolesToRemove: Role[] = [];
+                    const rolesToAdd: Role[] = [];
+                    const rolesToRemove: Role[] = [];
                     for(const role of roles) {
                         if(!canEdit(role, interaction.member as GuildMember, interaction.guild?.members.me!)[1]) continue;
                         if(member.roles.cache.has(role.id)) {
@@ -123,10 +125,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     await member.roles.remove(rolesToRemove);
                     rolesToChange = [];
                     break;
-                case "roleDiscard":
+                }
+                case "roleDiscard": {
                     rolesToChange = [];
                     await interaction.editReply({ embeds: LoadingEmbed, components: [] });
                     break;
+                }
             }
         } else {
             rolesToChange = i.values;

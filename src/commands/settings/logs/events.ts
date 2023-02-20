@@ -104,7 +104,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 `**Channel:** ${data.channel ? `<#${data.channel}>` : "None"}\n`
             )
 
-        let components: ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder | StringSelectMenuBuilder>[] = [channelMenu, buttons];
+        const components: ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder | StringSelectMenuBuilder>[] = [channelMenu, buttons];
         if(show) components.push(toLogMenu);
 
         await interaction.editReply({
@@ -120,7 +120,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }) as ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         } catch (e) {
             closed = true;
-            break;
+            continue;
         }
 
         await i.deferUpdate();
@@ -147,7 +147,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
             }
         } else if(i.isStringSelectMenu()) {
-            let hex = toHexInteger(i.values);
+            const hex = toHexInteger(i.values);
             data.toLog = hex;
         } else if(i.isChannelSelectMenu()) {
             data.channel = i.values[0]!;
