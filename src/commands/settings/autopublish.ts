@@ -53,7 +53,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
         let i: Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction;
         try {
             i = await interaction.channel!.awaitMessageComponent({
-                filter: (i) => i.user.id === interaction.user.id,
+                filter: (i: Discord.Interaction) => i.user.id === interaction.user.id,
                 time: 300000
             }) as Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction;
         } catch (e) {

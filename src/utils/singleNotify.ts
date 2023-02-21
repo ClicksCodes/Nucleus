@@ -1,6 +1,7 @@
 import client from "./client.js";
 import EmojiEmbed from "./generateEmojiEmbed.js";
 import { Record as ImmutableRecord } from "immutable";
+import type { TextChannel, ThreadChannel, NewsChannel } from "discord.js";
 
 const severitiesType = ImmutableRecord({
     Critical: "Danger",
@@ -31,20 +32,20 @@ export default async function (
         const channel = await client.channels.fetch(data.logging.staff.channel);
         if (!channel) return;
         if (!channel.isTextBased()) return;
+        const textChannel = channel as TextChannel | ThreadChannel | NewsChannel;
+        let messageData = {embeds: [
+            new EmojiEmbed()
+                .setTitle(`${severity} notification`)
+                .setDescription(message)
+                .setStatus(severities.get(severity))
+                .setEmoji("CONTROL.BLOCKCROSS")
+        ]}
         if (pings) {
-            await channel.send({
+            messageData = Object.assign(messageData, {
                 content: pings.map((ping) => `<@${ping}>`).join(" ")
             });
         }
-        await channel.send({
-            embeds: [
-                new EmojiEmbed()
-                    .setTitle(`${severity} notification`)
-                    .setDescription(message)
-                    .setStatus(severities.get(severity))
-                    .setEmoji("CONTROL.BLOCKCROSS")
-            ]
-        });
+        await textChannel.send(messageData);
     } catch (err) {
         console.error(err);
     }

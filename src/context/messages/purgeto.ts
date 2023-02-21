@@ -1,7 +1,7 @@
 import confirmationMessage from '../../utils/confirmationMessage.js';
 import EmojiEmbed from '../../utils/generateEmojiEmbed.js';
 import { LoadingEmbed } from '../../utils/defaults.js';
-import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, GuildTextBasedChannel, MessageContextMenuCommandInteraction } from "discord.js";
+import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, GuildTextBasedChannel, Message, MessageContextMenuCommandInteraction } from "discord.js";
 import client from "../../utils/client.js";
 import getEmojiByName from '../../utils/getEmojiByName.js';
 import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from "../../utils/logTranscripts.js";
@@ -184,7 +184,8 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         }
     };
     log(data);
-    const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(deleted.map((m) => m as Discord.Message))!);
+    const messages: Message[] = deleted.map(m => m).filter(m => m instanceof Message).map(m => m as Message);
+    const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(messages)!);
     const attachmentObject = {
         attachment: Buffer.from(transcript),
         name: `purge-${channel.id}-${Date.now()}.txt`,

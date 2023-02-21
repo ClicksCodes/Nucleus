@@ -10,15 +10,14 @@ export default async function (
     try {
         out = await new Promise((resolve, _reject) => {
             const mes = m
-                .createMessageComponentCollector({
-                    filter: (m) => interactionFilter(m),
-                    time: 300000
-                })
-                .on("collect", (m) => {
+            .createMessageComponentCollector({
+                filter: (m) => interactionFilter(m),
+                time: 300000
+            })
+            .on("collect", (m) => {
                     resolve(m);
                 });
-            const int = m.channel
-                .createMessageCollector({
+            const int = m.channel.createMessageCollector({
                     filter: (m) => messageFilter(m),
                     time: 300000
                 })

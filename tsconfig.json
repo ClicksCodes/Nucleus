@@ -11,7 +11,8 @@
         "resolveJsonModule": true,
         "moduleResolution": "NodeNext",
         "skipLibCheck": true,
-        "noImplicitReturns": false
+        "noImplicitReturns": false,
+        "ignoreDeprecations": "5.0"
     },
     "include": ["src/**/*", "src/index.d.ts"],
     "exclude": ["src/Unfinished/**/*"]

@@ -28,6 +28,9 @@
         "typescript": "^4.9.4",
         "uuid": "^8.3.2"
     },
+    "resolutions": {
+        "discord-api-types": "0.37.20"
+    },
     "name": "nucleus",
     "version": "0.0.1",
     "description": "Nucleus: The core of your server",
