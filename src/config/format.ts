@@ -1,3 +1,4 @@
+
 import fs from "fs";
 import * as readLine from "node:readline/promises";
 
@@ -50,25 +51,27 @@ export default async function (walkthrough = false) {
         // }
     }
 
-    let json;
+    let json: typeof defaultDict;
     let out = true;
     try {
-        json = JSON.parse(fs.readFileSync("./src/config/main.json", "utf8"));
+        json = await import("./main.js") as unknown as typeof defaultDict;
     } catch (e) {
-        console.log("\x1b[31m⚠ No main.json found, creating one.");
-        console.log("  \x1b[2mYou can edit src/config/main.json directly using template written to the file.\x1b[0m\n");
+        console.log("\x1b[31m⚠ No main.ts found, creating one.");
+        console.log("  \x1b[2mYou can edit src/config/main.ts directly using template written to the file.\x1b[0m\n");
         out = false;
-        json = {};
+        json = {} as typeof defaultDict;
     }
-    if (json) {
-        if (json.token === defaultDict["token"] || json.developmentToken === defaultDict["developmentToken"]) {
-            console.log("\x1b[31m⚠ No main.json found, creating one.");
-            console.log("  \x1b[2mYou can edit src/config/main.json directly using template written to the file.\x1b[0m\n");
+
+    if (Object.keys(json).length) {
+        if (json["token"] === defaultDict["token"] || json["developmentToken"] === defaultDict["developmentToken"]) {
+            console.log("\x1b[31m⚠ No main.ts found, creating one.");
+            console.log("  \x1b[2mYou can edit src/config/main.ts directly using template written to the file.\x1b[0m\n");
             json = {};
         }
     }
+
     for (const key in defaultDict) {
-        if (!json[key]) {
+        if (Object.keys(json).includes(key)) {
             if (walkthrough) {
                 switch (key) {
                     case "enableDevelopment": {
@@ -99,13 +102,13 @@ export default async function (walkthrough = false) {
                     }
                 }
             } else {
-                json[key] = defaultDict[key];
+                json[key] = defaultDict[key]!;
             }
         }
     }
-    if (walkthrough && !json.mongoUrl) json.mongoUrl = "mongodb://127.0.0.1:27017";
-    if (!json.mongoUrl.endsWith("/")) json.mongoUrl += "/";
-    if (!json.baseUrl.endsWith("/")) json.baseUrl += "/";
+    if (walkthrough && !(json["mongoUrl"] ?? false)) json["mongoUrl"] = "mongodb://127.0.0.1:27017";
+    if (!((json["mongoUrl"] as string | undefined) ?? "").endsWith("/")) json["mongoUrl"] += "/";
+    if (!((json["baseUrl"] as string | undefined) ?? "").endsWith("/")) json["baseUrl"] += "/";
     let hosts;
     try {
         hosts = fs.readFileSync("/etc/hosts", "utf8").toString().split("\n");
@@ -114,16 +117,16 @@ export default async function (walkthrough = false) {
             "\x1b[31m⚠ No /etc/hosts found. Please ensure the file exists and is readable. (Windows is not supported, Mac and Linux users should not experience this error)"
         );
     }
-    let localhost = hosts.find((line) => line.split(" ")[1] === "localhost");
+    let localhost: string | undefined = hosts.find((line) => line.split(" ")[1] === "localhost");
     if (localhost) {
         localhost = localhost.split(" ")[0];
     } else {
         localhost = "127.0.0.1";
     }
-    json.mongoUrl = json.mongoUrl.replace("localhost", localhost);
-    json.baseUrl = json.baseUrl.replace("localhost", localhost);
+    json["mongoUrl"] = (json["mongoUrl"]! as string).replace("localhost", localhost!);
+    json["baseUrl"] = (json["baseUrl"]! as string).replace("localhost", localhost!);
 
-    fs.writeFileSync("./src/config/main.json", JSON.stringify(json, null, 4));
+    fs.writeFileSync("./src/config/main.ts", "export default " + JSON.stringify(json, null, 4) + ";");
 
     if (walkthrough) {
         console.log("\x1b[32m✓ All properties added.\x1b[0m");

@@ -1,6 +1,6 @@
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
-import config from "../config/main.json" assert { type: "json" };
+import config from "../config/main.js";
 import client from "../utils/client.js";
 
 const mongoClient = new MongoClient(config.mongoUrl);

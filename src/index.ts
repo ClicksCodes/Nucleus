@@ -1,6 +1,6 @@
 import runServer from "./api/index.js";
 import client from "./utils/client.js";
-import config from "./config/main.json" assert { type: "json" };
+import config from "./config/main.js";
 import register from "./utils/commandRegistration/register.js";
 import { record as recordPerformance } from "./utils/performanceTesting/record.js";
 

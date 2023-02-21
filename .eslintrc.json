@@ -4,7 +4,7 @@
         "es2020": true,
         "node": true
     },
-    "ignorePatterns": ["dist/", "src/Unfinished/"],
+    "ignorePatterns": ["dist/", "src/Unfinished/", "src/config/main.d.ts", "*.js"],
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/strict", "prettier"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {

@@ -2,7 +2,7 @@ import client from "../client.js";
 import * as CP from 'child_process';
 import * as process from 'process';
 import systeminformation from "systeminformation";
-import config from "../../config/main.json" assert { type: "json" };
+import config from "../../config/main.js";
 import singleNotify from "../singleNotify.js";
 
 

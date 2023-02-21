@@ -1,6 +1,6 @@
 import { SlashCommandSubcommandBuilder, SlashCommandSubcommandGroupBuilder } from "discord.js";
 import type { SlashCommandBuilder } from "discord.js";
-import config from "../../config/main.json" assert { type: "json" };
+import config from "../../config/main.js";
 import getSubcommandsInFolder from "./getFilesInFolder.js";
 import client from "../client.js";
 import Discord from "discord.js";

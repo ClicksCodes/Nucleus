@@ -5,7 +5,7 @@ import type { VerifySchema } from "../reflex/verify.js";
 import { Guilds, History, ModNotes, Premium, PerformanceTest, ScanCache } from "../utils/database.js";
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
-import config from "../config/main.json" assert { type: "json" };
+import config from "../config/main.js";
 
 
 class NucleusClient extends Client {

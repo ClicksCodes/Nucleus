@@ -1,6 +1,6 @@
 import type { CommandInteraction } from 'discord.js';
 import Discord, { Interaction, SlashCommandBuilder, ApplicationCommandType } from 'discord.js';
-import config from "../../config/main.json" assert { type: "json" };
+import config from "../../config/main.js";
 import client from "../client.js";
 import fs from "fs";
 import EmojiEmbed from '../generateEmojiEmbed.js';
