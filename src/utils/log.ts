@@ -72,8 +72,8 @@ export const Logger = {
         yellow: 0xf2d478,
         green: 0x68d49e
     },
-    async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable): Promise<Discord.GuildAuditLogsEntry[]> {
-        await wait(250);
+    async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable, delay?: number): Promise<Discord.GuildAuditLogsEntry[]> {
+        await wait(delay ?? 250);
         const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map(m => m)
         return auditLog as Discord.GuildAuditLogsEntry[];
     },

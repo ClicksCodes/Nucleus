@@ -13,16 +13,15 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
         const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
         if (!await isLogging(channel.guild.id, "webhookUpdate")) return;
         const auditCreate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookCreate))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0]!;
-        const auditDelete = (await getAuditLog(channel.guild, AuditLogEvent.WebhookDelete))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0];
-        const auditUpdate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookUpdate))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as Webhook)!.id === channel.id)[0];
-
-        if (!auditUpdate && !auditDelete) return;
+            .filter((entry: GuildAuditLogsEntry | null) => (entry?.target) ? (entry.target as Webhook)!.channelId === channel.id : false)[0];
+        const auditDelete = (await getAuditLog(channel.guild, AuditLogEvent.WebhookDelete, 0))
+            .filter((entry: GuildAuditLogsEntry | null) => (entry?.target) ? (entry.target as Webhook)!.channelId === channel.id : false)[0];
+        const auditUpdate = (await getAuditLog(channel.guild, AuditLogEvent.WebhookUpdate, 0))
+            .filter((entry: GuildAuditLogsEntry | null) => (entry?.target) ? (entry.target as Webhook)!.channelId === channel.id : false)[0];
+        if (!auditCreate && !auditUpdate && !auditDelete) return;
         let action: "Create" | "Update" | "Delete" = "Create";
         let list: Record<string, ReturnType<typeof entry> | string> = {};
-        const createTimestamp = auditCreate.createdTimestamp;
+        const createTimestamp = auditCreate ? auditCreate.createdTimestamp : 0;
         const deleteTimestamp = auditDelete ? auditDelete.createdTimestamp : 0;
         const updateTimestamp = auditUpdate ? auditUpdate.createdTimestamp : 0;
         if (updateTimestamp > createTimestamp && updateTimestamp > deleteTimestamp && auditUpdate) {
@@ -81,8 +80,8 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 name: entry(before["name"]!, `${before["name"]}`),
                 channel: entry(before["channel_id"]!, renderChannel(await client.channels.fetch(before["channel_id"]!) as GuildChannel)),
                 createdBy: entry(
-                    auditCreate.executor!.id,
-                    renderUser((await channel.guild.members.fetch(auditCreate.executor!.id)).user)
+                    auditCreate!.executor!.id,
+                    renderUser((await channel.guild.members.fetch(auditCreate!.executor!.id)).user)
                 ),
                 created: entry(Date.now(), renderDelta(Date.now()))
             };
