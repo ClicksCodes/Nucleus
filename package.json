@@ -28,7 +28,7 @@
         "uuid": "^8.3.2"
     },
     "resolutions": {
-        "discord-api-types": "0.37.20"
+        "discord-api-types": "0.37.23"
     },
     "name": "nucleus",
     "version": "0.0.1",

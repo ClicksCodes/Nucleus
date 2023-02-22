@@ -12,7 +12,6 @@
         "moduleResolution": "NodeNext",
         "skipLibCheck": true,
         "noImplicitReturns": false,
-        "ignoreDeprecations": "5.0"
     },
     "include": ["src/**/*", "src/*", "src/config/main.d.ts", "src/config/main.ts"],
     "exclude": ["src/Unfinished/**/*"]
