@@ -309,7 +309,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        let out = "";
+        let out = "";  // TODO: messageException throughout this file
         messages.reverse().forEach((message) => {
             if (!message) {
                 out += "Unknown message\n\n"

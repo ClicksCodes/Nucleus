@@ -32,14 +32,13 @@ class NucleusClient extends Client {
         callback: (interaction: Interaction) => Promise<void>,
         check: (interaction: Interaction, partial: boolean) => Promise<boolean> | boolean,
         autocomplete: (interaction: AutocompleteInteraction) => Promise<string[]>
-    } | undefined,{name: string, description: string}]> = {};
+    } | undefined, {name: string, description: string}]> = {};
     fetchedCommands = new Collection<string, Discord.ApplicationCommand>();
     constructor(database: typeof NucleusClient.prototype.database) {
         super({ intents: 0b1100011011011111111111});
         this.database = database;
     }
 }
-
 const client = new NucleusClient({
     guilds: await new Guilds().setup(),
     history: new History(),

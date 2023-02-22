@@ -111,7 +111,7 @@ async function registerContextMenus() {
             context.command.setNameLocalizations(context.nameLocalizations ?? {})
             commands.push(context.command);
 
-            client.commands["contextCommands/message/" + context.command.name] = context;
+            client.commands["contextCommands/message/" + context.command.name] = [context, {name: context.name ?? context.command.name, description: context.description ?? context.command.description}];
 
             console.log(`${last.replace("└", " ").replace("├", "│")}  └─ ${colors.green}Loaded ${file.name} [${i} / ${totalFiles}]${colors.none}`)
         } catch (e) {
@@ -181,6 +181,7 @@ async function registerCommandHandler() {
 }
 
 async function execute(check: Function | undefined, callback: Function | undefined, data: CommandInteraction) {
+    console.log(client.commands["contextCommands/user/User info"])
     if (!callback) return;
     if (check) {
         let result;
@@ -197,7 +198,7 @@ async function execute(check: Function | undefined, callback: Function | undefin
                 .setColor(NucleusColors.red)
                 .setEmoji(getEmojiByName("CONTROL.BLOCKCROSS"))
             ], ephemeral: true});
-        };
+        }
     }
     callback(data);
 }

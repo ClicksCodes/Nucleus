@@ -5,6 +5,7 @@ import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContextMenuComma
 import client from "../../utils/client.js";
 import getEmojiByName from '../../utils/getEmojiByName.js';
 import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from "../../utils/logTranscripts.js";
+import { messageException } from '../../utils/createTemporaryStorage.js';
 
 const command = new ContextMenuCommandBuilder()
     .setName("Purge up to here")
@@ -185,6 +186,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
     };
     log(data);
     const messages: Message[] = deleted.map(m => m).filter(m => m instanceof Message).map(m => m as Message);
+    if (messages.length === 1) messageException(interaction.guild!.id, interaction.channel.id, messages[0]!.id)
     const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(messages)!);
     const attachmentObject = {
         attachment: Buffer.from(transcript),

@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelSelectMenuBuilder } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelSelectMenuBuilder, ChannelType } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
@@ -38,6 +38,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 new ChannelSelectMenuBuilder()
                     .setCustomId("channel")
                     .setPlaceholder("Select a channel")
+                    .setChannelTypes(ChannelType.GuildText)
             );
         const buttons = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
@@ -58,7 +59,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         const embed = new EmojiEmbed()
             .setTitle("Attachments")
             .setDescription(
-                `The channel to send all attachments from the server, allowing you to check them if they are deleted` +
+                `The channel to send all attachments from the server, allowing you to check them if they are deleted\n` +
                 `**Channel:** ${channel ? `<#${channel}>` : "*None*"}\n`
             )
             .setStatus("Success")

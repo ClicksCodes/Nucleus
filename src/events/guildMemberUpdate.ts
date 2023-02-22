@@ -7,6 +7,9 @@ export const event = "guildMemberUpdate";
 
 export async function callback(client: NucleusClient, before: GuildMember, after: GuildMember) {
     const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
+    if(before.guild.id === "684492926528651336") {
+        await client.database.premium.checkAllPremium(after)
+    }
 
     if(!before.roles.cache.equals(after.roles.cache)) {
         const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberRoleUpdate))

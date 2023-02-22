@@ -14,6 +14,7 @@ import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import client from "../utils/client.js";
+import { messageException } from '../utils/createTemporaryStorage.js';
 
 const pbClient = new PasteClient(client.config.pastebinApiKey);
 
@@ -95,6 +96,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         const deleted = await (interaction.channel as TextChannel).bulkDelete(fetched, true);
         deletedCount = deleted.size;
         messages = messages.concat(Array.from(deleted.values() as Iterable<Message>));
+        if (messages.length === 1) messageException(interaction.guild!.id, interaction.channel.id, messages[0]!.id)
     } while (deletedCount === 100);
 
     let out = "";

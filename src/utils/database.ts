@@ -1,3 +1,4 @@
+import type { GuildMember } from "discord.js";
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.js";
@@ -245,11 +246,36 @@ export class Premium {
         await this.premium.insertOne({ user: user, appliesTo: [], level: level });
     }
 
-    async hasPremium(guild: string) {
+    async hasPremium(guild: string): Promise<[boolean, string, number] | null> {
+        const entries = await this.premium.find({}).toArray();
+        const members = await (await client.guilds.fetch(guild)).members.fetch()
+        for(const {user} of entries) {
+            const member = members.get(user);
+            if(member) {
+                const modPerms = //TODO: Create list in config for perms
+                            member.permissions.has("Administrator") ||
+                            member.permissions.has("ManageChannels") ||
+                            member.permissions.has("ManageRoles") ||
+                            member.permissions.has("ManageEmojisAndStickers") ||
+                            member.permissions.has("ManageWebhooks") ||
+                            member.permissions.has("ManageGuild") ||
+                            member.permissions.has("KickMembers") ||
+                            member.permissions.has("BanMembers") ||
+                            member.permissions.has("ManageEvents") ||
+                            member.permissions.has("ManageMessages") ||
+                            member.permissions.has("ManageThreads")
+                const entry = entries.find(e => e.user === member.id);
+                if(entry && (entry.level === 3) && modPerms) return [true, member.id, entry.level];
+            }
+        }
         const entry = await this.premium.findOne({
-            appliesTo: { $in: [guild] }
+            appliesTo: {
+                $elemMatch: {
+                    $eq: guild
+                }
+            }
         });
-        return entry ? true : false;
+        return entry ? [true, entry.user, entry.level] : null;
     }
 
     async fetchUser(user: string): Promise<PremiumSchema | null> {
@@ -258,26 +284,55 @@ export class Premium {
         return entry;
     }
 
-    async checkAllPremium() {
+    async checkAllPremium(member?: GuildMember) {
         const entries = await this.premium.find({}).toArray();
-        for(const {user, expiresAt} of entries) {
-            if(expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({user: user}) : null;
-            const member = await (await client.guilds.fetch("684492926528651336")).members.fetch(user)
-            let level: number = 0;
-            if (member.roles.cache.has("1066468879309750313")) {
+        if(member) {
+            const entry = entries.find(e => e.user === member.id);
+            if(entry) {
+                const expiresAt = entry.expiresAt;
+                if(expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({user: member.id}) : null;
+            }
+            const roles = member.roles;
+            let level = 0;
+            if (roles.cache.has("1066468879309750313")) {
                 level = 99;
-            } else if (member.roles.cache.has("1066465491713003520")) {
+            } else if (roles.cache.has("1066465491713003520")) {
                 level = 1;
-            } else if (member.roles.cache.has("1066439526496604194")) {
+            } else if (roles.cache.has("1066439526496604194")) {
                 level = 2;
-            } else if (member.roles.cache.has("1066464134322978912")) {
+            } else if (roles.cache.has("1066464134322978912")) {
                 level = 3;
             }
-
+            await this.updateUser(member.id, level);
             if (level > 0) {
-                await this.updateUser(user, level);
+                await this.premium.updateOne({ user: member.id }, {$unset: { expiresAt: ""}})
             } else {
-                await this.premium.updateOne({ user: user }, { expiresAt: (Date.now() + (1000*60*60*24*3)) })
+                await this.premium.updateOne({ user: member.id }, {$set: { expiresAt: (Date.now() + (1000*60*60*24*3)) }})
+            }
+        } else {
+            const members = await (await client.guilds.fetch('684492926528651336')).members.fetch();
+            for(const {roles, id} of members.values()) {
+                const entry = entries.find(e => e.user === id);
+                if(entry) {
+                    const expiresAt = entry.expiresAt;
+                    if(expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({user: id}) : null;
+                }
+                let level: number = 0;
+                if (roles.cache.has("1066468879309750313")) {
+                    level = 99;
+                } else if (roles.cache.has("1066465491713003520")) {
+                    level = 1;
+                } else if (roles.cache.has("1066439526496604194")) {
+                    level = 2;
+                } else if (roles.cache.has("1066464134322978912")) {
+                    level = 3;
+                }
+                await this.updateUser(id, level);
+                if (level > 0) {
+                    await this.premium.updateOne({ user: id }, {$unset: { expiresAt: ""}})
+                } else {
+                    await this.premium.updateOne({ user: id }, {$set: { expiresAt: (Date.now() + (1000*60*60*24*3)) }})
+                }
             }
         }
     }

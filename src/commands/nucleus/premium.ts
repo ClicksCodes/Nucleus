@@ -3,28 +3,26 @@ import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("premium").setDescription("Information about Nucleus Premium");
-
+//TODO: Allow User to remove Premium
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true})
-    const member = (await interaction.client.guilds.fetch("684492926528651336")).members.cache.get(interaction.user.id)
-    const firstDescription = "\n\nPremium allows your server to get access to extra features, for a fixed price per month.\nThis includes:\n" +
-        "- Attachment logs - Stores attachments so they can be viewed after a message is deleted.\n" +
-        "- Ticket Transcripts - Gives a link to view the history of a ticket after it has been closed.\n"
-    if(!member) {
+    const member = await (await interaction.client.guilds.fetch("684492926528651336")).members.fetch(interaction.user.id).catch(() => {
         interaction.editReply({ embeds: [
             new EmojiEmbed()
                 .setTitle("Premium")
-                .setDescription(
-                    `*You are not currently in the Clicks Server. To gain access to premium please join.*` + firstDescription
-                )
+                .setDescription(`*You are not currently in the Clicks Server. To gain access to premium please join.*` + firstDescription)
                 .setEmoji("NUCLEUS.LOGO")
                 .setStatus("Danger")
         ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Join").setURL("https://discord.gg/bPaNnxe"))] });
-        return;
-    }
+    })
+    if (!member) return;
+    const firstDescription = "\n\nPremium allows servers of your choice to get access to extra features for a fixed price per month.\nThis includes:\n" +
+        `${getEmojiByName("MOD.IMAGES.TOOSMALL")}  Attachment logs - Stores attachments so they can be viewed after a message is deleted.\n` +
+        `${getEmojiByName("GUILD.TICKET.ARCHIVED")}  Ticket Transcripts - Gives a link to view the history of a ticket after it has been closed.\n`
     const dbMember = await client.database.premium.fetchUser(interaction.user.id)
     let premium = `You do not have premium! You can't activate premium on any servers.`;
     let count = 0;
@@ -33,19 +31,47 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         premium = `You have Infinite Premium! You have been gifted this by the developers as a thank you. You can give premium to any and all servers you are in.`;
         count = 200;
     } else if (level === 1) {
-        premium = `You have Premium tier 1! You can give premium to ${1 - appliesTo.length} more servers.`;
+        premium = `You have Premium tier 1! You can give premium to ${1 - appliesTo.length} more server(s).`;
         count = 1;
     } else if (level === 2) {
-        premium = `You have Premium tier 2! You can give premium to ${3 - appliesTo.length} more servers.`;
+        premium = `You have Premium tier 2! You can give premium to ${3 - appliesTo.length} more server(s).`;
         count = 3;
     } else if (level === 3) {
-        premium = `You have Premium Mod! You can give premium to ${3 - appliesTo.length} more servers, as well as automatically giving premium to all servers you have a "manage" permission in.`
+        premium = `You have Premium Mod! You can give premium to ${3 - appliesTo.length} more server(s), as well as automatically giving premium to all servers you have a "manage" permission in.`
         count = 3;
+    }
+    if (dbMember?.expiresAt) {
+        premium = `**You can't give servers premium anymore because your subscription ended or was cancelled.** To get premium again please subscribe in the Clicks server`
+        count = 0;
     }
     const hasPremium = await client.database.premium.hasPremium(interaction.guild!.id);
     let premiumGuild = ""
-    if (hasPremium) {
-        premiumGuild = `\n\n**This server has premium!**`
+    if (hasPremium) { //FIXME: Check how user applied premium
+        premiumGuild = `**This server has premium! It was ${hasPremium[2] === 3 ? `automatically applied by <@${hasPremium[1]}>` : `given by <@${hasPremium[1]}>`}**\n\n`
+    }
+
+    const components: ActionRowBuilder<ButtonBuilder>[] = []
+    if (level === 0 || dbMember?.expiresAt) {
+        components.push(
+            new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                    new ButtonBuilder()
+                    .setStyle(ButtonStyle.Link)
+                    .setLabel("Join Clicks")
+                    .setURL("https://discord.gg/bPaNnxe")
+                )
+        )
+    } else {
+        components.push(
+            new ActionRowBuilder<ButtonBuilder>()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setStyle(premiumGuild.length > 0 ? ButtonStyle.Secondary : ButtonStyle.Success)
+                        .setLabel(premiumGuild.length > 0 ? "This server has premium" : "Activate premium here")
+                        .setCustomId("premiumActivate")
+                        .setDisabled(count <= 0 || (hasPremium ? hasPremium[0] : false))
+                )
+        )
     }
 
     interaction.editReply({
@@ -53,21 +79,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             new EmojiEmbed()
                 .setTitle("Premium")
                 .setDescription(
-                    premium + firstDescription + premiumGuild
+                    premiumGuild + premium + firstDescription
                 )
                 .setEmoji("NUCLEUS.LOGO")
                 .setStatus("Danger")
+                // .setImage("") //TODO: Add image
         ],
-        components: [
-            new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setStyle(ButtonStyle.Primary)
-                        .setLabel("Activate Premium here")
-                        .setCustomId("premiumActivate")
-                        .setDisabled(count <= 0 && hasPremium)
-                )
-        ]
+        components: components
     });
 
     const filter = (i: ButtonInteraction) => i.customId === "premiumActivate" && i.user.id === interaction.user.id;

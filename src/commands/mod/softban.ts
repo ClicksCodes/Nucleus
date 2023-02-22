@@ -6,6 +6,7 @@ import keyValueList from "../../utils/generateKeyValueList.js";
 import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
 import { LinkWarningFooter } from "../../utils/defaults.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -134,6 +135,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                 accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp)),
                 serverMemberCount: interaction.guild.memberCount
+            },
+            separate: {
+                end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
             },
             hidden: {
                 guild: interaction.guild.id

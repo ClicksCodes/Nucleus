@@ -338,6 +338,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             mutedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
             reason: entry(reason, reason ? reason : "*No reason provided*")
         },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+        },
         hidden: {
             guild: interaction.guild.id
         }

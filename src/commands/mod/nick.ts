@@ -6,6 +6,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
 import { areTicketsEnabled, create } from "../../actions/createModActionTicket.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder
@@ -164,6 +165,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             after: entry(nickname ?? null, nickname ?? "*No nickname set*"),
             updated: entry(Date.now(), renderDelta(Date.now())),
             updatedBy: entry(interaction.user.id, renderUser(interaction.user))
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild!.id

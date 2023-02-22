@@ -4,6 +4,7 @@ import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -112,6 +113,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             name: entry(member.user.id, renderUser(member.user)),
             unmuted: entry(Date.now().toString(), renderDelta(Date.now())),
             unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id

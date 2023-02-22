@@ -48,15 +48,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Link scanning and Transcripts")
                     .setDescription(
-                        "**Facebook** - Facebook trackers include data such as your date of birth, and guess your age if not entered, your preferences, who you interact with and more.\n" +
-                            "**AMP** - AMP is a technology that allows websites to be served by Google. This means Google can store and track data, and are pushing this to as many pages as possible.\n\n" +
-                            "Transcripts allow you to store all messages sent in a channel. This is stored in our database along with the rest of the servers settings but is accessible by anyone with the link, so a leaked link could show all messages sent in the channel.\n"
+                            "Transcripts allow you to store all messages sent in a channel. Transcripts are stored in our database along with the rest of the server's settings but is accessible by anyone with the link, so a leaked link could show all messages sent in the channel.\n"
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
             )
             .setTitle("Link scanning and Transcripts")
-            .setDescription("Regarding Facebook and AMP filter types, and ticket transcripts")
+            .setDescription("Information about how links and images are scanned, and transcripts are stored")
             .setPageId(2)
     ].concat(
         (interaction.member as Discord.GuildMember).permissions.has("Administrator")

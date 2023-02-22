@@ -5,6 +5,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 import { LinkWarningFooter } from "../../utils/defaults.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -124,7 +125,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 renderUser((interaction.options.getMember("user") as GuildMember).user)
             ),
             warnedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
-            reason: reason ? `\n> ${reason}` : "*No reason provided*"
+            reason: reason ? reason : "*No reason provided*"
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
