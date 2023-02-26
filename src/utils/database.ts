@@ -246,12 +246,12 @@ export class Premium {
         await this.premium.insertOne({ user: user, appliesTo: [], level: level });
     }
 
-    async hasPremium(guild: string): Promise<[boolean, string, number] | null> {
+    async hasPremium(guild: string): Promise<[boolean, string, number, boolean] | null> {
         const entries = await this.premium.find({}).toArray();
         const members = await (await client.guilds.fetch(guild)).members.fetch()
         for(const {user} of entries) {
             const member = members.get(user);
-            if(member) {
+            if(member) { //TODO: Notify user if they've given premium to a server that has since gotten premium via a mod.
                 const modPerms = //TODO: Create list in config for perms
                             member.permissions.has("Administrator") ||
                             member.permissions.has("ManageChannels") ||
@@ -265,7 +265,7 @@ export class Premium {
                             member.permissions.has("ManageMessages") ||
                             member.permissions.has("ManageThreads")
                 const entry = entries.find(e => e.user === member.id);
-                if(entry && (entry.level === 3) && modPerms) return [true, member.id, entry.level];
+                if(entry && (entry.level === 3) && modPerms) return [true, member.id, entry.level, true];
             }
         }
         const entry = await this.premium.findOne({
@@ -275,7 +275,7 @@ export class Premium {
                 }
             }
         });
-        return entry ? [true, entry.user, entry.level] : null;
+        return entry ? [true, entry.user, entry.level, false] : null;
     }
 
     async fetchUser(user: string): Promise<PremiumSchema | null> {

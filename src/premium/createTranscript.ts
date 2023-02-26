@@ -181,8 +181,10 @@ export default async function (interaction: CommandInteraction | MessageComponen
 
         if (message.stickers.size > 0) msg.stickerURLs = message.stickers.map(sticker => sticker.url);
         if (message.reference) msg.referencedMessage = [message.reference.guildId ?? "", message.reference.channelId, message.reference.messageId ?? ""];
-
+        newOut.messages.push(msg);
     });
+
+    console.log(newOut);
 
     const topic = interaction.channel.topic;
     let member: GuildMember | null = null;

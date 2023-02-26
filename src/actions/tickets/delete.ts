@@ -9,7 +9,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
     if (!interaction.guild) return;
     const config = await client.database.guilds.read(interaction.guild.id);
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-
+    //FIXME
     const ticketChannel = config.tickets.category;
     if (!("parent" in interaction.channel!)) {
         return await interaction.reply({

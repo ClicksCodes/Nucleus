@@ -1,14 +1,73 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, GuildMember, StringSelectMenuBuilder } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
+import type { PremiumSchema } from "../../utils/database.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("premium").setDescription("Information about Nucleus Premium");
 //TODO: Allow User to remove Premium
+
+const dmcallback = async (interaction: CommandInteraction, member: GuildMember, dbUser: PremiumSchema | null, firstDescription: string): Promise<void> => {
+
+    if(!dbUser) {
+        await interaction.editReply({embeds: [
+            new EmojiEmbed()
+                .setTitle("Premium")
+                .setDescription(`*You do not have premium! You can't activate premium on any servers.*` + firstDescription)
+                .setEmoji("NUCLEUS.LOGO")
+                .setStatus("Danger")
+        ]});
+        return;
+    }
+    const premiumGuilds = dbUser.appliesTo.map((guildID) => {
+        const guild = client.guilds.cache.get(guildID);
+        if(!guild) return undefined;
+        return guild.name;
+    });
+
+    const options = premiumGuilds.filter((guild) => guild !== undefined) as string[];
+
+    const removeRow = new ActionRowBuilder<StringSelectMenuBuilder>()
+        .addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId("currentPremium")
+                .setPlaceholder("Select a server to remove premium from")
+                .setDisabled(premiumGuilds.length === 0)
+                .addOptions(options.map((guild) => {
+                    return {label: guild, value: guild}
+                }))
+        );
+    const removeButton = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId("removePremium")
+                .setLabel("Remove Premium")
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(premiumGuilds.length === 0)
+        );
+
+    await interaction.editReply(
+    {
+        embeds: [
+            new EmojiEmbed()
+                .setTitle("Premium")
+                .setDescription(`*You have premium on the following servers:*` + firstDescription)
+                .setEmoji("NUCLEUS.LOGO")
+                .setStatus("Success")
+        ],
+        components: [removeRow, removeButton]
+    });
+
+    //TODO Finish this.
+
+
+}
+
 const callback = async (interaction: CommandInteraction): Promise<void> => {
+
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true})
     const member = await (await interaction.client.guilds.fetch("684492926528651336")).members.fetch(interaction.user.id).catch(() => {
         interaction.editReply({ embeds: [
@@ -44,11 +103,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         premium = `**You can't give servers premium anymore because your subscription ended or was cancelled.** To get premium again please subscribe in the Clicks server`
         count = 0;
     }
+    if(!interaction.guild) return await dmcallback(interaction, member, dbMember, firstDescription);
     const hasPremium = await client.database.premium.hasPremium(interaction.guild!.id);
     let premiumGuild = ""
-    if (hasPremium) { //FIXME: Check how user applied premium
-        premiumGuild = `**This server has premium! It was ${hasPremium[2] === 3 ? `automatically applied by <@${hasPremium[1]}>` : `given by <@${hasPremium[1]}>`}**\n\n`
+    if (hasPremium) {
+        premiumGuild = `**This server has premium! It was ${hasPremium[2] === 3 && hasPremium[3] ? `automatically applied by <@${hasPremium[1]}>` : `given by <@${hasPremium[1]}>`}**\n\n`
     }
+
 
     const components: ActionRowBuilder<ButtonBuilder>[] = []
     if (level === 0 || dbMember?.expiresAt) {
