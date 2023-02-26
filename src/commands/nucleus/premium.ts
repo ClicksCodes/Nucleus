@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, GuildMember, StringSelectMenuBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, StringSelectMenuBuilder } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -10,7 +10,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("premium").setDescription("Information about Nucleus Premium");
 //TODO: Allow User to remove Premium
 
-const dmcallback = async (interaction: CommandInteraction, member: GuildMember, dbUser: PremiumSchema | null, firstDescription: string): Promise<void> => {
+const dmcallback = async (interaction: CommandInteraction, dbUser: PremiumSchema | null, firstDescription: string): Promise<void> => {
 
     if(!dbUser) {
         await interaction.editReply({embeds: [
@@ -103,7 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         premium = `**You can't give servers premium anymore because your subscription ended or was cancelled.** To get premium again please subscribe in the Clicks server`
         count = 0;
     }
-    if(!interaction.guild) return await dmcallback(interaction, member, dbMember, firstDescription);
+    if(!interaction.guild) return await dmcallback(interaction, dbMember, firstDescription);
     const hasPremium = await client.database.premium.hasPremium(interaction.guild!.id);
     let premiumGuild = ""
     if (hasPremium) {

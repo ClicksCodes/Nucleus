@@ -8,7 +8,8 @@ import {
     TextChannel,
     ButtonStyle,
     User,
-    ComponentType
+    ComponentType,
+    ThreadChannel
 } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -78,14 +79,21 @@ interface Transcript {
     type: "ticket" | "purge"
     guild: string;
     channel: string;
+    for: TranscriptAuthor
     messages: TranscriptMessage[];
     createdTimestamp: number;
     createdBy: TranscriptAuthor;
 }
 
+const noTopic = new EmojiEmbed()
+    .setTitle("User not found")
+    .setDescription("There is no user associated with this ticket.")
+    .setStatus("Danger")
+    .setEmoji("CONTROL.BLOCKCROSS")
+
 export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
     if (interaction.channel === null) return;
-    if (!(interaction.channel instanceof TextChannel)) return;
+    if (!(interaction.channel instanceof TextChannel || interaction.channel instanceof ThreadChannel)) return;
     const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
 
     let messages: Message[] = [];
@@ -98,6 +106,13 @@ export default async function (interaction: CommandInteraction | MessageComponen
         messages = messages.concat(Array.from(deleted.values() as Iterable<Message>));
         if (messages.length === 1) messageException(interaction.guild!.id, interaction.channel.id, messages[0]!.id)
     } while (deletedCount === 100);
+    messages = messages.filter(message => !(
+        message.components.some(
+            component => component.components.some(
+                child => child.customId?.includes("transcript") ?? false
+            )
+        )
+    ));
 
     let out = "";
     messages.reverse().forEach((message) => {
@@ -116,8 +131,30 @@ export default async function (interaction: CommandInteraction | MessageComponen
 
     const interactionMember = await interaction.guild?.members.fetch(interaction.user.id)
 
+    let topic
+    let member: GuildMember | null = null;
+    if (interaction.channel instanceof TextChannel) {
+        topic = interaction.channel.topic;
+        if (topic === null) return await interaction.reply({ embeds: [noTopic] });
+        member = interaction.guild!.members.cache.get(topic.split(" ")[1]!) ?? null;
+    } else {
+        topic = interaction.channel.name;
+        const split = topic.split("-").map(p => p.trim()) as [string, string, string];
+        member = interaction.guild!.members.cache.get(split[1]) ?? null;
+        if (member === null) return await interaction.reply({ embeds: [noTopic] });
+    }
+
+
     const newOut: Transcript = {
         type: "ticket",
+        for: {
+            username: member!.user.username,
+            discriminator: parseInt(member!.user.discriminator),
+            id: member!.user.id,
+            topRole: {
+                color: member!.roles.highest.color
+            }
+        },
         guild: interaction.guild!.id,
         channel: interaction.channel!.id,
         messages: [],
@@ -184,14 +221,8 @@ export default async function (interaction: CommandInteraction | MessageComponen
         newOut.messages.push(msg);
     });
 
-    console.log(newOut);
-
-    const topic = interaction.channel.topic;
-    let member: GuildMember | null = null;
-    if (topic !== null) {
-        const part = topic.split(" ")[0] ?? null;
-        if (part !== null) member = interaction.guild!.members.cache.get(part) ?? null;
-    }
+    const code = await client.database.transcripts.create(newOut);
+    if(!code) return await interaction.reply({embeds: [new EmojiEmbed().setTitle("Error").setDescription("An error occurred while creating the transcript.").setStatus("Danger").setEmoji("CONTROL.BLOCKCROSS")]})
     let m: Message;
     if (out !== "") {
         const url = await pbClient.createPaste({
@@ -200,7 +231,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
             name:
                 `Ticket Transcript ${
                     member ? "for " + member.user.username + "#" + member.user.discriminator + " " : ""
-                }` + `(Created at ${new Date(interaction.channel.createdTimestamp).toDateString()})`,
+                }` + `(Created at ${new Date(interaction.channel.createdTimestamp!).toDateString()})`,
             publicity: Publicity.Unlisted
         });
         const guildConfig = await client.database.guilds.read(interaction.guild!.id);

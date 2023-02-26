@@ -2,7 +2,7 @@ import Discord, { Client, Interaction, AutocompleteInteraction, Collection } fro
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
 import type { VerifySchema } from "../reflex/verify.js";
-import { Guilds, History, ModNotes, Premium, PerformanceTest, ScanCache } from "../utils/database.js";
+import { Guilds, History, ModNotes, Premium, PerformanceTest, ScanCache, Transcript } from "../utils/database.js";
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
 import config from "../config/main.js";
@@ -23,6 +23,7 @@ class NucleusClient extends Client {
         eventScheduler: EventScheduler;
         performanceTest: PerformanceTest;
         scanCache: ScanCache;
+        transcripts: Transcript
     };
     preloadPage: Record<string, {command: string, argument: string}> = {};  // e.g. { channelID: { command: privacy, page: 3}}
     commands: Record<string, [{
@@ -46,7 +47,8 @@ const client = new NucleusClient({
     premium: new Premium(),
     eventScheduler: new EventScheduler(),
     performanceTest: new PerformanceTest(),
-    scanCache: new ScanCache()
+    scanCache: new ScanCache(),
+    transcripts: new Transcript()
 });
 
 export default client;

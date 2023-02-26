@@ -9,7 +9,6 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
     if (!interaction.guild) return;
     const config = await client.database.guilds.read(interaction.guild.id);
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-    //FIXME
     const ticketChannel = config.tickets.category;
     if (!("parent" in interaction.channel!)) {
         return await interaction.reply({
@@ -84,7 +83,8 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Archived Ticket")
-                    .setDescription(`This ticket has been Archived. Type ${getCommandMentionByName("ticket/close")} to delete it.` +
+                    .setDescription(`This ticket has been Archived. Type ${getCommandMentionByName("ticket/close")} to delete it.\n` +
+                        "Creating a transcript will delete all messages in this ticket" +
                         await client.database.premium.hasPremium(interaction.guild.id) ?
                         `\n\nFor more info on transcripts, check ${getCommandMentionByName("privacy")}` :
                         "")

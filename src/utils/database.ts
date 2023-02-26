@@ -1,4 +1,4 @@
-import type { GuildMember } from "discord.js";
+import type { ButtonStyle, GuildMember } from "discord.js";
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.js";
@@ -98,6 +98,96 @@ export class Guilds {
 
     async delete(guild: string) {
         await this.guilds.deleteOne({ id: guild });
+    }
+}
+
+interface TranscriptEmbed {
+    title?: string;
+    description?: string;
+    fields?: {
+        name: string;
+        value: string;
+        inline: boolean;
+    }[];
+    footer?: {
+        text: string;
+        iconURL?: string;
+    };
+}
+
+interface TranscriptComponent {
+    type: number;
+    style?: ButtonStyle;
+    label?: string;
+    description?: string;
+    placeholder?: string;
+    emojiURL?: string;
+}
+
+interface TranscriptAuthor {
+    username: string;
+    discriminator: number;
+    nickname?: string;
+    id: string;
+    iconURL?: string;
+    topRole: {
+        color: number;
+        badgeURL?: string;
+    }
+}
+
+interface TranscriptAttachment {
+    url: string;
+    filename: string;
+    size: number;
+    log?: string;
+}
+
+interface TranscriptMessage {
+    id: string;
+    author: TranscriptAuthor;
+    content?: string;
+    embeds?: TranscriptEmbed[];
+    components?: TranscriptComponent[][];
+    editedTimestamp?: number;
+    createdTimestamp: number;
+    flags?: string[];
+    attachments?: TranscriptAttachment[];
+    stickerURLs?: string[];
+    referencedMessage?: string | [string, string, string];
+}
+
+interface TranscriptSchema {
+    code: string;
+    for: TranscriptAuthor;
+    type: "ticket" | "purge"
+    guild: string;
+    channel: string;
+    messages: TranscriptMessage[];
+    createdTimestamp: number;
+    createdBy: TranscriptAuthor;
+}
+
+export class Transcript {
+    transcripts: Collection<TranscriptSchema>;
+
+    constructor() {
+        this.transcripts = database.collection<TranscriptSchema>("transcripts");
+    }
+
+    async create(transcript: Omit<TranscriptSchema, "code">) {
+        let code;
+        do {
+            code = Math.random().toString(36).substring(2, 16) + Math.random().toString(36).substring(2, 16);
+        } while (await this.transcripts.findOne({ code: code }));
+
+        const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }));
+        if(doc.acknowledged) return code;
+        else return null;
+    }
+
+    async read(code: string) {
+        return await this.transcripts.findOne({ code: code });
     }
 }
 
