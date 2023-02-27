@@ -225,6 +225,6 @@ export default async function register() {
     console.log(`${colors.green}Registered commands, events and context menus${colors.none}`)
     console.log(
         (config.enableDevelopment ? `${colors.purple}Bot started in Development mode` :
-        `${colors.blue}Bot started in Production mode`) + colors.none)
-    // console.log(client.commands)
+        `${colors.blue}Bot started in Production mode`) + colors.none
+    )
 };

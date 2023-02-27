@@ -4,6 +4,7 @@ import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import { preloadPage } from '../../utils/createTemporaryStorage.js';
+import { LoadingEmbed } from '../../utils/defaults.js';
 
 export default async function (interaction: Discord.CommandInteraction | ButtonInteraction) {
     if (!interaction.guild) return;
@@ -68,8 +69,9 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
 
         await channel.delete();
     } else if (status === "Active") {
-        // Close the ticket
-
+        await interaction.reply({embeds: LoadingEmbed, fetchReply: true});
+        // Archive the ticket
+        await interaction.channel.fetch()
         if (channel.isThread()) {
             channel.setName(`${channel.name.replace("Active", "Archived")}`);
             channel.members.remove(channel.name.split(" - ")[1]!);
@@ -79,13 +81,14 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
             await channel.permissionOverwrites.delete(channel.topic!.split(" ")[0]!);
         }
         preloadPage(interaction.channel.id, "privacy", "2")
-        await interaction.reply({
+        const hasPremium = await client.database.premium.hasPremium(interaction.guild.id);
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Archived Ticket")
                     .setDescription(`This ticket has been Archived. Type ${getCommandMentionByName("ticket/close")} to delete it.\n` +
                         "Creating a transcript will delete all messages in this ticket" +
-                        await client.database.premium.hasPremium(interaction.guild.id) ?
+                        hasPremium ?
                         `\n\nFor more info on transcripts, check ${getCommandMentionByName("privacy")}` :
                         "")
                     .setStatus("Warning")
@@ -100,7 +103,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                             .setCustomId("closeticket")
                             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     ].concat(
-                        await client.database.premium.hasPremium(interaction.guild.id)
+                        hasPremium
                             ? [
                                     new ButtonBuilder()
                                         .setLabel("Create Transcript and Delete")

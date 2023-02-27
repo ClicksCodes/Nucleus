@@ -1,4 +1,3 @@
-import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from '../../utils/logTranscripts.js';
 import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -161,7 +160,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(deleted)!);
+        const newOut = await client.database.transcripts.createTranscript(deleted, interaction, interaction.member as GuildMember);
+        const transcript = client.database.transcripts.toHumanReadable(newOut);
         const attachmentObject = {
             attachment: Buffer.from(transcript),
             name: `purge-${channel.id}-${Date.now()}.txt`,

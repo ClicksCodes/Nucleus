@@ -1,4 +1,4 @@
-import type { ButtonStyle, GuildMember } from "discord.js";
+import { ButtonStyle, CommandInteraction, ComponentType, GuildMember, Message, MessageComponentInteraction } from "discord.js";
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.js";
@@ -154,7 +154,7 @@ interface TranscriptMessage {
     flags?: string[];
     attachments?: TranscriptAttachment[];
     stickerURLs?: string[];
-    referencedMessage?: string | [string, string, string];
+    referencedMessage?: string | [string, string, string];  // the message id, the channel id, the guild id
 }
 
 interface TranscriptSchema {
@@ -188,6 +188,134 @@ export class Transcript {
 
     async read(code: string) {
         return await this.transcripts.findOne({ code: code });
+    }
+
+    async createTranscript(messages: Message[], interaction: MessageComponentInteraction | CommandInteraction, member: GuildMember) {
+        const interactionMember = await interaction.guild?.members.fetch(interaction.user.id)
+        const newOut: Omit<TranscriptSchema, "code"> = {
+            type: "ticket",
+            for: {
+                username: member!.user.username,
+                discriminator: parseInt(member!.user.discriminator),
+                id: member!.user.id,
+                topRole: {
+                    color: member!.roles.highest.color
+                }
+            },
+            guild: interaction.guild!.id,
+            channel: interaction.channel!.id,
+            messages: [],
+            createdTimestamp: Date.now(),
+            createdBy: {
+                username: interaction.user.username,
+                discriminator: parseInt(interaction.user.discriminator),
+                id: interaction.user.id,
+                topRole: {
+                    color: interactionMember?.roles.highest.color ?? 0x000000
+                }
+            }
+        }
+        if(interactionMember?.roles.icon) newOut.createdBy.topRole.badgeURL = interactionMember.roles.icon.iconURL()!;
+        messages.reverse().forEach((message) => {
+            const msg: TranscriptMessage = {
+                id: message.id,
+                author: {
+                    username: message.author.username,
+                    discriminator: parseInt(message.author.discriminator),
+                    id: message.author.id,
+                    topRole: {
+                        color: message.member!.roles.highest.color
+                    }
+                },
+                createdTimestamp: message.createdTimestamp
+            };
+            if (message.member!.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
+            if (message.content) msg.content = message.content;
+            if (message.embeds.length > 0) msg.embeds = message.embeds.map(embed => {
+                const obj: TranscriptEmbed = {};
+                if (embed.title) obj.title = embed.title;
+                if (embed.description) obj.description = embed.description;
+                if (embed.fields.length > 0) obj.fields = embed.fields.map(field => {
+                    return {
+                        name: field.name,
+                        value: field.value,
+                        inline: field.inline ?? false
+                    }
+                });
+                if (embed.footer) obj.footer = {
+                    text: embed.footer.text,
+                };
+                if (embed.footer?.iconURL) obj.footer!.iconURL = embed.footer.iconURL;
+                return obj;
+            });
+            if (message.components.length > 0) msg.components = message.components.map(component => component.components.map(child => {
+                const obj: TranscriptComponent = {
+                    type: child.type
+                }
+                if (child.type === ComponentType.Button) {
+                    obj.style = child.style;
+                    obj.label = child.label ?? "";
+                } else if (child.type > 2) {
+                    obj.placeholder = child.placeholder ?? "";
+                }
+                return obj
+            }));
+            if (message.editedTimestamp) msg.editedTimestamp = message.editedTimestamp;
+            msg.flags = message.flags.toArray();
+
+            if (message.stickers.size > 0) msg.stickerURLs = message.stickers.map(sticker => sticker.url);
+            if (message.reference) msg.referencedMessage = [message.reference.guildId ?? "", message.reference.channelId, message.reference.messageId ?? ""];
+            newOut.messages.push(msg);
+        });
+        return newOut;
+    }
+
+    toHumanReadable(transcript: Omit<TranscriptSchema, "code">): string {
+        let out = "";
+        for (const message of transcript.messages) {
+            if (message.referencedMessage) {
+                if (Array.isArray(message.referencedMessage)) {
+                    out += `> [Crosspost From] ${message.referencedMessage[0]} in ${message.referencedMessage[1]} in ${message.referencedMessage[2]}\n`;
+                }
+                else out += `> [Reply To] ${message.referencedMessage}\n`;
+            }
+            out += `${message.author.nickname ?? message.author.username}#${message.author.discriminator} (${message.author.id}) (${message.id}) `;
+            out += `[${new Date(message.createdTimestamp).toISOString()}] `;
+            if (message.editedTimestamp) out += `[Edited: ${new Date(message.editedTimestamp).toISOString()}] `;
+            out += "\n";
+            if (message.content) out += `[Content]\n${message.content}\n\n`;
+            if (message.embeds) {
+                for (const embed of message.embeds) {
+                    out += `[Embed]\n`;
+                    if (embed.title) out += `| Title: ${embed.title}\n`;
+                    if (embed.description) out += `| Description: ${embed.description}\n`;
+                    if (embed.fields) {
+                        for (const field of embed.fields) {
+                            out += `| Field: ${field.name} - ${field.value}\n`;
+                        }
+                    }
+                    if (embed.footer) {
+                        out += `|Footer: ${embed.footer.text}\n`;
+                    }
+                    out += "\n";
+                }
+            }
+            if (message.components) {
+                for (const component of message.components) {
+                    out += `[Component]\n`;
+                    for (const button of component) {
+                        out += `| Button: ${button.label ?? button.description}\n`;
+                    }
+                    out += "\n";
+                }
+            }
+            if (message.attachments) {
+                for (const attachment of message.attachments) {
+                    out += `[Attachment] ${attachment.filename} (${attachment.size} bytes) ${attachment.url}\n`;
+                }
+            }
+        }
+        return out
     }
 }
 
@@ -317,9 +445,12 @@ export class ModNotes {
 
 export class Premium {
     premium: Collection<PremiumSchema>;
+    cache: Map<string, [boolean, string, number, boolean, Date]>;  // Date indicates the time one hour after it was created
+    cacheTimeout = 1000 * 60 * 60;  // 1 hour
 
     constructor() {
         this.premium = database.collection<PremiumSchema>("premium");
+        this.cache = new Map<string, [boolean, string, number, boolean, Date]>();
     }
 
     async updateUser(user: string, level: number) {
@@ -337,8 +468,11 @@ export class Premium {
     }
 
     async hasPremium(guild: string): Promise<[boolean, string, number, boolean] | null> {
+        // [Has premium, user giving premium, level, is mod: if given automatically]
+        const cached = this.cache.get(guild);
+        if (cached && cached[4].getTime() < Date.now()) return [cached[0], cached[1], cached[2], cached[3]];
         const entries = await this.premium.find({}).toArray();
-        const members = await (await client.guilds.fetch(guild)).members.fetch()
+        const members = (await client.guilds.fetch(guild)).members.cache
         for(const {user} of entries) {
             const member = members.get(user);
             if(member) { //TODO: Notify user if they've given premium to a server that has since gotten premium via a mod.
@@ -355,7 +489,10 @@ export class Premium {
                             member.permissions.has("ManageMessages") ||
                             member.permissions.has("ManageThreads")
                 const entry = entries.find(e => e.user === member.id);
-                if(entry && (entry.level === 3) && modPerms) return [true, member.id, entry.level, true];
+                if(entry && (entry.level === 3) && modPerms) {
+                    this.cache.set(guild, [true, member.id, entry.level, true, new Date(Date.now() + this.cacheTimeout)]);
+                    return [true, member.id, entry.level, true];
+                }
             }
         }
         const entry = await this.premium.findOne({
@@ -365,6 +502,7 @@ export class Premium {
                 }
             }
         });
+        this.cache.set(guild, [entry ? true : false, entry?.user ?? "", entry?.level ?? 0, false, new Date(Date.now() + this.cacheTimeout)]);
         return entry ? [true, entry.user, entry.level, false] : null;
     }
 
@@ -427,11 +565,14 @@ export class Premium {
         }
     }
 
-    addPremium(user: string, guild: string) {
+    async addPremium(user: string, guild: string) {
+        const { level } = (await this.fetchUser(user))!;
+        this.cache.set(guild, [true, user, level, false, new Date(Date.now() + this.cacheTimeout)]);
         return this.premium.updateOne({ user: user }, { $addToSet: { appliesTo: guild } }, { upsert: true });
     }
 
     removePremium(user: string, guild: string) {
+        this.cache.set(guild, [false, "", 0, false, new Date(Date.now() + this.cacheTimeout)]);
         return this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
 }

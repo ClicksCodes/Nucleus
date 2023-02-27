@@ -8,6 +8,7 @@ import addPlural from "../utils/plurals.js";
 import type { GuildTextBasedChannel, Message } from "discord.js";
 
 export default async function logAttachment(message: Message): Promise<AttachmentLogSchema> {
+    if (message.guild) client.database.premium.hasPremium(message.guild.id).finally(() => {});
     if (!message.guild) throw new Error("Tried to log an attachment in a non-guild message");
     const { renderUser, renderChannel, renderDelta } = client.logger;
     const attachments = [];

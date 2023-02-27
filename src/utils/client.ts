@@ -2,7 +2,7 @@ import Discord, { Client, Interaction, AutocompleteInteraction, Collection } fro
 import { Logger } from "../utils/log.js";
 import Memory from "../utils/memory.js";
 import type { VerifySchema } from "../reflex/verify.js";
-import { Guilds, History, ModNotes, Premium, PerformanceTest, ScanCache, Transcript } from "../utils/database.js";
+import { Guilds, History, ModNotes, Premium, PerformanceTest, ScanCache, Transcript,  } from "../utils/database.js";
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
 import config from "../config/main.js";

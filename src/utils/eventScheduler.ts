@@ -14,7 +14,6 @@ class EventScheduler {
                 collection: "eventScheduler"
             }
         });
-
         this.agenda.define("unmuteRole", async (job) => {
             const guild = await client.guilds.fetch(job.attrs.data.guild);
             const user = await guild.members.fetch(job.attrs.data.user);

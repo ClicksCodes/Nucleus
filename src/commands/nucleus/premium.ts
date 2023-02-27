@@ -67,7 +67,7 @@ const dmcallback = async (interaction: CommandInteraction, dbUser: PremiumSchema
 }
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-
+    if (interaction.guild) client.database.premium.hasPremium(interaction.guild.id).finally(() => {});
     await interaction.reply({embeds: LoadingEmbed, ephemeral: true})
     const member = await (await interaction.client.guilds.fetch("684492926528651336")).members.fetch(interaction.user.id).catch(() => {
         interaction.editReply({ embeds: [
@@ -172,7 +172,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             components: []
         });
     } else {
-        client.database.premium.addPremium(interaction.user.id, guild.id);
+        await client.database.premium.addPremium(interaction.user.id, guild.id);
         interaction.editReply({
             embeds: [
                 new EmojiEmbed()

@@ -12,6 +12,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Where attachments should be logged to (Premium only)")
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+    if (interaction.guild) client.database.premium.hasPremium(interaction.guild.id).finally(() => {});
     await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,

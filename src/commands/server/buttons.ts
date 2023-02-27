@@ -32,7 +32,7 @@ const colors: Record<string, number> =  {
 const buttonNames: Record<string, string> = {
     verifybutton: "Verify",
     rolemenu: "Role Menu",
-    createticket: "Ticket"
+    createticket: "Create Ticket"
 }
 
 export const callback = async (interaction: CommandInteraction): Promise<void> => {
@@ -195,8 +195,8 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                         continue;
                     }
                     if (!out || out.isButton()) continue
-                    data.title = out.fields.getTextInputValue("title");
-                    data.description = out.fields.getTextInputValue("description");
+                    data.title = out.fields.getTextInputValue("title").length === 0 ? null : out.fields.getTextInputValue("title");
+                    data.description = out.fields.getTextInputValue("description").length === 0 ? null : out.fields.getTextInputValue("description");
                     break;
                 }
                 case "send": {
