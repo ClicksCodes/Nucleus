@@ -3,6 +3,7 @@ import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.js";
 import client from "../utils/client.js";
+import * as crypto from "crypto";
 
 const mongoClient = new MongoClient(config.mongoUrl);
 await mongoClient.connect();
@@ -133,7 +134,8 @@ interface TranscriptAuthor {
     topRole: {
         color: number;
         badgeURL?: string;
-    }
+    };
+    bot: boolean;
 }
 
 interface TranscriptAttachment {
@@ -178,7 +180,7 @@ export class Transcript {
     async create(transcript: Omit<TranscriptSchema, "code">) {
         let code;
         do {
-            code = Math.random().toString(36).substring(2, 16) + Math.random().toString(36).substring(2, 16);
+            code = crypto.randomBytes(64).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
         } while (await this.transcripts.findOne({ code: code }));
 
         const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }));
@@ -200,7 +202,9 @@ export class Transcript {
                 id: member!.user.id,
                 topRole: {
                     color: member!.roles.highest.color
-                }
+                },
+                iconURL: member!.user.displayAvatarURL({ forceStatic: true}),
+                bot: member!.user.bot
             },
             guild: interaction.guild!.id,
             channel: interaction.channel!.id,
@@ -212,9 +216,12 @@ export class Transcript {
                 id: interaction.user.id,
                 topRole: {
                     color: interactionMember?.roles.highest.color ?? 0x000000
-                }
+                },
+                iconURL: interaction.user.displayAvatarURL({ forceStatic: true}),
+                bot: interaction.user.bot
             }
         }
+        if(member.nickname) newOut.for.nickname = member.nickname;
         if(interactionMember?.roles.icon) newOut.createdBy.topRole.badgeURL = interactionMember.roles.icon.iconURL()!;
         messages.reverse().forEach((message) => {
             const msg: TranscriptMessage = {
@@ -225,10 +232,13 @@ export class Transcript {
                     id: message.author.id,
                     topRole: {
                         color: message.member!.roles.highest.color
-                    }
+                    },
+                    iconURL: member!.user.displayAvatarURL({ forceStatic: true}),
+                    bot: message.author.bot
                 },
                 createdTimestamp: message.createdTimestamp
             };
+            if(message.member?.nickname) msg.author.nickname = message.member.nickname;
             if (message.member!.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
             if (message.content) msg.content = message.content;
             if (message.embeds.length > 0) msg.embeds = message.embeds.map(embed => {
@@ -314,6 +324,7 @@ export class Transcript {
                     out += `[Attachment] ${attachment.filename} (${attachment.size} bytes) ${attachment.url}\n`;
                 }
             }
+            out += "\n\n"
         }
         return out
     }

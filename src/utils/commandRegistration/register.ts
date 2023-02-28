@@ -181,7 +181,7 @@ async function registerCommandHandler() {
 }
 
 async function execute(check: Function | undefined, callback: Function | undefined, data: CommandInteraction) {
-    console.log(client.commands["contextCommands/user/User info"])
+    // console.log(client.commands["contextCommands/user/User info"])
     if (!callback) return;
     if (check) {
         let result;
