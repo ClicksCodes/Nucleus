@@ -149,7 +149,7 @@ const runServer = (client: NucleusClient) => {
         return res.sendStatus(404);
     });
 
-    app.get("/transcript/:code", jsonParser, async function (req: express.Request, res: express.Response) {
+    app.get("/transcript/:code/human", jsonParser, async function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         if (code === undefined) return res.status(400).send("No code provided");
         const entry = await client.database.transcripts.read(code);
@@ -157,6 +157,15 @@ const runServer = (client: NucleusClient) => {
         // Convert to a human readable format
         const data = client.database.transcripts.toHumanReadable(entry);
         return res.status(200).send(data);
+    });
+
+    app.get("/transcript/:code", jsonParser, async function (req: express.Request, res: express.Response) {
+        const code = req.params.code;
+        if (code === undefined) return res.status(400).send("No code provided");
+        const entry = await client.database.transcripts.read(code);
+        if (entry === null) return res.status(404).send("Could not find a transcript by that code");
+        // Convert to a human readable format
+        return res.status(200).send(entry);
     });
 
     app.listen(port);
