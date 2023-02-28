@@ -1,4 +1,4 @@
-import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder } from "discord.js";
+import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder, Message } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -309,35 +309,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        let out = "";  // TODO: messageException throughout this file
-        messages.reverse().forEach((message) => {
-            if (!message) {
-                out += "Unknown message\n\n"
-            } else {
-                const author = message.author ?? { username: "Unknown", discriminator: "0000", id: "Unknown" };
-                out += `${author.username}#${author.discriminator} (${author.id}) [${new Date(
-                    message.createdTimestamp
-                ).toISOString()}]\n`;
-                if (message.content) {
-                    const lines = message.content.split("\n");
-                    lines.forEach((line) => {
-                        out += `> ${line}\n`;
-                    });
-                }
-                if (message.attachments.size > 0) {
-                    message.attachments.forEach((attachment) => {
-                        out += `Attachment > ${attachment.url}\n`;
-                    });
-                }
-                out += "\n\n";
-            }
-        });
-        const attachmentObject = {
-            attachment: Buffer.from(out),
-            name: `purge-${channel.id}-${Date.now()}.txt`,
-            description: "Purge log"
-        };
-        const m = (await interaction.editReply({
+        const messageArray: Message[] = messages.filter(message => !(
+            message!.components.some(
+                component => component.components.some(
+                    child => child.customId?.includes("transcript") ?? false
+                )
+            )
+        )).map(message => message as Message);
+        const newOut = await client.database.transcripts.createTranscript(messageArray, interaction, interaction.member as GuildMember);
+
+        const code = await client.database.transcripts.create(newOut);
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.GREEN")
@@ -347,47 +329,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ],
             components: [
                 new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
-                    new Discord.ButtonBuilder()
-                        .setCustomId("download")
-                        .setLabel("Download transcript")
-                        .setStyle(ButtonStyle.Success)
-                        .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
+                    new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript?code=${code}`),
                 ])
             ]
-        })) as Discord.Message;
-        let component;
-        try {
-            component = await m.awaitMessageComponent({
-                filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
-                time: 300000
-            });
-        } catch {
-            return;
-        }
-        if (component.customId === "download") {
-            interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("CHANNEL.PURGE.GREEN")
-                        .setTitle("Purge")
-                        .setDescription("Transcript uploaded above")
-                        .setStatus("Success")
-                ],
-                components: [],
-                files: [attachmentObject]
-            });
-        } else {
-            interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("CHANNEL.PURGE.GREEN")
-                        .setTitle("Purge")
-                        .setDescription("Messages cleared")
-                        .setStatus("Success")
-                ],
-                components: []
-            });
-        }
+        });
     }
 };
 
