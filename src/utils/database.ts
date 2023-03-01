@@ -7,7 +7,7 @@ import * as crypto from "crypto";
 
 const mongoClient = new MongoClient(config.mongoUrl);
 await mongoClient.connect();
-const database = mongoClient.db("Nucleus");
+const database = mongoClient.db();
 
 export class Guilds {
     guilds: Collection<GuildConfig>;

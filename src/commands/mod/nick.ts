@@ -11,7 +11,6 @@ import getEmojiByName from "../../utils/getEmojiByName.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("nick")
-    // .setNameLocalizations({"ru": "name", "zh-CN": "nickname"})
     .setDescription("Changes a users nickname")
     .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
     .addStringOption((option) =>
