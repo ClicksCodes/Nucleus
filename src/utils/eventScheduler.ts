@@ -10,7 +10,7 @@ class EventScheduler {
     constructor() {
         this.agenda = new Agenda({
             db: {
-                address: config.mongoUrl + "Nucleus",
+                address: config.mongoOptions.host,
                 collection: "eventScheduler"
             }
         });

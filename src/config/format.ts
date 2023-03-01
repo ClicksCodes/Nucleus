@@ -2,7 +2,7 @@
 import fs from "fs";
 import * as readLine from "node:readline/promises";
 
-const defaultDict: Record<string, string | string[] | boolean> = {
+const defaultDict: Record<string, string | string[] | boolean | Record<string, string>> = {
     developmentToken: "Your development bot token (Used for testing in one server, rather than production)",
     developmentGuildID: "Your development guild ID",
     enableDevelopment: true,
@@ -15,7 +15,17 @@ const defaultDict: Record<string, string | string[] | boolean> = {
     userContextFolder: "Your built user context folder (usually dist/context/users)",
     verifySecret:
         "If using verify, enter a code here which matches the secret sent back by your website. You can use a random code if you do not have one already. (Optional)",
-    mongoUrl: "Your Mongo connection string, e.g. mongodb://127.0.0.1:27017",
+    mongoUsername: "Your Mongo username (optional)",
+    mongoPassword: "Your Mongo password (optional)",
+    mongoDatabase: "Your Mongo database name (optional, e.g. Nucleus)",
+    mongoHost: "Your Mongo host (optional, e.g. localhost:27017)",
+    mongoOptions: {
+        username: "",
+        password: "",
+        database: "",
+        host: "",
+        authSource: "",
+    },
     baseUrl: "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com/",
     pastebinApiKey: "An API key for pastebin (optional)",
     pastebinUsername: "Your pastebin username (optional)",
@@ -97,6 +107,9 @@ export default async function (walkthrough = false) {
                         json[key] = toWrite;
                         break;
                     }
+                    case "mongoOptions": {
+                        break;
+                    }
                     default: {
                         json[key] = await getInput(`\x1b[36m${key} \x1b[0m(\x1b[35m${defaultDict[key]}\x1b[0m) > `);
                     }
@@ -107,8 +120,7 @@ export default async function (walkthrough = false) {
         }
     }
     if (walkthrough && !(json["mongoUrl"] ?? false)) json["mongoUrl"] = "mongodb://127.0.0.1:27017";
-    if (!((json["mongoUrl"] as string | undefined) ?? "").endsWith("/")) json["mongoUrl"] += "/";
-    if (!((json["baseUrl"] as string | undefined) ?? "").endsWith("/")) json["baseUrl"] += "/";
+    if (!((json["baseUrl"] as string | undefined) ?? "").endsWith("/")) (json["baseUrl"] as string) += "/";
     let hosts;
     try {
         hosts = fs.readFileSync("/etc/hosts", "utf8").toString().split("\n");
@@ -125,6 +137,13 @@ export default async function (walkthrough = false) {
     }
     json["mongoUrl"] = (json["mongoUrl"]! as string).replace("localhost", localhost!);
     json["baseUrl"] = (json["baseUrl"]! as string).replace("localhost", localhost!);
+    json["mongoOptions"] = {
+        username: json["username"] as string,
+        password: json["password"] as string,
+        database: json["database"] as string,
+        host: json["host"] as string,
+        authSource: json["authSource"] as string,
+    };
 
     fs.writeFileSync("./src/config/main.ts", "export default " + JSON.stringify(json, null, 4) + ";");
 

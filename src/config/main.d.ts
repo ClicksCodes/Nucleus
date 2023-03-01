@@ -10,7 +10,12 @@ declare const config: {
     messageContextFolder: string,
     userContextFolder: string,
     verifySecret: string,
-    mongoUrl: string,
+    mongoOptions: {
+        username: string,
+        password: string,
+        database: string,
+        host: string,
+    },
     baseUrl: string,
     pastebinApiKey: string,
     pastebinUsername: string,

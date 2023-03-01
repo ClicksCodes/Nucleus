@@ -5,9 +5,21 @@ import config from "../config/main.js";
 import client from "../utils/client.js";
 import * as crypto from "crypto";
 
-const mongoClient = new MongoClient(config.mongoUrl);
+// config.mongoOptions.host, {
+//     auth: {
+//         username: config.mongoOptions.username,
+//         password: config.mongoOptions.password
+//     },
+//     authSource: config.mongoOptions.authSource
+// }
+// mongodb://emails:SweetLife2023!!@127.0.0.1:28180/saveEmail?retryWrites=true&w=majority
+const username = encodeURIComponent(config.mongoOptions.username);
+const password = encodeURIComponent(config.mongoOptions.password);
+const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}` : `mongodb://${config.mongoOptions.host}`, {authSource: "admin"});
 await mongoClient.connect();
 const database = mongoClient.db();
+
+const collectionOptions = { authdb: "admin" };
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
@@ -25,11 +37,13 @@ export class Guilds {
     }
 
     async read(guild: string): Promise<GuildConfig> {
+        console.log("Guild read")
         const entry = await this.guilds.findOne({ id: guild });
         return Object.assign({}, this.defaultData, entry);
     }
 
     async write(guild: string, set: object | null, unset: string[] | string = []) {
+        console.log("Guild write")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uo: Record<string, any> = {};
         if (!Array.isArray(unset)) unset = [unset];
@@ -44,6 +58,7 @@ export class Guilds {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async append(guild: string, key: string, value: any) {
+        console.log("Guild append")
         if (Array.isArray(value)) {
             await this.guilds.updateOne(
                 { id: guild },
@@ -70,6 +85,7 @@ export class Guilds {
         value: any,
         innerKey?: string | null
     ) {
+        console.log("Guild remove")
         if (innerKey) {
             await this.guilds.updateOne(
                 { id: guild },
@@ -98,6 +114,7 @@ export class Guilds {
     }
 
     async delete(guild: string) {
+        console.log("Guild delete")
         await this.guilds.deleteOne({ id: guild });
     }
 }
@@ -113,6 +130,13 @@ interface TranscriptEmbed {
     footer?: {
         text: string;
         iconURL?: string;
+    };
+    color?: number;
+    timestamp?: string;
+    author?: {
+        name: string;
+        iconURL?: string;
+        url?: string;
     };
 }
 
@@ -178,17 +202,19 @@ export class Transcript {
     }
 
     async create(transcript: Omit<TranscriptSchema, "code">) {
+        console.log("Transcript create")
         let code;
         do {
             code = crypto.randomBytes(64).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
         } while (await this.transcripts.findOne({ code: code }));
 
-        const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }));
+        const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }), collectionOptions);
         if(doc.acknowledged) return code;
         else return null;
     }
 
     async read(code: string) {
+        console.log("Transcript read")
         return await this.transcripts.findOne({ code: code });
     }
 
@@ -233,7 +259,7 @@ export class Transcript {
                     topRole: {
                         color: message.member!.roles.highest.color
                     },
-                    iconURL: member!.user.displayAvatarURL({ forceStatic: true}),
+                    iconURL: message.member!.user.displayAvatarURL({ forceStatic: true}),
                     bot: message.author.bot
                 },
                 createdTimestamp: message.createdTimestamp
@@ -252,10 +278,17 @@ export class Transcript {
                         inline: field.inline ?? false
                     }
                 });
+                if (embed.color) obj.color = embed.color;
+                if (embed.timestamp) obj.timestamp = embed.timestamp
                 if (embed.footer) obj.footer = {
                     text: embed.footer.text,
                 };
                 if (embed.footer?.iconURL) obj.footer!.iconURL = embed.footer.iconURL;
+                if (embed.author) obj.author = {
+                    name: embed.author.name
+                };
+                if (embed.author?.iconURL) obj.author!.iconURL = embed.author.iconURL;
+                if (embed.author?.url) obj.author!.url = embed.author.url;
                 return obj;
             });
             if (message.components.length > 0) msg.components = message.components.map(component => component.components.map(child => {
@@ -347,6 +380,7 @@ export class History {
         after?: string | null,
         amount?: string | null
     ) {
+        console.log("History create");
         await this.histories.insertOne({
             type: type,
             guild: guild,
@@ -357,10 +391,11 @@ export class History {
             before: before ?? null,
             after: after ?? null,
             amount: amount ?? null
-        });
+        }, collectionOptions);
     }
 
     async read(guild: string, user: string, year: number) {
+        console.log("History read");
         const entry = (await this.histories
             .find({
                 guild: guild,
@@ -375,6 +410,7 @@ export class History {
     }
 
     async delete(guild: string) {
+        console.log("History delete");
         await this.histories.deleteMany({ guild: guild });
     }
 }
@@ -394,14 +430,17 @@ export class ScanCache {
     }
 
     async read(hash: string) {
+        console.log("ScanCache read");
         return await this.scanCache.findOne({ hash: hash });
     }
 
     async write(hash: string, data: boolean, tags?: string[]) {
-        await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() });
+        console.log("ScanCache write");
+        await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() }, collectionOptions);
     }
 
     async cleanup() {
+        console.log("ScanCache cleanup");
         await this.scanCache.deleteMany({ addedAt: { $lt: new Date(Date.now() - (1000 * 60 * 60 * 24 * 31)) }, hash: { $not$text: "http"} });
     }
 }
@@ -414,10 +453,12 @@ export class PerformanceTest {
     }
 
     async record(data: PerformanceDataSchema) {
+        console.log("PerformanceTest record");
         data.timestamp = new Date();
-        await this.performanceData.insertOne(data);
+        await this.performanceData.insertOne(data, collectionOptions);
     }
     async read() {
+        console.log("PerformanceTest read");
         return await this.performanceData.find({}).toArray();
     }
 }
@@ -441,15 +482,18 @@ export class ModNotes {
     }
 
     async create(guild: string, user: string, note: string | null) {
+        console.log("ModNotes create");
         await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, { upsert: true });
     }
 
     async read(guild: string, user: string) {
+        console.log("ModNotes read");
         const entry = await this.modNotes.findOne({ guild: guild, user: user });
         return entry?.note ?? null;
     }
 
     async delete(guild: string) {
+        console.log("ModNotes delete");
         await this.modNotes.deleteMany({ guild: guild });
     }
 }
@@ -465,20 +509,24 @@ export class Premium {
     }
 
     async updateUser(user: string, level: number) {
+        console.log("Premium updateUser");
         if(!(await this.userExists(user))) await this.createUser(user, level);
         await this.premium.updateOne({ user: user }, { $set: { level: level } }, { upsert: true });
     }
 
     async userExists(user: string): Promise<boolean> {
+        console.log("Premium userExists");
         const entry = await this.premium.findOne({ user: user });
         return entry ? true : false;
     }
 
     async createUser(user: string, level: number) {
-        await this.premium.insertOne({ user: user, appliesTo: [], level: level });
+        console.log("Premium createUser");
+        await this.premium.insertOne({ user: user, appliesTo: [], level: level }, collectionOptions);
     }
 
     async hasPremium(guild: string): Promise<[boolean, string, number, boolean] | null> {
+        console.log("Premium hasPremium");
         // [Has premium, user giving premium, level, is mod: if given automatically]
         const cached = this.cache.get(guild);
         if (cached && cached[4].getTime() < Date.now()) return [cached[0], cached[1], cached[2], cached[3]];
@@ -518,12 +566,14 @@ export class Premium {
     }
 
     async fetchUser(user: string): Promise<PremiumSchema | null> {
+        console.log("Premium fetchUser");
         const entry = await this.premium.findOne({ user: user });
         if (!entry) return null;
         return entry;
     }
 
     async checkAllPremium(member?: GuildMember) {
+        console.log("Premium checkAllPremium");
         const entries = await this.premium.find({}).toArray();
         if(member) {
             const entry = entries.find(e => e.user === member.id);
@@ -577,12 +627,14 @@ export class Premium {
     }
 
     async addPremium(user: string, guild: string) {
+        console.log("Premium addPremium");
         const { level } = (await this.fetchUser(user))!;
         this.cache.set(guild, [true, user, level, false, new Date(Date.now() + this.cacheTimeout)]);
         return this.premium.updateOne({ user: user }, { $addToSet: { appliesTo: guild } }, { upsert: true });
     }
 
     removePremium(user: string, guild: string) {
+        console.log("Premium removePremium");
         this.cache.set(guild, [false, "", 0, false, new Date(Date.now() + this.cacheTimeout)]);
         return this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
