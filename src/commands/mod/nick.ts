@@ -92,7 +92,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 interaction.guild!.name
                             }.` +
                                 (interaction.options.get("name")?.value as string
-                                    ? `/nIt is now: ${interaction.options.get("name")?.value as string}`
+                                    ? `\nIt is now: ${interaction.options.get("name")?.value as string}`
                                     : "") +
                                 "\n\n" +
                                 (createAppealTicket
