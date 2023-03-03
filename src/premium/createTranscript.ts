@@ -60,7 +60,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
 
     const newOut = await client.database.transcripts.createTranscript(messages, interaction, member);
 
-    const code = await client.database.transcripts.create(newOut);
+    const [code, key, iv] = await client.database.transcripts.create(newOut);
     if(!code) return await interaction.reply({
         embeds: [
             new EmojiEmbed()
@@ -86,7 +86,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         ],
         components: [
             new ActionRowBuilder<ButtonBuilder>().addComponents([
-                new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript/${code}`),
+                new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://testing.coded.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`),
                 new ButtonBuilder()
                     .setLabel("Delete")
                     .setStyle(ButtonStyle.Danger)

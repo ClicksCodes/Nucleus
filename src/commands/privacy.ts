@@ -179,9 +179,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 continue;
             }
             if (confirmation.success) {
-                client.database.guilds.delete(interaction.guild!.id);
-                client.database.history.delete(interaction.guild!.id);
-                client.database.notes.delete(interaction.guild!.id);
+                await client.database.guilds.delete(interaction.guild!.id);
+                await client.database.history.delete(interaction.guild!.id);
+                await client.database.notes.delete(interaction.guild!.id);
+                await client.database.transcripts.deleteAll(interaction.guild!.id);
                 nextFooter = "All data cleared";
                 continue;
             } else {

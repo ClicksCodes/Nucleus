@@ -21,6 +21,7 @@ await mongoClient.connect();
 const database = mongoClient.db();
 
 const collectionOptions = { authdb: "admin" };
+const getIV = () => crypto.randomBytes(16);
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
@@ -203,15 +204,39 @@ export class Transcript {
         do {
             code = crypto.randomBytes(64).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
         } while (await this.transcripts.findOne({ code: code }));
+        const key = crypto.randomBytes(32**2).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-").substring(0, 32);
+        const iv = getIV().toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
+        for(const message of transcript.messages) {
+            if(message.content) {
+                const encCipher = crypto.createCipheriv("AES-256-CBC", key, iv);
+                message.content = encCipher.update(message.content, "utf8", "base64") + encCipher.final("base64");
+            }
+        }
 
         const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }), collectionOptions);
-        if(doc.acknowledged) return code;
-        else return null;
+        if(doc.acknowledged) return [code, key, iv];
+        else return [null, null, null];
     }
 
-    async read(code: string) {
+    async read(code: string, key: string, iv: string) {
         // console.log("Transcript read")
-        return await this.transcripts.findOne({ code: code });
+        const doc = await this.transcripts.findOne({ code: code });
+        if(!doc) return null;
+        for(const message of doc.messages) {
+            if(message.content) {
+                const decCipher = crypto.createDecipheriv("AES-256-CBC", key, iv);
+                message.content = decCipher.update(message.content, "base64", "utf8") + decCipher.final("utf8");
+            }
+        }
+        return doc;
+    }
+
+    async deleteAll(guild: string) {
+        // console.log("Transcript delete")
+        const filteredDocs = await this.transcripts.find({ guild: guild }).toArray();
+        for (const doc of filteredDocs) {
+            await this.transcripts.deleteOne({ code: doc.code });
+        }
     }
 
     async createTranscript(messages: Message[], interaction: MessageComponentInteraction | CommandInteraction, member: GuildMember) {
