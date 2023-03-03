@@ -4,8 +4,8 @@ import { AuditLogEvent, GuildAuditLogsEntry, Sticker } from "discord.js";
 export const event = "stickerUpdate";
 
 export async function callback(client: NucleusClient, oldSticker: Sticker, newSticker: Sticker) {
-    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
-
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
+    if (!await isLogging(newSticker.guild!.id, "stickerUpdate")) return;
     if (oldSticker.name === newSticker.name) return;
     const auditLog = (await getAuditLog(newSticker.guild!, AuditLogEvent.StickerUpdate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === newSticker.id)[0]!;

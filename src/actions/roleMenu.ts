@@ -30,6 +30,36 @@ export interface RoleMenuSchema {
     interaction: CommandInteraction | ButtonInteraction | ContextMenuCommandInteraction;
 }
 
+interface ObjectSchema {
+    name: string;
+    description: string;
+    min: number;
+    max: number;
+    options: {
+        name: string;
+        description: string | null;
+        role: string;
+    }[];
+}
+
+export const configToDropdown = (placeholder: string, currentPageData: ObjectSchema, selectedRoles?: string[]): ActionRowBuilder<StringSelectMenuBuilder> => {
+    return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        new StringSelectMenuBuilder()
+            .setCustomId("roles")
+            .setPlaceholder(placeholder)
+            .setMinValues(currentPageData.min)
+            .setMaxValues(currentPageData.max)
+            .addOptions(currentPageData.options.map((option: {name: string; description: string | null; role: string;}) => {
+                const builder = new StringSelectMenuOptionBuilder()
+                    .setLabel(option.name)
+                    .setValue(option.role)
+                    .setDefault(selectedRoles ? selectedRoles.includes(option.role) : false);
+                if (option.description) builder.setDescription(option.description);
+                return builder;
+            }))
+    )
+}
+
 export async function callback(interaction: CommandInteraction | ButtonInteraction) {
     if (!interaction.member) return;
     if (!interaction.guild) return;
@@ -56,7 +86,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             ],
             ephemeral: true
         });
-    const m = await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
+    const m = await interaction.reply({ embeds: LoadingEmbed, ephemeral: true, fetchReply: true });
     if (config.roleMenu.allowWebUI) {  // TODO: Make rolemenu web ui
         const loginMethods: {webUI: boolean} = {
             webUI: false
@@ -75,7 +105,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                 let valid = false;
                 while (!valid) {
-                    itt += 1;
+                    itt ++;
                     code = "";
                     for (let i = 0; i < length; i++) {
                         code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -83,7 +113,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                     if (code in client.roleMenu) continue;
                     if (itt > 1000) {
                         itt = 0;
-                        length += 1;
+                        length ++;
                         continue;
                     }
                     valid = true;
@@ -124,9 +154,10 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             try {
                 component = await m.awaitMessageComponent({
                     time: 300000,
-                    filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                    filter: (i) => { return i.user.id === interaction.user.id && i.channelId === interaction.channelId  && i.message.id === m.id}
                 });
             } catch (e) {
+                console.log(e);
                 return;
             }
             component.deferUpdate();
@@ -151,8 +182,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                 `**${currentPageData.name}**\n` +
                 `> ${currentPageData.description}\n\n` +
                 (currentPageData.min === currentPageData.max ? `Select ${addPlural(currentPageData.min, "role")}` :
-                    `Select between ${currentPageData.min} and ${currentPageData.max} roles` + (
-                        currentPageData.min === 0 ? ` or press next` : "")) + "\n\n" +
+                    `Select between ${currentPageData.min} and ${currentPageData.max} roles then press next`) + "\n\n" +
                 createPageIndicator(maxPage, page)
             )
             .setStatus("Success")
@@ -175,21 +205,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                     .setCustomId("done")
                     .setDisabled(!complete)
             ),
-            new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId("roles")
-                    .setPlaceholder("Select...")
-                    .setMinValues(currentPageData.min)
-                    .setMaxValues(currentPageData.max)
-                    .addOptions(currentPageData.options.map((option) => {
-                        const builder = new StringSelectMenuOptionBuilder()
-                            .setLabel(option.name)
-                            .setValue(option.role)
-                            .setDefault(selectedRoles[page]!.includes(option.role));
-                        if (option.description) builder.setDescription(option.description);
-                        return builder;
-                    }))
-            )
+            configToDropdown("Select...", currentPageData, selectedRoles[page])
         ];
         await interaction.editReply({
             embeds: [embed],
@@ -199,9 +215,10 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
         try {
             component = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id}
             });
         } catch (e) {
+            console.log(e);
             return;
         }
         component.deferUpdate();

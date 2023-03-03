@@ -1,6 +1,6 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
 import type { CommandInteraction } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 
@@ -10,9 +10,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     // WEBSOCKET | Nucleus -> Discord
     // EDITING   | Nucleus -> discord -> nucleus | edit time / 2
-    const initial = new Date().getTime();
+    const initial = Date.now();
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
-    const ping = new Date().getTime() - initial;
+    const ping = Date.now() - initial;
     interaction.editReply({
         embeds: [
             new EmojiEmbed()
@@ -28,10 +28,5 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = () => {
-    return true;
-};
-
 export { command };
 export { callback };
-export { check };

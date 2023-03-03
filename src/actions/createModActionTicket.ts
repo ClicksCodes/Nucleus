@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from './../utils/getCommandMentionByName.js';
+import { getCommandMentionByName } from './../utils/getCommandDataByName.js';
 import Discord, { ActionRowBuilder, ButtonBuilder, OverwriteType, ChannelType, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -86,7 +86,7 @@ export async function create(
                             `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
                             (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                             `**Ticket ID:** \`${c.id}\`\n` +
-                            `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
+                            `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -131,7 +131,7 @@ export async function create(
                             `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
                             (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
                             `**Ticket ID:** \`${c.id}\`\n` +
-                            `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
+                            `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -157,12 +157,12 @@ export async function create(
             calculateType: "ticketUpdate",
             color: NucleusColors.green,
             emoji: "GUILD.TICKET.OPEN",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: entry(user.id, renderUser(user)),
             createdBy: entry(createdBy.id, renderUser(createdBy)),
-            created: entry((new Date().getTime()).toString(), renderDelta(new Date().getTime())),
+            created: entry((Date.now()).toString(), renderDelta(Date.now())),
             ticketChannel: entry(c.id, renderChannel(c))
         },
         hidden: {

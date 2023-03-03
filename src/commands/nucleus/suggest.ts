@@ -1,7 +1,7 @@
 import { LoadingEmbed } from '../../utils/defaults.js';
 import { ButtonStyle, CommandInteraction } from "discord.js";
 import Discord from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -66,10 +66,5 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = () => {
-    return true;
-};
-
 export { command };
 export { callback };
-export { check };

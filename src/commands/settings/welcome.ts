@@ -1,307 +1,263 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
 import Discord, {
-    Channel,
     CommandInteraction,
-    Message,
+    AutocompleteInteraction,
     ActionRowBuilder,
     ButtonBuilder,
-    MessageComponentInteraction,
-    Role,
     ButtonStyle,
-    AutocompleteInteraction,
-    GuildChannel,
-    EmbedBuilder
+    APIMessageComponentEmoji,
+    ChannelSelectMenuBuilder,
+    RoleSelectMenuBuilder,
+    RoleSelectMenuInteraction,
+    ChannelSelectMenuInteraction,
+    ButtonInteraction,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    ModalSubmitInteraction,
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
-import confirmationMessage from "../../utils/confirmationMessage.js";
-import generateKeyValueList from "../../utils/generateKeyValueList.js";
-import { ChannelType } from "discord-api-types/v9";
 import getEmojiByName from "../../utils/getEmojiByName.js";
+import convertCurlyBracketString from "../../utils/convertCurlyBracketString.js";
+import { modalInteractionCollector } from "../../utils/dualCollector.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("welcome")
         .setDescription("Messages and roles sent or given when someone joins the server")
-        .addStringOption((option) =>
-            option
-                .setName("message")
-                .setDescription("The message to send when someone joins the server")
-                .setAutocomplete(true)
-        )
-        .addRoleOption((option) =>
-            option.setName("role").setDescription("The role given when someone joins the server")
-        )
-        .addRoleOption((option) =>
-            option.setName("ping").setDescription("The role pinged when someone joins the server")
-        )
-        .addChannelOption((option) =>
-            option
-                .setName("channel")
-                .setDescription("The channel the welcome message should be sent to")
-                .addChannelTypes(ChannelType.GuildText)
-        );
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const { renderRole, renderChannel, log, NucleusColors, entry, renderUser } = client.logger;
-    await interaction.reply({
+const callback = async (interaction: CommandInteraction): Promise<void> => {
+    const { renderChannel } = client.logger;
+    const m = await interaction.reply({
         embeds: LoadingEmbed,
         fetchReply: true,
         ephemeral: true
     });
-    let m: Message;
-    if (
-        interaction.options.get("role")?.role ||
-        interaction.options.get("channel")?.channel ||
-        interaction.options.get("message")?.value as string
-    ) {
-        let role: Role | null;
-        let ping: Role | null;
-        let channel: Channel | null;
-        const message: string | null = interaction.options.get("message")?.value as string | null;
-        try {
-            role = interaction.options.get("role")?.role as Role | null;
-            ping = interaction.options.get("ping")?.role as Role | null;
-        } catch {
-            return await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("GUILD.ROLES.DELETE")
-                        .setTitle("Welcome Events")
-                        .setDescription("The role you provided is not a valid role")
-                        .setStatus("Danger")
-                ]
-            });
-        }
-        try {
-            channel = interaction.options.get("channel")?.channel as Channel | null;
-        } catch {
-            return await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("GUILD.ROLES.DELETE")
-                        .setTitle("Welcome Events")
-                        .setDescription("The channel you provided is not a valid channel")
-                        .setStatus("Danger")
-                ]
-            });
-        }
-        const options: {
-            role?: string;
-            ping?: string;
-            channel?: string;
-            message?: string;
-        } = {};
-
-        if (role) options.role = renderRole(role);
-        if (ping) options.ping = renderRole(ping);
-        if (channel) options.channel = renderChannel(channel as GuildChannel);
-        if (message) options.message = "\n> " + message;
-        const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.EDIT")
-            .setTitle("Welcome Events")
-            .setDescription(generateKeyValueList(options))
-            .setColor("Warning")
-            .setFailedMessage("Cancelled", "Warning", "GUILD.ROLES.DELETE") //TODO: Actual Message Needed
-            .setInverted(true)
-            .send(true);
-        if (confirmation.cancelled) return;
-        if (confirmation.success) {
-            try {
-                const toChange: {
-                    "welcome.role"?: string;
-                    "welcome.ping"?: string;
-                    "welcome.channel"?: string;
-                    "welcome.message"?: string;
-                } = {};
-                if (role) toChange["welcome.role"] = role.id;
-                if (ping) toChange["welcome.ping"] = ping.id;
-                if (channel) toChange["welcome.channel"] = channel.id;
-                if (message) toChange["welcome.message"] = message;
-                await client.database.guilds.write(interaction.guild!.id, toChange);
-                const list: {
-                    memberId: ReturnType<typeof entry>;
-                    changedBy: ReturnType<typeof entry>;
-                    role?: ReturnType<typeof entry>;
-                    ping?: ReturnType<typeof entry>;
-                    channel?: ReturnType<typeof entry>;
-                    message?: ReturnType<typeof entry>;
-                } = {
-                    memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
-                    changedBy: entry(interaction.user.id, renderUser(interaction.user))
-                };
-                if (role) list.role = entry(role.id, renderRole(role));
-                if (ping) list.ping = entry(ping.id, renderRole(ping));
-                if (channel) list.channel = entry(channel.id, renderChannel(channel as GuildChannel));
-                if (message) list.message = entry(message, `\`${message}\``);
-                const data = {
-                    meta: {
-                        type: "welcomeSettingsUpdated",
-                        displayName: "Welcome Settings Changed",
-                        calculateType: "nucleusSettingsUpdated",
-                        color: NucleusColors.green,
-                        emoji: "CONTROL.BLOCKTICK",
-                        timestamp: new Date().getTime()
-                    },
-                    list: list,
-                    hidden: {
-                        guild: interaction.guild!.id
-                    }
-                };
-                log(data);
-            } catch (e) {
-                console.log(e);
-                return interaction.editReply({
-                    embeds: [
-                        new EmojiEmbed()
-                            .setTitle("Welcome Events")
-                            .setDescription("Something went wrong while updating welcome settings")
-                            .setStatus("Danger")
-                            .setEmoji("GUILD.ROLES.DELETE")
-                    ],
-                    components: []
-                });
-            }
-        } else {
-            return interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Welcome Events")
-                        .setDescription("No changes were made")
-                        .setStatus("Success")
-                        .setEmoji("GUILD.ROLES.CREATE")
-                ],
-                components: []
-            });
-        }
-    }
-    let lastClicked = null;
-    let timedOut = false;
+    let closed = false;
+    let config = await client.database.guilds.read(interaction.guild!.id);
+    let data = Object.assign({}, config.welcome);
     do {
-        const config = await client.database.guilds.read(interaction.guild!.id);
-        m = (await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setTitle("Welcome Events")
-                    .setDescription(
-                        `**Message:** ${config.welcome.message ? `\n> ${config.welcome.message}` : "*None set*"}\n` +
-                            `**Role:** ${
-                                config.welcome.role
-                                    ? renderRole((await interaction.guild!.roles.fetch(config.welcome.role))!)
-                                    : "*None set*"
-                            }\n` +
-                            `**Ping:** ${
-                                config.welcome.ping
-                                    ? renderRole((await interaction.guild!.roles.fetch(config.welcome.ping))!)
-                                    : "*None set*"
-                            }\n` +
-                            `**Channel:** ${
-                                config.welcome.channel
-                                    ? config.welcome.channel == "dm"
-                                        ? "DM"
-                                        : renderChannel((await interaction.guild!.channels.fetch(config.welcome.channel))!)
-                                    : "*None set*"
-                            }`
+        const buttons = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("switch")
+                    .setLabel(data.enabled ? "Enabled" : "Disabled")
+                    .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(getEmojiByName(data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("message")
+                    .setLabel((data.message ? "Change" : "Set") + "Message")
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("channelDM")
+                    .setLabel("Send in DMs")
+                    .setStyle(ButtonStyle.Primary)
+                    .setDisabled(data.channel === "dm"),
+                new ButtonBuilder()
+                    .setCustomId("role")
+                    .setLabel("Clear Role")
+                    .setStyle(ButtonStyle.Danger)
+                    .setEmoji(getEmojiByName("CONTROL.CROSS", "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("save")
+                    .setLabel("Save")
+                    .setStyle(ButtonStyle.Success)
+                    .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
+                    .setDisabled(
+                        data.enabled === config.welcome.enabled &&
+                        data.message === config.welcome.message &&
+                        data.role === config.welcome.role &&
+                        data.ping === config.welcome.ping &&
+                        data.channel === config.welcome.channel
                     )
-                    .setStatus("Success")
-                    .setEmoji("CHANNEL.TEXT.CREATE")
-            ],
-            components: [
-                new ActionRowBuilder<ButtonBuilder>().addComponents([
-                    new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-message" ? "Click again to confirm" : "Clear Message")
-                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setCustomId("clear-message")
-                        .setDisabled(!config.welcome.message)
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-role" ? "Click again to confirm" : "Clear Role")
-                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setCustomId("clear-role")
-                        .setDisabled(!config.welcome.role)
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-ping" ? "Click again to confirm" : "Clear Ping")
-                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setCustomId("clear-ping")
-                        .setDisabled(!config.welcome.ping)
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setLabel(lastClicked == "clear-channel" ? "Click again to confirm" : "Clear Channel")
-                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setCustomId("clear-channel")
-                        .setDisabled(!config.welcome.channel)
-                        .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                        .setLabel("Set Channel to DM")
-                        .setCustomId("set-channel-dm")
-                        .setDisabled(config.welcome.channel == "dm")
-                        .setStyle(ButtonStyle.Secondary)
-                ])
-            ]
-        })) as Message;
-        let i: MessageComponentInteraction;
+            );
+
+        const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>()
+            .addComponents(
+                new ChannelSelectMenuBuilder()
+                    .setCustomId("channel")
+                    .setPlaceholder("Select a channel to send welcome messages to")
+            );
+        const roleMenu = new ActionRowBuilder<RoleSelectMenuBuilder>()
+            .addComponents(
+                new RoleSelectMenuBuilder()
+                    .setCustomId("roleToGive")
+                    .setPlaceholder("Select a role to give to the member when they join the server")
+            );
+        const pingMenu = new ActionRowBuilder<RoleSelectMenuBuilder>()
+            .addComponents(
+                new RoleSelectMenuBuilder()
+                    .setCustomId("roleToPing")
+                    .setPlaceholder("Select a role to ping when a member joins the server")
+            );
+
+        const embed = new EmojiEmbed()
+            .setTitle("Welcome Settings")
+            .setStatus("Success")
+            .setDescription(
+                `${getEmojiByName(data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS")} Welcome messages and roles are ${data.enabled ? "enabled" : "disabled"}\n` +
+                `**Welcome message:** ${data.message ?
+                    `\n> ` +
+                    await convertCurlyBracketString(
+                        data.message,
+                        interaction.user.id,
+                        interaction.user.username,
+                        interaction.guild!.name,
+                        interaction.guild!.members
+                    )
+                    : "*None*"}\n` +
+                `**Send message in:** ` + (data.channel ? (data.channel == "dm" ? "DMs" : renderChannel(data.channel)) : `*None set*`) + `\n` +
+                `**Role to ping:** ` + (data.ping ? `<@&${data.ping}>` : `*None set*`) + `\n` +
+                `**Role given on join:** ` + (data.role ? `<@&${data.role}>` : `*None set*`)
+            )
+
+        await interaction.editReply({
+            embeds: [embed],
+            components: [buttons, channelMenu, roleMenu, pingMenu]
+        });
+
+        let i: RoleSelectMenuInteraction | ChannelSelectMenuInteraction | ButtonInteraction;
         try {
             i = await m.awaitMessageComponent({
-                time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
-            });
+                filter: (interaction) => interaction.user.id === interaction.user.id,
+                time: 300000
+            }) as RoleSelectMenuInteraction | ChannelSelectMenuInteraction | ButtonInteraction;
         } catch (e) {
-            timedOut = true;
+            closed = true;
             continue;
         }
-        i.deferUpdate();
-        if (i.customId == "clear-message") {
-            if (lastClicked == "clear-message") {
-                await client.database.guilds.write(interaction.guild!.id, {
-                    "welcome.message": null
-                });
-                lastClicked = null;
-            } else {
-                lastClicked = "clear-message";
+
+        if(i.isButton()) {
+            switch(i.customId) {
+                case "switch": {
+                    await i.deferUpdate();
+                    data.enabled = !data.enabled;
+                    break;
+                }
+                case "message": {
+                    const modal = new ModalBuilder()
+                        .setCustomId("modal")
+                        .setTitle("Welcome Message")
+                        .addComponents(
+                            new ActionRowBuilder<TextInputBuilder>().addComponents(
+                                new TextInputBuilder()
+                                    .setCustomId("ex1")
+                                    .setLabel("Server Info (1/3)")
+                                    .setPlaceholder(
+                                        `{serverName} - This server's name\n\n` +
+                                        `These placeholders will be replaced with the server's name, etc..`
+                                    )
+                                    .setMaxLength(1)
+                                    .setRequired(false)
+                                    .setStyle(TextInputStyle.Paragraph)
+                            ),
+                            new ActionRowBuilder<TextInputBuilder>().addComponents(
+                                new TextInputBuilder()
+                                    .setCustomId("ex2")
+                                    .setLabel("Member Counts (2/3) - {MemberCount:...}")
+                                    .setPlaceholder(
+                                        `{:all} - Total member count\n` +
+                                        `{:humans} - Total non-bot users\n` +
+                                        `{:bots} - Number of bots\n`
+                                    )
+                                    .setMaxLength(1)
+                                    .setRequired(false)
+                                    .setStyle(TextInputStyle.Paragraph)
+                            ),
+                            new ActionRowBuilder<TextInputBuilder>().addComponents(
+                                new TextInputBuilder()
+                                    .setCustomId("ex3")
+                                    .setLabel("Member who joined (3/3) - {member:...}")
+                                    .setPlaceholder(
+                                            `{:name} - The members name\n`
+                                    )
+                                    .setMaxLength(1)
+                                    .setRequired(false)
+                                    .setStyle(TextInputStyle.Paragraph)
+                            ),
+                            new ActionRowBuilder<TextInputBuilder>()
+                                .addComponents(
+                                    new TextInputBuilder()
+                                        .setCustomId("message")
+                                        .setPlaceholder("Enter a message to send when someone joins the server")
+                                        .setValue(data.message ?? "")
+                                        .setLabel("Message")
+                                        .setStyle(TextInputStyle.Paragraph)
+                                )
+                        )
+                    const button = new ActionRowBuilder<ButtonBuilder>()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setCustomId("back")
+                                .setLabel("Back")
+                                .setStyle(ButtonStyle.Secondary)
+                                .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji)
+                        )
+                    await i.showModal(modal)
+                    await i.editReply({
+                        embeds: [
+                            new EmojiEmbed()
+                                .setTitle("Welcome Settings")
+                                .setDescription("Modal opened. If you can't see it, click back and try again.")
+                                .setStatus("Success")
+                        ],
+                        components: [button]
+                    });
+
+                    let out: ModalSubmitInteraction | null;
+                    try {
+                        out = await modalInteractionCollector(m, interaction.user) as ModalSubmitInteraction | null;
+                    } catch (e) {
+                        console.error(e);
+                        out = null;
+                    }
+                    if(!out) break;
+                    data.message = out.fields.getTextInputValue("message");
+                    break;
+                }
+                case "save": {
+                    await i.deferUpdate();
+                    await client.database.guilds.write(interaction.guild!.id, {"welcome": data});
+                    config = await client.database.guilds.read(interaction.guild!.id);
+                    data = Object.assign({}, config.welcome);
+                    break;
+                }
+                case "channelDM": {
+                    await i.deferUpdate();
+                    data.channel = "dm";
+                    break;
+                }
+                case "role": {
+                    await i.deferUpdate();
+                    data.role = null;
+                    break;
+                }
             }
-        } else if (i.customId == "clear-role") {
-            if (lastClicked == "clear-role") {
-                await client.database.guilds.write(interaction.guild!.id, {
-                    "welcome.role": null
-                });
-                lastClicked = null;
-            } else {
-                lastClicked = "clear-role";
+        } else if (i.isRoleSelectMenu()) {
+            await i.deferUpdate();
+            switch(i.customId) {
+                case "roleToGive": {
+                    data.role = i.values[0]!;
+                    break
+                }
+                case "roleToPing": {
+                    data.ping = i.values[0]!;
+                    break
+                }
             }
-        } else if (i.customId == "clear-ping") {
-            if (lastClicked == "clear-ping") {
-                await client.database.guilds.write(interaction.guild!.id, {
-                    "welcome.ping": null
-                });
-                lastClicked = null;
-            } else {
-                lastClicked = "clear-ping";
-            }
-        } else if (i.customId == "clear-channel") {
-            if (lastClicked == "clear-channel") {
-                await client.database.guilds.write(interaction.guild!.id, {
-                    "welcome.channel": null
-                });
-                lastClicked = null;
-            } else {
-                lastClicked = "clear-channel";
-            }
-        } else if (i.customId == "set-channel-dm") {
-            await client.database.guilds.write(interaction.guild!.id, {
-                "welcome.channel": "dm"
-            });
-            lastClicked = null;
+        } else {
+            await i.deferUpdate();
+            data.channel = i.values[0]!;
         }
-    } while (!timedOut);
-    await interaction.editReply({
-        embeds: [new EmbedBuilder(m.embeds[0]!.data).setFooter({ text: "Message timed out" })],
-        components: []
-    });
+
+    } while (!closed);
+    await interaction.deleteReply()
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
         return "You must have the *Manage Server* permission to use this command";
@@ -309,7 +265,7 @@ const check = (interaction: CommandInteraction) => {
 };
 
 const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
-    const validReplacements = ["serverName", "memberCount", "memberCount:bots", "memberCount:humans"]
+    const validReplacements = ["serverName", "memberCount:all", "memberCount:bots", "memberCount:humans"]
     if (!interaction.guild) return [];
     const prompt = interaction.options.getString("message");
     const autocompletions = [];
@@ -324,7 +280,7 @@ const autocomplete = async (interaction: AutocompleteInteraction): Promise<strin
     if (beforeLastOpenBracket !== null) {
         if (afterLastOpenBracket !== null) {
             for (const replacement of validReplacements) {
-                if (replacement.startsWith(afterLastOpenBracket[0].slice(1))) {
+                if (replacement.startsWith(afterLastOpenBracket[0]!.slice(1))) {
                     autocompletions.push(`${beforeLastOpenBracket[1]}{${replacement}}`);
                 }
             }

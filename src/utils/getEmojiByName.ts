@@ -1,5 +1,7 @@
 import emojis from "../config/emojis.json" assert { type: "json" };
+import lodash from 'lodash';
 
+const isArray = lodash.isArray;
 interface EmojisIndex {
     [key: string]: string | EmojisIndex | EmojisIndex[];
 }
@@ -12,7 +14,7 @@ function getEmojiByName(name: string | null, format?: string): string {
         if (typeof id === "string" || id === undefined) {
             throw new Error(`Emoji ${name} not found`);
         }
-        if (Array.isArray(id)) {
+        if (isArray(id)) {
             id = id[parseInt(part)];
         } else {
             id = id[part];
@@ -21,6 +23,10 @@ function getEmojiByName(name: string | null, format?: string): string {
     if (typeof id !== "string" && id !== undefined) {
         throw new Error(`Emoji ${name} not found`);
     }
+    return getEmojiFromId(id, format);
+}
+
+function getEmojiFromId(id: string | undefined, format?: string): string {
     if (format === "id") {
         if (id === undefined) return "0";
         return id.toString();

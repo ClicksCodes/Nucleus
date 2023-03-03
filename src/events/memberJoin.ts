@@ -8,7 +8,8 @@ export const event = "guildMemberAdd";
 export async function callback(client: NucleusClient, member: GuildMember) {
     welcome(client, member);
     statsChannelAdd(client, member);
-    const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    if (!await isLogging(member.guild.id, "guildMemberUpdate")) return;
     await client.database.history.create("join", member.guild.id, member.user, null, null);
     const data = {
         meta: {
@@ -17,7 +18,7 @@ export async function callback(client: NucleusClient, member: GuildMember) {
             calculateType: "guildMemberUpdate",
             color: NucleusColors.green,
             emoji: "MEMBER" + (member.user.bot ? ".BOT" : "") + ".JOIN",
-            timestamp: member.joinedTimestamp
+            timestamp: member.joinedTimestamp ?? Date.now()
         },
         list: {
             memberId: entry(member.id, `\`${member.id}\``),

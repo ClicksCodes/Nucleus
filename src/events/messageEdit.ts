@@ -6,8 +6,10 @@ export const event = "messageUpdate";
 
 export async function callback(client: NucleusClient, oldMessage: Message, newMessage: Message) {
     if (newMessage.author.id === client.user!.id) return;
+    if (newMessage.author.bot) return;
     if (!newMessage.guild) return;
-    const { log, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;
+    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;
+    
     const replyTo: MessageReference | null = newMessage.reference;
     let newContent = newMessage.cleanContent.replaceAll("`", "‘");
     let oldContent = oldMessage.cleanContent.replaceAll("`", "‘");
@@ -18,7 +20,8 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (config) {
         attachmentJump = ` [[View attachments]](${config})`;
     }
-    if (newContent === oldContent && newMessage.attachments.size === oldMessage.attachments.size) {
+    if (newMessage.crosspostable !== oldMessage.crosspostable) {
+        if(!await isLogging(newMessage.guild.id, "messageAnnounce")) return;
         if (!replyTo) {
             const data = {
                 meta: {
@@ -27,7 +30,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
                     calculateType: "messageAnnounce",
                     color: NucleusColors.yellow,
                     emoji: "MESSAGE.CREATE",
-                    timestamp: newMessage.editedTimestamp
+                    timestamp: newMessage.editedTimestamp ?? Date.now()
                 },
                 separate: {
                     end: `[[Jump to message]](${newMessage.url})`
@@ -57,6 +60,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             return log(data);
         }
     }
+    if (!await isLogging(newMessage.guild.id, "messageUpdate")) return;
     if (!newMessage.editedTimestamp) {
         return;
     }

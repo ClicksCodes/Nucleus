@@ -4,7 +4,8 @@ import { AuditLogEvent, GuildAuditLogsEntry, Sticker } from "discord.js";
 export const event = "stickerDelete";
 
 export async function callback(client: NucleusClient, sticker: Sticker) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    if (!await isLogging(sticker.guild!.id, "stickerUpdate")) return;
     const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.StickerDelete))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
@@ -14,7 +15,7 @@ export async function callback(client: NucleusClient, sticker: Sticker) {
             displayName: "Sticker Deleted",
             calculateType: "stickerUpdate",
             color: NucleusColors.red,
-            sticker: "GUILD.sticker.DELETE",
+            emoji: "GUILD.EMOJI.DELETE",
             timestamp: auditLog.createdTimestamp
         },
         list: {

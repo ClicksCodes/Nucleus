@@ -1,5 +1,5 @@
 import type { CommandInteraction } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 
@@ -13,16 +13,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setTitle("Stats")
                 .setDescription(`**Servers:** ${client.guilds.cache.size}\n` + `**Ping:** \`${client.ws.ping * 2}ms\``)
                 .setStatus("Success")
-                .setEmoji("GUILD.GRAPHS")
+                .setEmoji("SETTINGS.STATS.GREEN")
         ],
         ephemeral: true
     });
 };
 
-const check = () => {
-    return true;
-};
-
 export { command };
 export { callback };
-export { check };

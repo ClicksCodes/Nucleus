@@ -6,7 +6,8 @@ import type { NucleusClient } from "../utils/client.js";
 export const event = "threadUpdate";
 
 export async function callback(client: NucleusClient, oldThread: ThreadChannel, newThread: ThreadChannel) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    if (!await isLogging(newThread.guild.id, "channelUpdate")) return;
     const auditLog = (await getAuditLog(newThread.guild, AuditLogEvent.ThreadUpdate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as ThreadChannel)!.id === newThread.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
@@ -37,7 +38,7 @@ export async function callback(client: NucleusClient, oldThread: ThreadChannel, 
         );
     }
     if (!(Object.keys(list).length - 3)) return;
-    list["updated"] = entry(new Date().getTime(), renderDelta(new Date().getTime()));
+    list["updated"] = entry(Date.now(), renderDelta(Date.now()));
     list["updatedBy"] = entry(auditLog.executor!.id, renderUser(auditLog.executor!));
     const data = {
         meta: {
@@ -46,7 +47,7 @@ export async function callback(client: NucleusClient, oldThread: ThreadChannel, 
             calculateType: "channelUpdate",
             color: NucleusColors.yellow,
             emoji: "CHANNEL.TEXT.EDIT",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: list,
         hidden: {

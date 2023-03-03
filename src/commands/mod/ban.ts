@@ -1,11 +1,11 @@
-import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle, SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
 import { LinkWarningFooter } from "../../utils/defaults.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -26,7 +26,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (!interaction.guild) return;
     const { renderUser } = client.logger;
-    // TODO:[Modals] Replace this with a modal
+    // TODO:[Modals] Replace the command arguments with a modal
     let reason = null;
     let notify = true;
     let confirmation;
@@ -123,16 +123,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 calculateType: "guildMemberPunish",
                 color: NucleusColors.red,
                 emoji: "PUNISH.BAN.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(member.user.id, `\`${member.user.id}\``),
                 name: entry(member.user.id, renderUser(member.user)),
-                banned: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                banned: entry(Date.now().toString(), renderDelta(Date.now())),
                 bannedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                 accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp)),
                 serverMemberCount: interaction.guild.memberCount
+            },
+            separate: {
+                end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
             },
             hidden: {
                 guild: interaction.guild.id
@@ -166,9 +169,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = async (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    // Check if the user has ban_members permission
+    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
+    if(partial) return true;
     const me = interaction.guild.members.me!;
     let apply = interaction.options.getUser("user") as User | GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
@@ -181,21 +187,23 @@ const check = async (interaction: CommandInteraction) => {
         apply = apply as User
     }
     // Do not allow banning the owner
-    if (member.id === interaction.guild.ownerId) throw new Error("You cannot ban the owner of the server");
+    if (member.id === interaction.guild.ownerId) return "You cannot ban the owner of the server";
     // Check if Nucleus can ban the member
-    if (!(mePos > applyPos)) throw new Error("I do not have a role higher than that member");
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to ban
-    if (!me.permissions.has("BanMembers")) throw new Error("I do not have the *Ban Members* permission");
+    if (!me.permissions.has("BanMembers")) return "I do not have the *Ban Members* permission";
     // Do not allow banning Nucleus
-    if (member.id === me.id) throw new Error("I cannot ban myself");
+    if (member.id === me.id) return "I cannot ban myself";
     // Allow the owner to ban anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has ban_members permission
-    if (!member.permissions.has("BanMembers")) throw new Error("You do not have the *Ban Members* permission");
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) throw new Error("You do not have a role higher than that member");
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow ban
     return true;
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Removes a member from the server - this will prevent them from rejoining until they are unbanned, and will delete a specified number of days of messages from them.",
+    premiumOnly: true,
+}

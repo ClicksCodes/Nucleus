@@ -13,7 +13,7 @@ async function convertCurlyBracketString(
         .replace("{member:mention}", memberID ? `<@${memberID}>` : "{member:mention}")
         .replace("{member:name}", memberName ? `${memberName}` : "{member:name}")
         .replace("{serverName}", serverName ? `${serverName}` : "{serverName}")
-        .replace("{memberCount}", memberCount ? `${memberCount}` : "{memberCount}")
+        .replace("{memberCount:all}", memberCount ? `${memberCount}` : "{memberCount}")
         .replace("{memberCount:bots}", bots ? `${bots}` : "{memberCount:bots}")
         .replace("{memberCount:humans}", memberCount && bots ? `${memberCount - bots}` : "{memberCount:humans}");
 

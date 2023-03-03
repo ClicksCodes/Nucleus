@@ -1,15 +1,15 @@
-import { getCommandMentionByName } from '../../utils/getCommandMentionByName.js';
+import { getCommandMentionByName } from '../../utils/getCommandDataByName.js';
 import Discord, { ActionRowBuilder, ButtonBuilder, ButtonInteraction, PrivateThreadChannel, TextChannel, ButtonStyle, CategoryChannel } from "discord.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import { preloadPage } from '../../utils/createTemporaryStorage.js';
+import { LoadingEmbed } from '../../utils/defaults.js';
 
 export default async function (interaction: Discord.CommandInteraction | ButtonInteraction) {
     if (!interaction.guild) return;
     const config = await client.database.guilds.read(interaction.guild.id);
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-
     const ticketChannel = config.tickets.category;
     if (!("parent" in interaction.channel!)) {
         return await interaction.reply({
@@ -50,7 +50,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 calculateType: "ticketUpdate",
                 color: NucleusColors.red,
                 emoji: "GUILD.TICKET.CLOSE",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 ticketFor: entry(
@@ -58,7 +58,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                     renderUser((await interaction.guild.members.fetch(uID!)).user)
                 ),
                 closedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
-                closed: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                closed: entry(Date.now(), renderDelta(Date.now())),
                 ticketChannel: entry(channel.id, channel.name)
             },
             hidden: {
@@ -69,8 +69,9 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
 
         await channel.delete();
     } else if (status === "Active") {
-        // Close the ticket
-
+        await interaction.reply({embeds: LoadingEmbed, fetchReply: true});
+        // Archive the ticket
+        await interaction.channel.fetch()
         if (channel.isThread()) {
             channel.setName(`${channel.name.replace("Active", "Archived")}`);
             channel.members.remove(channel.name.split(" - ")[1]!);
@@ -80,14 +81,14 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
             await channel.permissionOverwrites.delete(channel.topic!.split(" ")[0]!);
         }
         preloadPage(interaction.channel.id, "privacy", "2")
-        await interaction.reply({
+        const hasPremium = await client.database.premium.hasPremium(interaction.guild.id);
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Archived Ticket")
-                    .setDescription(`This ticket has been Archived. Type ${await getCommandMentionByName("ticket/close")} to delete it.` +
-                        await client.database.premium.hasPremium(interaction.guild.id) ?
-                        `\n\nFor more info on transcripts, check ${await getCommandMentionByName("privacy")}` :
-                        "")
+                    .setDescription(`This ticket has been Archived. Type ${getCommandMentionByName("ticket/close")} to delete it.\n` +
+                        hasPremium ? ("Creating a transcript will delete all messages in this ticket" +
+                        `\n\nFor more info on transcripts, check ${getCommandMentionByName("privacy")}`): "")
                     .setStatus("Warning")
                     .setEmoji("GUILD.TICKET.ARCHIVED")
             ],
@@ -100,7 +101,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                             .setCustomId("closeticket")
                             .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
                     ].concat(
-                        await client.database.premium.hasPremium(interaction.guild.id)
+                        hasPremium
                             ? [
                                     new ButtonBuilder()
                                         .setLabel("Create Transcript and Delete")
@@ -120,7 +121,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 calculateType: "ticketUpdate",
                 color: NucleusColors.yellow,
                 emoji: "GUILD.TICKET.ARCHIVED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 ticketFor: entry(
@@ -128,7 +129,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                     renderUser((await interaction.guild.members.fetch(uID!)).user)
                 ),
                 archivedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
-                archived: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                archived: entry(Date.now(), renderDelta(Date.now())),
                 ticketChannel: entry(channel.id, renderChannel(channel))
             },
             hidden: {
@@ -183,12 +184,12 @@ async function purgeByUser(member: string, guild: string) {
             calculateType: "ticketUpdate",
             color: NucleusColors.red,
             emoji: "GUILD.TICKET.DELETE",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: entry(member, renderUser(member)),
             deletedBy: entry(null, "Member left server"),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            deleted: entry(Date.now(), renderDelta(Date.now())),
             ticketsDeleted: deleted
         },
         hidden: {

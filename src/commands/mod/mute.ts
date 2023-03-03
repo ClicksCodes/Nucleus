@@ -1,6 +1,6 @@
 import { LinkWarningFooter, LoadingEmbed } from "../../utils/defaults.js";
 import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -103,7 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id,
+                filter: (i) => {return i.user.id === interaction.user.id && i.channelId === interaction.channelId},
                 time: 300000
             });
         } catch {
@@ -235,8 +235,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setDescription(
                             `You have been muted in ${interaction.guild.name}` +
                                 (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") + "\n\n" +
-                            `You will be unmuted at: <t:${Math.round(new Date().getTime() / 1000) + muteTime}:D> at ` +
-                            `<t:${Math.round(new Date().getTime() / 1000) + muteTime}:T> (<t:${Math.round(new Date().getTime() / 1000) + muteTime
+                            `You will be unmuted at: <t:${Math.round(Date.now() / 1000) + muteTime}:D> at ` +
+                            `<t:${Math.round(Date.now() / 1000) + muteTime}:T> (<t:${Math.round(Date.now() / 1000) + muteTime
                             }:R>)` + "\n\n" +
                             (createAppealTicket
                                 ? `You can appeal this in the ticket created in <#${confirmation.components!["appeal"]!.response}>`
@@ -267,10 +267,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             await member.timeout(muteTime * 1000, reason || "*No reason provided*");
             if (config.moderation.mute.role !== null) {
                 await member.roles.add(config.moderation.mute.role);
-                await client.database.eventScheduler.schedule("naturalUnmute", (new Date().getTime() + muteTime * 1000).toString(), {
+                await client.database.eventScheduler.schedule("naturalUnmute", (Date.now() + muteTime * 1000).toString(), {
                     guild: interaction.guild.id,
                     user: member.id,
-                    expires: new Date().getTime() + muteTime * 1000
+                    expires: Date.now() + muteTime * 1000
                 });
             }
         } else {
@@ -282,7 +282,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     try {
         if (config.moderation.mute.role !== null) {
             await member.roles.add(config.moderation.mute.role);
-            await client.database.eventScheduler.schedule("unmuteRole", (new Date().getTime() + muteTime * 1000).toString(), {
+            await client.database.eventScheduler.schedule("unmuteRole", (Date.now() + muteTime * 1000).toString(), {
                 guild: interaction.guild.id,
                 user: member.id,
                 role: config.moderation.mute.role
@@ -325,18 +325,21 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberPunish",
             color: NucleusColors.yellow,
             emoji: "PUNISH.WARN.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(member.user.id, `\`${member.user.id}\``),
             name: entry(member.user.id, renderUser(member.user)),
             mutedUntil: entry(
-                (new Date().getTime() + muteTime * 1000).toString(),
-                renderDelta(new Date().getTime() + muteTime * 1000)
+                (Date.now() + muteTime * 1000).toString(),
+                renderDelta(Date.now() + muteTime * 1000)
             ),
-            muted: entry(new Date().getTime.toString(), renderDelta(new Date().getTime() - 1000)),
+            muted: entry(new Date().getTime.toString(), renderDelta(Date.now() - 1000)),
             mutedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
             reason: entry(reason, reason ? reason : "*No reason provided*")
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
@@ -361,9 +364,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    // Check if the user has moderate_members permission
+    if (!member.permissions.has("ModerateMembers")) return "You do not have the *Moderate Members* permission";
+    if (partial) return true;
     const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
@@ -372,20 +378,21 @@ const check = (interaction: CommandInteraction) => {
     // Do not allow muting the owner
     if (member.id === interaction.guild.ownerId) return "You cannot mute the owner of the server";
     // Check if Nucleus can mute the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to mute
     if (!me.permissions.has("ModerateMembers")) return "I do not have the *Moderate Members* permission";
     // Do not allow muting Nucleus
     if (member.id === me.id) return "I cannot mute myself";
     // Allow the owner to mute anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has moderate_members permission
-    if (!member.permissions.has("ModerateMembers"))
-        return "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow mute
     return true;
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Stops a member from being able to send messages or join voice channels for a specified amount of time.",
+    premiumOnly: true,
+}

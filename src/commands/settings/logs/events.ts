@@ -1,9 +1,11 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, EmbedBuilder, StringSelectMenuInteraction } from "discord.js";
-import { SlashCommandSubcommandBuilder, StringSelectMenuOptionBuilder } from "@discordjs/builders";
-import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ChannelSelectMenuBuilder, ChannelType, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonInteraction, StringSelectMenuInteraction, ChannelSelectMenuInteraction, APIMessageComponentEmoji } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../../utils/client.js";
+import compare from "lodash";
 import { toHexArray, toHexInteger } from "../../../utils/calculate.js";
+import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
+import getEmojiByName from "../../../utils/getEmojiByName.js";
 
 const logs: Record<string, string> = {
     channelUpdate: "Channels created, deleted or modified",
@@ -24,88 +26,138 @@ const logs: Record<string, string> = {
     webhookUpdate: "Webhooks created or deleted",
     guildMemberVerify: "Member runs verify",
     autoModeratorDeleted: "Messages auto deleted by Nucleus",
-    nucleusSettingsUpdated: "Nucleus' settings updated by a moderator",
-    ticketUpdate: "Tickets created or deleted"
+    ticketUpdate: "Tickets created or deleted",
+    //nucleusSettingsUpdated: "Nucleus' settings updated by a moderator"  // TODO
 };
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder.setName("events").setDescription("Sets what events should be logged");
+    builder
+        .setName("events")
+        .setDescription("The general log channel for the server, and setting what events to show")
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    await interaction.reply({
+    const m = (await interaction.reply({
         embeds: LoadingEmbed,
-        fetchReply: true,
-        ephemeral: true
-    });
-    let m: Message;
-    let timedOut = false;
+        ephemeral: true,
+        fetchReply: true
+    })) as Discord.Message;
+
+    let config = await client.database.guilds.read(interaction.guild!.id);
+    let data = Object.assign({}, config.logging.logs);
+    let closed = false;
+    let show = false;
     do {
-        const config = await client.database.guilds.read(interaction.guild!.id);
-        const converted = toHexArray(config.logging.logs.toLog);
-        const selectPane = new StringSelectMenuBuilder()
-            .setPlaceholder("Set events to log")
-            .setMaxValues(Object.keys(logs).length)
-            .setCustomId("logs")
-            .setMinValues(0)
-        Object.keys(logs).map((e, i) => {
-            selectPane.addOptions(new StringSelectMenuOptionBuilder()
-                .setLabel(logs[e]!)
-                .setValue(i.toString())
-                .setDefault(converted.includes(e))
+        const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>()
+            .addComponents(
+                new ChannelSelectMenuBuilder()
+                    .setCustomId("channel")
+                    .setPlaceholder("Select a channel")
+                    .setChannelTypes(ChannelType.GuildText)
+            )
+        const buttons = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId("switch")
+                    .setLabel(data.enabled ? "Enabled" : "Disabled")
+                    .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(getEmojiByName((data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS"), "id") as APIMessageComponentEmoji),
+                new ButtonBuilder()
+                    .setCustomId("remove")
+                    .setLabel("Remove")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(!data.channel),
+                new ButtonBuilder()
+                    .setCustomId("show")
+                    .setLabel("Manage Events")
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId("save")
+                    .setLabel("Save")
+                    .setStyle(ButtonStyle.Success)
+                    .setDisabled(compare.isEqual(data, config.logging.logs))
+            )
+
+        const converted = toHexArray(data.toLog);
+        const toLogMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
+            .addComponents(
+                new StringSelectMenuBuilder()
+                    .setPlaceholder("Set events to log")
+                    .setMaxValues(Object.keys(logs).length)
+                    .setCustomId("logs")
+                    .setMinValues(0)
+            )
+        Object.keys(logs).map((e) => {
+            toLogMenu.components[0]!.addOptions(
+                new StringSelectMenuOptionBuilder()
+                    .setLabel(logs[e]!)
+                    .setValue(e)
+                    .setDefault(converted.includes(e))
             )
         });
-        m = (await interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setTitle("Logging Events")
-                    .setDescription(
-                        "Below are the events being logged in the server. You can toggle them on and off in the dropdown"
-                    )
-                    .setStatus("Success")
-                    .setEmoji("CHANNEL.TEXT.CREATE")
-            ],
-            components: [
-                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectPane),
-                new ActionRowBuilder<ButtonBuilder>().addComponents([
-                    new ButtonBuilder().setLabel("Select all").setStyle(ButtonStyle.Primary).setCustomId("all"),
-                    new ButtonBuilder().setLabel("Select none").setStyle(ButtonStyle.Danger).setCustomId("none")
-                ])
-            ]
-        })) as Message;
-        let i;
+
+        const embed = new EmojiEmbed()
+            .setTitle("General Log Channel")
+            .setStatus("Success")
+            .setEmoji("CHANNEL.TEXT.CREATE")
+            .setDescription(
+                `This is the channel that all events you set to be logged will be stored\n` +
+                `**Channel:** ${data.channel ? `<#${data.channel}>` : "None"}\n`
+            )
+
+        const components: ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder | StringSelectMenuBuilder>[] = [channelMenu, buttons];
+        if(show) components.push(toLogMenu);
+
+        await interaction.editReply({
+            embeds: [embed],
+            components: components
+        });
+
+        let i: ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         try {
             i = await m.awaitMessageComponent({
-                time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
-            });
+                filter: (i) => i.user.id === interaction.user.id,
+                time: 300000
+            }) as ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         } catch (e) {
-            timedOut = true;
+            closed = true;
             continue;
         }
-        i.deferUpdate();
-        if (i.customId === "logs") {
-            const selected = (i as StringSelectMenuInteraction).values;
-            const newLogs = toHexInteger(selected.map((e: string) => Object.keys(logs)[parseInt(e)]!));
-            await client.database.guilds.write(interaction.guild!.id, {
-                "logging.logs.toLog": newLogs
-            });
-        } else if (i.customId === "all") {
-            const newLogs = toHexInteger(Object.keys(logs).map((e) => e));
-            await client.database.guilds.write(interaction.guild!.id, {
-                "logging.logs.toLog": newLogs
-            });
-        } else if (i.customId === "none") {
-            await client.database.guilds.write(interaction.guild!.id, {
-                "logging.logs.toLog": 0
-            });
-        }
-    } while (!timedOut);
 
-    await interaction.editReply({ embeds: [new EmbedBuilder(m.embeds[0]!.data).setFooter({ text: "Message timed out" })] });
-    return;
+        await i.deferUpdate();
+
+        if(i.isButton()) {
+            switch(i.customId) {
+                case "show": {
+                    show = !show;
+                    break;
+                }
+                case "switch": {
+                    data.enabled = !data.enabled;
+                    break;
+                }
+                case "save": {
+                    await client.database.guilds.write(interaction.guild!.id, {"logging.logs": data});
+                    config = await client.database.guilds.read(interaction.guild!.id);
+                    data = Object.assign({}, config.logging.logs);
+                    break;
+                }
+                case "remove": {
+                    data.channel = null;
+                    break;
+                }
+            }
+        } else if(i.isStringSelectMenu()) {
+            const hex = toHexInteger(i.values);
+            data.toLog = hex;
+        } else if(i.isChannelSelectMenu()) {
+            data.channel = i.values[0]!;
+        }
+
+    } while (!closed);
+    await interaction.deleteReply()
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
         return "You must have the *Manage Server* permission to use this command";

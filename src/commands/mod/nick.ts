@@ -1,16 +1,16 @@
 import { LinkWarningFooter } from './../../utils/defaults.js';
 import { ActionRowBuilder, ButtonBuilder, CommandInteraction, GuildMember, ButtonStyle, Message } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
 import { areTicketsEnabled, create } from "../../actions/createModActionTicket.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder
     .setName("nick")
-    // .setNameLocalizations({"ru": "name", "zh-CN": "nickname"})
     .setDescription("Changes a users nickname")
     .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
     .addStringOption((option) =>
@@ -156,14 +156,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberUpdate",
             color: NucleusColors.yellow,
             emoji: "PUNISH.NICKNAME.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(member.id, `\`${member.id}\``),
             before: entry(before, before ?? "*No nickname set*"),
             after: entry(nickname ?? null, nickname ?? "*No nickname set*"),
-            updated: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            updated: entry(Date.now(), renderDelta(Date.now())),
             updatedBy: entry(interaction.user.id, renderUser(interaction.user))
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild!.id
@@ -189,8 +192,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = async (interaction: CommandInteraction, partial: boolean = false) => {
     const member = interaction.member as GuildMember;
+    // Check if the user has manage_nicknames permission
+    if (!member.permissions.has("ManageNicknames")) return "You do not have the *Manage Nicknames* permission";
+    if (partial) return true;
     const me = interaction.guild!.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
@@ -200,20 +206,21 @@ const check = (interaction: CommandInteraction) => {
     // Do not allow any changing of the owner
     if (member.id === interaction.guild.ownerId) return "You cannot change the owner's nickname";
     // Check if Nucleus can change the nickname
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to change the nickname
     if (!me.permissions.has("ManageNicknames")) return "I do not have the *Manage Nicknames* permission";
     // Allow the owner to change anyone's nickname
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has manage_nicknames permission
-    if (!member.permissions.has("ManageNicknames"))
-        return "You do not have the *Manage Nicknames* permission";
     // Allow changing your own nickname
     if (member === apply) return true;
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow change
     return true;
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Changes the nickname of a member. This is the name that shows in the member list and on messages.",
+    premiumOnly: true,
+}

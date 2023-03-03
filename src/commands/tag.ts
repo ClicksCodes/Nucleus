@@ -1,5 +1,4 @@
-import { AutocompleteInteraction, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { AutocompleteInteraction, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from "discord.js";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { capitalize } from "../utils/generateKeyValueList.js";
@@ -51,10 +50,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     return;
 };
 
-const check = () => {
-    return true;
-};
-
 const autocomplete = async (interaction: AutocompleteInteraction): Promise<string[]> => {
     if (!interaction.guild) return [];
     const prompt = interaction.options.getString("tag");
@@ -65,5 +60,4 @@ const autocomplete = async (interaction: AutocompleteInteraction): Promise<strin
 
 export { command };
 export { callback };
-export { check };
 export { autocomplete };

@@ -1,13 +1,13 @@
 import { LinkWarningFooter } from '../../utils/defaults.js';
-import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandSubcommandBuilder } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import type Discord from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -102,8 +102,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
         const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
         const timeInServer = member.joinedTimestamp ? entry(
-            (new Date().getTime() - member.joinedTimestamp).toString(),
-            humanizeDuration(new Date().getTime() - member.joinedTimestamp, {
+            (Date.now() - member.joinedTimestamp).toString(),
+            humanizeDuration(Date.now() - member.joinedTimestamp, {
                 round: true
             })
         ) : entry(null, "*Unknown*")
@@ -114,17 +114,20 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 calculateType: "guildMemberPunish",
                 color: NucleusColors.red,
                 emoji: "PUNISH.KICK.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(member.id, `\`${member.id}\``),
                 name: entry(member.id, renderUser(member.user)),
                 joined: undefined as (unknown | typeof entry),
-                kicked: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                kicked: entry(Date.now().toString(), renderDelta(Date.now())),
                 kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
                 timeInServer: timeInServer,
                 serverMemberCount: member.guild.memberCount
+            },
+            separate: {
+                end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
             },
             hidden: {
                 guild: member.guild.id
@@ -168,30 +171,37 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
+
     const member = interaction.member as GuildMember;
+    // Check if the user has kick_members permission
+    if (!member.permissions.has("KickMembers")) return "You do not have the *Kick Members* permission";
+    if (partial) return true;
+
     const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
+    // Check if Nucleus has permission to kick
+    if (!me.permissions.has("KickMembers")) return "I do not have the *Kick Members* permission";
+    // Allow the owner to kick anyone
+    if (member.id === interaction.guild.ownerId) return true;
     // Do not allow kicking the owner
     if (member.id === interaction.guild.ownerId) return "You cannot kick the owner of the server";
     // Check if Nucleus can kick the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
-    // Check if Nucleus has permission to kick
-    if (!me.permissions.has("KickMembers")) return "I do not have the *Kick Members* permission";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Do not allow kicking Nucleus
     if (member.id === interaction.guild.members.me!.id) return "I cannot kick myself";
-    // Allow the owner to kick anyone
-    if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has kick_members permission
-    if (!member.permissions.has("KickMembers")) return "You do not have the *Kick Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow kick
     return true;
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Removes a member from the server. They will be able to rejoin if they have an invite link.",
+    premiumOnly: true,
+}

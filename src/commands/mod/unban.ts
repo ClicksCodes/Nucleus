@@ -1,5 +1,5 @@
 import type { CommandInteraction, GuildMember, User } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -57,12 +57,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     calculateType: "guildMemberPunish",
                     color: NucleusColors.green,
                     emoji: "PUNISH.BAN.GREEN",
-                    timestamp: new Date().getTime()
+                    timestamp: Date.now()
                 },
                 list: {
                     memberId: entry(member.id, `\`${member.id}\``),
                     name: entry(member.id, renderUser(member)),
-                    unbanned: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+                    unbanned: entry(Date.now(), renderDelta(Date.now())),
                     unbannedBy: entry(interaction.user.id, renderUser(interaction.user)),
                     accountCreated: entry(member.createdTimestamp, renderDelta(member.createdTimestamp))
                 },
@@ -107,16 +107,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    // Check if the user has ban_members permission
+    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
+    if (partial) return true;
     const me = interaction.guild.members.me!;
     // Check if Nucleus can unban members
     if (!me.permissions.has("BanMembers")) return "I do not have the *Ban Members* permission";
     // Allow the owner to unban anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has ban_members permission
-    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
     // Allow unban
     return true;
 };

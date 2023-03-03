@@ -1,13 +1,17 @@
 import type { NucleusClient } from "../utils/client.js";
 import { AuditLogEvent, GuildAuditLogsEntry, Sticker } from "discord.js";
+import { generalException } from "../utils/createTemporaryStorage.js";
 
-export const event = "stickerDelete";
+export const event = "stickerCreate";
 
 export async function callback(client: NucleusClient, sticker: Sticker) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.EmojiCreate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0]!;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    if (!await isLogging(sticker.guild!.id, "stickerUpdate")) return;
+    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.StickerCreate))
+    .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
+    if (client.noLog.includes(`${sticker.guild!.id}${auditLog.id}`)) return;
+    generalException(`${sticker.guild!.id}${auditLog.id}`);
     const data = {
         meta: {
             type: "stickerCreate",

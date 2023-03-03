@@ -7,9 +7,10 @@ import Discord, {
     ButtonStyle,
     NonThreadGuildBasedChannel,
     StringSelectMenuOptionBuilder,
-    StringSelectMenuBuilder
+    StringSelectMenuBuilder,
+    APIMessageComponentEmoji
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import type { GuildBasedChannel } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -126,8 +127,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(c)
                         .setValue((set * 25 + i).toString())
-                        // @ts-expect-error
-                        .setEmoji(getEmojiByName("ICONS.CHANNEL.CATEGORY", "id"))  // Again, this is valid but TS doesn't think so
+                        .setEmoji(getEmojiByName("ICONS.CHANNEL.CATEGORY", "id") as APIMessageComponentEmoji)  // Again, this is valid but TS doesn't think so
                         .setDefault((set * 25 + i) === page)
                 }))
             )}
@@ -157,19 +157,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id, time: 30000});
+            i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id, time: 30000});
         } catch (e) {
             closed = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId === "back") page--;
         else if (i.customId === "right") page++;
         else if (i.customId === "category" && i.isStringSelectMenu()) page = parseInt(i.values[0]!);
     }
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has("ManageRoles")) return "You do not have the *Manage Roles* permission";
     return true;

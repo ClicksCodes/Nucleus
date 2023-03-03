@@ -1,10 +1,11 @@
 import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import { create, areTicketsEnabled } from "../../actions/createModActionTicket.js";
 import client from "../../utils/client.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 import { LinkWarningFooter } from "../../utils/defaults.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
@@ -116,7 +117,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberPunish",
             color: NucleusColors.yellow,
             emoji: "PUNISH.WARN.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             user: entry(
@@ -124,7 +125,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 renderUser((interaction.options.getMember("user") as GuildMember).user)
             ),
             warnedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
-            reason: reason ? `\n> ${reason}` : "*No reason provided*"
+            reason: reason ? reason : "*No reason provided*"
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
@@ -186,7 +190,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
+                filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
                 time: 300000
             });
         } catch (e) {
@@ -275,9 +279,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    if (!member.permissions.has("ModerateMembers"))
+        return "You do not have the *Moderate Members* permission";
+    if(partial) return true;
     const apply = interaction.options.getMember("user") as GuildMember | null;
     if (apply === null) return "That member is not in the server";
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
@@ -287,10 +294,8 @@ const check = (interaction: CommandInteraction) => {
     // Allow the owner to warn anyone
     if (member.id === interaction.guild.ownerId) return true;
     // Check if the user has moderate_members permission
-    if (!member.permissions.has("ModerateMembers"))
-        return "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow warn
     return true;
 };

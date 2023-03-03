@@ -4,8 +4,9 @@ import type { GuildEmoji, GuildAuditLogsEntry } from 'discord.js'
 export const event = "emojiDelete";
 
 export async function callback(client: NucleusClient, emoji: GuildEmoji) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = client.logger;
-    const auditLog = (await getAuditLog(emoji.guild, AuditLogEvent.EmojiCreate))
+    const { getAuditLog, log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = client.logger;
+    if (!await isLogging(emoji.guild.id, "emojiUpdate")) return;
+    const auditLog = (await getAuditLog(emoji.guild, AuditLogEvent.EmojiDelete))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === emoji.id)[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;

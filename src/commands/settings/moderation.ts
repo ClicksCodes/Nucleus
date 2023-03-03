@@ -1,50 +1,28 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, Role, ButtonStyle, ButtonComponent, TextInputBuilder } from "discord.js";
+import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonComponent, TextInputBuilder, RoleSelectMenuBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../utils/client.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
-import confirmationMessage from "../../utils/confirmationMessage.js";
-import keyValueList from "../../utils/generateKeyValueList.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
-        .setName("commands")
+        .setName("moderation")
         .setDescription("Links and text shown to a user after a moderator action is performed")
-        .addRoleOption((o) => o.setName("role").setDescription("The role given when a member is muted"));
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    await interaction.reply({
+const callback = async (interaction: CommandInteraction): Promise<void> => {
+    const m = await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
     });
-    let m;
-    let clicked = "";
-    if (interaction.options.get("role")) {
-        const confirmation = await new confirmationMessage(interaction)
-            .setEmoji("GUILD.ROLES.DELETE")
-            .setTitle("Moderation Commands")
-            .setDescription(
-                keyValueList({
-                    role: `<@&${(interaction.options.get("role") as unknown as Role).id}>`
-                })
-            )
-            .setColor("Danger")
-            .send(true);
-        if (confirmation.cancelled) return
-        if (confirmation.success) {
-            await client.database.guilds.write(interaction.guild!.id, {
-                ["moderation.mute.role"]: (interaction.options.get("role") as unknown as Role).id
-            });
-        }
-    }
     let timedOut = false;
     while (!timedOut) {
         const config = await client.database.guilds.read(interaction.guild!.id);
         const moderation = config.moderation;
-        m = await interaction.editReply({
+        console.log(moderation)
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Moderation Commands")
@@ -52,8 +30,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setStatus("Success")
                     .setDescription(
                         "These links are shown below the message sent in a user's DM when they are punished.\n\n" +
-                            "**Mute Role:** " +
-                            (moderation.mute.role ? `<@&${moderation.mute.role}>` : "*None set*")
+                            "**Mute Role:** " + (moderation.mute.role ? `<@&${moderation.mute.role}>` : "*None set*")
                     )
             ],
             components: [
@@ -93,24 +70,23 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 ]),
                 new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder()
-                        .setLabel(clicked === "clearMuteRole" ? "Click again to confirm" : "Clear mute role")
-                        .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
-                        .setCustomId("clearMuteRole")
-                        .setStyle(ButtonStyle.Danger)
-                        .setDisabled(!moderation.mute.role),
-                    new ButtonBuilder()
                         .setCustomId("timeout")
                         .setLabel("Mute timeout " + (moderation.mute.timeout ? "Enabled" : "Disabled"))
                         .setStyle(moderation.mute.timeout ? ButtonStyle.Success : ButtonStyle.Danger)
                         .setEmoji(getEmojiByName("CONTROL." + (moderation.mute.timeout ? "TICK" : "CROSS"), "id"))
-                ])
+                ]),
+                new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId("muteRole")
+                        .setPlaceholder("Select a new mute role")
+                )
             ]
         });
         let i;
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
@@ -118,20 +94,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         type modIDs = "mute" | "kick" | "ban" | "softban" | "warn" | "role";
         let chosen = moderation[i.customId as modIDs];
-        if ((i.component as ButtonComponent).customId === "clearMuteRole") {
-            i.deferUpdate();
-            if (clicked === "clearMuteRole") {
-                await client.database.guilds.write(interaction.guild!.id, {
-                    "moderation.mute.role": null
-                });
-            } else {
-                clicked = "clearMuteRole";
-            }
+        if (i.isRoleSelectMenu()) {
+            await i.deferUpdate();
+            await client.database.guilds.write(interaction.guild!.id, {
+                "moderation.mute.role": i.values[0]!
+            });
             continue;
-        } else {
-            clicked = "";
-        }
-        if ((i.component as ButtonComponent).customId === "timeout") {
+        } else if ((i.component as ButtonComponent).customId === "timeout") {
             await i.deferUpdate();
             await client.database.guilds.write(interaction.guild!.id, {
                 "moderation.mute.timeout": !moderation.mute.timeout
@@ -183,15 +152,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
             let out: Discord.ModalSubmitInteraction | null;
             try {
-                out = await modalInteractionCollector(
-                    m,
-                    (m) => m.channel!.id === interaction.channel!.id,
-                    (_) => true
-                ) as Discord.ModalSubmitInteraction | null;
+                out = await modalInteractionCollector(m, interaction.user) as Discord.ModalSubmitInteraction | null;
             } catch (e) {
                 continue;
             }
-            if (!out) continue
+            if (!out || out.isButton()) continue
             const buttonText = out.fields.getTextInputValue("name");
             const buttonLink = out.fields.getTextInputValue("url").replace(/{id}/gi, "{id}");
             const current = chosen;
@@ -206,9 +171,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         }
     }
+    await interaction.deleteReply()
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as Discord.GuildMember;
     if (!member.permissions.has("ManageGuild"))
         return "You must have the *Manage Server* permission to use this command";

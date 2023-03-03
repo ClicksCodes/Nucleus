@@ -57,7 +57,7 @@ const runServer = (client: NucleusClient) => {
                         calculateType: "guildMemberVerify",
                         color: NucleusColors.green,
                         emoji: "CONTROL.BLOCKTICK",
-                        timestamp: new Date().getTime()
+                        timestamp: Date.now()
                     },
                     list: {
                         member: entry(member.id, renderUser(member.user)),
@@ -147,6 +147,49 @@ const runServer = (client: NucleusClient) => {
             return res.status(200).send(data);
         }
         return res.sendStatus(404);
+    });
+
+    app.get("/transcript/:code/human", jsonParser, async function (req: express.Request, res: express.Response) {
+        const code = req.params.code;
+        if (code === undefined) return res.status(400).send("No code provided");
+        const entry = await client.database.transcripts.read(code);
+        if (entry === null) return res.status(404).send("Could not find a transcript by that code");
+        // Convert to a human readable format
+        const data = client.database.transcripts.toHumanReadable(entry);
+        res.attachment(`${code}.txt`);
+        res.type("txt");
+        return res.status(200).send(data);
+    });
+
+    app.get("/transcript/:code", jsonParser, async function (req: express.Request, res: express.Response) {
+        const code = req.params.code;
+        if (code === undefined) return res.status(400).send("No code provided");
+        const entry = await client.database.transcripts.read(code);
+        if (entry === null) return res.status(404).send("Could not find a transcript by that code");
+        // Convert to a human readable format
+        return res.status(200).send(entry);
+    });
+
+    app.get("/channels/:id", jsonParser, async function (req: express.Request, res: express.Response) {
+        const id = req.params.id;
+        if (id === undefined) return res.status(400).send("No id provided");
+        const channel = await client.channels.fetch(id);
+        if (channel === null) return res.status(404).send("Could not find a channel by that id");
+        if (channel.isDMBased()) return res.status(400).send("Cannot get a DM channel");
+        return res.status(200).send(channel.name);
+    });
+
+    app.get("/users/:id", jsonParser, async function (req: express.Request, res: express.Response) {
+        const id = req.params.id;
+        if (id === undefined) return res.status(400).send("No id provided");
+        let user;
+        try {
+            user = await client.users.fetch(id);
+        } catch (e) {
+            console.log(e)
+            return res.status(404).send("Could not find a user by that id");
+        }
+        return res.status(200).send(user.username);
     });
 
     app.listen(port);

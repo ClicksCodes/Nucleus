@@ -1,10 +1,9 @@
 import confirmationMessage from '../../utils/confirmationMessage.js';
 import EmojiEmbed from '../../utils/generateEmojiEmbed.js';
 import { LoadingEmbed } from '../../utils/defaults.js';
-import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, GuildTextBasedChannel, MessageContextMenuCommandInteraction } from "discord.js";
+import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, ContextMenuCommandBuilder, GuildMember, GuildTextBasedChannel, Message, MessageContextMenuCommandInteraction } from "discord.js";
 import client from "../../utils/client.js";
-import getEmojiByName from '../../utils/getEmojiByName.js';
-import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from "../../utils/logTranscripts.js";
+import { messageException } from '../../utils/createTemporaryStorage.js';
 
 const command = new ContextMenuCommandBuilder()
     .setName("Purge up to here")
@@ -13,7 +12,7 @@ const command = new ContextMenuCommandBuilder()
 async function waitForButton(m: Discord.Message, member: Discord.GuildMember): Promise<boolean> {
     let component;
     try {
-        component = m.awaitMessageComponent({ time: 200000, filter: (i) => i.user.id === member.id && i.channel!.id === m.channel.id });
+        component = m.awaitMessageComponent({ time: 200000, filter: (i) => i.user.id === member.id && i.channel!.id === m.channel.id && i.message.id === m.id });
     } catch (e) {
         return false;
     }
@@ -171,7 +170,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
             calculateType: "messageDelete",
             color: NucleusColors.red,
             emoji: "PUNISH.BAN.RED",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
@@ -184,13 +183,18 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         }
     };
     log(data);
-    const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(deleted.map((m) => m as Discord.Message))!);
-    const attachmentObject = {
-        attachment: Buffer.from(transcript),
-        name: `purge-${channel.id}-${Date.now()}.txt`,
-        description: "Purge log"
-    };
-    const m = (await interaction.editReply({
+    const messages: Message[] = deleted.map(m => m).filter(m => m instanceof Message).map(m => m as Message);
+    if (messages.length === 1) messageException(interaction.guild!.id, interaction.channel.id, messages[0]!.id)
+    const messageArray: Message[] = messages.filter(message => !(
+        message!.components.some(
+            component => component.components.some(
+                child => child.customId?.includes("transcript") ?? false
+            )
+        )
+    )).map(message => message as Message);
+    const transcript = await client.database.transcripts.createTranscript(messageArray, interaction, interaction.member as GuildMember);
+    const code = await client.database.transcripts.create(transcript);
+    await interaction.editReply({
         embeds: [
             new EmojiEmbed()
                 .setEmoji("CHANNEL.PURGE.GREEN")
@@ -200,47 +204,10 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         ],
         components: [
             new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
-                new Discord.ButtonBuilder()
-                    .setCustomId("download")
-                    .setLabel("Download transcript")
-                    .setStyle(ButtonStyle.Success)
-                    .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
+                new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript?code=${code}`),
             ])
         ]
-    })) as Discord.Message;
-    let component;
-    try {
-        component = await m.awaitMessageComponent({
-            filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
-            time: 300000
-        });
-    } catch {
-        return;
-    }
-    if (component.customId === "download") {
-        interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("CHANNEL.PURGE.GREEN")
-                    .setTitle("Purge")
-                    .setDescription("Transcript uploaded above")
-                    .setStatus("Success")
-            ],
-            components: [],
-            files: [attachmentObject]
-        });
-    } else {
-        interaction.editReply({
-            embeds: [
-                new EmojiEmbed()
-                    .setEmoji("CHANNEL.PURGE.GREEN")
-                    .setTitle("Purge")
-                    .setDescription("Messages cleared")
-                    .setStatus("Success")
-            ],
-            components: []
-        });
-    }
+    });
 }
 
 const check = async (_interaction: MessageContextMenuCommandInteraction) => {

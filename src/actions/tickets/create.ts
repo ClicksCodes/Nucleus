@@ -3,7 +3,7 @@ import { tickets, toHexArray } from "../../utils/calculate.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-import { getCommandMentionByName } from "../../utils/getCommandMentionByName.js";
+import { getCommandMentionByName } from "../../utils/getCommandDataByName.js";
 
 function capitalize(s: string) {
     s = s.replace(/([A-Z])/g, " $1");
@@ -106,7 +106,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
         try {
             component = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             return;
@@ -225,7 +225,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                                     chosenType !== null ? emoji + " " + capitalize(chosenType) : "General"
                                 }\n` +
                                 `**Ticket ID:** \`${c.id}\`\n${content ?? ""}\n` +
-                                `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
+                                `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -257,7 +257,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                                                 type: Discord.ChannelType.PrivateThread,
                                                 reason: "Creating ticket"
                                                 }) as Discord.PrivateThreadChannel;
-        c.members.add(interaction.member!.user.id);  // TODO: When a thread is used, and a support role is added, automatically set channel permissions
+        c.members.add(interaction.member!.user.id);
         try {
             await c.send({
                 content:
@@ -289,7 +289,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                                     chosenType !== null ? emoji + " " + capitalize(chosenType) : "General"
                                 }\n` +
                                 `**Ticket ID:** \`${c.id}\`\n${content ?? ""}\n` +
-                                `Type ${await getCommandMentionByName("ticket/close")} to close this ticket.`
+                                `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -323,11 +323,11 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             calculateType: "ticketUpdate",
             color: NucleusColors.green,
             emoji: "GUILD.TICKET.OPEN",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             ticketFor: entry(interaction.member!.user.id, renderUser(interaction.member!.user! as Discord.User)),
-            created: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+            created: entry(Date.now(), renderDelta(Date.now())),
             ticketChannel: entry(c.id, renderChannel(c))
         },
         hidden: {

@@ -7,10 +7,37 @@ import client from "./client.js";
 
 const wait = promisify(setTimeout);
 
+export interface LoggerOptions {
+    meta: {
+        type: string;
+        displayName: string;
+        calculateType: string;
+        color: number;
+        emoji: string;
+        timestamp: number;
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    list: any;
+    hidden: {
+        guild: string;
+    },
+    separate?: {
+        start?: string;
+        end?: string;
+    }
+}
+
+async function isLogging(guild: string, type: string): Promise<boolean> {
+    const config = await client.database.guilds.read(guild);
+    if (!config.logging.logs.enabled) return false;
+    if (!config.logging.logs.channel) return false;
+    if (!toHexArray(config.logging.logs.toLog).includes(type)) { return false; }
+    return true;
+}
 
 export const Logger = {
     renderUser(user: Discord.User | string) {
-        if (typeof user === "string") return `${user} [<@${user}>]`;
+        if (typeof user === "string") user = client.users.cache.get(user)!;
         return `${user.username} [<@${user.id}>]`;
     },
     renderTime(t: number) {
@@ -29,10 +56,12 @@ export const Logger = {
         if (typeof value === "number") value = value.toString();
         return { value: value, displayValue: displayValue };
     },
-    renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel) {
+    renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel | string) {
+        if (typeof channel === "string") channel = client.channels.cache.get(channel) as Discord.GuildChannel | Discord.ThreadChannel;
         return `${channel.name} [<#${channel.id}>]`;
     },
-    renderRole(role: Discord.Role) {
+    renderRole(role: Discord.Role | string, guild?: Discord.Guild | string) {
+        if (typeof role === "string") role = (typeof guild === "string" ? client.guilds.cache.get(guild) : guild)!.roles.cache.get(role)!;
         return `${role.name} [<@&${role.id}>]`;
     },
     renderEmoji(emoji: Discord.GuildEmoji) {
@@ -43,19 +72,14 @@ export const Logger = {
         yellow: 0xf2d478,
         green: 0x68d49e
     },
-    async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable): Promise<Discord.GuildAuditLogsEntry[]> {
-        await wait(250);
+    async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable, delay?: number): Promise<Discord.GuildAuditLogsEntry[]> {
+        await wait(delay ?? 250);
         const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map(m => m)
         return auditLog as Discord.GuildAuditLogsEntry[];
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async log(log: any): Promise<void> {
+    async log(log: LoggerOptions): Promise<void> {
+        if (!await isLogging(log.hidden.guild, log.meta.calculateType)) return;
         const config = await client.database.guilds.read(log.hidden.guild);
-        if (!config.logging.logs.enabled) return;
-        if (!toHexArray(config.logging.logs.toLog).includes(log.meta.calculateType)) {
-            console.log("Not logging this type of event");
-            return;
-        }
         if (config.logging.logs.channel) {
             const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
             const description: Record<string, string> = {};
@@ -70,7 +94,7 @@ export const Logger = {
                 }
             });
             if (channel) {
-                log.separate = log.separate || {};
+                log.separate = log.separate ?? {};
                 const embed = new Discord.EmbedBuilder()
                     .setTitle(`${getEmojiByName(log.meta.emoji)} ${log.meta.displayName}`)
                     .setDescription(
@@ -83,8 +107,8 @@ export const Logger = {
                 channel.send({ embeds: [embed] });
             }
         }
-    }
+    },
+    isLogging
 };
-
 
 export default {};

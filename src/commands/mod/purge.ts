@@ -1,6 +1,5 @@
-import { JSONTranscriptFromMessageArray, JSONTranscriptToHumanReadable } from '../../utils/logTranscripts.js';
-import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder, Message } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -30,7 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
     const user = (interaction.options.getMember("user") as GuildMember | null);
     const channel = interaction.channel as GuildChannel;
-    if (channel.isTextBased()) {
+    if (!channel.isTextBased()) {
         return await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -94,7 +93,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             let component;
             try {
                 component = m.awaitMessageComponent({
-                    filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
+                    filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
                     time: 300000
                 });
             } catch (e) {
@@ -148,7 +147,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 calculateType: "messageDelete",
                 color: NucleusColors.red,
                 emoji: "CHANNEL.PURGE.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
@@ -161,7 +160,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        const transcript = JSONTranscriptToHumanReadable(JSONTranscriptFromMessageArray(deleted)!);
+        const newOut = await client.database.transcripts.createTranscript(deleted, interaction, interaction.member as GuildMember);
+        const transcript = client.database.transcripts.toHumanReadable(newOut);
         const attachmentObject = {
             attachment: Buffer.from(transcript),
             name: `purge-${channel.id}-${Date.now()}.txt`,
@@ -188,7 +188,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
+                filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
                 time: 300000
             });
         } catch {
@@ -296,7 +296,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 calculateType: "messageDelete",
                 color: NucleusColors.red,
                 emoji: "CHANNEL.PURGE.RED",
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             },
             list: {
                 memberId: entry(interaction.user.id, `\`${interaction.user.id}\``),
@@ -309,35 +309,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        let out = "";
-        messages.reverse().forEach((message) => {
-            if (!message) {
-                out += "Unknown message\n\n"
-            } else {
-                const author = message.author ?? { username: "Unknown", discriminator: "0000", id: "Unknown" };
-                out += `${author.username}#${author.discriminator} (${author.id}) [${new Date(
-                    message.createdTimestamp
-                ).toISOString()}]\n`;
-                if (message.content) {
-                    const lines = message.content.split("\n");
-                    lines.forEach((line) => {
-                        out += `> ${line}\n`;
-                    });
-                }
-                if (message.attachments.size > 0) {
-                    message.attachments.forEach((attachment) => {
-                        out += `Attachment > ${attachment.url}\n`;
-                    });
-                }
-                out += "\n\n";
-            }
-        });
-        const attachmentObject = {
-            attachment: Buffer.from(out),
-            name: `purge-${channel.id}-${Date.now()}.txt`,
-            description: "Purge log"
-        };
-        const m = (await interaction.editReply({
+        const messageArray: Message[] = messages.filter(message => !(
+            message!.components.some(
+                component => component.components.some(
+                    child => child.customId?.includes("transcript") ?? false
+                )
+            )
+        )).map(message => message as Message);
+        const newOut = await client.database.transcripts.createTranscript(messageArray, interaction, interaction.member as GuildMember);
+
+        const code = await client.database.transcripts.create(newOut);
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setEmoji("CHANNEL.PURGE.GREEN")
@@ -347,62 +329,30 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ],
             components: [
                 new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
-                    new Discord.ButtonBuilder()
-                        .setCustomId("download")
-                        .setLabel("Download transcript")
-                        .setStyle(ButtonStyle.Success)
-                        .setEmoji(getEmojiByName("CONTROL.DOWNLOAD", "id"))
+                    new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript?code=${code}`),
                 ])
             ]
-        })) as Discord.Message;
-        let component;
-        try {
-            component = await m.awaitMessageComponent({
-                filter: (m) => m.user.id === interaction.user.id && m.channel!.id === interaction.channel!.id,
-                time: 300000
-            });
-        } catch {
-            return;
-        }
-        if (component.customId === "download") {
-            interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("CHANNEL.PURGE.GREEN")
-                        .setTitle("Purge")
-                        .setDescription("Transcript uploaded above")
-                        .setStatus("Success")
-                ],
-                components: [],
-                files: [attachmentObject]
-            });
-        } else {
-            interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setEmoji("CHANNEL.PURGE.GREEN")
-                        .setTitle("Purge")
-                        .setDescription("Messages cleared")
-                        .setStatus("Success")
-                ],
-                components: []
-            });
-        }
+        });
     }
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return false;
     const member = interaction.member as GuildMember;
+    // Check if the user has manage_messages permission
+    if (!member.permissions.has("ManageMessages")) return "You do not have the *Manage Messages* permission";
+    if (partial) return true;
     const me = interaction.guild.members.me!;
     // Check if nucleus has the manage_messages permission
     if (!me.permissions.has("ManageMessages")) return "I do not have the *Manage Messages* permission";
     // Allow the owner to purge
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has manage_messages permission
-    if (!member.permissions.has("ManageMessages")) return "You do not have the *Manage Messages* permission";
     // Allow purge
     return true;
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Deletes a specified amount of messages from a channel, optionally from a specific user. Without an amount, you can repeatedly choose a number of messages to delete.",
+    premiumOnly: true,
+}

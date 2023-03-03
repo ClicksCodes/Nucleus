@@ -2,7 +2,7 @@ import { Agenda } from "@hokify/agenda";
 import client from "./client.js";
 import * as fs from "fs";
 import * as path from "path";
-import config from "../config/main.json" assert { type: "json" };
+import config from "../config/main.js";
 
 class EventScheduler {
     private agenda: Agenda;
@@ -10,11 +10,10 @@ class EventScheduler {
     constructor() {
         this.agenda = new Agenda({
             db: {
-                address: config.mongoUrl + "Nucleus",
+                address: config.mongoOptions.host,
                 collection: "eventScheduler"
             }
         });
-
         this.agenda.define("unmuteRole", async (job) => {
             const guild = await client.guilds.fetch(job.attrs.data.guild);
             const user = await guild.members.fetch(job.attrs.data.user);
@@ -43,12 +42,12 @@ class EventScheduler {
                     calculateType: "guildMemberPunish",
                     color: NucleusColors.green,
                     emoji: "PUNISH.MUTE.GREEN",
-                    timestamp: new Date().getTime()
+                    timestamp: Date.now()
                 },
                 list: {
                     memberId: entry(user.user.id, `\`${user.user.id}\``),
                     name: entry(user.user.id, renderUser(user.user)),
-                    unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+                    unmuted: entry(Date.now().toString(), renderDelta(Date.now())),
                     unmutedBy: entry(null, "*Time out ended*")
                 },
                 hidden: {

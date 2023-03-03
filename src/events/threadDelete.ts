@@ -5,7 +5,8 @@ import type { NucleusClient } from "../utils/client.js";
 export const event = "threadDelete";
 
 export async function callback(client: NucleusClient, thread: ThreadChannel) {
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
+    if (!await isLogging(thread.guild.id, "channelUpdate")) return;
     const auditLog = (await getAuditLog(thread.guild, AuditLogEvent.ThreadDelete))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as ThreadChannel)!.id === thread.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
@@ -22,7 +23,7 @@ export async function callback(client: NucleusClient, thread: ThreadChannel) {
             calculateType: "channelUpdate",
             color: NucleusColors.red,
             emoji: "CHANNEL.TEXT.DELETE",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             threadId: entry(thread.id, `\`${thread.id}\``),
@@ -38,7 +39,7 @@ export async function callback(client: NucleusClient, thread: ThreadChannel) {
             membersInThread: entry(thread.memberCount, thread.memberCount!.toString()),
             deletedBy: entry(auditLog.executor!.id, renderUser(auditLog.executor!)),
             created: entry(thread.createdTimestamp, renderDelta(thread.createdTimestamp!)),
-            deleted: entry(new Date().getTime(), renderDelta(new Date().getTime()))
+            deleted: entry(Date.now(), renderDelta(Date.now()))
         },
         hidden: {
             guild: thread.guild.id

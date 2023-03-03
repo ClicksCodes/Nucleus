@@ -17,16 +17,14 @@ const logs = [
     "webhookUpdate",
     "guildMemberVerify",
     "autoModeratorDeleted",
-    "nucleusSettingsUpdated",
-    "ticketUpdate"
+    "ticketUpdate",
+    // "nucleusSettingsUpdated"
 ];
 
 const tickets = ["support", "report", "question", "issue", "suggestion", "other"];
 
 const toHexInteger = (permissions: string[], array?: string[]): string => {
-    if (!array) {
-        array = logs;
-    }
+    if (!array) { array = logs; }
     let int = 0n;
 
     for (const perm of permissions) {

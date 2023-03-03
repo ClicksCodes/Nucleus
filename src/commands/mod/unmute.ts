@@ -1,9 +1,10 @@
 import type { CommandInteraction, GuildMember } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import client from "../../utils/client.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -105,13 +106,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             calculateType: "guildMemberPunish",
             color: NucleusColors.green,
             emoji: "PUNISH.MUTE.GREEN",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: {
             memberId: entry(member.user.id, `\`${member.user.id}\``),
             name: entry(member.user.id, renderUser(member.user)),
-            unmuted: entry(new Date().getTime().toString(), renderDelta(new Date().getTime())),
+            unmuted: entry(Date.now().toString(), renderDelta(Date.now())),
             unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
+        },
+        separate: {
+            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
@@ -131,9 +135,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
+    // Check if the user has moderate_members permission
+    if (!member.permissions.has("ModerateMembers"))
+        return "You do not have the *Moderate Members* permission";
+    if (partial) return true;
     const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
@@ -142,16 +150,13 @@ const check = (interaction: CommandInteraction) => {
     // Do not allow unmuting the owner
     if (member.id === interaction.guild.ownerId) return "You cannot unmute the owner of the server";
     // Check if Nucleus can unmute the member
-    if (!(mePos > applyPos)) return "I do not have a role higher than that member";
+    if (!(mePos > applyPos)) return `I do not have a role higher than <@${apply.id}>`;
     // Check if Nucleus has permission to unmute
     if (!me.permissions.has("ModerateMembers")) return "I do not have the *Moderate Members* permission";
     // Allow the owner to unmute anyone
     if (member.id === interaction.guild.ownerId) return true;
-    // Check if the user has moderate_members permission
-    if (!member.permissions.has("ModerateMembers"))
-        return "You do not have the *Moderate Members* permission";
     // Check if the user is below on the role list
-    if (!(memberPos > applyPos)) return "You do not have a role higher than that member";
+    if (!(memberPos > applyPos)) return `You do not have a role higher than <@${apply.id}>`;
     // Allow unmute
     return true;
 };

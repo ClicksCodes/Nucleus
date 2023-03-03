@@ -3,17 +3,16 @@ import type { HistorySchema } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
-    Interaction,
     Message,
     ActionRowBuilder,
     ButtonBuilder,
     MessageComponentInteraction,
     ModalSubmitInteraction,
     ButtonStyle,
-    StringSelectMenuInteraction,
     TextInputStyle,
+    APIMessageComponentEmoji,
+    SlashCommandSubcommandBuilder
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import client from "../../utils/client.js";
@@ -167,8 +166,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                         .setLabel(value.text)
                         .setValue(key)
                         .setDefault(filteredTypes.includes(key))
-                        // @ts-expect-error
-                        .setEmoji(getEmojiByName(value.emoji, "id"))  // FIXME: This gives a type error but is valid
+                        .setEmoji(getEmojiByName(value.emoji, "id") as APIMessageComponentEmoji)
             )))
         ]);
         components = components.concat([new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
@@ -253,7 +251,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             interaction.editReply({
@@ -269,9 +267,9 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
-        if (i.customId === "filter") {
-            filteredTypes = (i as StringSelectMenuInteraction).values;
+        await i.deferUpdate();
+        if (i.customId === "filter" && i.isStringSelectMenu()) {
+            filteredTypes = i.values;
             pageIndex = null;
             refresh = true;
         }
@@ -359,7 +357,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch (e) {
             timedOut = true;
@@ -402,17 +400,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             });
             let out;
             try {
-                out = await modalInteractionCollector(
-                    m,
-                    (m: Interaction) =>
-                        (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === interaction.channelId,
-                    (m) => m.customId === "modify"
-                );
+                out = await modalInteractionCollector(m, interaction.user);
             } catch (e) {
                 timedOut = true;
                 continue;
             }
-            if (out === null) {
+            if (out === null || out.isButton()) {
                 continue;
             } else if (out instanceof ModalSubmitInteraction) {
                 let toAdd = out.fields.getTextInputValue("note") || null;
@@ -423,7 +416,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 continue;
             }
         } else if (i.customId === "history") {
-            i.deferUpdate();
+            await i.deferUpdate();
             if (!(await showHistory(member, interaction))) return;
         }
     }
@@ -436,6 +429,8 @@ const check = (interaction: CommandInteraction) => {
     return true;
 };
 
-export { command };
-export { callback };
-export { check };
+export { command, callback, check };
+export const metadata = {
+    longDescription: "Shows the moderation history (all previous bans, kicks, warns etc.), and moderator notes for a user.",
+    premiumOnly: true,
+}

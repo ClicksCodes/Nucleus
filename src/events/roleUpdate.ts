@@ -5,16 +5,17 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 export const event = "roleUpdate";
 
 export async function callback(client: NucleusClient, oldRole: Role, newRole: Role) {
-    const { getAuditLog, log, NucleusColors, entry, renderDelta, renderUser, renderRole } = client.logger;
-
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderDelta, renderUser, renderRole } = client.logger;
+    if (!await isLogging(newRole.guild.id, "guildRoleUpdate")) return;
     const auditLog = (await getAuditLog(newRole.guild as Guild, AuditLogEvent.RoleUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === newRole.id)[0]!;
+        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === newRole.id)[0];
+    if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
 
     const changes: Record<string, ReturnType<typeof entry>> = {
         roleId: entry(newRole.id, `\`${newRole.id}\``),
         role: entry(newRole.id, renderRole(newRole)),
-        edited: entry(new Date().getTime(), renderDelta(new Date().getTime())),
+        edited: entry(Date.now(), renderDelta(Date.now())),
         editedBy: entry(auditLog.executor!.id, renderUser((await newRole.guild.members.fetch(auditLog.executor!.id)).user))
     };
     const mentionable = ["", ""];
@@ -31,6 +32,12 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
         changes["mentionable"] = entry([oldRole.mentionable, newRole.mentionable], `${mentionable[0]} -> ${mentionable[1]}`);
     if (oldRole.hexColor !== newRole.hexColor)
         changes["color"] = entry([oldRole.hexColor, newRole.hexColor], `\`${oldRole.hexColor}\` -> \`${newRole.hexColor}\``);
+    if (oldRole.permissions.bitfield !== newRole.permissions.bitfield) {
+        changes["permissions"] = entry(
+            [oldRole.permissions.bitfield.toString(), newRole.permissions.bitfield.toString()],
+            `[[Old]](https://discordapi.com/permissions.html#${oldRole.permissions.bitfield.toString()}) -> [[New]](https://discordapi.com/permissions.html#${newRole.permissions.bitfield.toString()})`
+        );
+    }
 
     if (Object.keys(changes).length === 4) return;
 
@@ -47,6 +54,6 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
         hidden: {
             guild: newRole.guild.id
         }
-    }; // TODO: show perms changed (webpage)
+    }; // TODO: make our own page for this
     log(data);
 }

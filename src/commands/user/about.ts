@@ -10,7 +10,7 @@ import Discord, {
     APISelectMenuOption,
     StringSelectMenuBuilder
 } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import generateKeyValueList from "../../utils/generateKeyValueList.js";
@@ -173,11 +173,8 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
                         generateKeyValueList({
                             member: renderUser(member.user),
                             id: `\`${member.id}\``,
-                            roles: `${member.roles.cache.size - 1}`  // FIXME
-                        }) +
-                            "\n" +
-                            (s.length > 0 ? s : "*None*") +
-                            "\n"
+                            roles: `${member.roles.cache.size - 1}`
+                        }) + "\n" + (s.length > 0 ? s : "*None*") + "\n"
                     )
             )
             .setTitle("Roles")
@@ -258,13 +255,13 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id }
+                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
             });
         } catch {
             timedOut = true;
             continue;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.customId === "left") {
             if (page > 0) page--;
             selectPaneOpen = false;
@@ -286,11 +283,6 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
     });
 };
 
-const check = () => {
-    return true;
-};
-
 export { command };
 export { callback };
-export { check };
 export { userAbout };

@@ -1,7 +1,7 @@
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type { CommandInteraction, GuildMember, TextChannel } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -47,7 +47,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }) + "Are you sure you want to set the slowmode in this channel?"
         )
         .setColor("Danger")
-        .setFailedMessage("No changes were made", "Danger", "CHANNEL.SLOWMODE.ON")
+        .setFailedMessage("No changes were made", "Success", "CHANNEL.SLOWMODE.ON")
         .send();
     if (confirmation.cancelled || !confirmation.success) return;
     try {
@@ -76,14 +76,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, partial: boolean = false) => {
     const member = interaction.member as GuildMember;
-    // Check if Nucleus can set the slowmode
-    if (!interaction.guild!.members.me!.permissions.has("ManageChannels")) return "I do not have the *Manage Channels* permission";
     // Check if the user has manage_channel permission
     if (!member.permissions.has("ManageChannels")) return "You do not have the *Manage Channels* permission";
+    if (partial) return true;
+    // Check if Nucleus can set the slowmode
+    if (!interaction.guild!.members.me!.permissions.has("ManageChannels")) return "I do not have the *Manage Channels* permission";
     // Allow slowmode
     return true;
 };
 
 export { command, callback, check };
+export const metadata = {
+    longDescription: "Stops members from being able to send messages without waiting a certain amount of time between messages.",
+    premiumOnly: true,
+}

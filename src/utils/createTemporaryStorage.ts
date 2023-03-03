@@ -1,6 +1,6 @@
 import client from "./client.js";
 
-function generalException(location: string) {
+export function generalException(location: string) {
     client.noLog.push(location);
     setTimeout(() => {
         client.noLog = client.noLog.filter((i: string) => {

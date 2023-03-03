@@ -1,11 +1,9 @@
-import { TextInputBuilder } from "@discordjs/builders";
+import { TextInputBuilder } from "discord.js";
 import Discord, {
     CommandInteraction,
-    Interaction,
     Message,
     ActionRowBuilder,
     ButtonBuilder,
-    MessageComponentInteraction,
     ModalSubmitInteraction,
     ButtonStyle,
     TextInputStyle
@@ -183,13 +181,12 @@ class confirmationMessage {
             let component;
             try {
                 component = await m.awaitMessageComponent({
-                    filter: (m) => m.user.id === this.interaction.user.id && m.channel!.id === this.interaction.channel!.id,
+                    filter: (i) => i.user.id === this.interaction.user.id && i.channel!.id === this.interaction.channel!.id,
                     time: 300000
                 });
             } catch (e) {
                 success = false;
-                returnComponents = true;
-                continue;
+                break;
             }
             if (component.customId === "yes") {
                 component.deferUpdate();
@@ -247,17 +244,12 @@ class confirmationMessage {
                 });
                 let out;
                 try {
-                    out = await modalInteractionCollector(
-                        m,
-                        (m: Interaction) =>
-                            (m as MessageComponentInteraction | ModalSubmitInteraction).channelId === this.interaction.channelId,
-                        (m) => m.customId === "reason"
-                    );
+                    out = await modalInteractionCollector(m, this.interaction.user) as Discord.ModalSubmitInteraction | null;
                 } catch (e) {
                     cancelled = true;
                     continue;
                 }
-                if (out === null) {
+                if (out === null  || out.isButton()) {
                     cancelled = true;
                     continue;
                 }
@@ -277,23 +269,23 @@ class confirmationMessage {
         }
         const returnValue: Awaited<ReturnType<typeof this.send>> = {};
 
-        if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
-        if (success !== undefined) returnValue.success = success;
         if (cancelled) {
             await this.timeoutError()
             returnValue.cancelled = true;
         }
-        if (success == false) {
+        if (success === false) {
             await this.interaction.editReply({
                 embeds: [new EmojiEmbed()
                     .setTitle(this.title)
-                    .setDescription(this.failedMessage ?? "")
+                    .setDescription(this.failedMessage ?? "*Message timed out*")
                     .setStatus(this.failedStatus ?? "Danger")
                     .setEmoji(this.failedEmoji ?? this.redEmoji ?? this.emoji)
                 ], components: []
             });
             return {success: false}
         }
+        if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
+        if (success !== undefined) returnValue.success = success;
         if (newReason) returnValue.newReason = newReason;
 
         const typedReturnValue = returnValue as {cancelled: true} |

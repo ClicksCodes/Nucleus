@@ -1,5 +1,5 @@
 import type { CommandInteraction, GuildMember } from "discord.js";
-import type { SlashCommandSubcommandBuilder } from "@discordjs/builders";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import keyValueList from "../../utils/generateKeyValueList.js";
@@ -19,9 +19,9 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
-    const name = interaction.options.get("name")?.value as string;
-    const value = interaction.options.get("value")?.value as string;
-    const newname = interaction.options.get("newname")?.value as string;
+    const name = (interaction.options.get("name")?.value ?? "") as string;
+    const value = (interaction.options.get("value")?.value ?? "") as string;
+    const newname = (interaction.options.get("newname")?.value ?? "") as string;
     if (!newname && !value)
         return await interaction.reply({
             embeds: [
@@ -126,7 +126,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction) => {
+const check = (interaction: CommandInteraction, _partial: boolean = false) => {
     const member = interaction.member as GuildMember;
     if (!member.permissions.has("ManageMessages"))
         return "You must have the *Manage Messages* permission to use this command";

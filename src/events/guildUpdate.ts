@@ -6,7 +6,8 @@ export const event = "guildUpdate";
 
 export async function callback(client: NucleusClient, before: Guild, after: Guild) {
     await statsChannelUpdate(client, after.members.me!);
-    const { getAuditLog, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
+    if (!await isLogging(after.id, "guildUpdate")) return;
     const auditLog = (await getAuditLog(after, AuditLogEvent.GuildUpdate))
         .filter((entry: GuildAuditLogsEntry) => (entry.target as Guild)!.id === after.id)[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
@@ -74,7 +75,7 @@ export async function callback(client: NucleusClient, before: Guild, after: Guil
         );
 
     if (!Object.keys(list).length) return;
-    list["updated"] = entry(new Date().getTime(), renderDelta(new Date().getTime()));
+    list["updated"] = entry(Date.now(), renderDelta(Date.now()));
     list["updatedBy"] = entry(auditLog.executor!.id, renderUser(auditLog.executor!));
     const data = {
         meta: {
@@ -83,7 +84,7 @@ export async function callback(client: NucleusClient, before: Guild, after: Guil
             calculateType: "guildUpdate",
             color: NucleusColors.yellow,
             emoji: "GUILD.YELLOW",
-            timestamp: new Date().getTime()
+            timestamp: Date.now()
         },
         list: list,
         hidden: {
