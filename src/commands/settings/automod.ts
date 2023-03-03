@@ -650,19 +650,19 @@ const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, c
     channels?: string[],
     allowed?: {
         roles: string[],
-        user: string[]
+        users: string[]
     }
 }): Promise<{
     channels: string[],
     allowed: {
         roles: string[],
-        user: string[]
+        users: string[]
     }
 }> => {
     let closed = false;
-    if(!current) current = {channels: [], allowed: {roles: [], user: []}};
+    if(!current) current = {channels: [], allowed: {roles: [], users: []}};
     if(!current.channels) current.channels = [];
-    if(!current.allowed) current.allowed = {roles: [], user: []};
+    if(!current.allowed) current.allowed = {roles: [], users: []};
 
     const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>()
         .addComponents(
@@ -773,7 +773,7 @@ const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, c
                 case "allowed": {
                     switch (i.values[0]) {
                         case "users": {
-                            current.allowed.user = await toSelectMenu(interaction, m, current.allowed.user, "member", "Mention Settings");
+                            current.allowed.users = await toSelectMenu(interaction, m, current.allowed.users, "member", "Mention Settings");
                             break;
                         }
                         case "roles": {
@@ -792,7 +792,7 @@ const cleanMenu = async (interaction: StringSelectMenuInteraction, m: Message, c
         channels: string[],
         allowed: {
             roles: string[],
-            user: string[]
+            users: string[]
         }
     };
 

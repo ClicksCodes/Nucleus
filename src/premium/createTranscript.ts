@@ -86,7 +86,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         ],
         components: [
             new ActionRowBuilder<ButtonBuilder>().addComponents([
-                new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript?code=${code}`),
+                new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript/${code}`),
                 new ButtonBuilder()
                     .setLabel("Delete")
                     .setStyle(ButtonStyle.Danger)
@@ -118,7 +118,8 @@ export default async function (interaction: CommandInteraction | MessageComponen
         list: {
             ticketFor: entry(member.id, renderUser(member.user)),
             deletedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as User)),
-            deleted: entry(Date.now().toString(), renderDelta(Date.now()))
+            deleted: entry(Date.now().toString(), renderDelta(Date.now())),
+            transcript: entry(code, `https://clicks.codes/nucleus/transcript/${code}`)
         },
         hidden: {
             guild: interaction.guild!.id

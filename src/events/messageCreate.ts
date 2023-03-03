@@ -28,7 +28,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     if(config.filters.clean.channels.includes(message.channel.id)) {
         const memberRoles = message.member!.roles.cache.map(role => role.id);
         const roleAllow = config.filters.clean.allowed.roles.some(role => memberRoles.includes(role));
-        const userAllow = config.filters.clean.allowed.user.includes(message.author.id);
+        const userAllow = config.filters.clean.allowed.users.includes(message.author.id);
         if(!roleAllow && !userAllow) return await message.delete();
     }
 

@@ -4,7 +4,8 @@ import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.js";
 import client from "../utils/client.js";
 import * as crypto from "crypto";
-
+import _ from "lodash";
+import defaultData from '../config/default.js';
 // config.mongoOptions.host, {
 //     auth: {
 //         username: config.mongoOptions.username,
@@ -23,27 +24,22 @@ const collectionOptions = { authdb: "admin" };
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
-    defaultData: GuildConfig | null;
+    defaultData: GuildConfig;
 
     constructor() {
         this.guilds = database.collection<GuildConfig>("guilds");
-        this.defaultData = null;
-    }
-
-    async setup(): Promise<Guilds> {
-        this.defaultData = (await import("../config/default.json", { assert: { type: "json" } }))
-            .default as unknown as GuildConfig;
-        return this;
+        this.defaultData = defaultData;
     }
 
     async read(guild: string): Promise<GuildConfig> {
-        console.log("Guild read")
+        // console.log("Guild read")
         const entry = await this.guilds.findOne({ id: guild });
-        return Object.assign({}, this.defaultData, entry);
+        const data = _.clone(this.defaultData!);
+        return _.merge(data, entry ?? {});
     }
 
     async write(guild: string, set: object | null, unset: string[] | string = []) {
-        console.log("Guild write")
+        // console.log("Guild write")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uo: Record<string, any> = {};
         if (!Array.isArray(unset)) unset = [unset];
@@ -58,7 +54,7 @@ export class Guilds {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async append(guild: string, key: string, value: any) {
-        console.log("Guild append")
+        // console.log("Guild append")
         if (Array.isArray(value)) {
             await this.guilds.updateOne(
                 { id: guild },
@@ -85,7 +81,7 @@ export class Guilds {
         value: any,
         innerKey?: string | null
     ) {
-        console.log("Guild remove")
+        // console.log("Guild remove")
         if (innerKey) {
             await this.guilds.updateOne(
                 { id: guild },
@@ -114,7 +110,7 @@ export class Guilds {
     }
 
     async delete(guild: string) {
-        console.log("Guild delete")
+        // console.log("Guild delete")
         await this.guilds.deleteOne({ id: guild });
     }
 }
@@ -202,7 +198,7 @@ export class Transcript {
     }
 
     async create(transcript: Omit<TranscriptSchema, "code">) {
-        console.log("Transcript create")
+        // console.log("Transcript create")
         let code;
         do {
             code = crypto.randomBytes(64).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
@@ -214,7 +210,7 @@ export class Transcript {
     }
 
     async read(code: string) {
-        console.log("Transcript read")
+        // console.log("Transcript read")
         return await this.transcripts.findOne({ code: code });
     }
 
@@ -322,9 +318,9 @@ export class Transcript {
                 }
                 else out += `> [Reply To] ${message.referencedMessage}\n`;
             }
-            out += `${message.author.nickname ?? message.author.username}#${message.author.discriminator} (${message.author.id}) (${message.id}) `;
-            out += `[${new Date(message.createdTimestamp).toISOString()}] `;
-            if (message.editedTimestamp) out += `[Edited: ${new Date(message.editedTimestamp).toISOString()}] `;
+            out += `${message.author.nickname ?? message.author.username}#${message.author.discriminator} (${message.author.id}) (${message.id})`;
+            out += ` [${new Date(message.createdTimestamp).toISOString()}]`;
+            if (message.editedTimestamp) out += ` [Edited: ${new Date(message.editedTimestamp).toISOString()}]`;
             out += "\n";
             if (message.content) out += `[Content]\n${message.content}\n\n`;
             if (message.embeds) {
@@ -380,7 +376,7 @@ export class History {
         after?: string | null,
         amount?: string | null
     ) {
-        console.log("History create");
+        // console.log("History create");
         await this.histories.insertOne({
             type: type,
             guild: guild,
@@ -395,7 +391,7 @@ export class History {
     }
 
     async read(guild: string, user: string, year: number) {
-        console.log("History read");
+        // console.log("History read");
         const entry = (await this.histories
             .find({
                 guild: guild,
@@ -410,7 +406,7 @@ export class History {
     }
 
     async delete(guild: string) {
-        console.log("History delete");
+        // console.log("History delete");
         await this.histories.deleteMany({ guild: guild });
     }
 }
@@ -430,17 +426,17 @@ export class ScanCache {
     }
 
     async read(hash: string) {
-        console.log("ScanCache read");
+        // console.log("ScanCache read");
         return await this.scanCache.findOne({ hash: hash });
     }
 
     async write(hash: string, data: boolean, tags?: string[]) {
-        console.log("ScanCache write");
+        // console.log("ScanCache write");
         await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() }, collectionOptions);
     }
 
     async cleanup() {
-        console.log("ScanCache cleanup");
+        // console.log("ScanCache cleanup");
         await this.scanCache.deleteMany({ addedAt: { $lt: new Date(Date.now() - (1000 * 60 * 60 * 24 * 31)) }, hash: { $not$text: "http"} });
     }
 }
@@ -453,12 +449,12 @@ export class PerformanceTest {
     }
 
     async record(data: PerformanceDataSchema) {
-        console.log("PerformanceTest record");
+        // console.log("PerformanceTest record");
         data.timestamp = new Date();
         await this.performanceData.insertOne(data, collectionOptions);
     }
     async read() {
-        console.log("PerformanceTest read");
+        // console.log("PerformanceTest read");
         return await this.performanceData.find({}).toArray();
     }
 }
@@ -482,18 +478,18 @@ export class ModNotes {
     }
 
     async create(guild: string, user: string, note: string | null) {
-        console.log("ModNotes create");
+        // console.log("ModNotes create");
         await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, { upsert: true });
     }
 
     async read(guild: string, user: string) {
-        console.log("ModNotes read");
+        // console.log("ModNotes read");
         const entry = await this.modNotes.findOne({ guild: guild, user: user });
         return entry?.note ?? null;
     }
 
     async delete(guild: string) {
-        console.log("ModNotes delete");
+        // console.log("ModNotes delete");
         await this.modNotes.deleteMany({ guild: guild });
     }
 }
@@ -509,24 +505,24 @@ export class Premium {
     }
 
     async updateUser(user: string, level: number) {
-        console.log("Premium updateUser");
+        // console.log("Premium updateUser");
         if(!(await this.userExists(user))) await this.createUser(user, level);
         await this.premium.updateOne({ user: user }, { $set: { level: level } }, { upsert: true });
     }
 
     async userExists(user: string): Promise<boolean> {
-        console.log("Premium userExists");
+        // console.log("Premium userExists");
         const entry = await this.premium.findOne({ user: user });
         return entry ? true : false;
     }
 
     async createUser(user: string, level: number) {
-        console.log("Premium createUser");
+        // console.log("Premium createUser");
         await this.premium.insertOne({ user: user, appliesTo: [], level: level }, collectionOptions);
     }
 
     async hasPremium(guild: string): Promise<[boolean, string, number, boolean] | null> {
-        console.log("Premium hasPremium");
+        // console.log("Premium hasPremium");
         // [Has premium, user giving premium, level, is mod: if given automatically]
         const cached = this.cache.get(guild);
         if (cached && cached[4].getTime() < Date.now()) return [cached[0], cached[1], cached[2], cached[3]];
@@ -566,14 +562,14 @@ export class Premium {
     }
 
     async fetchUser(user: string): Promise<PremiumSchema | null> {
-        console.log("Premium fetchUser");
+        // console.log("Premium fetchUser");
         const entry = await this.premium.findOne({ user: user });
         if (!entry) return null;
         return entry;
     }
 
     async checkAllPremium(member?: GuildMember) {
-        console.log("Premium checkAllPremium");
+        // console.log("Premium checkAllPremium");
         const entries = await this.premium.find({}).toArray();
         if(member) {
             const entry = entries.find(e => e.user === member.id);
@@ -627,14 +623,14 @@ export class Premium {
     }
 
     async addPremium(user: string, guild: string) {
-        console.log("Premium addPremium");
+        // console.log("Premium addPremium");
         const { level } = (await this.fetchUser(user))!;
         this.cache.set(guild, [true, user, level, false, new Date(Date.now() + this.cacheTimeout)]);
         return this.premium.updateOne({ user: user }, { $addToSet: { appliesTo: guild } }, { upsert: true });
     }
 
     removePremium(user: string, guild: string) {
-        console.log("Premium removePremium");
+        // console.log("Premium removePremium");
         this.cache.set(guild, [false, "", 0, false, new Date(Date.now() + this.cacheTimeout)]);
         return this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
@@ -684,7 +680,7 @@ export interface GuildConfig {
         clean: {
             channels: string[];
             allowed: {
-                user: string[];
+                users: string[];
                 roles: string[];
             }
         }

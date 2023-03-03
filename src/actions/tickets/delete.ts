@@ -87,10 +87,8 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 new EmojiEmbed()
                     .setTitle("Archived Ticket")
                     .setDescription(`This ticket has been Archived. Type ${getCommandMentionByName("ticket/close")} to delete it.\n` +
-                        "Creating a transcript will delete all messages in this ticket" +
-                        hasPremium ?
-                        `\n\nFor more info on transcripts, check ${getCommandMentionByName("privacy")}` :
-                        "")
+                        hasPremium ? ("Creating a transcript will delete all messages in this ticket" +
+                        `\n\nFor more info on transcripts, check ${getCommandMentionByName("privacy")}`): "")
                     .setStatus("Warning")
                     .setEmoji("GUILD.TICKET.ARCHIVED")
             ],
