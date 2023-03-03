@@ -21,7 +21,9 @@ await mongoClient.connect();
 const database = mongoClient.db();
 
 const collectionOptions = { authdb: "admin" };
+
 const getIV = () => crypto.randomBytes(16);
+
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
