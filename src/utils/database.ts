@@ -186,11 +186,20 @@ interface TranscriptSchema {
     createdBy: TranscriptAuthor;
 }
 
+interface findDocSchema { channelID:string, messageID: string; transcript: string }
+
 export class Transcript {
     transcripts: Collection<TranscriptSchema>;
+    messageToTranscript: Collection<findDocSchema>;
 
     constructor() {
         this.transcripts = database.collection<TranscriptSchema>("transcripts");
+        this.messageToTranscript = database.collection<findDocSchema>("messageToTranscript");
+    }
+
+    async upload(data: findDocSchema) {
+        // console.log("Transcript upload")
+        await this.messageToTranscript.insertOne(data);
     }
 
     async create(transcript: Omit<TranscriptSchema, "code">) {
@@ -209,21 +218,16 @@ export class Transcript {
         }
 
         const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }), collectionOptions);
-        if(doc.acknowledged) return [code, key, iv];
+        if(doc.acknowledged) {
+            client.database.eventScheduler.schedule("deleteTranscript", (Date.now() + 1000 * 60 * 60 * 24 * 7).toString(), { guild: transcript.guild, code: code, iv: iv, key: key });
+            return [code, key, iv];
+        }
         else return [null, null, null];
     }
 
-    async read(code: string, key: string, iv: string) {
-        // console.log("Transcript read")
-        const doc = await this.transcripts.findOne({ code: code });
-        if(!doc) return null;
-        for(const message of doc.messages) {
-            if(message.content) {
-                const decCipher = crypto.createDecipheriv("AES-256-CBC", key, iv);
-                message.content = decCipher.update(message.content, "base64", "utf8") + decCipher.final("utf8");
-            }
-        }
-        return doc;
+    async delete(code: string) {
+        // console.log("Transcript delete")
+        await this.transcripts.deleteOne({ code: code });
     }
 
     async deleteAll(guild: string) {
@@ -232,6 +236,74 @@ export class Transcript {
         for (const doc of filteredDocs) {
             await this.transcripts.deleteOne({ code: doc.code });
         }
+    }
+
+    async readEncrypted(code: string) {
+        // console.log("Transcript read")
+        let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
+        let findDoc: findDocSchema | null = null;
+        if(!doc) findDoc = (await this.messageToTranscript.findOne({ transcript: code }));
+        if(findDoc) {
+            const message = await ((client.channels.cache.get(findDoc.channelID)) as Discord.TextBasedChannel | null)?.messages.fetch(findDoc.messageID);
+            if(!message) return null;
+            const attachment = message.attachments.first();
+            if(!attachment) return null;
+            const transcript = (await fetch(attachment.url)).body;
+            if(!transcript) return null;
+            const reader = transcript.getReader();
+            let data: Uint8Array | null = null;
+            let allPacketsReceived = false;
+            while (!allPacketsReceived) {
+                const { value, done } = await reader.read();
+                if (done) {allPacketsReceived = true; continue;}
+                if(!data) {
+                    data = value;
+                } else {
+                    data = new Uint8Array(Buffer.concat([data, value]));
+                }
+            }
+            if(!data) return null;
+            doc = JSON.parse(Buffer.from(data).toString());
+        }
+        if(!doc) return null;
+        return doc;
+    }
+
+    async read(code: string, key: string, iv: string) {
+        // console.log("Transcript read")
+        let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
+        let findDoc: findDocSchema | null = null;
+        if(!doc) findDoc = (await this.messageToTranscript.findOne({ transcript: code }));
+        if(findDoc) {
+            const message = await ((client.channels.cache.get(findDoc.channelID)) as Discord.TextBasedChannel | null)?.messages.fetch(findDoc.messageID);
+            if(!message) return null;
+            const attachment = message.attachments.first();
+            if(!attachment) return null;
+            const transcript = (await fetch(attachment.url)).body;
+            if(!transcript) return null;
+            const reader = transcript.getReader();
+            let data: Uint8Array | null = null;
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
+            while(true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if(!data) {
+                    data = value;
+                } else {
+                    data = new Uint8Array(Buffer.concat([data, value]));
+                }
+            }
+            if(!data) return null;
+            doc = JSON.parse(Buffer.from(data).toString());
+        }
+        if(!doc) return null;
+        for(const message of doc.messages) {
+            if(message.content) {
+                const decCipher = crypto.createDecipheriv("AES-256-CBC", key, iv);
+                message.content = decCipher.update(message.content, "base64", "utf8") + decCipher.final("utf8");
+            }
+        }
+        return doc;
     }
 
     async createTranscript(messages: Message[], interaction: MessageComponentInteraction | CommandInteraction, member: GuildMember) {

@@ -79,7 +79,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                     "You can view the transcript using the link below. You can save the link for later" +
                         (guildConfig.logging.logs.channel
                             ? ` or find it in <#${guildConfig.logging.logs.channel}> once you press delete below. After this the channel will be deleted.`
-                            : ".")
+                            : ". It will be automatically deleted after 30 days if a logging channel is not set.")
                 )
                 .setStatus("Success")
                 .setEmoji("CONTROL.DOWNLOAD")
