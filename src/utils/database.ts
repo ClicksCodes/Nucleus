@@ -9,6 +9,7 @@ import defaultData from '../config/default.js';
 
 const username = encodeURIComponent(config.mongoOptions.username);
 const password = encodeURIComponent(config.mongoOptions.password);
+
 const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT` : `mongodb://${config.mongoOptions.host}`, {authSource: config.mongoOptions.authSource});
 await mongoClient.connect();
 const database = mongoClient.db();
