@@ -15,11 +15,9 @@ declare const config: {
         password: string,
         database: string,
         host: string,
+        authSource: string
     },
     baseUrl: string,
-    pastebinApiKey: string,
-    pastebinUsername: string,
-    pastebinPassword: string,
     rapidApiKey: string
 };
 
