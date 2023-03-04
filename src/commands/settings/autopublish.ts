@@ -2,9 +2,9 @@ import { ActionRowBuilder, APIMessageComponentEmoji, ButtonBuilder, ButtonStyle,
 import type Discord from "discord.js";
 import client from "../../utils/client.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
-import compare from "lodash"
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
+import _ from "lodash";
 
 export const command = new SlashCommandSubcommandBuilder()
     .setName("autopublish")
@@ -19,7 +19,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
 
     let closed = false;
     let config = await client.database.guilds.read(interaction.guild!.id);
-    let data = Object.assign({}, config.autoPublish);
+    let data = _.cloneDeep(config.autoPublish);
     do {
         const buttons = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
@@ -33,7 +33,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                     .setLabel("Save")
                     .setStyle(ButtonStyle.Success)
                     .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
-                    .setDisabled(compare.isEqual(data, config.autoPublish))
+                    .setDisabled(_.isEqual(data, config.autoPublish))
             );
 
         const channelSelect = new ActionRowBuilder<ChannelSelectMenuBuilder>()
@@ -78,7 +78,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 case "save": {
                     await client.database.guilds.write(interaction.guild!.id, { "autoPublish": data });
                     config = await client.database.guilds.read(interaction.guild!.id);
-                    data = Object.assign({}, config.autoPublish);
+                    data = _.cloneDeep(config.autoPublish);
                     break;
                 }
             }
