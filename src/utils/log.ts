@@ -82,6 +82,7 @@ export const Logger = {
         console.log(log.hidden.guild)
         const config = await client.database.guilds.read(log.hidden.guild);
         console.log(config.logging.logs.channel)
+
         if (config.logging.logs.channel) {
             const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
             const description: Record<string, string> = {};

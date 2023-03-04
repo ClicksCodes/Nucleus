@@ -319,6 +319,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         const newOut = await client.database.transcripts.createTranscript(messageArray, interaction, interaction.member as GuildMember);
 
         const [code, key, iv] = await client.database.transcripts.create(newOut);
+
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -330,6 +331,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             components: [
                 new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
                     new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`).setDisabled(!code),
+
                 ])
             ]
         });

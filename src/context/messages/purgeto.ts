@@ -193,7 +193,9 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         )
     )).map(message => message as Message);
     const transcript = await client.database.transcripts.createTranscript(messageArray, interaction, interaction.member as GuildMember);
+
     const [code, key, iv] = await client.database.transcripts.create(transcript);
+
     await interaction.editReply({
         embeds: [
             new EmojiEmbed()
