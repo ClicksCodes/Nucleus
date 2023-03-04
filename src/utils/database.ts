@@ -6,17 +6,10 @@ import client from "../utils/client.js";
 import * as crypto from "crypto";
 import _ from "lodash";
 import defaultData from '../config/default.js';
-// config.mongoOptions.host, {
-//     auth: {
-//         username: config.mongoOptions.username,
-//         password: config.mongoOptions.password
-//     },
-//     authSource: config.mongoOptions.authSource
-// }
-// mongodb://emails:SweetLife2023!!@127.0.0.1:28180/saveEmail?retryWrites=true&w=majority
+
 const username = encodeURIComponent(config.mongoOptions.username);
 const password = encodeURIComponent(config.mongoOptions.password);
-const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanim=DEFAULT` : `mongodb://${config.mongoOptions.host}`, {authSource: "admin"});
+const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT` : `mongodb://${config.mongoOptions.host}`, {authSource: "admin"});
 await mongoClient.connect();
 const database = mongoClient.db();
 
