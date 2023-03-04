@@ -1,9 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelSelectMenuBuilder, CommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { ActionRowBuilder, APIMessageComponentEmoji, ButtonBuilder, ButtonStyle, ChannelSelectMenuBuilder, ChannelType, CommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import type Discord from "discord.js";
 import client from "../../utils/client.js";
 import { LoadingEmbed } from "../../utils/defaults.js";
 import compare from "lodash"
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
+import getEmojiByName from "../../utils/getEmojiByName.js";
 
 export const command = new SlashCommandSubcommandBuilder()
     .setName("autopublish")
@@ -24,14 +25,14 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId("switch")
-                    .setLabel(data.enabled ? "Disabled" : "Enabled")
-                    .setStyle(data.enabled ? ButtonStyle.Danger : ButtonStyle.Success)
-                    .setEmoji(data.enabled ? "✅" : "❌"),
+                    .setLabel(data.enabled ? "Enabled" : "Disabled")
+                    .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(getEmojiByName("CONTROL." + (data.enabled ? "TICK" : "CROSS"), "id") as APIMessageComponentEmoji),
                 new ButtonBuilder()
                     .setCustomId("save")
                     .setLabel("Save")
                     .setStyle(ButtonStyle.Success)
-                    .setEmoji("💾")
+                    .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
                     .setDisabled(compare.isEqual(data, config.autoPublish))
             );
 
@@ -41,11 +42,18 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                     .setCustomId("channel")
                     .setPlaceholder("Select a channel")
                     .setMinValues(1)
+                    .setChannelTypes(ChannelType.GuildAnnouncement, ChannelType.AnnouncementThread)
             );
 
-        const embed = new EmojiEmbed()
+        const current = data.channels.map((c) => `> <#${c}>`).join("\n") || "*None set*";
 
-        await interaction.editReply({
+        const embed = new EmojiEmbed()
+            .setTitle("Auto Publish")
+            .setDescription("Currently enabled in:\n" + current)
+            .setStatus('Success')
+            .setEmoji("ICONS.PUBLISH")
+
+            await interaction.editReply({
             embeds: [embed],
             components: [channelSelect, buttons]
         });

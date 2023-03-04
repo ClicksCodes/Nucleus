@@ -3,6 +3,7 @@ import client from "./client.js";
 import * as fs from "fs";
 import * as path from "path";
 import config from "../config/main.js";
+import { TextChannel } from "discord.js";
 
 class EventScheduler {
     private agenda: Agenda;
@@ -19,6 +20,19 @@ class EventScheduler {
             const user = await guild.members.fetch(job.attrs.data.user);
             const role = await guild.roles.fetch(job.attrs.data.role);
             if (role) await user.roles.remove(role);
+            await job.remove();
+        });
+        this.agenda.define("uploadTranscript", async (job) => {
+            const channelID: string | null = (await client.database.guilds.read(job.attrs.data.guild)).logging.logs.channel;
+            if (!channelID) return;
+            const channel = await client.channels.fetch(channelID);
+            if(!channel || !(channel instanceof TextChannel)) return;
+            const transcript = await client.database.transcripts.read(job.attrs.data.transcript, job.attrs.data.key, job.attrs.data.iv);
+            await client.database.transcripts.delete(job.attrs.data.transcript);
+            const file = Buffer.from(JSON.stringify(transcript), "base64");
+            const fileName = `${job.attrs.data.transcript}.json`;
+            const m = await channel.send({ files: [{ attachment: file, name: fileName }] });
+            await client.database.transcripts.upload({ channelID: channel.id, messageID: m.id, transcript: job.attrs.data.transcript})
             await job.remove();
         });
         this.agenda.define("deleteFile", async (job) => {
