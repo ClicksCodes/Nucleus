@@ -16,6 +16,7 @@ const database = mongoClient.db();
 const collectionOptions = { authdb: config.mongoOptions.authSource, w: "majority" };
 const getIV = () => crypto.randomBytes(16);
 
+
 export class Guilds {
     guilds: Collection<GuildConfig>;
     defaultData: GuildConfig;
@@ -533,7 +534,6 @@ export class Premium {
         const entry = await this.premium.findOne({ user: user });
         return entry ? true : false;
     }
-
     async createUser(user: string, level: number) {
         // console.log("Premium createUser");
         await this.premium.insertOne({ user: user, appliesTo: [], level: level }, collectionOptions);
