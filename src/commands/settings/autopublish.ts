@@ -83,6 +83,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 }
             }
         } else {
+            await interaction.editReply({embeds: LoadingEmbed, components: []})
             for(const channel of i.values) {
                 data.channels.includes(channel) ? data.channels.splice(data.channels.indexOf(channel), 1) : data.channels.push(channel);
             }
