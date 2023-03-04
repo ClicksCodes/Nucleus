@@ -61,7 +61,8 @@ const runServer = (client: NucleusClient) => {
                     },
                     list: {
                         member: entry(member.id, renderUser(member.user)),
-                        verified: entry(member.joinedTimestamp, renderDelta(member.joinedTimestamp!))
+                        joined: entry(member.joinedTimestamp, renderDelta(member.joinedTimestamp!)),
+                        verified: entry(Date.now(), renderDelta(Date.now()))
                     },
                     hidden: {
                         guild: guild.id
