@@ -30,7 +30,7 @@ export class Guilds {
     async read(guild: string): Promise<GuildConfig> {
         // console.log("Guild read")
         const entry = await this.guilds.findOne({ id: guild });
-        const data = _.clone(this.defaultData!);
+        const data = _.cloneDeep(this.defaultData);
         return _.merge(data, entry ?? {});
     }
 
