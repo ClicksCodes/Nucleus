@@ -68,7 +68,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
             closed = true;
             continue;
         }
-
+        await i.deferUpdate();
         if(i.isButton()) {
             switch(i.customId) {
                 case "switch": {
