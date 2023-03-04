@@ -206,9 +206,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         ],
         components: [
             new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
-
                 new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`).setDisabled(!code),
-
             ])
         ]
     });

@@ -183,7 +183,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 await client.database.history.delete(interaction.guild!.id);
                 await client.database.notes.delete(interaction.guild!.id);
                 await client.database.transcripts.deleteAll(interaction.guild!.id);
-
                 nextFooter = "All data cleared";
                 continue;
             } else {

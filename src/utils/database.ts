@@ -6,22 +6,14 @@ import client from "../utils/client.js";
 import * as crypto from "crypto";
 import _ from "lodash";
 import defaultData from '../config/default.js';
-// config.mongoOptions.host, {
-//     auth: {
-//         username: config.mongoOptions.username,
-//         password: config.mongoOptions.password
-//     },
-//     authSource: config.mongoOptions.authSource
-// }
-// mongodb://emails:SweetLife2023!!@127.0.0.1:28180/saveEmail?retryWrites=true&w=majority
+
 const username = encodeURIComponent(config.mongoOptions.username);
 const password = encodeURIComponent(config.mongoOptions.password);
-const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}` : `mongodb://${config.mongoOptions.host}`, {authSource: "admin"});
+const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT` : `mongodb://${config.mongoOptions.host}`, {authSource: "admin"});
 await mongoClient.connect();
 const database = mongoClient.db();
 
 const collectionOptions = { authdb: "admin" };
-
 const getIV = () => crypto.randomBytes(16);
 
 
@@ -542,7 +534,6 @@ export class Premium {
         const entry = await this.premium.findOne({ user: user });
         return entry ? true : false;
     }
-
     async createUser(user: string, level: number) {
         // console.log("Premium createUser");
         await this.premium.insertOne({ user: user, appliesTo: [], level: level }, collectionOptions);
