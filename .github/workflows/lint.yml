@@ -21,7 +21,6 @@ jobs:
             - uses: actions/setup-node@v3.6.0
               with:
                   node-version: 19.x
-                  cache: 'yarn'
             - run: yarn install --immutable --ignore-engines
             - name: Compile
               run: yarn build
