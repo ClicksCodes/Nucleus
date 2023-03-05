@@ -436,8 +436,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     break;
                 }
                 case "save": {
-                    client.database.guilds.write(interaction.guild.id, {"roleMenu.options": currentObject});
+                    await client.database.guilds.write(interaction.guild.id, {"roleMenu.options": currentObject});
                     modified = false;
+                    await client.memory.forceUpdate(interaction.guild.id);
                     break;
                 }
             }

@@ -874,6 +874,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         await i.deferUpdate();
         if(i.isButton()) {
             await client.database.guilds.write(interaction.guild.id, {filters: config});
+            await client.memory.forceUpdate(interaction.guild.id);
         } else {
             switch(i.values[0]) {
                 case "invites": {

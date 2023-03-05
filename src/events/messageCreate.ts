@@ -5,15 +5,19 @@ import { messageException } from "../utils/createTemporaryStorage.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
-import { Message, ThreadChannel } from "discord.js";
+import { ChannelType, Message, ThreadChannel } from "discord.js";
 
 export const event = "messageCreate";
 
 export async function callback(_client: NucleusClient, message: Message) {
     if (!message.guild) return;
     const config = await client.memory.readGuildInfo(message.guild.id);
-    
-    if (config.autoPublish.enabled && config.autoPublish.channels.includes(message.channel.id)) {
+
+    if (config.autoPublish.enabled 
+        && config.autoPublish.channels.includes(message.channel.id)
+        && message.channel.type === ChannelType.GuildAnnouncement
+        && message.reference === null
+    ) {
         await message.crosspost();
     }
 

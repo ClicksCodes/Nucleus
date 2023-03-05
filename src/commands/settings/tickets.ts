@@ -135,6 +135,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     await i.deferUpdate();
                     await client.database.guilds.write(interaction.guild.id, { tickets: ticketData });
                     changesMade = false;
+                    await client.memory.forceUpdate(interaction.guild.id);
                     break;
                 }
                 case "enabled": {

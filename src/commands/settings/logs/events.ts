@@ -139,6 +139,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     await client.database.guilds.write(interaction.guild!.id, {"logging.logs": data});
                     config = await client.database.guilds.read(interaction.guild!.id);
                     data = Object.assign({}, config.logging.logs);
+                    await client.memory.forceUpdate(interaction.guild!.id)
                     break;
                 }
                 case "remove": {
