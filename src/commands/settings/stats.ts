@@ -378,9 +378,10 @@ const callback = async (interaction: CommandInteraction) => {
                     break;
                 }
                 case "save": {
-                    client.database.guilds.write(interaction.guild.id, {stats: currentObject});
+                    await client.database.guilds.write(interaction.guild.id, {stats: currentObject});
                     singleNotify("statsChannelDeleted", interaction.guild.id, true);
                     modified = false;
+                    await client.memory.forceUpdate(interaction.guild.id);
                     break;
                 }
             }
