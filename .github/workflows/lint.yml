@@ -21,7 +21,8 @@ jobs:
             - uses: actions/setup-node@v3.6.0
               with:
                   node-version: 19.x
-            - run: yarn install --immutable
+                  cache: 'yarn'
+            - run: yarn install --immutable --ignore-engines
             - name: Compile
               run: yarn build
             - name: Run eslint
