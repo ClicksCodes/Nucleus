@@ -44,10 +44,12 @@ export const Logger = {
         return `${user.username} [<@${user.id}>]`;
     },
     renderTime(t: number) {
+        if(isNaN(t)) return "Unknown"
         t = Math.floor((t /= 1000));
         return `<t:${t}:D> at <t:${t}:T>`;
     },
     renderDelta(t: number) {
+        if(isNaN(t)) return "Unknown"
         t = Math.floor((t /= 1000));
         return `<t:${t}:R> (<t:${t}:D> at <t:${t}:T>)`;
     },
