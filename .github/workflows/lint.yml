@@ -21,10 +21,10 @@ jobs:
             - uses: actions/setup-node@v3.6.0
               with:
                   node-version: 19.x
-            - run: yarn install --immutable --ignore-engines
+            - run: yarn install --immutable
             - name: Compile
               run: yarn build
             - name: Run eslint
-              uses: mrdivyansh/eslint-action@v1.0.7
+              run: yarn lint
             - name: Run prettier
               uses: actionsx/prettier@v2
