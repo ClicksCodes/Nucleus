@@ -327,11 +327,11 @@ const editTrack = async (
                     } else {
                         if (!current.track.includes(role)) {
                             current.track.push(role);
-                            await interaction.editReply({ embeds: LoadingEmbed, components: [] });
                         } else {
                             previousMessage = "That role is already on this track";
                         }
                     }
+                    await interaction.editReply({ embeds: LoadingEmbed, components: [] });
                     break;
                 }
             }

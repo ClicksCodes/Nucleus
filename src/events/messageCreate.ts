@@ -6,6 +6,7 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
 import { ChannelType, Message, ThreadChannel } from "discord.js";
+import singleNotify from "../utils/singleNotify.js";
 
 export const event = "messageCreate";
 
@@ -19,7 +20,11 @@ export async function callback(_client: NucleusClient, message: Message) {
         message.channel.type === ChannelType.GuildAnnouncement &&
         message.reference === null
     ) {
-        await message.crosspost();
+        if(message.channel.permissionsFor(message.guild.members.me!)!.has("ManageMessages")) {
+            await message.crosspost();
+        } else {
+            singleNotify(`I don't have permissions to publish in <#${message.channel.id}>`, message.guild.id, true);
+        }
     }
 
     if (message.author.bot) return;
