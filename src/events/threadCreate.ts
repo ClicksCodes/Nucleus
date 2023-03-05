@@ -6,9 +6,10 @@ export const event = "threadCreate";
 
 export async function callback(client: NucleusClient, thread: ThreadChannel) {
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
-    if (!await isLogging(thread.guild.id, "channelUpdate")) return;
-    const auditLog = (await getAuditLog(thread.guild, AuditLogEvent.ThreadCreate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as ThreadChannel)!.id === thread.id)[0]!;
+    if (!(await isLogging(thread.guild.id, "channelUpdate"))) return;
+    const auditLog = (await getAuditLog(thread.guild, AuditLogEvent.ThreadCreate)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as ThreadChannel)!.id === thread.id
+    )[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
     const category = thread.parent
         ? entry(

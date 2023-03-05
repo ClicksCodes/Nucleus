@@ -1,5 +1,5 @@
 import type { GuildAuditLogsEntry, GuildBan, User } from "discord.js";
-import { AuditLogEvent } from 'discord.js';
+import { AuditLogEvent } from "discord.js";
 import { purgeByUser } from "../actions/tickets/delete.js";
 import { callback as statsChannelRemove } from "../reflex/statsChannelUpdate.js";
 import type { NucleusClient } from "../utils/client.js";
@@ -11,8 +11,9 @@ export async function callback(client: NucleusClient, ban: GuildBan) {
     await statsChannelRemove(client, undefined, ban.guild, ban.user);
     purgeByUser(ban.user.id, ban.guild.id);
     if (!(await isLogging(ban.guild.id, "guildMemberPunish"))) return;
-    const auditLog: GuildAuditLogsEntry | undefined = (await getAuditLog(ban.guild, AuditLogEvent.MemberBanAdd))
-        .filter((entry: GuildAuditLogsEntry) => ((entry.target! as User).id === ban.user.id))[0];
+    const auditLog: GuildAuditLogsEntry | undefined = (await getAuditLog(ban.guild, AuditLogEvent.MemberBanAdd)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target! as User).id === ban.user.id
+    )[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     await client.database.history.create("ban", ban.guild.id, ban.user, auditLog.executor, auditLog.reason);

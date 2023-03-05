@@ -1,5 +1,18 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ChannelSelectMenuBuilder, ChannelType, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ButtonInteraction, StringSelectMenuInteraction, ChannelSelectMenuInteraction, APIMessageComponentEmoji } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    ActionRowBuilder,
+    ChannelSelectMenuBuilder,
+    ChannelType,
+    ButtonBuilder,
+    ButtonStyle,
+    StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder,
+    ButtonInteraction,
+    StringSelectMenuInteraction,
+    ChannelSelectMenuInteraction,
+    APIMessageComponentEmoji
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../../utils/client.js";
 import compare from "lodash";
@@ -26,14 +39,12 @@ const logs: Record<string, string> = {
     webhookUpdate: "Webhooks created or deleted",
     guildMemberVerify: "Member runs verify",
     autoModeratorDeleted: "Messages auto deleted by Nucleus",
-    ticketUpdate: "Tickets created or deleted",
+    ticketUpdate: "Tickets created or deleted"
     //nucleusSettingsUpdated: "Nucleus' settings updated by a moderator"  // TODO
 };
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("events")
-        .setDescription("The general log channel for the server, and setting what events to show")
+    builder.setName("events").setDescription("The general log channel for the server, and setting what events to show");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const m = (await interaction.reply({
@@ -47,52 +58,45 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let closed = false;
     let show = false;
     do {
-        const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>()
-            .addComponents(
-                new ChannelSelectMenuBuilder()
-                    .setCustomId("channel")
-                    .setPlaceholder("Select a channel")
-                    .setChannelTypes(ChannelType.GuildText)
-            )
-        const buttons = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId("switch")
-                    .setLabel(data.enabled ? "Enabled" : "Disabled")
-                    .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
-                    .setEmoji(getEmojiByName((data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS"), "id") as APIMessageComponentEmoji),
-                new ButtonBuilder()
-                    .setCustomId("remove")
-                    .setLabel("Remove")
-                    .setStyle(ButtonStyle.Danger)
-                    .setDisabled(!data.channel),
-                new ButtonBuilder()
-                    .setCustomId("show")
-                    .setLabel("Manage Events")
-                    .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setCustomId("save")
-                    .setLabel("Save")
-                    .setStyle(ButtonStyle.Success)
-                    .setDisabled(compare.isEqual(data, config.logging.logs))
-            )
+        const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
+            new ChannelSelectMenuBuilder()
+                .setCustomId("channel")
+                .setPlaceholder("Select a channel")
+                .setChannelTypes(ChannelType.GuildText)
+        );
+        const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId("switch")
+                .setLabel(data.enabled ? "Enabled" : "Disabled")
+                .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                .setEmoji(
+                    getEmojiByName(data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id") as APIMessageComponentEmoji
+                ),
+            new ButtonBuilder()
+                .setCustomId("remove")
+                .setLabel("Remove")
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(!data.channel),
+            new ButtonBuilder().setCustomId("show").setLabel("Manage Events").setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setCustomId("save")
+                .setLabel("Save")
+                .setStyle(ButtonStyle.Success)
+                .setDisabled(compare.isEqual(data, config.logging.logs))
+        );
 
         const converted = toHexArray(data.toLog);
-        const toLogMenu = new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(
-                new StringSelectMenuBuilder()
-                    .setPlaceholder("Set events to log")
-                    .setMaxValues(Object.keys(logs).length)
-                    .setCustomId("logs")
-                    .setMinValues(0)
-            )
+        const toLogMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            new StringSelectMenuBuilder()
+                .setPlaceholder("Set events to log")
+                .setMaxValues(Object.keys(logs).length)
+                .setCustomId("logs")
+                .setMinValues(0)
+        );
         Object.keys(logs).map((e) => {
             toLogMenu.components[0]!.addOptions(
-                new StringSelectMenuOptionBuilder()
-                    .setLabel(logs[e]!)
-                    .setValue(e)
-                    .setDefault(converted.includes(e))
-            )
+                new StringSelectMenuOptionBuilder().setLabel(logs[e]!).setValue(e).setDefault(converted.includes(e))
+            );
         });
 
         const embed = new EmojiEmbed()
@@ -101,11 +105,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             .setEmoji("CHANNEL.TEXT.CREATE")
             .setDescription(
                 `This is the channel that all events you set to be logged will be stored\n` +
-                `**Channel:** ${data.channel ? `<#${data.channel}>` : "None"}\n`
-            )
+                    `**Channel:** ${data.channel ? `<#${data.channel}>` : "None"}\n`
+            );
 
-        const components: ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder | StringSelectMenuBuilder>[] = [channelMenu, buttons];
-        if(show) components.push(toLogMenu);
+        const components: ActionRowBuilder<ButtonBuilder | ChannelSelectMenuBuilder | StringSelectMenuBuilder>[] = [
+            channelMenu,
+            buttons
+        ];
+        if (show) components.push(toLogMenu);
 
         await interaction.editReply({
             embeds: [embed],
@@ -114,10 +121,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
         let i: ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         try {
-            i = await m.awaitMessageComponent({
+            i = (await m.awaitMessageComponent({
                 filter: (i) => i.user.id === interaction.user.id,
                 time: 300000
-            }) as ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
+            })) as ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         } catch (e) {
             closed = true;
             continue;
@@ -125,8 +132,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
         await i.deferUpdate();
 
-        if(i.isButton()) {
-            switch(i.customId) {
+        if (i.isButton()) {
+            switch (i.customId) {
                 case "show": {
                     show = !show;
                     break;
@@ -136,10 +143,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     break;
                 }
                 case "save": {
-                    await client.database.guilds.write(interaction.guild!.id, {"logging.logs": data});
+                    await client.database.guilds.write(interaction.guild!.id, { "logging.logs": data });
                     config = await client.database.guilds.read(interaction.guild!.id);
                     data = Object.assign({}, config.logging.logs);
-                    await client.memory.forceUpdate(interaction.guild!.id)
+                    await client.memory.forceUpdate(interaction.guild!.id);
                     break;
                 }
                 case "remove": {
@@ -147,15 +154,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     break;
                 }
             }
-        } else if(i.isStringSelectMenu()) {
+        } else if (i.isStringSelectMenu()) {
             const hex = toHexInteger(i.values);
             data.toLog = hex;
-        } else if(i.isChannelSelectMenu()) {
+        } else if (i.isChannelSelectMenu()) {
             data.channel = i.values[0]!;
         }
-
     } while (!closed);
-    await interaction.deleteReply()
+    await interaction.deleteReply();
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

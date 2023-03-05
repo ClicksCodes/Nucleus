@@ -1,22 +1,33 @@
-import { ButtonStyle, CommandInteraction, ComponentType, GuildMember, Message, MessageComponentInteraction } from "discord.js";
+import {
+    ButtonStyle,
+    CommandInteraction,
+    ComponentType,
+    GuildMember,
+    Message,
+    MessageComponentInteraction
+} from "discord.js";
 import type Discord from "discord.js";
 import { Collection, MongoClient } from "mongodb";
 import config from "../config/main.js";
 import client from "../utils/client.js";
 import * as crypto from "crypto";
 import _ from "lodash";
-import defaultData from '../config/default.js';
+import defaultData from "../config/default.js";
 
 const username = encodeURIComponent(config.mongoOptions.username);
 const password = encodeURIComponent(config.mongoOptions.password);
 
-const mongoClient = new MongoClient(username ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT` : `mongodb://${config.mongoOptions.host}`, {authSource: config.mongoOptions.authSource});
+const mongoClient = new MongoClient(
+    username
+        ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT`
+        : `mongodb://${config.mongoOptions.host}`,
+    { authSource: config.mongoOptions.authSource }
+);
 await mongoClient.connect();
 const database = mongoClient.db();
 
 const collectionOptions = { authdb: config.mongoOptions.authSource, w: "majority" };
 const getIV = () => crypto.randomBytes(16);
-
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
@@ -172,13 +183,13 @@ interface TranscriptMessage {
     flags?: string[];
     attachments?: TranscriptAttachment[];
     stickerURLs?: string[];
-    referencedMessage?: string | [string, string, string];  // the message id, the channel id, the guild id
+    referencedMessage?: string | [string, string, string]; // the message id, the channel id, the guild id
 }
 
 interface TranscriptSchema {
     code: string;
     for: TranscriptAuthor;
-    type: "ticket" | "purge"
+    type: "ticket" | "purge";
     guild: string;
     channel: string;
     messages: TranscriptMessage[];
@@ -186,7 +197,11 @@ interface TranscriptSchema {
     createdBy: TranscriptAuthor;
 }
 
-interface findDocSchema { channelID:string, messageID: string; transcript: string }
+interface findDocSchema {
+    channelID: string;
+    messageID: string;
+    transcript: string;
+}
 
 export class Transcript {
     transcripts: Collection<TranscriptSchema>;
@@ -208,21 +223,30 @@ export class Transcript {
         do {
             code = crypto.randomBytes(64).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
         } while (await this.transcripts.findOne({ code: code }));
-        const key = crypto.randomBytes(32**2).toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-").substring(0, 32);
+        const key = crypto
+            .randomBytes(32 ** 2)
+            .toString("base64")
+            .replace(/=/g, "")
+            .replace(/\//g, "_")
+            .replace(/\+/g, "-")
+            .substring(0, 32);
         const iv = getIV().toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
-        for(const message of transcript.messages) {
-            if(message.content) {
+        for (const message of transcript.messages) {
+            if (message.content) {
                 const encCipher = crypto.createCipheriv("AES-256-CBC", key, iv);
                 message.content = encCipher.update(message.content, "utf8", "base64") + encCipher.final("base64");
             }
         }
 
         const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }), collectionOptions);
-        if(doc.acknowledged) {
-            client.database.eventScheduler.schedule("deleteTranscript", (Date.now() + 1000 * 60 * 60 * 24 * 7).toString(), { guild: transcript.guild, code: code, iv: iv, key: key });
+        if (doc.acknowledged) {
+            client.database.eventScheduler.schedule(
+                "deleteTranscript",
+                (Date.now() + 1000 * 60 * 60 * 24 * 7).toString(),
+                { guild: transcript.guild, code: code, iv: iv, key: key }
+            );
             return [code, key, iv];
-        }
-        else return [null, null, null];
+        } else return [null, null, null];
     }
 
     async delete(code: string) {
@@ -242,30 +266,35 @@ export class Transcript {
         // console.log("Transcript read")
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
-        if(!doc) findDoc = (await this.messageToTranscript.findOne({ transcript: code }));
-        if(findDoc) {
-            const message = await ((client.channels.cache.get(findDoc.channelID)) as Discord.TextBasedChannel | null)?.messages.fetch(findDoc.messageID);
-            if(!message) return null;
+        if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
+        if (findDoc) {
+            const message = await (
+                client.channels.cache.get(findDoc.channelID) as Discord.TextBasedChannel | null
+            )?.messages.fetch(findDoc.messageID);
+            if (!message) return null;
             const attachment = message.attachments.first();
-            if(!attachment) return null;
+            if (!attachment) return null;
             const transcript = (await fetch(attachment.url)).body;
-            if(!transcript) return null;
+            if (!transcript) return null;
             const reader = transcript.getReader();
             let data: Uint8Array | null = null;
             let allPacketsReceived = false;
             while (!allPacketsReceived) {
                 const { value, done } = await reader.read();
-                if (done) {allPacketsReceived = true; continue;}
-                if(!data) {
+                if (done) {
+                    allPacketsReceived = true;
+                    continue;
+                }
+                if (!data) {
                     data = value;
                 } else {
                     data = new Uint8Array(Buffer.concat([data, value]));
                 }
             }
-            if(!data) return null;
+            if (!data) return null;
             doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
-        if(!doc) return null;
+        if (!doc) return null;
         return doc;
     }
 
@@ -273,32 +302,34 @@ export class Transcript {
         // console.log("Transcript read")
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
-        if(!doc) findDoc = (await this.messageToTranscript.findOne({ transcript: code }));
-        if(findDoc) {
-            const message = await ((client.channels.cache.get(findDoc.channelID)) as Discord.TextBasedChannel | null)?.messages.fetch(findDoc.messageID);
-            if(!message) return null;
+        if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
+        if (findDoc) {
+            const message = await (
+                client.channels.cache.get(findDoc.channelID) as Discord.TextBasedChannel | null
+            )?.messages.fetch(findDoc.messageID);
+            if (!message) return null;
             const attachment = message.attachments.first();
-            if(!attachment) return null;
+            if (!attachment) return null;
             const transcript = (await fetch(attachment.url)).body;
-            if(!transcript) return null;
+            if (!transcript) return null;
             const reader = transcript.getReader();
             let data: Uint8Array | null = null;
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, no-constant-condition
-            while(true) {
+            while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
-                if(!data) {
+                if (!data) {
                     data = value;
                 } else {
                     data = new Uint8Array(Buffer.concat([data, value]));
                 }
             }
-            if(!data) return null;
+            if (!data) return null;
             doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
-        if(!doc) return null;
-        for(const message of doc.messages) {
-            if(message.content) {
+        if (!doc) return null;
+        for (const message of doc.messages) {
+            if (message.content) {
                 const decCipher = crypto.createDecipheriv("AES-256-CBC", key, iv);
                 message.content = decCipher.update(message.content, "base64", "utf8") + decCipher.final("utf8");
             }
@@ -306,8 +337,12 @@ export class Transcript {
         return doc;
     }
 
-    async createTranscript(messages: Message[], interaction: MessageComponentInteraction | CommandInteraction, member: GuildMember) {
-        const interactionMember = await interaction.guild?.members.fetch(interaction.user.id)
+    async createTranscript(
+        messages: Message[],
+        interaction: MessageComponentInteraction | CommandInteraction,
+        member: GuildMember
+    ) {
+        const interactionMember = await interaction.guild?.members.fetch(interaction.user.id);
         const newOut: Omit<TranscriptSchema, "code"> = {
             type: "ticket",
             for: {
@@ -317,7 +352,7 @@ export class Transcript {
                 topRole: {
                     color: member!.roles.highest.color
                 },
-                iconURL: member!.user.displayAvatarURL({ forceStatic: true}),
+                iconURL: member!.user.displayAvatarURL({ forceStatic: true }),
                 bot: member!.user.bot
             },
             guild: interaction.guild!.id,
@@ -331,12 +366,12 @@ export class Transcript {
                 topRole: {
                     color: interactionMember?.roles.highest.color ?? 0x000000
                 },
-                iconURL: interaction.user.displayAvatarURL({ forceStatic: true}),
+                iconURL: interaction.user.displayAvatarURL({ forceStatic: true }),
                 bot: interaction.user.bot
             }
-        }
-        if(member.nickname) newOut.for.nickname = member.nickname;
-        if(interactionMember?.roles.icon) newOut.createdBy.topRole.badgeURL = interactionMember.roles.icon.iconURL()!;
+        };
+        if (member.nickname) newOut.for.nickname = member.nickname;
+        if (interactionMember?.roles.icon) newOut.createdBy.topRole.badgeURL = interactionMember.roles.icon.iconURL()!;
         messages.reverse().forEach((message) => {
             const msg: TranscriptMessage = {
                 id: message.id,
@@ -347,55 +382,67 @@ export class Transcript {
                     topRole: {
                         color: message.member!.roles.highest.color
                     },
-                    iconURL: message.member!.user.displayAvatarURL({ forceStatic: true}),
+                    iconURL: message.member!.user.displayAvatarURL({ forceStatic: true }),
                     bot: message.author.bot
                 },
                 createdTimestamp: message.createdTimestamp
             };
-            if(message.member?.nickname) msg.author.nickname = message.member.nickname;
+            if (message.member?.nickname) msg.author.nickname = message.member.nickname;
             if (message.member!.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
             if (message.content) msg.content = message.content;
-            if (message.embeds.length > 0) msg.embeds = message.embeds.map(embed => {
-                const obj: TranscriptEmbed = {};
-                if (embed.title) obj.title = embed.title;
-                if (embed.description) obj.description = embed.description;
-                if (embed.fields.length > 0) obj.fields = embed.fields.map(field => {
-                    return {
-                        name: field.name,
-                        value: field.value,
-                        inline: field.inline ?? false
-                    }
+            if (message.embeds.length > 0)
+                msg.embeds = message.embeds.map((embed) => {
+                    const obj: TranscriptEmbed = {};
+                    if (embed.title) obj.title = embed.title;
+                    if (embed.description) obj.description = embed.description;
+                    if (embed.fields.length > 0)
+                        obj.fields = embed.fields.map((field) => {
+                            return {
+                                name: field.name,
+                                value: field.value,
+                                inline: field.inline ?? false
+                            };
+                        });
+                    if (embed.color) obj.color = embed.color;
+                    if (embed.timestamp) obj.timestamp = embed.timestamp;
+                    if (embed.footer)
+                        obj.footer = {
+                            text: embed.footer.text
+                        };
+                    if (embed.footer?.iconURL) obj.footer!.iconURL = embed.footer.iconURL;
+                    if (embed.author)
+                        obj.author = {
+                            name: embed.author.name
+                        };
+                    if (embed.author?.iconURL) obj.author!.iconURL = embed.author.iconURL;
+                    if (embed.author?.url) obj.author!.url = embed.author.url;
+                    return obj;
                 });
-                if (embed.color) obj.color = embed.color;
-                if (embed.timestamp) obj.timestamp = embed.timestamp
-                if (embed.footer) obj.footer = {
-                    text: embed.footer.text,
-                };
-                if (embed.footer?.iconURL) obj.footer!.iconURL = embed.footer.iconURL;
-                if (embed.author) obj.author = {
-                    name: embed.author.name
-                };
-                if (embed.author?.iconURL) obj.author!.iconURL = embed.author.iconURL;
-                if (embed.author?.url) obj.author!.url = embed.author.url;
-                return obj;
-            });
-            if (message.components.length > 0) msg.components = message.components.map(component => component.components.map(child => {
-                const obj: TranscriptComponent = {
-                    type: child.type
-                }
-                if (child.type === ComponentType.Button) {
-                    obj.style = child.style;
-                    obj.label = child.label ?? "";
-                } else if (child.type > 2) {
-                    obj.placeholder = child.placeholder ?? "";
-                }
-                return obj
-            }));
+            if (message.components.length > 0)
+                msg.components = message.components.map((component) =>
+                    component.components.map((child) => {
+                        const obj: TranscriptComponent = {
+                            type: child.type
+                        };
+                        if (child.type === ComponentType.Button) {
+                            obj.style = child.style;
+                            obj.label = child.label ?? "";
+                        } else if (child.type > 2) {
+                            obj.placeholder = child.placeholder ?? "";
+                        }
+                        return obj;
+                    })
+                );
             if (message.editedTimestamp) msg.editedTimestamp = message.editedTimestamp;
             msg.flags = message.flags.toArray();
 
-            if (message.stickers.size > 0) msg.stickerURLs = message.stickers.map(sticker => sticker.url);
-            if (message.reference) msg.referencedMessage = [message.reference.guildId ?? "", message.reference.channelId, message.reference.messageId ?? ""];
+            if (message.stickers.size > 0) msg.stickerURLs = message.stickers.map((sticker) => sticker.url);
+            if (message.reference)
+                msg.referencedMessage = [
+                    message.reference.guildId ?? "",
+                    message.reference.channelId,
+                    message.reference.messageId ?? ""
+                ];
             newOut.messages.push(msg);
         });
         return newOut;
@@ -407,10 +454,11 @@ export class Transcript {
             if (message.referencedMessage) {
                 if (Array.isArray(message.referencedMessage)) {
                     out += `> [Crosspost From] ${message.referencedMessage[0]} in ${message.referencedMessage[1]} in ${message.referencedMessage[2]}\n`;
-                }
-                else out += `> [Reply To] ${message.referencedMessage}\n`;
+                } else out += `> [Reply To] ${message.referencedMessage}\n`;
             }
-            out += `${message.author.nickname ?? message.author.username}#${message.author.discriminator} (${message.author.id}) (${message.id})`;
+            out += `${message.author.nickname ?? message.author.username}#${message.author.discriminator} (${
+                message.author.id
+            }) (${message.id})`;
             out += ` [${new Date(message.createdTimestamp).toISOString()}]`;
             if (message.editedTimestamp) out += ` [Edited: ${new Date(message.editedTimestamp).toISOString()}]`;
             out += "\n";
@@ -445,9 +493,9 @@ export class Transcript {
                     out += `[Attachment] ${attachment.filename} (${attachment.size} bytes) ${attachment.url}\n`;
                 }
             }
-            out += "\n\n"
+            out += "\n\n";
         }
-        return out
+        return out;
     }
 }
 
@@ -469,17 +517,20 @@ export class History {
         amount?: string | null
     ) {
         // console.log("History create");
-        await this.histories.insertOne({
-            type: type,
-            guild: guild,
-            user: user.id,
-            moderator: moderator ? moderator.id : null,
-            reason: reason,
-            occurredAt: new Date(),
-            before: before ?? null,
-            after: after ?? null,
-            amount: amount ?? null
-        }, collectionOptions);
+        await this.histories.insertOne(
+            {
+                type: type,
+                guild: guild,
+                user: user.id,
+                moderator: moderator ? moderator.id : null,
+                reason: reason,
+                occurredAt: new Date(),
+                before: before ?? null,
+                after: after ?? null,
+                amount: amount ?? null
+            },
+            collectionOptions
+        );
     }
 
     async read(guild: string, user: string, year: number) {
@@ -524,12 +575,18 @@ export class ScanCache {
 
     async write(hash: string, data: boolean, tags?: string[]) {
         // console.log("ScanCache write");
-        await this.scanCache.insertOne({ hash: hash, data: data, tags: tags ?? [], addedAt: new Date() }, collectionOptions);
+        await this.scanCache.insertOne(
+            { hash: hash, data: data, tags: tags ?? [], addedAt: new Date() },
+            collectionOptions
+        );
     }
 
     async cleanup() {
         // console.log("ScanCache cleanup");
-        await this.scanCache.deleteMany({ addedAt: { $lt: new Date(Date.now() - (1000 * 60 * 60 * 24 * 31)) }, hash: { $not$text: "http"} });
+        await this.scanCache.deleteMany({
+            addedAt: { $lt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 31) },
+            hash: { $not$text: "http" }
+        });
     }
 }
 
@@ -559,7 +616,7 @@ export interface PerformanceDataSchema {
         cpu: number;
         memory: number;
         temperature: number;
-    }
+    };
 }
 
 export class ModNotes {
@@ -588,8 +645,8 @@ export class ModNotes {
 
 export class Premium {
     premium: Collection<PremiumSchema>;
-    cache: Map<string, [boolean, string, number, boolean, Date]>;  // Date indicates the time one hour after it was created
-    cacheTimeout = 1000 * 60 * 60;  // 1 hour
+    cache: Map<string, [boolean, string, number, boolean, Date]>; // Date indicates the time one hour after it was created
+    cacheTimeout = 1000 * 60 * 60; // 1 hour
 
     constructor() {
         this.premium = database.collection<PremiumSchema>("premium");
@@ -598,7 +655,7 @@ export class Premium {
 
     async updateUser(user: string, level: number) {
         // console.log("Premium updateUser");
-        if(!(await this.userExists(user))) await this.createUser(user, level);
+        if (!(await this.userExists(user))) await this.createUser(user, level);
         await this.premium.updateOne({ user: user }, { $set: { level: level } }, { upsert: true });
     }
 
@@ -618,25 +675,32 @@ export class Premium {
         const cached = this.cache.get(guild);
         if (cached && cached[4].getTime() < Date.now()) return [cached[0], cached[1], cached[2], cached[3]];
         const entries = await this.premium.find({}).toArray();
-        const members = (await client.guilds.fetch(guild)).members.cache
-        for(const {user} of entries) {
+        const members = (await client.guilds.fetch(guild)).members.cache;
+        for (const { user } of entries) {
             const member = members.get(user);
-            if(member) { //TODO: Notify user if they've given premium to a server that has since gotten premium via a mod.
+            if (member) {
+                //TODO: Notify user if they've given premium to a server that has since gotten premium via a mod.
                 const modPerms = //TODO: Create list in config for perms
-                            member.permissions.has("Administrator") ||
-                            member.permissions.has("ManageChannels") ||
-                            member.permissions.has("ManageRoles") ||
-                            member.permissions.has("ManageEmojisAndStickers") ||
-                            member.permissions.has("ManageWebhooks") ||
-                            member.permissions.has("ManageGuild") ||
-                            member.permissions.has("KickMembers") ||
-                            member.permissions.has("BanMembers") ||
-                            member.permissions.has("ManageEvents") ||
-                            member.permissions.has("ManageMessages") ||
-                            member.permissions.has("ManageThreads")
-                const entry = entries.find(e => e.user === member.id);
-                if(entry && (entry.level === 3) && modPerms) {
-                    this.cache.set(guild, [true, member.id, entry.level, true, new Date(Date.now() + this.cacheTimeout)]);
+                    member.permissions.has("Administrator") ||
+                    member.permissions.has("ManageChannels") ||
+                    member.permissions.has("ManageRoles") ||
+                    member.permissions.has("ManageEmojisAndStickers") ||
+                    member.permissions.has("ManageWebhooks") ||
+                    member.permissions.has("ManageGuild") ||
+                    member.permissions.has("KickMembers") ||
+                    member.permissions.has("BanMembers") ||
+                    member.permissions.has("ManageEvents") ||
+                    member.permissions.has("ManageMessages") ||
+                    member.permissions.has("ManageThreads");
+                const entry = entries.find((e) => e.user === member.id);
+                if (entry && entry.level === 3 && modPerms) {
+                    this.cache.set(guild, [
+                        true,
+                        member.id,
+                        entry.level,
+                        true,
+                        new Date(Date.now() + this.cacheTimeout)
+                    ]);
                     return [true, member.id, entry.level, true];
                 }
             }
@@ -648,7 +712,13 @@ export class Premium {
                 }
             }
         });
-        this.cache.set(guild, [entry ? true : false, entry?.user ?? "", entry?.level ?? 0, false, new Date(Date.now() + this.cacheTimeout)]);
+        this.cache.set(guild, [
+            entry ? true : false,
+            entry?.user ?? "",
+            entry?.level ?? 0,
+            false,
+            new Date(Date.now() + this.cacheTimeout)
+        ]);
         return entry ? [true, entry.user, entry.level, false] : null;
     }
 
@@ -662,11 +732,11 @@ export class Premium {
     async checkAllPremium(member?: GuildMember) {
         // console.log("Premium checkAllPremium");
         const entries = await this.premium.find({}).toArray();
-        if(member) {
-            const entry = entries.find(e => e.user === member.id);
-            if(entry) {
+        if (member) {
+            const entry = entries.find((e) => e.user === member.id);
+            if (entry) {
                 const expiresAt = entry.expiresAt;
-                if(expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({user: member.id}) : null;
+                if (expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({ user: member.id }) : null;
             }
             const roles = member.roles;
             let level = 0;
@@ -681,17 +751,20 @@ export class Premium {
             }
             await this.updateUser(member.id, level);
             if (level > 0) {
-                await this.premium.updateOne({ user: member.id }, {$unset: { expiresAt: ""}})
+                await this.premium.updateOne({ user: member.id }, { $unset: { expiresAt: "" } });
             } else {
-                await this.premium.updateOne({ user: member.id }, {$set: { expiresAt: (Date.now() + (1000*60*60*24*3)) }})
+                await this.premium.updateOne(
+                    { user: member.id },
+                    { $set: { expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 3 } }
+                );
             }
         } else {
-            const members = await (await client.guilds.fetch('684492926528651336')).members.fetch();
-            for(const {roles, id} of members.values()) {
-                const entry = entries.find(e => e.user === id);
-                if(entry) {
+            const members = await (await client.guilds.fetch("684492926528651336")).members.fetch();
+            for (const { roles, id } of members.values()) {
+                const entry = entries.find((e) => e.user === id);
+                if (entry) {
                     const expiresAt = entry.expiresAt;
-                    if(expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({user: id}) : null;
+                    if (expiresAt) expiresAt < Date.now() ? await this.premium.deleteOne({ user: id }) : null;
                 }
                 let level: number = 0;
                 if (roles.cache.has("1066468879309750313")) {
@@ -705,9 +778,12 @@ export class Premium {
                 }
                 await this.updateUser(id, level);
                 if (level > 0) {
-                    await this.premium.updateOne({ user: id }, {$unset: { expiresAt: ""}})
+                    await this.premium.updateOne({ user: id }, { $unset: { expiresAt: "" } });
                 } else {
-                    await this.premium.updateOne({ user: id }, {$set: { expiresAt: (Date.now() + (1000*60*60*24*3)) }})
+                    await this.premium.updateOne(
+                        { user: id },
+                        { $set: { expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 3 } }
+                    );
                 }
             }
         }
@@ -773,13 +849,13 @@ export interface GuildConfig {
             allowed: {
                 users: string[];
                 roles: string[];
-            }
-        }
+            };
+        };
     };
     autoPublish: {
         enabled: boolean;
         channels: string[];
-    }
+    };
     welcome: {
         enabled: boolean;
         role: string | null;
@@ -846,7 +922,7 @@ export interface GuildConfig {
         nick: {
             text: string | null;
             link: string | null;
-        }
+        };
     };
     tracks: {
         name: string;

@@ -13,10 +13,11 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (!message.guild) return;
     const config = await client.memory.readGuildInfo(message.guild.id);
 
-    if (config.autoPublish.enabled 
-        && config.autoPublish.channels.includes(message.channel.id)
-        && message.channel.type === ChannelType.GuildAnnouncement
-        && message.reference === null
+    if (
+        config.autoPublish.enabled &&
+        config.autoPublish.channels.includes(message.channel.id) &&
+        message.channel.type === ChannelType.GuildAnnouncement &&
+        message.reference === null
     ) {
         await message.crosspost();
     }
@@ -34,11 +35,11 @@ export async function callback(_client: NucleusClient, message: Message) {
     const fileNames = await logAttachment(message);
 
     const content = message.content.toLowerCase() || "";
-    if(config.filters.clean.channels.includes(message.channel.id)) {
-        const memberRoles = message.member!.roles.cache.map(role => role.id);
-        const roleAllow = config.filters.clean.allowed.roles.some(role => memberRoles.includes(role));
+    if (config.filters.clean.channels.includes(message.channel.id)) {
+        const memberRoles = message.member!.roles.cache.map((role) => role.id);
+        const roleAllow = config.filters.clean.allowed.roles.some((role) => memberRoles.includes(role));
         const userAllow = config.filters.clean.allowed.users.includes(message.author.id);
-        if(!roleAllow && !userAllow) return await message.delete();
+        if (!roleAllow && !userAllow) return await message.delete();
     }
 
     const filter = getEmojiByName("ICONS.FILTER");
@@ -94,7 +95,11 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (fileNames.files.length > 0) {
         for (const element of fileNames.files) {
             const url = element.url ? element.url : element.local;
-            if (/\.(j(pe?g|fif)|a?png|gifv?|w(eb[mp]|av)|mp([34]|eg-\d)|ogg|avi|h\.26(4|5)|cda)$/.test(url.toLowerCase())) {
+            if (
+                /\.(j(pe?g|fif)|a?png|gifv?|w(eb[mp]|av)|mp([34]|eg-\d)|ogg|avi|h\.26(4|5)|cda)$/.test(
+                    url.toLowerCase()
+                )
+            ) {
                 // jpg|jpeg|png|apng|gif|gifv|webm|webp|mp4|wav|mp3|ogg|jfif|MPEG-#|avi|h.264|h.265
                 if (
                     config.filters.images.NSFW &&
@@ -288,7 +293,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     }
 
     if (config.filters.pings.everyone && message.mentions.everyone) {
-        if(!await isLogging(message.guild.id, "messageMassPing")) return;
+        if (!(await isLogging(message.guild.id, "messageMassPing"))) return;
         const data = {
             meta: {
                 type: "everyonePing",
@@ -313,7 +318,7 @@ export async function callback(_client: NucleusClient, message: Message) {
             if (!config.filters.pings.allowed.roles.includes(roleId)) {
                 messageException(message.guild.id, message.channel.id, message.id);
                 await message.delete();
-                if(!await isLogging(message.guild.id, "messageMassPing")) return;
+                if (!(await isLogging(message.guild.id, "messageMassPing"))) return;
                 const data = {
                     meta: {
                         type: "rolePing",
@@ -340,7 +345,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
         messageException(message.guild.id, message.channel.id, message.id);
         await message.delete();
-        if(!await isLogging(message.guild.id, "messageMassPing")) return;
+        if (!(await isLogging(message.guild.id, "messageMassPing"))) return;
         const data = {
             meta: {
                 type: "massPing",

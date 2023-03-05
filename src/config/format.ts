@@ -1,4 +1,3 @@
-
 import fs from "fs";
 import * as readLine from "node:readline/promises";
 
@@ -24,7 +23,7 @@ const defaultDict: Record<string, string | string[] | boolean | Record<string, s
         password: "",
         database: "",
         host: "",
-        authSource: "",
+        authSource: ""
     },
     baseUrl: "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com/",
     pastebinApiKey: "An API key for pastebin (optional)",
@@ -64,7 +63,7 @@ export default async function (walkthrough = false) {
     let json: typeof defaultDict;
     let out = true;
     try {
-        json = await import("./main.js") as unknown as typeof defaultDict;
+        json = (await import("./main.js")) as unknown as typeof defaultDict;
     } catch (e) {
         console.log("\x1b[31m⚠ No main.ts found, creating one.");
         console.log("  \x1b[2mYou can edit src/config/main.ts directly using template written to the file.\x1b[0m\n");
@@ -75,7 +74,9 @@ export default async function (walkthrough = false) {
     if (Object.keys(json).length) {
         if (json["token"] === defaultDict["token"] || json["developmentToken"] === defaultDict["developmentToken"]) {
             console.log("\x1b[31m⚠ No main.ts found, creating one.");
-            console.log("  \x1b[2mYou can edit src/config/main.ts directly using template written to the file.\x1b[0m\n");
+            console.log(
+                "  \x1b[2mYou can edit src/config/main.ts directly using template written to the file.\x1b[0m\n"
+            );
             json = {};
         }
     }
@@ -142,7 +143,7 @@ export default async function (walkthrough = false) {
         password: json["password"] as string,
         database: json["database"] as string,
         host: json["host"] as string,
-        authSource: json["authSource"] as string,
+        authSource: json["authSource"] as string
     };
 
     fs.writeFileSync("./src/config/main.ts", "export default " + JSON.stringify(json, null, 4) + ";");

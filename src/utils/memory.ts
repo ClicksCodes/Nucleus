@@ -22,7 +22,7 @@ class Memory {
                 }
             }
         }, 1000 * 60 * 30);
-    };
+    }
 
     async readGuildInfo(guild: string): Promise<GuildData> {
         if (!this.memory.has(guild)) {
@@ -37,7 +37,7 @@ class Memory {
             });
         }
         return this.memory.get(guild)!;
-    };
+    }
 
     async forceUpdate(guild: string) {
         if (this.memory.has(guild)) this.memory.delete(guild);

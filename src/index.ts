@@ -18,9 +18,13 @@ client.on("ready", async () => {
     await client.database.premium.checkAllPremium();
 });
 
-process.on("unhandledRejection", (err) => { console.error(err) });
-process.on("uncaughtException", (err) => { console.error(err) });
+process.on("unhandledRejection", (err) => {
+    console.error(err);
+});
+process.on("uncaughtException", (err) => {
+    console.error(err);
+});
 
-await client.login(config.enableDevelopment ? config.developmentToken : config.token)
+await client.login(config.enableDevelopment ? config.developmentToken : config.token);
 
 await recordPerformance();

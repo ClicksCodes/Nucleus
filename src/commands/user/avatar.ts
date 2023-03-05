@@ -35,6 +35,5 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-
 export { command };
 export { callback };

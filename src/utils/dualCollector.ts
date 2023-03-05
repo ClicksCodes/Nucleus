@@ -1,4 +1,13 @@
-import { ButtonInteraction, Client, User, Interaction, InteractionCollector, Message, MessageComponentInteraction, ModalSubmitInteraction } from "discord.js";
+import {
+    ButtonInteraction,
+    Client,
+    User,
+    Interaction,
+    InteractionCollector,
+    Message,
+    MessageComponentInteraction,
+    ModalSubmitInteraction
+} from "discord.js";
 import client from "./client.js";
 
 export default async function (
@@ -10,14 +19,15 @@ export default async function (
     try {
         out = await new Promise((resolve, _reject) => {
             const mes = m
-            .createMessageComponentCollector({
-                filter: (m) => interactionFilter(m),
-                time: 300000
-            })
-            .on("collect", (m) => {
+                .createMessageComponentCollector({
+                    filter: (m) => interactionFilter(m),
+                    time: 300000
+                })
+                .on("collect", (m) => {
                     resolve(m);
                 });
-            const int = m.channel.createMessageCollector({
+            const int = m.channel
+                .createMessageCollector({
                     filter: (m) => messageFilter(m),
                     time: 300000
                 })
@@ -45,15 +55,15 @@ export default async function (
 }
 
 function defaultInteractionFilter(i: MessageComponentInteraction, user: User, m: Message) {
-    return i.channel!.id === m.channel!.id && i.user.id === user.id
+    return i.channel!.id === m.channel!.id && i.user.id === user.id;
 }
 function defaultModalFilter(i: ModalSubmitInteraction, user: User, m: Message) {
-    return i.channel!.id === m.channel!.id && i.user.id === user.id
+    return i.channel!.id === m.channel!.id && i.user.id === user.id;
 }
 
-
 export async function modalInteractionCollector(
-    m: Message, user: User,
+    m: Message,
+    user: User,
     modalFilter?: (i: Interaction) => boolean | Promise<boolean>,
     interactionFilter?: (i: MessageComponentInteraction) => boolean | Promise<boolean>
 ): Promise<null | ButtonInteraction | ModalSubmitInteraction> {
@@ -62,7 +72,8 @@ export async function modalInteractionCollector(
         out = await new Promise((resolve, _reject) => {
             const int = m
                 .createMessageComponentCollector({
-                    filter: (i: MessageComponentInteraction) => (interactionFilter ? interactionFilter(i) : true) && defaultInteractionFilter(i, user, m),
+                    filter: (i: MessageComponentInteraction) =>
+                        (interactionFilter ? interactionFilter(i) : true) && defaultInteractionFilter(i, user, m),
                     time: 300000
                 })
                 .on("collect", async (i: ButtonInteraction) => {
@@ -72,7 +83,8 @@ export async function modalInteractionCollector(
                     resolve(i);
                 });
             const mod = new InteractionCollector(client as Client, {
-                filter: (i: Interaction) => (modalFilter ? modalFilter(i) : true) && i.isModalSubmit() && defaultModalFilter(i, user, m),
+                filter: (i: Interaction) =>
+                    (modalFilter ? modalFilter(i) : true) && i.isModalSubmit() && defaultModalFilter(i, user, m),
                 time: 300000
             }).on("collect", async (i: ModalSubmitInteraction) => {
                 int.stop();

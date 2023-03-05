@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from './../utils/getCommandDataByName.js';
+import { getCommandMentionByName } from "./../utils/getCommandDataByName.js";
 import type { NucleusClient } from "../utils/client.js";
 import convertCurlyBracketString from "../utils/convertCurlyBracketString.js";
 import client from "../utils/client.js";
@@ -26,8 +26,18 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                     embeds: [new EmojiEmbed().setDescription(string).setStatus("Success")]
                 });
             } else {
-                const channel: GuildChannel | null = await member.guild.channels.fetch(config.welcome.channel) as GuildChannel | null;
-                if (!channel) return await singleNotify("welcomeChannelDeleted", member.guild.id, `The welcome channel has been deleted or is no longer accessible. Use ${getCommandMentionByName("settings/welcome")} to set a new one`, "Warning")
+                const channel: GuildChannel | null = (await member.guild.channels.fetch(
+                    config.welcome.channel
+                )) as GuildChannel | null;
+                if (!channel)
+                    return await singleNotify(
+                        "welcomeChannelDeleted",
+                        member.guild.id,
+                        `The welcome channel has been deleted or is no longer accessible. Use ${getCommandMentionByName(
+                            "settings/welcome"
+                        )} to set a new one`,
+                        "Warning"
+                    );
                 if (!(channel instanceof BaseGuildTextChannel)) return;
                 if (channel.guild.id !== member.guild.id) return;
                 try {
@@ -39,9 +49,11 @@ export async function callback(_client: NucleusClient, member: GuildMember) {
                     singleNotify(
                         "welcomeChannelDeleted",
                         member.guild.id,
-                        `The welcome channel has been deleted or is no longer accessible. Use ${getCommandMentionByName("settings/welcome")} to set a new one`,
+                        `The welcome channel has been deleted or is no longer accessible. Use ${getCommandMentionByName(
+                            "settings/welcome"
+                        )} to set a new one`,
                         "Warning"
-                    )
+                    );
                 }
             }
         }

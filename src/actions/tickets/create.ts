@@ -1,4 +1,10 @@
-import Discord, { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, ButtonInteraction } from "discord.js";
+import Discord, {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    CommandInteraction,
+    ButtonInteraction
+} from "discord.js";
 import { tickets, toHexArray } from "../../utils/calculate.js";
 import client from "../../utils/client.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -32,14 +38,18 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
         });
     }
     let count = 0;
-    const targetChannel: Discord.CategoryChannel | Discord.TextChannel = (await interaction.guild.channels.fetch(config.tickets.category))! as Discord.CategoryChannel | Discord.TextChannel;
+    const targetChannel: Discord.CategoryChannel | Discord.TextChannel = (await interaction.guild.channels.fetch(
+        config.tickets.category
+    ))! as Discord.CategoryChannel | Discord.TextChannel;
     if (targetChannel.type === Discord.ChannelType.GuildCategory) {
         // For channels, the topic is the user ID, then the word Active
         const category = targetChannel as Discord.CategoryChannel;
         category.children.cache.forEach((element) => {
             if (!(element.type === Discord.ChannelType.GuildText)) return;
             if (((element as Discord.TextChannel).topic ?? "").includes(`${interaction.member!.user.id}`)) {
-                if (((element as Discord.TextChannel).topic ?? "").endsWith("Active")) { count++; }
+                if (((element as Discord.TextChannel).topic ?? "").endsWith("Active")) {
+                    count++;
+                }
             }
         });
     } else {
@@ -47,7 +57,9 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
         const channel = targetChannel as Discord.TextChannel;
         channel.threads.cache.forEach((element: Discord.ThreadChannel) => {
             if (element.name.includes(`${interaction.member!.user.id}`)) {
-                if (element.name.endsWith("Active")) { count++; }
+                if (element.name.endsWith("Active")) {
+                    count++;
+                }
             }
         });
     }
@@ -88,7 +100,9 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             }
         });
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
-            splitFormattedTicketTypes.push(new ActionRowBuilder<ButtonBuilder>().addComponents(formattedTicketTypes.slice(i, i + 5)));
+            splitFormattedTicketTypes.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(formattedTicketTypes.slice(i, i + 5))
+            );
         }
         const m = await interaction.reply({
             embeds: [
@@ -106,7 +120,13 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
         try {
             component = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             return;
@@ -131,7 +151,9 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             }
         });
         for (let i = 0; i < formattedTicketTypes.length; i += 5) {
-            splitFormattedTicketTypes.push(new ActionRowBuilder<ButtonBuilder>().addComponents(formattedTicketTypes.slice(i, i + 5)));
+            splitFormattedTicketTypes.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(formattedTicketTypes.slice(i, i + 5))
+            );
         }
         component.update({
             embeds: [
@@ -252,11 +274,12 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             });
         }
     } else {
-        c = await targetChannel.threads.create({name: `${interaction.member!.user.username} - ${interaction.member!.user.id} - Active`,
-                                                autoArchiveDuration: 60 * 24 * 7,
-                                                type: Discord.ChannelType.PrivateThread,
-                                                reason: "Creating ticket"
-                                                }) as Discord.PrivateThreadChannel;
+        c = (await targetChannel.threads.create({
+            name: `${interaction.member!.user.username} - ${interaction.member!.user.id} - Active`,
+            autoArchiveDuration: 60 * 24 * 7,
+            type: Discord.ChannelType.PrivateThread,
+            reason: "Creating ticket"
+        })) as Discord.PrivateThreadChannel;
         c.members.add(interaction.member!.user.id);
         try {
             await c.send({

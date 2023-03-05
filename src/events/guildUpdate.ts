@@ -7,9 +7,10 @@ export const event = "guildUpdate";
 export async function callback(client: NucleusClient, before: Guild, after: Guild) {
     await statsChannelUpdate(client, after.members.me!);
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    if (!await isLogging(after.id, "guildUpdate")) return;
-    const auditLog = (await getAuditLog(after, AuditLogEvent.GuildUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as Guild)!.id === after.id)[0]!;
+    if (!(await isLogging(after.id, "guildUpdate"))) return;
+    const auditLog = (await getAuditLog(after, AuditLogEvent.GuildUpdate)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as Guild)!.id === after.id
+    )[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
     const list: Record<string, ReturnType<typeof entry>> = {};
 
@@ -21,23 +22,19 @@ export async function callback(client: NucleusClient, before: Guild, after: Guil
         "Verified phone"
     ];
 
-    const explicitContentFilterLevels = [
-        "Disabled",
-        "Members without roles",
-        "All members"
-    ];
+    const explicitContentFilterLevels = ["Disabled", "Members without roles", "All members"];
 
-    const MFALevels = [
-        "None",
-        "Enabled"
-    ];
+    const MFALevels = ["None", "Enabled"];
 
     const beforeOwner = await before.fetchOwner();
     const afterOwner = await after.fetchOwner();
 
     if (before.name !== after.name) list["name"] = entry([before.name, after.name], `${before.name} -> ${after.name}`);
     if (before.icon !== after.icon)
-        list["icon"] = entry([before.icon!, after.icon!], `[Before](${before.iconURL()}) -> [After](${after.iconURL()})`);
+        list["icon"] = entry(
+            [before.icon!, after.icon!],
+            `[Before](${before.iconURL()}) -> [After](${after.iconURL()})`
+        );
     if (before.splash !== after.splash)
         list["splash"] = entry(
             [before.splash!, after.splash!],
@@ -55,8 +52,13 @@ export async function callback(client: NucleusClient, before: Guild, after: Guil
         );
     if (before.verificationLevel !== after.verificationLevel)
         list["verificationLevel"] = entry(
-            [verificationLevels[before.verificationLevel.valueOf()]!, verificationLevels[before.verificationLevel.valueOf()]!],
-            `${verificationLevels[before.verificationLevel.valueOf()]} -> ${verificationLevels[before.verificationLevel.valueOf()]}`
+            [
+                verificationLevels[before.verificationLevel.valueOf()]!,
+                verificationLevels[before.verificationLevel.valueOf()]!
+            ],
+            `${verificationLevels[before.verificationLevel.valueOf()]} -> ${
+                verificationLevels[before.verificationLevel.valueOf()]
+            }`
         );
     if (before.explicitContentFilter !== after.explicitContentFilter)
         list["explicitContentFilter"] = entry(

@@ -1,5 +1,5 @@
 import emojis from "../config/emojis.json" assert { type: "json" };
-import lodash from 'lodash';
+import lodash from "lodash";
 
 const isArray = lodash.isArray;
 interface EmojisIndex {

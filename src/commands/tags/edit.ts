@@ -100,7 +100,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             toUnset.push(`tags.${name}`);
             toSet[`tags.${newname}`] = data.tags[name]!;
         }
-        await client.database.guilds.write(interaction.guild.id, Object.keys(toSet).length === 0 ? null : toSet, toUnset);
+        await client.database.guilds.write(
+            interaction.guild.id,
+            Object.keys(toSet).length === 0 ? null : toSet,
+            toUnset
+        );
         await client.memory.forceUpdate(interaction.guild!.id);
     } catch (e) {
         return await interaction.editReply({

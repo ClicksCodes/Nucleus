@@ -15,9 +15,10 @@ export const event = "channelDelete";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, isLogging, NucleusColors, entry, renderDelta, renderUser } = client.logger;
-    if (!await isLogging(channel.guild.id, "channelUpdate")) return;
-    const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelDelete))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id)[0];
+    if (!(await isLogging(channel.guild.id, "channelUpdate"))) return;
+    const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelDelete)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id
+    )[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
 
@@ -30,32 +31,38 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
             readableType = "Text";
             displayName = "Text Channel";
             break;
-        } case ChannelType.GuildAnnouncement: {
+        }
+        case ChannelType.GuildAnnouncement: {
             emoji = "CHANNEL.TEXT.DELETE";
             readableType = "Announcement";
             displayName = "Announcement Channel";
             break;
-        } case ChannelType.GuildVoice: {
+        }
+        case ChannelType.GuildVoice: {
             emoji = "CHANNEL.VOICE.DELETE";
             readableType = "Voice";
             displayName = "Voice Channel";
             break;
-        } case ChannelType.GuildCategory: {
+        }
+        case ChannelType.GuildCategory: {
             emoji = "CHANNEL.CATEGORY.DELETE";
             readableType = "Category";
             displayName = "Category";
             break;
-        } case ChannelType.GuildStageVoice: {
+        }
+        case ChannelType.GuildStageVoice: {
             emoji = "CHANNEL.VOICE.DELETE";
             readableType = "Stage";
             displayName = "Stage Channel";
             break;
-        } case ChannelType.GuildForum: {
+        }
+        case ChannelType.GuildForum: {
             emoji = "CHANNEL.TEXT.DELETE";
             readableType = "Forum";
             displayName = "Forum Channel";
             break;
-        } default: {
+        }
+        default: {
             emoji = "CHANNEL.TEXT.DELETE";
             readableType = "Channel";
             displayName = "Channel";

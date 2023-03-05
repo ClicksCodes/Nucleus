@@ -11,11 +11,13 @@ export async function callback(client: NucleusClient, member: GuildMember) {
     purgeByUser(member.id, member.guild.id);
     await statsChannelRemove(client, member);
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    if (!await isLogging(member.guild.id, "guildMemberUpdate")) return;
-    const kickAuditLog = (await getAuditLog(member.guild as Guild, AuditLogEvent.MemberKick))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === member.id)[0];
-    const banAuditLog = (await getAuditLog(member.guild as Guild, AuditLogEvent.MemberBanAdd))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === member.id)[0];
+    if (!(await isLogging(member.guild.id, "guildMemberUpdate"))) return;
+    const kickAuditLog = (await getAuditLog(member.guild as Guild, AuditLogEvent.MemberKick)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === member.id
+    )[0];
+    const banAuditLog = (await getAuditLog(member.guild as Guild, AuditLogEvent.MemberBanAdd)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === member.id
+    )[0];
     let type = "leave";
     if (kickAuditLog) {
         if (kickAuditLog.executor!.id === client.user!.id) return;
@@ -27,16 +29,22 @@ export async function callback(client: NucleusClient, member: GuildMember) {
         if (banAuditLog.executor!.id === client.user!.id) return;
         if (banAuditLog.createdAt.getTime() >= startTime) {
             if (!kickAuditLog) {
-                return
+                return;
             } else if (kickAuditLog.createdAt.valueOf() < banAuditLog.createdAt.valueOf()) {
-                return
+                return;
             }
         }
     }
     let data;
     if (type === "kick") {
         if (!kickAuditLog) return;
-        await client.database.history.create("kick", member.guild.id, member.user, kickAuditLog.executor, kickAuditLog.reason);
+        await client.database.history.create(
+            "kick",
+            member.guild.id,
+            member.user,
+            kickAuditLog.executor,
+            kickAuditLog.reason
+        );
         data = {
             meta: {
                 type: "memberKick",
@@ -52,7 +60,10 @@ export async function callback(client: NucleusClient, member: GuildMember) {
                 joined: entry(member.joinedTimestamp, renderDelta(member.joinedTimestamp?.valueOf()!)),
                 kicked: entry(Date.now(), renderDelta(Date.now())),
                 kickedBy: entry(kickAuditLog.executor!.id, renderUser(kickAuditLog.executor!)),
-                reason: entry(kickAuditLog.reason, kickAuditLog.reason ? `\n> ${kickAuditLog.reason}` : "*No reason provided.*"),
+                reason: entry(
+                    kickAuditLog.reason,
+                    kickAuditLog.reason ? `\n> ${kickAuditLog.reason}` : "*No reason provided.*"
+                ),
                 accountCreated: entry(member.user.createdTimestamp, renderDelta(member.user.createdTimestamp)),
                 serverMemberCount: member.guild.memberCount
             },
