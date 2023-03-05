@@ -1,3 +1,5 @@
+import "@total-typescript/ts-reset";
+
 import runServer from "./api/index.js";
 import client from "./utils/client.js";
 import config from "./config/main.js";
