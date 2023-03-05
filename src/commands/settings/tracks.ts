@@ -413,6 +413,7 @@ const callback = async (interaction: CommandInteraction) => {
                 case "save": {
                     client.database.guilds.write(interaction.guild!.id, {tracks: tracks});
                     modified = false;
+                    await client.memory.forceUpdate(interaction.guild!.id);
                     break;
                 }
             }

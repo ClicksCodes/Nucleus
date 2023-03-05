@@ -93,6 +93,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         "logging.attachments.channel": channel
                     });
                     data = await client.database.guilds.read(interaction.guild!.id);
+                    await client.memory.forceUpdate(interaction.guild!.id);
                     break;
                 }
             }

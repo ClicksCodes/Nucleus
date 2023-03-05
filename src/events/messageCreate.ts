@@ -5,12 +5,22 @@ import { messageException } from "../utils/createTemporaryStorage.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
-import { Message, ThreadChannel } from "discord.js";
+import { ChannelType, Message, ThreadChannel } from "discord.js";
 
 export const event = "messageCreate";
 
 export async function callback(_client: NucleusClient, message: Message) {
     if (!message.guild) return;
+    const config = await client.memory.readGuildInfo(message.guild.id);
+
+    if (config.autoPublish.enabled 
+        && config.autoPublish.channels.includes(message.channel.id)
+        && message.channel.type === ChannelType.GuildAnnouncement
+        && message.reference === null
+    ) {
+        await message.crosspost();
+    }
+
     if (message.author.bot) return;
     if (message.channel.isDMBased()) return;
     try {
@@ -24,16 +34,11 @@ export async function callback(_client: NucleusClient, message: Message) {
     const fileNames = await logAttachment(message);
 
     const content = message.content.toLowerCase() || "";
-    const config = await client.memory.readGuildInfo(message.guild.id);
     if(config.filters.clean.channels.includes(message.channel.id)) {
         const memberRoles = message.member!.roles.cache.map(role => role.id);
         const roleAllow = config.filters.clean.allowed.roles.some(role => memberRoles.includes(role));
         const userAllow = config.filters.clean.allowed.users.includes(message.author.id);
         if(!roleAllow && !userAllow) return await message.delete();
-    }
-
-    if (config.autoPublish.enabled && config.autoPublish.channels.includes(message.channel.id)) {
-        await message.crosspost();
     }
 
     const filter = getEmojiByName("ICONS.FILTER");

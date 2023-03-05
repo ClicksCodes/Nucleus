@@ -263,7 +263,7 @@ export class Transcript {
                 }
             }
             if(!data) return null;
-            doc = JSON.parse(Buffer.from(data).toString());
+            doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
         if(!doc) return null;
         return doc;
@@ -294,7 +294,7 @@ export class Transcript {
                 }
             }
             if(!data) return null;
-            doc = JSON.parse(Buffer.from(data).toString());
+            doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
         if(!doc) return null;
         for(const message of doc.messages) {

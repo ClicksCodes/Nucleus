@@ -19,3 +19,5 @@ src/utils/temp/*.jpg
 
 ClicksMigratingProblems/oldData/
 ClicksMigratingProblems/oldData copy/
+
+.direnv/
