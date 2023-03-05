@@ -55,7 +55,7 @@ class NucleusClient extends Client {
     }
 }
 const client = new NucleusClient({
-    guilds: await new Guilds(),
+    guilds: new Guilds(),
     history: new History(),
     notes: new ModNotes(),
     premium: new Premium(),
