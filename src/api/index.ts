@@ -14,7 +14,7 @@ const port = 10000;
 
 const runServer = (client: NucleusClient) => {
     app.get("/", (_req: express.Request, res: express.Response) => {
-        res.status(200).send(client.ws.ping);
+        res.status(200).send(client.ws.ping.toString());
     });
 
     app.post("/verify/:code", jsonParser, async function (req: express.Request, res: express.Response) {

@@ -12,7 +12,7 @@ for (const file of files) {
         rsmData = JSON.parse(fs.readFileSync(`${dir}/${file}`, 'utf8'));
     } catch { continue }
     if (!rsmData.version || rsmData.version < 3) continue;
-    const nucleusData = await client.database.guilds.read(rsmData.guild_info.id)
+    const nucleusData = await client.database.guilds.readOld(rsmData.guild_info.id)
     const rsmToNucleus = {
         id: rsmData.guild_info.id,
         version: 1,
@@ -74,6 +74,6 @@ for (const file of files) {
     // console.log(rsmToNucleus)
     const merged = _.merge(nucleusData, rsmToNucleus);
     // console.log(merged)
-    await client.database.guilds.write(merged.id, merged);
+    await client.database.guilds.write(merged.id!, merged);
 
 }

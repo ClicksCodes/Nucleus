@@ -804,10 +804,10 @@ export class Premium {
         return this.premium.updateOne({ user: user }, { $addToSet: { appliesTo: guild } }, { upsert: true });
     }
 
-    removePremium(user: string, guild: string) {
+    async removePremium(user: string, guild: string) {
         // console.log("Premium removePremium");
         this.cache.set(guild, [false, "", 0, false, new Date(Date.now() + this.cacheTimeout)]);
-        return this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
+        return await this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
 }
 

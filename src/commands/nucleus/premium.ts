@@ -93,7 +93,7 @@ const dmcallback = async (interaction: CommandInteraction, firstDescription: str
         if (i.isButton()) {
             closed = true;
         } else {
-            const response = client.database.premium.removePremium(interaction.user.id, i.values[0]!);
+            const response = await client.database.premium.removePremium(interaction.user.id, i.values[0]!);
             console.log(response);
         }
     } while (!closed);
@@ -163,9 +163,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const hasPremium = await client.database.premium.hasPremium(interaction.guild!.id);
     let premiumGuild = "";
     if (hasPremium) {
+        const gaveUser = await client.users.fetch(hasPremium[1]);
         premiumGuild = `**This server has premium! It was ${
             hasPremium[2] === 3 && hasPremium[3]
-                ? `automatically applied by <@${hasPremium[1]}>`
+                ? `automatically applied by ${gaveUser.username}#${gaveUser.discriminator}`
                 : `given by <@${hasPremium[1]}>`
         }**\n\n`;
     }
@@ -191,6 +192,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             )
         );
     }
+
+    let userPremiumServers;
+    if ((dbMember?.appliesTo.length ?? 0) > 0) userPremiumServers = "\nIf you want to remove premium from a server, run this command in your DMs with me.";
 
     interaction.editReply({
         embeds: [
@@ -219,7 +223,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Premium")
                     .setDescription(
-                        `You have already activated premium on the maximum amount of servers!` + firstDescription
+                        `You have already activated premium on the maximum amount of servers!` + userPremiumServers + firstDescription
                     )
                     .setEmoji("NUCLEUS.PREMIUMACTIVATE")
                     .setStatus("Danger")
@@ -232,7 +236,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Premium")
-                    .setDescription(`You have activated premium on this server!` + firstDescription)
+                    .setDescription(`You have activated premium on this server!` + userPremiumServers + firstDescription)
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
             ],
