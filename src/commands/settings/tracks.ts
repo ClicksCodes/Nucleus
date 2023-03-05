@@ -163,7 +163,7 @@ const editTrack = async (
         current = {
             name: "",
             retainPrevious: false,
-            nullable: false,
+            nullable: true,
             track: [],
             manageableBy: []
         };
@@ -173,6 +173,7 @@ const editTrack = async (
         new RoleSelectMenuBuilder().setCustomId("addRole").setPlaceholder("Select a role to add").setDisabled(!isAdmin)
     );
     let closed = false;
+    let previousMessage = "";
     do {
         const editableRoles: string[] = current.track
             .map((r) => {
@@ -224,9 +225,9 @@ const editTrack = async (
             new ButtonBuilder()
                 .setCustomId("nullable")
                 .setLabel(`Role ${current.nullable ? "Not " : ""}Required`)
-                .setStyle(current.nullable ? ButtonStyle.Success : ButtonStyle.Danger)
+                .setStyle(current.nullable ? ButtonStyle.Danger : ButtonStyle.Success)
                 .setEmoji(
-                    getEmojiByName("CONTROL." + (current.nullable ? "TICK" : "CROSS"), "id") as APIMessageComponentEmoji
+                    getEmojiByName("CONTROL." + (current.nullable ? "CROSS" : "TICK"), "id") as APIMessageComponentEmoji
                 )
         );
 
@@ -247,7 +248,7 @@ const editTrack = async (
                     }need a role in this track\n` +
                     `${getEmojiByName("CONTROL." + (current.retainPrevious ? "TICK" : "CROSS"))} Members ${
                         current.retainPrevious ? "" : "don't "
-                    }keep all roles below their current highest\n\n` +
+                    }keep all roles below their current highest\n\n` + (previousMessage ? previousMessage + "\n\n": "") +
                     createVerticalTrack(
                         mapped.map((role) => renderRole(role)),
                         new Array(current.track.length).fill(false),
@@ -316,13 +317,20 @@ const editTrack = async (
                 }
             }
         } else {
+            out.deferUpdate();
             switch (out.customId) {
                 case "addRole": {
                     const role = out.values![0]!;
-                    if (!current.track.includes(role)) {
-                        current.track.push(role);
+                    const roleObj = roles.get(role)!;
+                    if (roleObj.position >= (interaction.member as GuildMember).roles.highest.position){
+                        previousMessage = "You can't add a role that is higher than your highest role.";
                     } else {
-                        out.reply({ content: "That role is already on this track", ephemeral: true });
+                        if (!current.track.includes(role)) {
+                            current.track.push(role);
+                            await interaction.editReply({ embeds: LoadingEmbed, components: [] });
+                        } else {
+                            previousMessage = "That role is already on this track";
+                        }
                     }
                     break;
                 }

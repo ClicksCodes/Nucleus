@@ -79,7 +79,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                         "Self roles are currently disabled. Please contact a staff member or try again later."
                     )
                     .setStatus("Danger")
-                    .setEmoji("GUILD.GREEN")
+                    .setEmoji("GUILD.RED")
             ],
             ephemeral: true
         });
@@ -92,7 +92,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                         "There are no roles available. Please contact a staff member if you believe this is a mistake."
                     )
                     .setStatus("Danger")
-                    .setEmoji("GUILD.GREEN")
+                    .setEmoji("GUILD.RED")
             ],
             ephemeral: true
         });
