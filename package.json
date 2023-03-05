@@ -36,6 +36,7 @@
         "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To auto-fix everything possible, please run `yarn lint-fix`'; true",
         "lint-fix": "echo 'Fixing eslint issues...'; eslint src --fix; echo 'Reformatting...'; prettier --write --loglevel warn --cache .; true",
         "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To view errors in more detail, please run `yarn lint`'; true",
+        "lint-ci" : "echo 'Style checking...' && prettier --check . && echo 'Linting...' && eslint src",
         "setup": "node Installer.js",
         "win-force-build": "clear | rm -r dist | tsc-suppress"
     },
