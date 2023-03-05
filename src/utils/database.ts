@@ -31,11 +31,19 @@ const getIV = () => crypto.randomBytes(16);
 
 export class Guilds {
     guilds: Collection<GuildConfig>;
+    oldGuilds: Collection<GuildConfig>;
     defaultData: GuildConfig;
 
     constructor() {
         this.guilds = database.collection<GuildConfig>("guilds");
         this.defaultData = defaultData;
+        this.oldGuilds = database.collection<GuildConfig>("oldGuilds");
+    }
+
+    async readOld(guild: string): Promise<Partial<GuildConfig>> {
+        // console.log("Guild read")
+        const entry = await this.oldGuilds.findOne({ id: guild });
+        return entry ?? {};
     }
 
     async read(guild: string): Promise<GuildConfig> {
