@@ -6,7 +6,8 @@ const dir = './data';
 const files = fs.readdirSync(dir);
 
 for (const file of files) {
-    let rsmData;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let rsmData: any;
     try {
         rsmData = JSON.parse(fs.readFileSync(`${dir}/${file}`, 'utf8'));
     } catch { continue }
