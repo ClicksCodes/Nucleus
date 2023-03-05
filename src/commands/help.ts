@@ -85,7 +85,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             : ``
                     }\n\n\n` +
                     `Nucleus is fully [open source](https://github.com/clicksminuteper/Nucleus), and all currently free features will remain free forever.\n\n` +
-                    `You can invite Nucleus to your server using ${getCommandMentionByName("nucleus/invite")}`
+                    `You can invite Nucleus to your server using ${getCommandMentionByName("nucleus/invite")}\n` +
+                    `Our support server can be found [here](https://discord.gg/bPaNnxe), and we can be emailed at support@clicks.codes`
             );
         } else {
             const currentData = getCommandByName(
