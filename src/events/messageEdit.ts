@@ -29,7 +29,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
                     type: "messageAnnounce",
                     displayName: "Message Published",
                     calculateType: "messageAnnounce",
-                    color: NucleusColors.yellow,
+                    color: NucleusColors.green,
                     emoji: "MESSAGE.CREATE",
                     timestamp: newMessage.editedTimestamp ?? Date.now()
                 },
