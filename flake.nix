@@ -8,7 +8,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       devShells.default = pkgs.mkShell {
-        packages = [ pkgs.yarn pkgs.nodejs-19_x pkgs.typescript ];
+        packages = [ pkgs.yarn pkgs.nodejs-19_x pkgs.typescript pkgs.act ];
       };
     });
 }
