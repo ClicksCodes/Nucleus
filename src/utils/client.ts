@@ -50,7 +50,7 @@ class NucleusClient extends Client {
     > = {};
     fetchedCommands = new Collection<string, Discord.ApplicationCommand>();
     constructor(database: typeof NucleusClient.prototype.database) {
-        super({ intents: 0b1100011011011111111111 });
+        super({ intents: 3276543 });
         this.database = database;
     }
 }

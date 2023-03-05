@@ -46,6 +46,19 @@ export class Guilds {
         return entry ?? {};
     }
 
+    async updateAllGuilds() {
+        const guilds = await this.guilds.find().toArray();
+        for (const guild of guilds) {
+            let guildObj;
+            try {
+                guildObj = await client.guilds.fetch(guild.id);
+            } catch (e) {
+                guildObj = null;
+            }
+            if(!guildObj) await this.delete(guild.id);
+        }
+    }
+
     async read(guild: string): Promise<GuildConfig> {
         // console.log("Guild read")
         const entry = await this.guilds.findOne({ id: guild });

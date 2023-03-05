@@ -16,6 +16,8 @@ client.on("ready", async () => {
         client.fetchedCommands = await client.application?.commands.fetch()!;
     }
     await client.database.premium.checkAllPremium();
+    await client.database.guilds.updateAllGuilds();
+
 });
 
 process.on("unhandledRejection", (err) => {

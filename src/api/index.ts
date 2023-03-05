@@ -177,7 +177,7 @@ const runServer = (client: NucleusClient) => {
         const id = req.params.id;
         if (id === undefined) return res.status(400).send("No id provided");
         const channel = await client.channels.fetch(id);
-        if (channel === null) return res.status(404).send("Could not find a channel by that id");
+        if (channel === null) return res.status(400).send("Could not find a channel by that id");
         if (channel.isDMBased()) return res.status(400).send("Cannot get a DM channel");
         return res.status(200).send(channel.name);
     });
