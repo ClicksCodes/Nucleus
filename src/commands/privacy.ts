@@ -84,6 +84,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                                   .setLabel("Clear all data")
                                   .setCustomId("clear-all-data")
                                   .setStyle(ButtonStyle.Danger)
+                                  .setDisabled(!(interaction.user.id === interaction.guild!.ownerId))
                           ])
                       ])
               ]
