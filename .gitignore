@@ -7,6 +7,7 @@ src/config/*
 !src/config/format.ts
 !src/config/default.ts
 !src/config/emojis.json
+src/utils/migration/data
 src/config/main.ts
 .vscode/
 .vim/
