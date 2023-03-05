@@ -73,5 +73,6 @@ for (const file of files) {
     // console.log(rsmToNucleus)
     const merged = _.merge(nucleusData, rsmToNucleus);
     // console.log(merged)
-    
+    await client.database.guilds.write(merged.id, merged);
+
 }
