@@ -4,6 +4,7 @@ import { toHexArray } from "./calculate.js";
 import { promisify } from "util";
 import generateKeyValueList from "./generateKeyValueList.js";
 import client from "./client.js";
+import {DiscordAPIError} from "discord.js";
 
 const wait = promisify(setTimeout);
 
@@ -84,9 +85,15 @@ export const Logger = {
         event: Discord.GuildAuditLogsResolvable,
         delay?: number
     ): Promise<Discord.GuildAuditLogsEntry[]> {
+        if (!guild.members.me?.permissions.has("ViewAuditLog")) return [];
         await wait(delay ?? 250);
-        const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map((m) => m);
-        return auditLog as Discord.GuildAuditLogsEntry[];
+        try {
+            const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map((m) => m);
+            return auditLog as Discord.GuildAuditLogsEntry[];
+        } catch (e) {
+            if (e instanceof DiscordAPIError) return [];
+            throw e;
+        }
     },
     async log(log: LoggerOptions): Promise<void> {
         if (!(await isLogging(log.hidden.guild, log.meta.calculateType))) return;
