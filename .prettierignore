@@ -2,11 +2,14 @@ dist/
 .history/
 node_modules/
 src/config/*
+
+!src/config/*.d.ts
 !src/config/format.ts
-!src/config/default.json
+!src/config/default.ts
 !src/config/emojis.json
-!src/config/main.ts
+src/config/main.ts
 .vscode/
+.vim/
 yarn-error.log
 yarn.lock
 src/utils/temp/*.png
@@ -16,3 +19,5 @@ src/utils/temp/*.jpg
 
 ClicksMigratingProblems/oldData/
 ClicksMigratingProblems/oldData copy/
+
+.direnv/

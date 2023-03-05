@@ -5,9 +5,10 @@ export const event = "channelCreate";
 
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
     const { getAuditLog, log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
-    if (!await isLogging(channel.guild.id, "channelUpdate")) return;
-    const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelCreate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id)[0];
+    if (!(await isLogging(channel.guild.id, "channelUpdate"))) return;
+    const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelCreate)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildBasedChannel)!.id === channel.id
+    )[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     let emoji;
@@ -81,4 +82,4 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
         }
     };
     log(data);
-};
+}

@@ -8,9 +8,10 @@ export async function callback(client: NucleusClient, message: Message) {
     if (message.author.bot) return;
     if (client.noLog.includes(`${message.guild!.id}/${message.channel.id}/${message.id}`)) return;
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
-    if (!await isLogging(message.guild!.id, "messageDelete")) return;
-    const auditLog = (await getAuditLog(message.guild!, AuditLogEvent.MemberBanAdd))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target! as User).id === message.author.id)[0];
+    if (!(await isLogging(message.guild!.id, "messageDelete"))) return;
+    const auditLog = (await getAuditLog(message.guild!, AuditLogEvent.MemberBanAdd)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target! as User).id === message.author.id
+    )[0];
     if (auditLog) {
         if (auditLog.createdTimestamp - 1000 < Date.now()) return;
     }
@@ -19,7 +20,8 @@ export async function callback(client: NucleusClient, message: Message) {
     content.replace("`", "\\`");
     if (content.length > 256) content = content.substring(0, 253) + "...";
     const attachments =
-        message.attachments.size + (
+        message.attachments.size +
+        (
             message.content.match(
                 /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi
             ) ?? []
@@ -28,7 +30,9 @@ export async function callback(client: NucleusClient, message: Message) {
     const config = (await client.database.guilds.read(message.guild!.id)).logging.attachments.saved[
         message.channel.id + message.id
     ];
-    if (config) { attachmentJump = ` [[View attachments]](${config})`; }
+    if (config) {
+        attachmentJump = ` [[View attachments]](${config})`;
+    }
     const data = {
         meta: {
             type: "messageDelete",
@@ -44,14 +48,20 @@ export async function callback(client: NucleusClient, message: Message) {
         list: {
             messageId: entry(message.id, `\`${message.id}\``),
             sentBy: entry(message.author.id, renderUser(message.author)),
-            sentIn: entry(message.channel.id, renderChannel(message.channel as Discord.GuildChannel | Discord.ThreadChannel)),
+            sentIn: entry(
+                message.channel.id,
+                renderChannel(message.channel as Discord.GuildChannel | Discord.ThreadChannel)
+            ),
             deleted: entry(Date.now(), renderDelta(Date.now())),
             mentions: message.mentions.users.size,
             attachments: entry(attachments, attachments + attachmentJump),
             repliedTo: entry(
                 replyTo ? replyTo.messageId! : null,
-                replyTo ? `[[Jump to message]](https://discord.com/channels/${message.guild!.id}/${message.channel.id}/${replyTo.messageId})`
-                        : "None"
+                replyTo
+                    ? `[[Jump to message]](https://discord.com/channels/${message.guild!.id}/${message.channel.id}/${
+                          replyTo.messageId
+                      })`
+                    : "None"
             )
         },
         hidden: {

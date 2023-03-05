@@ -24,7 +24,5 @@ jobs:
             - run: yarn install --immutable
             - name: Compile
               run: yarn build
-            - name: Run eslint
-              uses: mrdivyansh/eslint-action@v1.0.7
-            - name: Run prettier
-              uses: actionsx/prettier@v2
+            - name: Run prettier and eslint
+              run: yarn lint-ci

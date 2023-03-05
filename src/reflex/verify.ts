@@ -122,7 +122,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
         });
         if (
             await NSFWCheck(
-                (interaction.member as GuildMember).user.displayAvatarURL({extension: "png", forceStatic: true})
+                (interaction.member as GuildMember).user.displayAvatarURL({ extension: "png", forceStatic: true })
             )
         ) {
             return await interaction.editReply({
@@ -184,14 +184,14 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
     let itt = 0;
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     do {
-        itt ++;
+        itt++;
         code = "";
         for (let i = 0; i < length; i++) {
             code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         if (itt > 1000) {
             itt = 0;
-            length ++;
+            length++;
         }
     } while (code in verify);
     const role: Role | null = await interaction.guild!.roles.fetch(config.verify.role);
@@ -208,7 +208,14 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                     .setEmoji("CONTROL.BLOCKCROSS")
             ]
         });
-        singleNotify("verifyRoleDeleted", interaction.guild!.id, `The role given when a member is verified has been deleted. Use ${getCommandMentionByName("settings/verify")} to set a new one`, "Critical")
+        singleNotify(
+            "verifyRoleDeleted",
+            interaction.guild!.id,
+            `The role given when a member is verified has been deleted. Use ${getCommandMentionByName(
+                "settings/verify"
+            )} to set a new one`,
+            "Critical"
+        );
         return;
     }
     verify[code] = {

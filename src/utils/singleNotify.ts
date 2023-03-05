@@ -33,13 +33,15 @@ export default async function (
         if (!channel) return;
         if (!channel.isTextBased()) return;
         const textChannel = channel as TextChannel | ThreadChannel | NewsChannel;
-        let messageData = {embeds: [
-            new EmojiEmbed()
-                .setTitle(`${severity} notification`)
-                .setDescription(message)
-                .setStatus(severities.get(severity))
-                .setEmoji("CONTROL.BLOCKCROSS")
-        ]}
+        let messageData = {
+            embeds: [
+                new EmojiEmbed()
+                    .setTitle(`${severity} notification`)
+                    .setDescription(message)
+                    .setStatus(severities.get(severity))
+                    .setEmoji("CONTROL.BLOCKCROSS")
+            ]
+        };
         if (pings) {
             messageData = Object.assign(messageData, {
                 content: pings.map((ping) => `<@${ping}>`).join(" ")

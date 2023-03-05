@@ -1,14 +1,19 @@
 import { LoadingEmbed } from "../../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelSelectMenuBuilder, ChannelType } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ChannelSelectMenuBuilder,
+    ChannelType
+} from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("warnings")
-        .setDescription("Settings for the staff notifications channel")
+    builder.setName("warnings").setDescription("Settings for the staff notifications channel");
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
@@ -16,34 +21,32 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
-    })
+    });
 
     let data = await client.database.guilds.read(interaction.guild.id);
     let channel = data.logging.staff.channel;
     let closed = false;
     do {
-        const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>()
-        .addComponents(
+        const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
             new ChannelSelectMenuBuilder()
                 .setCustomId("channel")
                 .setPlaceholder("Select a channel")
                 .setChannelTypes(ChannelType.GuildText)
         );
-        const buttons = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId("clear")
-                    .setLabel("Clear")
-                    .setStyle(ButtonStyle.Danger)
-                    .setEmoji(getEmojiByName("CONTROL.CROSS", "id") as Discord.APIMessageComponentEmoji)
-                    .setDisabled(!channel),
-                new ButtonBuilder()
-                    .setCustomId("save")
-                    .setLabel("Save")
-                    .setStyle(ButtonStyle.Success)
-                    .setEmoji(getEmojiByName("ICONS.SAVE", "id") as Discord.APIMessageComponentEmoji)
-                    .setDisabled(channel === data.logging.staff.channel)
-            );
+        const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId("clear")
+                .setLabel("Clear")
+                .setStyle(ButtonStyle.Danger)
+                .setEmoji(getEmojiByName("CONTROL.CROSS", "id") as Discord.APIMessageComponentEmoji)
+                .setDisabled(!channel),
+            new ButtonBuilder()
+                .setCustomId("save")
+                .setLabel("Save")
+                .setStyle(ButtonStyle.Success)
+                .setEmoji(getEmojiByName("ICONS.SAVE", "id") as Discord.APIMessageComponentEmoji)
+                .setDisabled(channel === data.logging.staff.channel)
+        );
 
         const embed = new EmojiEmbed()
             .setTitle("Staff Notifications Channel")
@@ -51,8 +54,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setEmoji("CHANNEL.TEXT.CREATE")
             .setDescription(
                 `Logs which require an action from a moderator or administrator will be sent to this channel.\n` +
-                `**Channel:** ${channel ? `<#${channel}>` : "*None*"}\n`
-            )
+                    `**Channel:** ${channel ? `<#${channel}>` : "*None*"}\n`
+            );
 
         await interaction.editReply({
             embeds: [embed],
@@ -70,7 +73,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
         await i.deferUpdate();
-        if(i.isButton()) {
+        if (i.isButton()) {
             switch (i.customId) {
                 case "clear": {
                     channel = null;
@@ -90,7 +93,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
     } while (!closed);
 
-    await interaction.deleteReply()
+    await interaction.deleteReply();
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

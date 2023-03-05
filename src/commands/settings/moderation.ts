@@ -1,5 +1,13 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonComponent, TextInputBuilder, RoleSelectMenuBuilder } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ButtonComponent,
+    TextInputBuilder,
+    RoleSelectMenuBuilder
+} from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
@@ -9,7 +17,7 @@ import { modalInteractionCollector } from "../../utils/dualCollector.js";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
         .setName("moderation")
-        .setDescription("Links and text shown to a user after a moderator action is performed")
+        .setDescription("Links and text shown to a user after a moderator action is performed");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const m = await interaction.reply({
@@ -21,7 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     while (!timedOut) {
         const config = await client.database.guilds.read(interaction.guild!.id);
         const moderation = config.moderation;
-        console.log(moderation)
+        console.log(moderation);
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -30,7 +38,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setStatus("Success")
                     .setDescription(
                         "These links are shown below the message sent in a user's DM when they are punished.\n\n" +
-                            "**Mute Role:** " + (moderation.mute.role ? `<@&${moderation.mute.role}>` : "*None set*")
+                            "**Mute Role:** " +
+                            (moderation.mute.role ? `<@&${moderation.mute.role}>` : "*None set*")
                     )
             ],
             components: [
@@ -76,9 +85,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setEmoji(getEmojiByName("CONTROL." + (moderation.mute.timeout ? "TICK" : "CROSS"), "id"))
                 ]),
                 new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
-                    new RoleSelectMenuBuilder()
-                        .setCustomId("muteRole")
-                        .setPlaceholder("Select a new mute role")
+                    new RoleSelectMenuBuilder().setCustomId("muteRole").setPlaceholder("Select a new mute role")
                 )
             ]
         });
@@ -86,7 +93,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             timedOut = true;
@@ -112,24 +125,28 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setCustomId("modal")
                     .setTitle(`Options for ${i.customId}`)
                     .addComponents(
-                        new ActionRowBuilder<TextInputBuilder>().addComponents(
-                            new TextInputBuilder()
-                                .setCustomId("name")
-                                .setLabel("Button text")
-                                .setMaxLength(100)
-                                .setRequired(false)
-                                .setStyle(Discord.TextInputStyle.Short)
-                                .setValue(chosen.text ?? "")
-                        ).toJSON(),
-                        new ActionRowBuilder<TextInputBuilder>().addComponents(
-                            new TextInputBuilder()
-                                .setCustomId("url")
-                                .setLabel("URL - Type {id} to insert the user's ID")
-                                .setMaxLength(2000)
-                                .setRequired(false)
-                                .setStyle(Discord.TextInputStyle.Short)
-                                .setValue(chosen.link ?? "")
-                        ).toJSON()
+                        new ActionRowBuilder<TextInputBuilder>()
+                            .addComponents(
+                                new TextInputBuilder()
+                                    .setCustomId("name")
+                                    .setLabel("Button text")
+                                    .setMaxLength(100)
+                                    .setRequired(false)
+                                    .setStyle(Discord.TextInputStyle.Short)
+                                    .setValue(chosen.text ?? "")
+                            )
+                            .toJSON(),
+                        new ActionRowBuilder<TextInputBuilder>()
+                            .addComponents(
+                                new TextInputBuilder()
+                                    .setCustomId("url")
+                                    .setLabel("URL - Type {id} to insert the user's ID")
+                                    .setMaxLength(2000)
+                                    .setRequired(false)
+                                    .setStyle(Discord.TextInputStyle.Short)
+                                    .setValue(chosen.link ?? "")
+                            )
+                            .toJSON()
                     )
             );
             await interaction.editReply({
@@ -152,11 +169,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             });
             let out: Discord.ModalSubmitInteraction | null;
             try {
-                out = await modalInteractionCollector(m, interaction.user) as Discord.ModalSubmitInteraction | null;
+                out = (await modalInteractionCollector(m, interaction.user)) as Discord.ModalSubmitInteraction | null;
             } catch (e) {
                 continue;
             }
-            if (!out || out.isButton()) continue
+            if (!out || out.isButton()) continue;
             const buttonText = out.fields.getTextInputValue("name");
             const buttonLink = out.fields.getTextInputValue("url").replace(/{id}/gi, "{id}");
             const current = chosen;
@@ -171,7 +188,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             }
         }
     }
-    await interaction.deleteReply()
+    await interaction.deleteReply();
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

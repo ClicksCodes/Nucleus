@@ -13,9 +13,13 @@ class EmojiEmbed extends EmbedBuilder {
     description = "";
 
     _generateTitle() {
-        if (this._emoji && !this._title) return getEmojiByName(this._emoji)
-        if (this._emoji) { return `${getEmojiByName(this._emoji)} ${this._title}`; }
-        if (this._title) { return this._title };
+        if (this._emoji && !this._title) return getEmojiByName(this._emoji);
+        if (this._emoji) {
+            return `${getEmojiByName(this._emoji)} ${this._title}`;
+        }
+        if (this._title) {
+            return this._title;
+        }
         return "";
     }
 
@@ -41,6 +45,5 @@ class EmojiEmbed extends EmbedBuilder {
         return this;
     }
 }
-
 
 export default EmojiEmbed;

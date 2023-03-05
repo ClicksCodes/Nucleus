@@ -11,7 +11,7 @@
         "resolveJsonModule": true,
         "moduleResolution": "NodeNext",
         "skipLibCheck": true,
-        "noImplicitReturns": false,
+        "noImplicitReturns": false
     },
     "include": ["src/**/*", "src/*", "src/config/main.d.ts", "src/config/main.ts"],
     "exclude": ["src/Unfinished/**/*"]

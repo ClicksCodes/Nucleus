@@ -49,12 +49,11 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
-    const time: {days: number, hours: number, minutes: number, seconds: number} = {
+    const time: { days: number; hours: number; minutes: number; seconds: number } = {
         days: (interaction.options.get("days")?.value as number | null) ?? 0,
         hours: (interaction.options.get("hours")?.value as number | null) ?? 0,
         minutes: (interaction.options.get("minutes")?.value as number | null) ?? 0,
@@ -79,8 +78,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents([
                     new Discord.ButtonBuilder().setCustomId("1m").setLabel("1 Minute").setStyle(ButtonStyle.Secondary),
-                    new Discord.ButtonBuilder().setCustomId("10m").setLabel("10 Minutes").setStyle(ButtonStyle.Secondary),
-                    new Discord.ButtonBuilder().setCustomId("30m").setLabel("30 Minutes").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder()
+                        .setCustomId("10m")
+                        .setLabel("10 Minutes")
+                        .setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder()
+                        .setCustomId("30m")
+                        .setLabel("30 Minutes")
+                        .setStyle(ButtonStyle.Secondary),
                     new Discord.ButtonBuilder().setCustomId("1h").setLabel("1 Hour").setStyle(ButtonStyle.Secondary)
                 ]),
                 new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -103,7 +108,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (i) => {return i.user.id === interaction.user.id && i.channelId === interaction.channelId},
+                filter: (i) => {
+                    return i.user.id === interaction.user.id && i.channelId === interaction.channelId;
+                },
                 time: 300000
             });
         } catch {
@@ -178,7 +185,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     time: `${humanizeDuration(muteTime * 1000, {
                         round: true
                     })}`,
-                    reason: reason ? "\n> " + (reason).replaceAll("\n", "\n> ") : "*No reason provided*"
+                    reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     "The user will be " +
                     serverSettingsDescription +
@@ -190,7 +197,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild.id)),
-                async () => await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, reason),
+                async () =>
+                    await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, reason),
                 "An appeal ticket will be created when Confirm is clicked",
                 null,
                 "CONTROL.TICKET",
@@ -217,13 +225,22 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             notify = confirmation.components["notify"]!.active;
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
-    } while (!timedOut && !success)
+    } while (!timedOut && !success);
     if (timedOut || !confirmation.success) return;
-    const status: {timeout: boolean | null, role: boolean | null, dm: boolean | null} = {timeout: null, role: null, dm: null};
+    const status: { timeout: boolean | null; role: boolean | null; dm: boolean | null } = {
+        timeout: null,
+        role: null,
+        dm: null
+    };
     let dmMessage;
     try {
         if (notify) {
-            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
+            if (reason) {
+                reason = reason
+                    .split("\n")
+                    .map((line) => "> " + line)
+                    .join("\n");
+            }
             const messageData: {
                 embeds: EmojiEmbed[];
                 components: ActionRowBuilder<ButtonBuilder>[];
@@ -234,28 +251,39 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setTitle("Muted")
                         .setDescription(
                             `You have been muted in ${interaction.guild.name}` +
-                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") + "\n\n" +
-                            `You will be unmuted at: <t:${Math.round(Date.now() / 1000) + muteTime}:D> at ` +
-                            `<t:${Math.round(Date.now() / 1000) + muteTime}:T> (<t:${Math.round(Date.now() / 1000) + muteTime
-                            }:R>)` + "\n\n" +
-                            (createAppealTicket
-                                ? `You can appeal this in the ticket created in <#${confirmation.components!["appeal"]!.response}>`
-                                : "")
+                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") +
+                                "\n\n" +
+                                `You will be unmuted at: <t:${Math.round(Date.now() / 1000) + muteTime}:D> at ` +
+                                `<t:${Math.round(Date.now() / 1000) + muteTime}:T> (<t:${
+                                    Math.round(Date.now() / 1000) + muteTime
+                                }:R>)` +
+                                "\n\n" +
+                                (createAppealTicket
+                                    ? `You can appeal this in the ticket created in <#${
+                                          confirmation.components!["appeal"]!.response
+                                      }>`
+                                    : "")
                         )
                         .setStatus("Danger")
                 ],
                 components: []
-            }
+            };
             if (config.moderation.mute.text && config.moderation.mute.link) {
                 messageData.embeds[0]!.setFooter(LinkWarningFooter);
-                messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
-                    .addComponents(new ButtonBuilder()
-                        .setStyle(ButtonStyle.Link)
-                        .setLabel(config.moderation.mute.text)
-                        .setURL(config.moderation.mute.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
+                messageData.components.push(
+                    new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
+                            .setStyle(ButtonStyle.Link)
+                            .setLabel(config.moderation.mute.text)
+                            .setURL(
+                                config.moderation.mute.link.replaceAll(
+                                    "{id}",
+                                    (interaction.options.getMember("user") as GuildMember).id
+                                )
+                            )
                     )
-                )
-            };
+                );
+            }
             dmMessage = await member.send(messageData);
             status.dm = true;
         }
@@ -267,11 +295,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             await member.timeout(muteTime * 1000, reason || "*No reason provided*");
             if (config.moderation.mute.role !== null) {
                 await member.roles.add(config.moderation.mute.role);
-                await client.database.eventScheduler.schedule("naturalUnmute", (Date.now() + muteTime * 1000).toString(), {
-                    guild: interaction.guild.id,
-                    user: member.id,
-                    expires: Date.now() + muteTime * 1000
-                });
+                await client.database.eventScheduler.schedule(
+                    "naturalUnmute",
+                    (Date.now() + muteTime * 1000).toString(),
+                    {
+                        guild: interaction.guild.id,
+                        user: member.id,
+                        expires: Date.now() + muteTime * 1000
+                    }
+                );
             }
         } else {
             status.timeout = true;
@@ -293,7 +325,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     } catch {
         status.role = false;
     }
-    const countTrue = (items: (boolean | null)[]) => items.filter(item => item === true).length;
+    const countTrue = (items: (boolean | null)[]) => items.filter((item) => item === true).length;
     const requiredPunishments = countTrue([config.moderation.mute.timeout, config.moderation.mute.role !== null]);
     const actualPunishments = countTrue([status.timeout, status.role]);
 
@@ -301,7 +333,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (requiredPunishments !== actualPunishments) {
         const messages = [];
         if (config.moderation.mute.timeout) messages.push(`The member was ${status.timeout ? "" : "not "}timed out`);
-        if (config.moderation.mute.role !== null) messages.push(`The member was ${status.role ? "" : "not "}given the mute role`);
+        if (config.moderation.mute.role !== null)
+            messages.push(`The member was ${status.role ? "" : "not "}given the mute role`);
         messages.push(`The member was not sent a DM`);
         if (dmMessage && actualPunishments === 0) await dmMessage.delete();
         await interaction.editReply({
@@ -310,8 +343,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setEmoji("PUNISH.MUTE." + (actualPunishments > 0 ? "YELLOW" : "RED"))
                     .setTitle("Mute")
                     .setDescription(
-                        "Mute " + (actualPunishments > 0 ? "partially" : "failed") + ":\n" +
-                        messages.map(message => `> ${message}`).join("\n")
+                        "Mute " +
+                            (actualPunishments > 0 ? "partially" : "failed") +
+                            ":\n" +
+                            messages.map((message) => `> ${message}`).join("\n")
                     )
                     .setStatus(actualPunishments > 0 ? "Warning" : "Danger")
             ],
@@ -330,16 +365,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         list: {
             memberId: entry(member.user.id, `\`${member.user.id}\``),
             name: entry(member.user.id, renderUser(member.user)),
-            mutedUntil: entry(
-                (Date.now() + muteTime * 1000).toString(),
-                renderDelta(Date.now() + muteTime * 1000)
-            ),
+            mutedUntil: entry((Date.now() + muteTime * 1000).toString(), renderDelta(Date.now() + muteTime * 1000)),
             muted: entry(new Date().getTime.toString(), renderDelta(Date.now() - 1000)),
             mutedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
             reason: entry(reason, reason ? reason : "*No reason provided*")
         },
         separate: {
-            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+            end:
+                getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) +
+                ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
@@ -353,10 +387,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 .setEmoji(`PUNISH.MUTE.${failed ? "YELLOW" : "GREEN"}`)
                 .setTitle("Mute")
                 .setDescription(
-                    "The member was muted" + (failed ? ", but could not be notified" : "") +
-                    (createAppealTicket
-                        ? ` and an appeal ticket was opened in <#${confirmation.components!["appeal"]!.response}>`
-                        : "")
+                    "The member was muted" +
+                        (failed ? ", but could not be notified" : "") +
+                        (createAppealTicket
+                            ? ` and an appeal ticket was opened in <#${confirmation.components!["appeal"]!.response}>`
+                            : "")
                 )
                 .setStatus(failed ? "Warning" : "Success")
         ],
@@ -393,6 +428,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
 
 export { command, callback, check };
 export const metadata = {
-    longDescription: "Stops a member from being able to send messages or join voice channels for a specified amount of time.",
-    premiumOnly: true,
-}
+    longDescription:
+        "Stops a member from being able to send messages or join voice channels for a specified amount of time.",
+    premiumOnly: true
+};

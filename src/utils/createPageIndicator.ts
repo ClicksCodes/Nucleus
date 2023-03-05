@@ -2,16 +2,17 @@ import getEmojiByName from "./getEmojiByName.js";
 
 function pageIndicator(amount: number, selected: number, showDetails?: boolean, disabled?: boolean | string) {
     let out = "";
-    disabled = disabled ? "GRAY." : ""
+    disabled = disabled ? "GRAY." : "";
     if (amount === 1) {
-        out += getEmojiByName("TRACKS.SINGLE." + (disabled) + (selected === 0 ? "ACTIVE" : "INACTIVE"));
+        out += getEmojiByName("TRACKS.SINGLE." + disabled + (selected === 0 ? "ACTIVE" : "INACTIVE"));
     } else {
         for (let i = 0; i < amount; i++) {
             out += getEmojiByName(
                 "TRACKS.HORIZONTAL." +
-                (i === 0 ? "LEFT" : i === amount - 1 ? "RIGHT" : "MIDDLE") +
-                "." + (disabled) +
-                (i === selected ? "ACTIVE" : "INACTIVE")
+                    (i === 0 ? "LEFT" : i === amount - 1 ? "RIGHT" : "MIDDLE") +
+                    "." +
+                    disabled +
+                    (i === selected ? "ACTIVE" : "INACTIVE")
             );
         }
     }
@@ -21,7 +22,12 @@ function pageIndicator(amount: number, selected: number, showDetails?: boolean, 
     return out;
 }
 
-export const verticalTrackIndicator = (position: number, active: string | boolean, size: number, disabled: string | boolean) => {
+export const verticalTrackIndicator = (
+    position: number,
+    active: string | boolean,
+    size: number,
+    disabled: string | boolean
+) => {
     active = active ? "ACTIVE" : "INACTIVE";
     disabled = disabled ? "GRAY." : "";
     if (position === 0 && size === 1) return "TRACKS.SINGLE." + disabled + active;
@@ -38,6 +44,6 @@ export const createVerticalTrack = (items: string[], active: boolean[], disabled
         out += items[i] + "\n";
     }
     return out;
-}
+};
 
 export default pageIndicator;

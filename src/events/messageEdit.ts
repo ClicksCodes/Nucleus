@@ -8,8 +8,9 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (newMessage.author.id === client.user!.id) return;
     if (newMessage.author.bot) return;
     if (!newMessage.guild) return;
-    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } = client.logger;
-    
+    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } =
+        client.logger;
+
     const replyTo: MessageReference | null = newMessage.reference;
     let newContent = newMessage.cleanContent.replaceAll("`", "‘");
     let oldContent = oldMessage.cleanContent.replaceAll("`", "‘");
@@ -21,14 +22,14 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
         attachmentJump = ` [[View attachments]](${config})`;
     }
     if (newMessage.crosspostable !== oldMessage.crosspostable) {
-        if(!await isLogging(newMessage.guild.id, "messageAnnounce")) return;
+        if (!(await isLogging(newMessage.guild.id, "messageAnnounce"))) return;
         if (!replyTo) {
             const data = {
                 meta: {
                     type: "messageAnnounce",
                     displayName: "Message Published",
                     calculateType: "messageAnnounce",
-                    color: NucleusColors.yellow,
+                    color: NucleusColors.green,
                     emoji: "MESSAGE.CREATE",
                     timestamp: newMessage.editedTimestamp ?? Date.now()
                 },
@@ -38,15 +39,12 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
                 list: {
                     messageId: entry(newMessage.id, `\`${newMessage.id}\``),
                     sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
-                    sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel as Discord.GuildBasedChannel)),
-                    sent: entry(
-                        newMessage.createdTimestamp,
-                        renderDelta(newMessage.createdTimestamp)
+                    sentIn: entry(
+                        newMessage.channel.id,
+                        renderChannel(newMessage.channel as Discord.GuildBasedChannel)
                     ),
-                    published: entry(
-                        newMessage.editedTimestamp!,
-                        renderDelta(newMessage.editedTimestamp!)
-                    ),
+                    sent: entry(newMessage.createdTimestamp, renderDelta(newMessage.createdTimestamp)),
+                    published: entry(newMessage.editedTimestamp!, renderDelta(newMessage.editedTimestamp!)),
                     mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
                     attachments: entry(
                         renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
@@ -60,7 +58,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             return log(data);
         }
     }
-    if (!await isLogging(newMessage.guild.id, "messageUpdate")) return;
+    if (!(await isLogging(newMessage.guild.id, "messageUpdate"))) return;
     if (!newMessage.editedTimestamp) {
         return;
     }

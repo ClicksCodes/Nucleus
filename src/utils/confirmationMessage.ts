@@ -62,7 +62,11 @@ class confirmationMessage {
         this.inverted = inverted;
         return this;
     }
-    setFailedMessage(text: string, failedStatus: "Success" | "Danger" | "Warning" | null, failedEmoji: string | null = null) {
+    setFailedMessage(
+        text: string,
+        failedStatus: "Success" | "Danger" | "Warning" | null,
+        failedEmoji: string | null = null
+    ) {
         this.failedMessage = text;
         this.failedStatus = failedStatus;
         this.failedEmoji = failedEmoji;
@@ -138,10 +142,14 @@ class confirmationMessage {
                 );
             const components = [];
             for (let i = 0; i < fullComponents.length; i += 5) {
-                components.push(new ActionRowBuilder<
-                    Discord.ButtonBuilder | Discord.StringSelectMenuBuilder |
-                    Discord.RoleSelectMenuBuilder | Discord.UserSelectMenuBuilder
-                >().addComponents(fullComponents.slice(i, i + 5)));
+                components.push(
+                    new ActionRowBuilder<
+                        | Discord.ButtonBuilder
+                        | Discord.StringSelectMenuBuilder
+                        | Discord.RoleSelectMenuBuilder
+                        | Discord.UserSelectMenuBuilder
+                    >().addComponents(fullComponents.slice(i, i + 5))
+                );
             }
             const object = {
                 embeds: [
@@ -158,7 +166,8 @@ class confirmationMessage {
                                         } else {
                                             return v.notValue ? `*${v.notValue}*\n` : "";
                                         }
-                                    }).join("")
+                                    })
+                                    .join("")
                         )
                         .setStatus(this.color)
                 ],
@@ -181,7 +190,8 @@ class confirmationMessage {
             let component;
             try {
                 component = await m.awaitMessageComponent({
-                    filter: (i) => i.user.id === this.interaction.user.id && i.channel!.id === this.interaction.channel!.id,
+                    filter: (i) =>
+                        i.user.id === this.interaction.user.id && i.channel!.id === this.interaction.channel!.id,
                     time: 300000
                 });
             } catch (e) {
@@ -244,12 +254,15 @@ class confirmationMessage {
                 });
                 let out;
                 try {
-                    out = await modalInteractionCollector(m, this.interaction.user) as Discord.ModalSubmitInteraction | null;
+                    out = (await modalInteractionCollector(
+                        m,
+                        this.interaction.user
+                    )) as Discord.ModalSubmitInteraction | null;
                 } catch (e) {
                     cancelled = true;
                     continue;
                 }
-                if (out === null  || out.isButton()) {
+                if (out === null || out.isButton()) {
                     cancelled = true;
                     continue;
                 }
@@ -270,28 +283,31 @@ class confirmationMessage {
         const returnValue: Awaited<ReturnType<typeof this.send>> = {};
 
         if (cancelled) {
-            await this.timeoutError()
+            await this.timeoutError();
             returnValue.cancelled = true;
         }
         if (success === false) {
             await this.interaction.editReply({
-                embeds: [new EmojiEmbed()
-                    .setTitle(this.title)
-                    .setDescription(this.failedMessage ?? "*Message timed out*")
-                    .setStatus(this.failedStatus ?? "Danger")
-                    .setEmoji(this.failedEmoji ?? this.redEmoji ?? this.emoji)
-                ], components: []
+                embeds: [
+                    new EmojiEmbed()
+                        .setTitle(this.title)
+                        .setDescription(this.failedMessage ?? "*Message timed out*")
+                        .setStatus(this.failedStatus ?? "Danger")
+                        .setEmoji(this.failedEmoji ?? this.redEmoji ?? this.emoji)
+                ],
+                components: []
             });
-            return {success: false}
+            return { success: false };
         }
         if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
         if (success !== undefined) returnValue.success = success;
         if (newReason) returnValue.newReason = newReason;
 
-        const typedReturnValue = returnValue as {cancelled: true} |
-        { success: boolean, components: Record<string, CustomBoolean<unknown>>, newReason?: string} |
-        { newReason: string, components: Record<string, CustomBoolean<unknown>> } |
-        { components: Record<string, CustomBoolean<unknown>> };
+        const typedReturnValue = returnValue as
+            | { cancelled: true }
+            | { success: boolean; components: Record<string, CustomBoolean<unknown>>; newReason?: string }
+            | { newReason: string; components: Record<string, CustomBoolean<unknown>> }
+            | { components: Record<string, CustomBoolean<unknown>> };
 
         return typedReturnValue;
     }
@@ -306,7 +322,7 @@ class confirmationMessage {
                     .setEmoji("CONTROL.BLOCKCROSS")
             ],
             components: []
-        })
+        });
     }
 }
 

@@ -16,9 +16,7 @@ import addPlural from "../utils/plurals.js";
 import client from "../utils/client.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("all")
-        .setDescription("Gives or removes a role from everyone");
+    builder.setName("all").setDescription("Gives or removes a role from everyone");
 
 class Filter {
     name: string;
@@ -244,13 +242,17 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setLabel("Apply")
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("apply")
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("CONTROL.TICK", "id"))! as APIMessageComponentEmoji)
+                        .setEmoji(
+                            client.emojis.cache.get(getEmojiByName("CONTROL.TICK", "id"))! as APIMessageComponentEmoji
+                        )
                         .setDisabled(affected.length === 0),
                     new ButtonBuilder()
                         .setLabel("Add filter")
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("add")
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.FILTER", "id"))! as APIMessageComponentEmoji)
+                        .setEmoji(
+                            client.emojis.cache.get(getEmojiByName("ICONS.FILTER", "id"))! as APIMessageComponentEmoji
+                        )
                         .setDisabled(filters.length >= 25)
                 ])
             ]

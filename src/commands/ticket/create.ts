@@ -14,6 +14,5 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     await create(interaction);
 };
 
-
 export { command };
 export { callback };

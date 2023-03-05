@@ -23,20 +23,31 @@ class EventScheduler {
             await job.remove();
         });
         this.agenda.define("uploadTranscript", async (job) => {
-            const channelID: string | null = (await client.database.guilds.read(job.attrs.data.guild)).logging.logs.channel;
+            const channelID: string | null = (await client.database.guilds.read(job.attrs.data.guild)).logging.logs
+                .channel;
             if (!channelID) return;
             const channel = await client.channels.fetch(channelID);
-            if(!channel || !(channel instanceof TextChannel)) return;
-            const transcript = await client.database.transcripts.read(job.attrs.data.transcript, job.attrs.data.key, job.attrs.data.iv);
+            if (!channel || !(channel instanceof TextChannel)) return;
+            const transcript = await client.database.transcripts.read(
+                job.attrs.data.transcript,
+                job.attrs.data.key,
+                job.attrs.data.iv
+            );
             await client.database.transcripts.delete(job.attrs.data.transcript);
             const file = Buffer.from(JSON.stringify(transcript), "base64");
             const fileName = `${job.attrs.data.transcript}.json`;
             const m = await channel.send({ files: [{ attachment: file, name: fileName }] });
-            await client.database.transcripts.upload({ channelID: channel.id, messageID: m.id, transcript: job.attrs.data.transcript})
+            await client.database.transcripts.upload({
+                channelID: channel.id,
+                messageID: m.id,
+                transcript: job.attrs.data.transcript
+            });
             await job.remove();
         });
         this.agenda.define("deleteFile", async (job) => {
-            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), (e) => { client.emit("error", e as Error); });
+            fs.rm(path.resolve("dist/utils/temp", job.attrs.data.fileName), (e) => {
+                client.emit("error", e as Error);
+            });
             await job.remove();
         });
         this.agenda.define("naturalUnmute", async (job) => {

@@ -32,15 +32,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")!),
                     reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
-                }) +
-                    `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
+                }) + `Are you sure you want to warn <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .setColor("Danger")
             .addCustomBoolean(
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild.id)),
-                async () => await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, reason),
+                async () =>
+                    await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, reason),
                 "An appeal ticket will be created",
                 null,
                 "CONTROL.TICKET",
@@ -67,13 +67,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             notify = confirmation.components["notify"]!.active;
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
-    } while (!timedOut && !success)
+    } while (!timedOut && !success);
     if (timedOut || !success) return;
     let dmSent = false;
     const config = await client.database.guilds.read(interaction.guild.id);
     try {
         if (notify) {
-            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
+            if (reason) {
+                reason = reason
+                    .split("\n")
+                    .map((line) => "> " + line)
+                    .join("\n");
+            }
             const messageData: {
                 embeds: EmojiEmbed[];
                 components: ActionRowBuilder<ButtonBuilder>[];
@@ -87,7 +92,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                 (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") +
                                 "\n\n" +
                                 (createAppealTicket
-                                    ? `You can appeal this in the ticket created in <#${confirmation.components!["appeal"]!.response}>`
+                                    ? `You can appeal this in the ticket created in <#${
+                                          confirmation.components!["appeal"]!.response
+                                      }>`
                                     : "")
                         )
                         .setStatus("Danger")
@@ -95,14 +102,20 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 components: []
             };
             if (config.moderation.warn.text && config.moderation.warn.link) {
-                messageData.embeds[0]!.setFooter(LinkWarningFooter)
-                messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
-                        .addComponents(new ButtonBuilder()
+                messageData.embeds[0]!.setFooter(LinkWarningFooter);
+                messageData.components.push(
+                    new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.warn.text)
-                            .setURL(config.moderation.warn.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
-                        )
-                )
+                            .setURL(
+                                config.moderation.warn.link.replaceAll(
+                                    "{id}",
+                                    (interaction.options.getMember("user") as GuildMember).id
+                                )
+                            )
+                    )
+                );
             }
             await (interaction.options.getMember("user") as GuildMember).send(messageData);
             dmSent = true;
@@ -128,7 +141,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             reason: reason ? reason : "*No reason provided*"
         },
         separate: {
-            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+            end:
+                getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) +
+                ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
@@ -152,7 +167,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     .setDescription(
                         "The user was warned" +
                             (createAppealTicket
-                                ? ` and an appeal ticket was opened in <#${confirmation.components!["appeal"]!.response}>`
+                                ? ` and an appeal ticket was opened in <#${
+                                      confirmation.components!["appeal"]!.response
+                                  }>`
                                 : "")
                     )
                     .setStatus("Success")
@@ -173,7 +190,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ],
             components: [
                 new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
-                    new Discord.ButtonBuilder().setCustomId("log").setLabel("Ignore and log").setStyle(ButtonStyle.Secondary),
+                    new Discord.ButtonBuilder()
+                        .setCustomId("log")
+                        .setLabel("Ignore and log")
+                        .setStyle(ButtonStyle.Secondary),
                     new Discord.ButtonBuilder()
                         .setCustomId("here")
                         .setLabel("Warn here")
@@ -190,7 +210,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
+                filter: (i) =>
+                    i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
                 time: 300000
             });
         } catch (e) {
@@ -227,7 +248,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setDescription(
                             "The user was warned" +
                                 (createAppealTicket
-                                    ? ` and an appeal ticket was opened in <#${confirmation.components!["appeal"]!.response}>`
+                                    ? ` and an appeal ticket was opened in <#${
+                                          confirmation.components!["appeal"]!.response
+                                      }>`
                                     : "")
                         )
                         .setStatus("Success")
@@ -282,9 +305,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("ModerateMembers"))
-        return "You do not have the *Moderate Members* permission";
-    if(partial) return true;
+    if (!member.permissions.has("ModerateMembers")) return "You do not have the *Moderate Members* permission";
+    if (partial) return true;
     const apply = interaction.options.getMember("user") as GuildMember | null;
     if (apply === null) return "That member is not in the server";
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;

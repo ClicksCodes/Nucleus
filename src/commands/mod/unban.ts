@@ -48,7 +48,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             await interaction.guild.members.unban(resolved.user as User, "Unban");
             const member = resolved.user as User;
-            await client.database.history.create("unban", interaction.guild.id, member, interaction.user, "No reason provided");
+            await client.database.history.create(
+                "unban",
+                interaction.guild.id,
+                member,
+                interaction.user,
+                "No reason provided"
+            );
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             const data = {
                 meta: {

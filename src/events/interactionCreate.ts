@@ -11,17 +11,30 @@ import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 
 export const event = "interactionCreate";
 
-
 async function interactionCreate(interaction: Interaction) {
     if (interaction.isButton()) {
         switch (interaction.customId) {
-            case "rolemenu":         { return await roleMenu(interaction); }
-            case "verifybutton":     { return await verify(interaction); }
-            case "createticket":     { return await create(interaction); }
-            case "closeticket":      { return await close(interaction); }
-            case "createtranscript": { return await createTranscript(interaction); }
-            case "suggestionAccept": { return await modifySuggestion(interaction, true); }
-            case "suggestionDeny":   { return await modifySuggestion(interaction, false); }
+            case "rolemenu": {
+                return await roleMenu(interaction);
+            }
+            case "verifybutton": {
+                return await verify(interaction);
+            }
+            case "createticket": {
+                return await create(interaction);
+            }
+            case "closeticket": {
+                return await close(interaction);
+            }
+            case "createtranscript": {
+                return await createTranscript(interaction);
+            }
+            case "suggestionAccept": {
+                return await modifySuggestion(interaction, true);
+            }
+            case "suggestionDeny": {
+                return await modifySuggestion(interaction, false);
+            }
         }
     }
 }
@@ -32,7 +45,10 @@ async function modifySuggestion(interaction: Discord.MessageComponentInteraction
     if (message.embeds.length === 0) return;
     const embed = message.embeds[0];
     const newcolor = accept ? "Success" : "Danger";
-    const footer = {text: `Suggestion ${accept ? "accepted" : "denied"} by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL()};
+    const footer = {
+        text: `Suggestion ${accept ? "accepted" : "denied"} by ${interaction.user.tag}`,
+        iconURL: interaction.user.displayAvatarURL()
+    };
 
     const newEmbed = new EmojiEmbed()
         .setTitle(embed!.title!)
@@ -40,7 +56,7 @@ async function modifySuggestion(interaction: Discord.MessageComponentInteraction
         .setFooter(footer)
         .setStatus(newcolor);
 
-    await interaction.update({embeds: [newEmbed], components: []});
+    await interaction.update({ embeds: [newEmbed], components: [] });
 }
 
 export async function callback(_client: NucleusClient, interaction: Interaction) {

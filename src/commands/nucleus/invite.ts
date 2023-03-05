@@ -21,7 +21,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setLabel("Invite")
                     .setStyle(ButtonStyle.Link)
                     .setURL(
-                        `https://discord.com/api/oauth2/authorize?client_id=${client.user!.id}&permissions=295157886134&scope=bot%20applications.commands`
+                        `https://discord.com/api/oauth2/authorize?client_id=${
+                            client.user!.id
+                        }&permissions=295157886134&scope=bot%20applications.commands`
                     )
             ])
         ],

@@ -30,9 +30,7 @@ import type { GuildConfig } from "../../utils/database.js";
 import { LinkWarningFooter } from "../../utils/defaults.js";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("tickets")
-        .setDescription("Shows settings for tickets")
+    builder.setName("tickets").setDescription("Shows settings for tickets");
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
@@ -45,7 +43,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     data.tickets.customTypes = (data.tickets.customTypes ?? []).filter(
         (value: string, index: number, array: string[]) => array.indexOf(value) === index
     );
-    let ticketData = (await client.database.guilds.read(interaction.guild.id)).tickets
+    let ticketData = (await client.database.guilds.read(interaction.guild.id)).tickets;
     let changesMade = false;
     let timedOut = false;
     let errorMessage = "";
@@ -54,23 +52,28 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setTitle("Tickets")
             .setDescription(
                 `${ticketData.enabled ? "" : getEmojiByName("TICKETS.REPORT")} **Enabled:** ${
-                    ticketData.enabled ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`
+                    ticketData.enabled
+                        ? `${getEmojiByName("CONTROL.TICK")} Yes`
+                        : `${getEmojiByName("CONTROL.CROSS")} No`
                 }\n` +
                     `${ticketData.category ? "" : getEmojiByName("TICKETS.REPORT")}` +
-                    ((await interaction.guild.channels.fetch(ticketData.category!))!.type === ChannelType.GuildCategory ?
-                    `**Category:** ` : `**Channel:** `) +  // TODO: Notify if permissions are wrong
+                    ((await interaction.guild.channels.fetch(ticketData.category!))!.type === ChannelType.GuildCategory
+                        ? `**Category:** `
+                        : `**Channel:** `) + // TODO: Notify if permissions are wrong
                     `${ticketData.category ? `<#${ticketData.category}>` : "*None set*"}\n` +
                     `**Max Tickets:** ${ticketData.maxTickets ? ticketData.maxTickets : "*No limit*"}\n` +
                     `**Support Ping:** ${ticketData.supportRole ? `<@&${ticketData.supportRole}>` : "*None set*"}\n\n` +
-                    (ticketData.useCustom && ticketData.customTypes === null ? `${getEmojiByName("TICKETS.REPORT")} ` : "") +
+                    (ticketData.useCustom && ticketData.customTypes === null
+                        ? `${getEmojiByName("TICKETS.REPORT")} `
+                        : "") +
                     `${ticketData.useCustom ? "Custom" : "Default"} types in use` +
                     "\n\n" +
                     `${getEmojiByName("TICKETS.REPORT")} *Indicates a setting stopping tickets from being used*`
             )
             .setStatus("Success")
             .setEmoji("GUILD.TICKET.OPEN");
-        if (errorMessage) embed.setFooter({text: errorMessage, iconURL: LinkWarningFooter.iconURL});
-        m = (await interaction.editReply({
+        if (errorMessage) embed.setFooter({ text: errorMessage, iconURL: LinkWarningFooter.iconURL });
+        m = await interaction.editReply({
             embeds: [embed],
             components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -111,12 +114,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setDisabled(!ticketData.enabled)
                 )
             ]
-        }));
+        });
         let i: RoleSelectMenuInteraction | ButtonInteraction | ChannelSelectMenuInteraction;
         try {
             i = await m.awaitMessageComponent<2 | 6 | 8>({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             timedOut = true;
@@ -130,7 +139,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             await i.deferUpdate();
             ticketData.category = i.values[0] ?? null;
         } else {
-            switch(i.customId) {
+            switch (i.customId) {
                 case "save": {
                     await i.deferUpdate();
                     await client.database.guilds.write(interaction.guild.id, { tickets: ticketData });
@@ -161,7 +170,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                                         .setStyle(TextInputStyle.Short)
                                 )
                             )
-                    )
+                    );
                     await i.editReply({
                         embeds: [
                             new EmojiEmbed()
@@ -189,7 +198,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     if (!out || out.isButton()) continue;
                     out = out as ModalSubmitInteraction;
                     const toAdd = out.fields.getTextInputValue("maxTickets");
-                    if(isNaN(parseInt(toAdd))) {
+                    if (isNaN(parseInt(toAdd))) {
                         errorMessage = "You entered an invalid number - No changes were made";
                         break;
                     }
@@ -204,10 +213,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         }
     }
-    await interaction.deleteReply()
+    await interaction.deleteReply();
 };
-
-
 
 async function manageTypes(interaction: CommandInteraction, data: GuildConfig["tickets"], m: Message) {
     let timedOut = false;
@@ -278,7 +285,9 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
                     new StringSelectMenuOptionBuilder({
                         label: capitalize(type),
                         value: type,
-                        emoji: client.emojis.cache.get(getEmojiByName(`TICKETS.${type.toUpperCase()}`, "id")) as APIMessageComponentEmoji,
+                        emoji: client.emojis.cache.get(
+                            getEmojiByName(`TICKETS.${type.toUpperCase()}`, "id")
+                        ) as APIMessageComponentEmoji,
                         default: inUse.includes(type)
                     })
                 );
@@ -325,7 +334,13 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             timedOut = true;
@@ -394,7 +409,7 @@ async function manageTypes(interaction: CommandInteraction, data: GuildConfig["t
             }
             toAdd = toAdd.substring(0, 80);
             try {
-                if(!data.customTypes) data.customTypes = [];
+                if (!data.customTypes) data.customTypes = [];
                 data.customTypes.push(toAdd);
             } catch {
                 continue;

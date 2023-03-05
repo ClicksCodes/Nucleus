@@ -1,5 +1,12 @@
-import { LinkWarningFooter } from '../../utils/defaults.js';
-import { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandSubcommandBuilder } from "discord.js";
+import { LinkWarningFooter } from "../../utils/defaults.js";
+import {
+    CommandInteraction,
+    GuildMember,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    SlashCommandSubcommandBuilder
+} from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type Discord from "discord.js";
@@ -31,9 +38,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setDescription(
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")!),
-                    reason: reason ? "\n> " + (reason).replaceAll("\n", "\n> ") : "*No reason provided*"
-                }) +
-                    `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
+                    reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
+                }) + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .setColor("Danger")
             .addCustomBoolean(
@@ -56,14 +62,19 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         else if (confirmation.components) {
             notify = confirmation.components["notify"]!.active;
         }
-    } while (!timedOut && !success)
+    } while (!timedOut && !success);
     if (timedOut || !confirmation.success) return;
     let dmSent = false;
     let dmMessage;
     const config = await client.database.guilds.read(interaction.guild.id);
     try {
         if (notify) {
-            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
+            if (reason) {
+                reason = reason
+                    .split("\n")
+                    .map((line) => "> " + line)
+                    .join("\n");
+            }
             const messageData: {
                 embeds: EmojiEmbed[];
                 components: ActionRowBuilder<ButtonBuilder>[];
@@ -81,14 +92,20 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 components: []
             };
             if (config.moderation.kick.text && config.moderation.kick.link) {
-                messageData.embeds[0]!.setFooter(LinkWarningFooter)
-                messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
-                        .addComponents(new ButtonBuilder()
+                messageData.embeds[0]!.setFooter(LinkWarningFooter);
+                messageData.components.push(
+                    new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.kick.text)
-                            .setURL(config.moderation.kick.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
-                        )
-                )
+                            .setURL(
+                                config.moderation.kick.link.replaceAll(
+                                    "{id}",
+                                    (interaction.options.getMember("user") as GuildMember).id
+                                )
+                            )
+                    )
+                );
             }
             dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
             dmSent = true;
@@ -101,12 +118,14 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         const member = interaction.options.getMember("user") as GuildMember;
         await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
         const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-        const timeInServer = member.joinedTimestamp ? entry(
-            (Date.now() - member.joinedTimestamp).toString(),
-            humanizeDuration(Date.now() - member.joinedTimestamp, {
-                round: true
-            })
-        ) : entry(null, "*Unknown*")
+        const timeInServer = member.joinedTimestamp
+            ? entry(
+                  (Date.now() - member.joinedTimestamp).toString(),
+                  humanizeDuration(Date.now() - member.joinedTimestamp, {
+                      round: true
+                  })
+              )
+            : entry(null, "*Unknown*");
         const data = {
             meta: {
                 type: "memberKick",
@@ -119,7 +138,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             list: {
                 memberId: entry(member.id, `\`${member.id}\``),
                 name: entry(member.id, renderUser(member.user)),
-                joined: undefined as (unknown | typeof entry),
+                joined: undefined as unknown | typeof entry,
                 kicked: entry(Date.now().toString(), renderDelta(Date.now())),
                 kickedBy: entry(interaction.user.id, renderUser(interaction.user)),
                 reason: entry(reason, reason ? `\n> ${reason}` : "*No reason provided.*"),
@@ -127,22 +146,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 serverMemberCount: member.guild.memberCount
             },
             separate: {
-                end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+                end:
+                    getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) +
+                    ` The user was ${notify ? "" : "not "}notified`
             },
             hidden: {
                 guild: member.guild.id
             }
         };
         if (member.joinedTimestamp) {
-            data.list.joined = entry(member.joinedTimestamp.toString(), renderDelta(member.joinedTimestamp))
+            data.list.joined = entry(member.joinedTimestamp.toString(), renderDelta(member.joinedTimestamp));
         }
-        await client.database.history.create(
-            "kick",
-            interaction.guild.id,
-            member.user,
-            interaction.user,
-            reason
-        )
+        await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
         log(data);
     } catch {
         await interaction.editReply({
@@ -203,5 +218,5 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
 export { command, callback, check };
 export const metadata = {
     longDescription: "Removes a member from the server. They will be able to rejoin if they have an invite link.",
-    premiumOnly: true,
-}
+    premiumOnly: true
+};

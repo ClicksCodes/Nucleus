@@ -1,4 +1,4 @@
-import { getCommandMentionByName } from './../utils/getCommandDataByName.js';
+import { getCommandMentionByName } from "./../utils/getCommandDataByName.js";
 import Discord, { ActionRowBuilder, ButtonBuilder, OverwriteType, ChannelType, ButtonStyle } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -13,11 +13,13 @@ export async function create(
 ) {
     const config = await client.database.guilds.read(guild.id);
     const { log, NucleusColors, entry, renderUser, renderChannel, renderDelta } = client.logger;
-    const overwrites = [{
-        id: user,
-        allow: ["ViewChannel", "SendMessages", "AttachFiles", "AddReactions", "ReadMessageHistory"],
-        type: OverwriteType.Member
-    }] as unknown as Discord.OverwriteResolvable[];
+    const overwrites = [
+        {
+            id: user,
+            allow: ["ViewChannel", "SendMessages", "AttachFiles", "AddReactions", "ReadMessageHistory"],
+            type: OverwriteType.Member
+        }
+    ] as unknown as Discord.OverwriteResolvable[];
     overwrites.push({
         id: guild.roles.everyone,
         deny: ["ViewChannel"],
@@ -30,7 +32,9 @@ export async function create(
             type: OverwriteType.Role
         });
     }
-    const targetChannel: Discord.CategoryChannel | Discord.TextChannel = (await guild.channels.fetch(config.tickets.category!))! as Discord.CategoryChannel | Discord.TextChannel;
+    const targetChannel: Discord.CategoryChannel | Discord.TextChannel = (await guild.channels.fetch(
+        config.tickets.category!
+    ))! as Discord.CategoryChannel | Discord.TextChannel;
 
     let c: Discord.TextChannel | Discord.PrivateThreadChannel;
     if (targetChannel.type === Discord.ChannelType.GuildCategory) {
@@ -83,10 +87,10 @@ export async function create(
                         .setTitle("New Ticket")
                         .setDescription(
                             "Ticket created by a Moderator\n" +
-                            `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
-                            (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
-                            `**Ticket ID:** \`${c.id}\`\n` +
-                            `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
+                                `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
+                                (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
+                                `**Ticket ID:** \`${c.id}\`\n` +
+                                `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -105,11 +109,12 @@ export async function create(
             return null;
         }
     } else {
-        c = await targetChannel.threads.create({name: `${user.username} - ${user.id} - Active`,
-                                                autoArchiveDuration: 60 * 24 * 7,
-                                                type: Discord.ChannelType.PrivateThread,
-                                                reason: "Creating ticket"
-                                                }) as Discord.PrivateThreadChannel;
+        c = (await targetChannel.threads.create({
+            name: `${user.username} - ${user.id} - Active`,
+            autoArchiveDuration: 60 * 24 * 7,
+            type: Discord.ChannelType.PrivateThread,
+            reason: "Creating ticket"
+        })) as Discord.PrivateThreadChannel;
         c.members.add(user.id);
         c.members.add(createdBy.id);
         try {
@@ -128,10 +133,10 @@ export async function create(
                         .setTitle("New Ticket")
                         .setDescription(
                             "Ticket created by a Moderator\n" +
-                            `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
-                            (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
-                            `**Ticket ID:** \`${c.id}\`\n` +
-                            `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
+                                `**Support type:** ${customReason ? customReason : "Appeal submission"}\n` +
+                                (reason !== null ? `**Reason:**\n> ${reason}\n` : "") +
+                                `**Ticket ID:** \`${c.id}\`\n` +
+                                `Type ${getCommandMentionByName("ticket/close")} to close this ticket.`
                         )
                         .setStatus("Success")
                         .setEmoji("GUILD.TICKET.OPEN")
@@ -162,7 +167,7 @@ export async function create(
         list: {
             ticketFor: entry(user.id, renderUser(user)),
             createdBy: entry(createdBy.id, renderUser(createdBy)),
-            created: entry((Date.now()).toString(), renderDelta(Date.now())),
+            created: entry(Date.now().toString(), renderDelta(Date.now())),
             ticketChannel: entry(c.id, renderChannel(c))
         },
         hidden: {

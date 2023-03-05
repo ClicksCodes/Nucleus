@@ -1,4 +1,12 @@
-import Discord, { CommandInteraction, GuildChannel, GuildMember, TextChannel, ButtonStyle, ButtonBuilder, Message } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildChannel,
+    GuildMember,
+    TextChannel,
+    ButtonStyle,
+    ButtonBuilder,
+    Message
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -27,7 +35,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
-    const user = (interaction.options.getMember("user") as GuildMember | null);
+    const user = interaction.options.getMember("user") as GuildMember | null;
     const channel = interaction.channel as GuildChannel;
     if (!channel.isTextBased()) {
         return await interaction.reply({
@@ -93,7 +101,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             let component;
             try {
                 component = m.awaitMessageComponent({
-                    filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
+                    filter: (i) =>
+                        i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
                     time: 300000
                 });
             } catch (e) {
@@ -112,7 +121,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 if (user) {
                     ms = ms.filter((m) => m.author.id === user.id);
                 }
-                messages = (await (channel as TextChannel).bulkDelete(ms, true)).map(m => m as Discord.Message);
+                messages = (await (channel as TextChannel).bulkDelete(ms, true)).map((m) => m as Discord.Message);
             });
             deleted = deleted.concat(messages);
         }
@@ -133,7 +142,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 interaction.guild.id,
                 user.user,
                 interaction.user,
-                (interaction.options.get("reason")?.value as (string | null)) ?? "*No reason provided*",
+                (interaction.options.get("reason")?.value as string | null) ?? "*No reason provided*",
                 null,
                 null,
                 deleted.length.toString()
@@ -160,7 +169,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        const newOut = await client.database.transcripts.createTranscript(deleted, interaction, interaction.member as GuildMember);
+        const newOut = await client.database.transcripts.createTranscript(
+            deleted,
+            interaction,
+            interaction.member as GuildMember
+        );
         const transcript = client.database.transcripts.toHumanReadable(newOut);
         const attachmentObject = {
             attachment: Buffer.from(transcript),
@@ -188,7 +201,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let component;
         try {
             component = await m.awaitMessageComponent({
-                filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
+                filter: (i) =>
+                    i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.id === m.id,
                 time: 300000
             });
         } catch {
@@ -227,7 +241,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 keyValueList({
                     channel: `<#${channel.id}>`,
                     amount: (interaction.options.get("amount")?.value as number).toString(),
-                    reason: `\n> ${interaction.options.get("reason")?.value ? interaction.options.get("reason")?.value : "*No reason provided*"}`
+                    reason: `\n> ${
+                        interaction.options.get("reason")?.value
+                            ? interaction.options.get("reason")?.value
+                            : "*No reason provided*"
+                    }`
                 })
             )
             .setColor("Danger")
@@ -282,7 +300,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 interaction.guild.id,
                 user.user,
                 interaction.user,
-                (interaction.options.get("reason")?.value as (string | null)) ?? "*No reason provided*",
+                (interaction.options.get("reason")?.value as string | null) ?? "*No reason provided*",
                 null,
                 null,
                 messages.size.toString()
@@ -309,14 +327,19 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
         };
         log(data);
-        const messageArray: Message[] = messages.filter(message => !(
-            message!.components.some(
-                component => component.components.some(
-                    child => child.customId?.includes("transcript") ?? false
-                )
+        const messageArray: Message[] = messages
+            .filter(
+                (message) =>
+                    !message!.components.some((component) =>
+                        component.components.some((child) => child.customId?.includes("transcript") ?? false)
+                    )
             )
-        )).map(message => message as Message);
-        const newOut = await client.database.transcripts.createTranscript(messageArray, interaction, interaction.member as GuildMember);
+            .map((message) => message as Message);
+        const newOut = await client.database.transcripts.createTranscript(
+            messageArray,
+            interaction,
+            interaction.member as GuildMember
+        );
 
         const [code, key, iv] = await client.database.transcripts.create(newOut);
 
@@ -330,8 +353,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ],
             components: [
                 new Discord.ActionRowBuilder<ButtonBuilder>().addComponents([
-                    new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://clicks.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`).setDisabled(!code),
-
+                    new ButtonBuilder()
+                        .setLabel("View")
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(`https://clicks.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`)
+                        .setDisabled(!code)
                 ])
             ]
         });
@@ -355,6 +381,7 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
 
 export { command, callback, check };
 export const metadata = {
-    longDescription: "Deletes a specified amount of messages from a channel, optionally from a specific user. Without an amount, you can repeatedly choose a number of messages to delete.",
-    premiumOnly: true,
-}
+    longDescription:
+        "Deletes a specified amount of messages from a channel, optionally from a specific user. Without an amount, you can repeatedly choose a number of messages to delete.",
+    premiumOnly: true
+};
