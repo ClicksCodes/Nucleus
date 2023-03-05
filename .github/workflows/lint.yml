@@ -15,8 +15,12 @@ on:
 jobs:
     lint:
         runs-on: ubuntu-latest
+
         steps:
             - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3.6.0
+              with:
+                  node-version: 19.x
             - run: yarn install --immutable
             - name: Compile
               run: yarn build
