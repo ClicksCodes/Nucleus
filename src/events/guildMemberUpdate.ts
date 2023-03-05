@@ -7,37 +7,49 @@ export const event = "guildMemberUpdate";
 
 export async function callback(client: NucleusClient, before: GuildMember, after: GuildMember) {
     const { log, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
-    if(before.guild.id === "684492926528651336") {
-        await client.database.premium.checkAllPremium(after)
+    if (before.guild.id === "684492926528651336") {
+        await client.database.premium.checkAllPremium(after);
     }
 
-    if(!before.roles.cache.equals(after.roles.cache)) {
-        const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberRoleUpdate))
-            .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id)[0];
+    if (!before.roles.cache.equals(after.roles.cache)) {
+        const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberRoleUpdate)).filter(
+            (entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id
+        )[0];
         if (!auditLog) return;
         if (client.noLog.includes(`${after.guild.id}${after.id}${auditLog.id}`)) return;
         generalException(`${after.guild.id}${after.id}${auditLog.id}`);
         if (auditLog.executor!.id !== client.user!.id) {
-            const rolesAdded = after.roles.cache.filter(role => !before.roles.cache.has(role.id));
-            const rolesRemoved = before.roles.cache.filter(role => !after.roles.cache.has(role.id));
+            const rolesAdded = after.roles.cache.filter((role) => !before.roles.cache.has(role.id));
+            const rolesRemoved = before.roles.cache.filter((role) => !after.roles.cache.has(role.id));
             let displayName = "Roles Removed";
             let color = NucleusColors.red;
             let emoji = "GUILD.ROLES.DELETE";
-            if(rolesAdded.size > 0 && rolesRemoved.size > 0) {displayName = "Roles Changed"; color = NucleusColors.yellow; emoji = "GUILD.ROLES.EDIT";}
-            else if(rolesAdded.size > 0) {displayName = "Roles Added"; color = NucleusColors.green; emoji = "GUILD.ROLES.CREATE";}
-            const removedEntry = rolesRemoved.map(role => role.id);
-            const addedEntry = rolesAdded.map(role => role.id);
+            if (rolesAdded.size > 0 && rolesRemoved.size > 0) {
+                displayName = "Roles Changed";
+                color = NucleusColors.yellow;
+                emoji = "GUILD.ROLES.EDIT";
+            } else if (rolesAdded.size > 0) {
+                displayName = "Roles Added";
+                color = NucleusColors.green;
+                emoji = "GUILD.ROLES.CREATE";
+            }
+            const removedEntry = rolesRemoved.map((role) => role.id);
+            const addedEntry = rolesAdded.map((role) => role.id);
 
             let list = {
                 memberId: entry(after.id, `\`${after.id}\``),
-                name: entry(after.user.id, renderUser(after.user)),
+                name: entry(after.user.id, renderUser(after.user))
             };
 
             if (rolesAdded.size > 0) {
-                list = Object.assign(list, {rolesAdded: entry(addedEntry, addedEntry.map(id => `<@&${id}>`).join(", "))});
+                list = Object.assign(list, {
+                    rolesAdded: entry(addedEntry, addedEntry.map((id) => `<@&${id}>`).join(", "))
+                });
             }
             if (rolesRemoved.size > 0) {
-                list = Object.assign(list, {rolesRemoved: entry(removedEntry, removedEntry.map(id => `<@&${id}>`).join(", "))});
+                list = Object.assign(list, {
+                    rolesRemoved: entry(removedEntry, removedEntry.map((id) => `<@&${id}>`).join(", "))
+                });
             }
 
             list = Object.assign(list, {
@@ -60,18 +72,23 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 }
             };
 
-            if(rolesAdded.size > 0) {
-                list = Object.assign(list, {rolesAdded: entry(addedEntry, addedEntry.map(id => `<@&${id}>`).join(", "))});
+            if (rolesAdded.size > 0) {
+                list = Object.assign(list, {
+                    rolesAdded: entry(addedEntry, addedEntry.map((id) => `<@&${id}>`).join(", "))
+                });
             }
-            if(rolesRemoved.size > 0) {
-                list = Object.assign(list, {rolesRemoved: entry(removedEntry, removedEntry.map(id => `<@&${id}>`).join(", "))});
+            if (rolesRemoved.size > 0) {
+                list = Object.assign(list, {
+                    rolesRemoved: entry(removedEntry, removedEntry.map((id) => `<@&${id}>`).join(", "))
+                });
             }
-            data = Object.assign(data, {list: list});
+            data = Object.assign(data, { list: list });
             log(data);
         }
     }
-    const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id)[0];
+    const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberUpdate)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id
+    )[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     if (before.nickname !== after.nickname) {

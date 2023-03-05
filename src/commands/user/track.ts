@@ -1,5 +1,17 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, GuildMember, Message, ActionRowBuilder, ButtonBuilder, ButtonStyle, APIMessageComponentEmoji, StringSelectMenuBuilder, MessageComponentInteraction, StringSelectMenuInteraction, StringSelectMenuOptionBuilder } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildMember,
+    Message,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    APIMessageComponentEmoji,
+    StringSelectMenuBuilder,
+    MessageComponentInteraction,
+    StringSelectMenuInteraction,
+    StringSelectMenuOptionBuilder
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -14,7 +26,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption((option) => option.setName("user").setDescription("The user to manage").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
-    const { renderUser, renderRole} = client.logger;
+    const { renderUser, renderRole } = client.logger;
     const member = interaction.options.getMember("user") as GuildMember;
     const guild = interaction.guild;
     if (!guild) return;
@@ -63,13 +75,15 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         for (const role of data.track) {
             const disabled: boolean =
                 roles.get(role)!.position >= (interaction.member as GuildMember).roles.highest.position && !managed;
-            allowed.push(!disabled)
+            allowed.push(!disabled);
         }
-        generated += "\n" + createVerticalTrack(
-            data.track.map((role) => renderRole(roles.get(role)!)),
-            data.track.map((role) => memberRoles.cache.has(role)),
-            allowed.map((allow) => !allow)
-        );
+        generated +=
+            "\n" +
+            createVerticalTrack(
+                data.track.map((role) => renderRole(roles.get(role)!)),
+                data.track.map((role) => memberRoles.cache.has(role)),
+                allowed.map((allow) => !allow)
+            );
         const selected = [];
         for (const position of data.track) {
             if (memberRoles.cache.has(position)) selected.push(position);
@@ -117,7 +131,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             ],
             components: [new ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>().addComponents(dropdown)]
                 .concat(
-                    conflict && conflictDropdown.length ? [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(conflictDropdown)] : []
+                    conflict && conflictDropdown.length
+                        ? [new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(conflictDropdown)]
+                        : []
                 )
                 .concat([
                     new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -150,7 +166,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             component = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             timedOut = true;
@@ -158,7 +180,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         component.deferUpdate();
         if (component.customId === "conflict") {
-            const rolesToRemove = selected.filter((role) => role !== (component as StringSelectMenuInteraction).values[0]);
+            const rolesToRemove = selected.filter(
+                (role) => role !== (component as StringSelectMenuInteraction).values[0]
+            );
             await member.roles.remove(rolesToRemove);
         } else if (component.customId === "promote") {
             if (
@@ -196,7 +220,7 @@ const check = async (interaction: CommandInteraction, _partial: boolean = false)
     if (member.id === interaction.guild!.ownerId) return true;
     // Check if the user can manage any of the tracks
     let managed = false;
-    const memberRoles = member.roles.cache.map((r) => r.id)
+    const memberRoles = member.roles.cache.map((r) => r.id);
     for (const element of tracks) {
         if (!element.manageableBy.length) continue;
         if (!element.manageableBy.some((role: string) => memberRoles.includes(role))) continue;

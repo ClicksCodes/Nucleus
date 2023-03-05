@@ -1,5 +1,14 @@
 import { LoadingEmbed } from "../utils/defaults.js";
-import { CommandInteraction, GuildChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, StringSelectMenuBuilder, APIMessageComponentEmoji } from "discord.js";
+import {
+    CommandInteraction,
+    GuildChannel,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ChannelType,
+    StringSelectMenuBuilder,
+    APIMessageComponentEmoji
+} from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import client from "../utils/client.js";
@@ -24,7 +33,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         staff: ["staff", "mod", "admin", "helper", "train"],
         spam: ["spam", "count"],
         logs: ["log"],
-        other: ["random", "starboard"],
+        other: ["random", "starboard"]
     };
     for (const c of channels.values()) {
         for (const type in types) {
@@ -75,12 +84,16 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setCustomId("accept")
                         .setStyle(ButtonStyle.Success)
                         .setDisabled(predicted[channel].length === 0)
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.TICK", "id")) as APIMessageComponentEmoji),
+                        .setEmoji(
+                            client.emojis.cache.get(getEmojiByName("ICONS.TICK", "id")) as APIMessageComponentEmoji
+                        ),
                     new ButtonBuilder()
                         .setLabel('Use "Other"')
                         .setCustomId("reject")
                         .setStyle(ButtonStyle.Secondary)
-                        .setEmoji(client.emojis.cache.get(getEmojiByName("ICONS.CROSS", "id")) as APIMessageComponentEmoji)
+                        .setEmoji(
+                            client.emojis.cache.get(getEmojiByName("ICONS.CROSS", "id")) as APIMessageComponentEmoji
+                        )
                 ])
             ]
         });
@@ -88,7 +101,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id}
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             return await interaction.editReply({

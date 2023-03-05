@@ -1,9 +1,9 @@
 import fs from "fs";
 
 export default async function getSubcommandsInFolder(path: string, indent: string = "") {
-    const files = fs.readdirSync(path, { withFileTypes: true }).filter(
-        file => !file.name.endsWith(".ts") && !file.name.endsWith(".map")
-    );
+    const files = fs
+        .readdirSync(path, { withFileTypes: true })
+        .filter((file) => !file.name.endsWith(".ts") && !file.name.endsWith(".map"));
     const subcommands = [];
     const subcommandGroups = [];
     let errors = 0;
@@ -15,7 +15,7 @@ export default async function getSubcommandsInFolder(path: string, indent: strin
                 subcommandGroups.push(await import(`../../../${path}/${file.name}/_meta.js`));
             } else if (file.name.endsWith(".js")) {
                 // If its a file
-                console.log(`│  ${indent}├─ Loading subcommand ${file.name}`)
+                console.log(`│  ${indent}├─ Loading subcommand ${file.name}`);
                 subcommands.push(await import(`../../../${path}/${file.name}`));
             }
         } catch (e) {
@@ -23,5 +23,5 @@ export default async function getSubcommandsInFolder(path: string, indent: strin
             errors++;
         }
     }
-    return {subcommands, subcommandGroups, errors};
+    return { subcommands, subcommandGroups, errors };
 }

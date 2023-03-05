@@ -1,4 +1,4 @@
-import type { CommandInteraction } from 'discord.js';
+import type { CommandInteraction } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import guide from "../../reflex/guide.js";
 

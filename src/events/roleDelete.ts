@@ -6,10 +6,11 @@ export const event = "roleDelete";
 
 export async function callback(client: NucleusClient, role: Role) {
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    if (!await isLogging(role.guild.id, "guildRoleUpdate")) return;
+    if (!(await isLogging(role.guild.id, "guildRoleUpdate"))) return;
     if (role.managed) return;
-    const auditLog = (await getAuditLog(role.guild as Guild, AuditLogEvent.RoleDelete))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === role.id)[0]!;
+    const auditLog = (await getAuditLog(role.guild as Guild, AuditLogEvent.RoleDelete)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as Role)!.id === role.id
+    )[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
     const data = {
         meta: {

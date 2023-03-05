@@ -15,8 +15,11 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import createPageIndicator from "../../utils/createPageIndicator.js";
-interface MessageSelectOptionData { label: string; value: string; description?: string; }
-
+interface MessageSelectOptionData {
+    label: string;
+    value: string;
+    description?: string;
+}
 
 class Embed {
     embed: Discord.EmbedBuilder = new EmbedBuilder();
@@ -139,7 +142,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             timedOut = true;
@@ -163,7 +172,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
     const em = new Discord.EmbedBuilder(pages[page]!.embed.data);
     if (timedOut) {
-        em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out");
+        em.setDescription(
+            em.data.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message timed out"
+        );
     } else {
         em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page) + " | Message closed");
     }
@@ -172,7 +183,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         components: []
     });
 };
-
 
 export { command };
 export { callback };

@@ -1,4 +1,11 @@
-import { AutocompleteInteraction, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } from "discord.js";
+import {
+    AutocompleteInteraction,
+    CommandInteraction,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    SlashCommandBuilder
+} from "discord.js";
 import client from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import { capitalize } from "../utils/generateKeyValueList.js";
@@ -32,14 +39,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (tag.match(/^(http|https):\/\/[^ "]+$/)) {
         url = tag;
         components = [
-            new ActionRowBuilder<ButtonBuilder>().addComponents([new ButtonBuilder().setLabel("Open").setURL(url).setStyle(ButtonStyle.Link)])
+            new ActionRowBuilder<ButtonBuilder>().addComponents([
+                new ButtonBuilder().setLabel("Open").setURL(url).setStyle(ButtonStyle.Link)
+            ])
         ];
     }
-    const em = new EmojiEmbed()
-        .setTitle(capitalize(search))
-        .setEmoji("PUNISH.NICKNAME.GREEN")
-        .setStatus("Success")
-    if (url) em.setImage(url)
+    const em = new EmojiEmbed().setTitle(capitalize(search)).setEmoji("PUNISH.NICKNAME.GREEN").setStatus("Success");
+    if (url) em.setImage(url);
     else em.setDescription(tag);
 
     await interaction.reply({

@@ -6,9 +6,10 @@ export const event = "stickerCreate";
 
 export async function callback(client: NucleusClient, sticker: Sticker) {
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
-    if (!await isLogging(sticker.guild!.id, "stickerUpdate")) return;
-    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.StickerCreate))
-    .filter((entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id)[0]!;
+    if (!(await isLogging(sticker.guild!.id, "stickerUpdate"))) return;
+    const auditLog = (await getAuditLog(sticker.guild!, AuditLogEvent.StickerCreate)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as Sticker)!.id === sticker.id
+    )[0]!;
     if (auditLog.executor!.id === client.user!.id) return;
     if (client.noLog.includes(`${sticker.guild!.id}${auditLog.id}`)) return;
     generalException(`${sticker.guild!.id}${auditLog.id}`);

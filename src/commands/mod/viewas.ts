@@ -1,4 +1,4 @@
-import { LoadingEmbed } from './../../utils/defaults.js';
+import { LoadingEmbed } from "./../../utils/defaults.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
@@ -23,20 +23,19 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .addUserOption((option) => option.setName("member").setDescription("The member to view as").setRequired(true));
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
+    const m = await interaction.reply({ embeds: LoadingEmbed, ephemeral: true, fetchReply: true });
 
-    const m = await interaction.reply({embeds: LoadingEmbed, ephemeral: true, fetchReply: true})
-
-    let channels: Record<string, GuildBasedChannel[]> = {"": []};
+    let channels: Record<string, GuildBasedChannel[]> = { "": [] };
 
     const channelCollection = await interaction.guild!.channels.fetch();
 
-    channelCollection.forEach(channel => {
+    channelCollection.forEach((channel) => {
         if (!channel) return; // if no channel
         if (channel.type === Discord.ChannelType.GuildCategory) {
-            if(!channels[channel!.id]) channels[channel!.id] = [];
+            if (!channels[channel!.id]) channels[channel!.id] = [];
         } else if (channel.parent) {
             if (!channels[channel.parent.id]) channels[channel.parent.id] = [channel];
-            else (channels[channel.parent.id as string])!.push(channel);
+            else channels[channel.parent.id as string]!.push(channel);
         } else {
             channels[""]!.push(channel);
         }
@@ -47,7 +46,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
     for (const category in channels) {
         channels[category] = channels[category]!.sort((a: GuildBasedChannel, b: GuildBasedChannel) => {
-            const disallowedTypes = [Discord.ChannelType.PublicThread, Discord.ChannelType.PrivateThread, Discord.ChannelType.AnnouncementThread];
+            const disallowedTypes = [
+                Discord.ChannelType.PublicThread,
+                Discord.ChannelType.PrivateThread,
+                Discord.ChannelType.AnnouncementThread
+            ];
             if (disallowedTypes.includes(a.type) || disallowedTypes.includes(b.type)) return 0;
             a = a as NonThreadGuildBasedChannel;
             b = b as NonThreadGuildBasedChannel;
@@ -64,7 +67,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
     for (const category in channels) {
         channels[category] = channels[category]!.filter((c) => {
-            return !(c.type === Discord.ChannelType.PublicThread || c.type === Discord.ChannelType.PrivateThread || c.type === Discord.ChannelType.AnnouncementThread)
+            return !(
+                c.type === Discord.ChannelType.PublicThread ||
+                c.type === Discord.ChannelType.PrivateThread ||
+                c.type === Discord.ChannelType.AnnouncementThread
+            );
         });
     }
     channels = Object.fromEntries(Object.entries(channels).filter(([_, v]) => v.length > 0));
@@ -81,12 +88,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (last25.length > 0) categoryNames25.push(last25);
 
     const channelTypeEmoji: Record<number, string> = {
-        0: "GUILD_TEXT",  // Text channel
-        2: "GUILD_VOICE",  // Voice channel
-        5: "GUILD_NEWS",  // Announcement channel
-        13: "GUILD_STAGE_VOICE",  // Stage channel
-        15: "FORUM",  // Forum channel
-        99: "RULES"  // Rules channel
+        0: "GUILD_TEXT", // Text channel
+        2: "GUILD_VOICE", // Voice channel
+        5: "GUILD_NEWS", // Announcement channel
+        13: "GUILD_STAGE_VOICE", // Stage channel
+        15: "FORUM", // Forum channel
+        99: "RULES" // Rules channel
     };
     const NSFWAvailable: number[] = [0, 2, 5, 13];
     const rulesChannel = interaction.guild!.rulesChannel?.id;
@@ -94,12 +101,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     async function nameFromChannel(channel: GuildBasedChannel): Promise<string> {
         let channelType: Discord.ChannelType | 99 = channel.type;
         if (channelType === Discord.ChannelType.GuildCategory) return "";
-        if (channel.id === rulesChannel) channelType = 99
+        if (channel.id === rulesChannel) channelType = 99;
         let threads: Discord.ThreadChannel[] = [];
         if ("threads" in channel) {
             threads = channel.threads.cache.toJSON().map((t) => t as Discord.ThreadChannel);
         }
-        const nsfw = ("nsfw" in channel ? channel.nsfw : false) && NSFWAvailable.includes(channelType)
+        const nsfw = ("nsfw" in channel ? channel.nsfw : false) && NSFWAvailable.includes(channelType);
         const emojiName = channelTypeEmoji[channelType.valueOf()] + (nsfw ? "_NSFW" : "");
         const emoji = getEmojiByName("ICONS.CHANNEL." + (threads.length ? "THREAD_CHANNEL" : emojiName));
         let current = `${emoji} ${channel.name}`;
@@ -118,46 +125,59 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             description += `${await nameFromChannel(channel)}\n`;
         }
 
-        const parsedCategorySelectMenu: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] = categoryNames25.map(
-            (categories, set) => { return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(new StringSelectMenuBuilder()
-                .setCustomId("category")
-                .setMinValues(1)
-                .setMaxValues(1)
-                .setOptions(categories.map((c, i) => {
-                    return new StringSelectMenuOptionBuilder()
-                        .setLabel(c)
-                        .setValue((set * 25 + i).toString())
-                        .setEmoji(getEmojiByName("ICONS.CHANNEL.CATEGORY", "id") as APIMessageComponentEmoji)  // Again, this is valid but TS doesn't think so
-                        .setDefault((set * 25 + i) === page)
-                }))
-            )}
+        const parsedCategorySelectMenu: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] =
+            categoryNames25.map((categories, set) => {
+                return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId("category")
+                        .setMinValues(1)
+                        .setMaxValues(1)
+                        .setOptions(
+                            categories.map((c, i) => {
+                                return new StringSelectMenuOptionBuilder()
+                                    .setLabel(c)
+                                    .setValue((set * 25 + i).toString())
+                                    .setEmoji(
+                                        getEmojiByName("ICONS.CHANNEL.CATEGORY", "id") as APIMessageComponentEmoji
+                                    ) // Again, this is valid but TS doesn't think so
+                                    .setDefault(set * 25 + i === page);
+                            })
+                        )
+                );
+            });
+
+        const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = parsedCategorySelectMenu;
+        components.push(
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                    .setCustomId("back")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(page === 0)
+                    .setEmoji(getEmojiByName("CONTROL.LEFT", "id")),
+                new ButtonBuilder()
+                    .setCustomId("right")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(page === categoryIDs.length - 1)
+                    .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
+            )
         );
 
-        const components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] = parsedCategorySelectMenu
-        components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-                .setCustomId("back")
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled(page === 0)
-                .setEmoji(getEmojiByName("CONTROL.LEFT", "id")),
-            new ButtonBuilder()
-                .setCustomId("right")
-                .setStyle(ButtonStyle.Secondary)
-                .setDisabled(page === categoryIDs.length - 1)
-                .setEmoji(getEmojiByName("CONTROL.RIGHT", "id"))
-        ));
-
         await interaction.editReply({
-            embeds: [new EmojiEmbed()
-                .setEmoji("MEMBER.JOIN")
-                .setTitle("Viewing as " + member.displayName)
-                .setStatus("Success")
-                .setDescription(description + "\n" + pageIndicator(categoryIDs.length, page))
-            ], components: components
+            embeds: [
+                new EmojiEmbed()
+                    .setEmoji("MEMBER.JOIN")
+                    .setTitle("Viewing as " + member.displayName)
+                    .setStatus("Success")
+                    .setDescription(description + "\n" + pageIndicator(categoryIDs.length, page))
+            ],
+            components: components
         });
         let i;
         try {
-            i = await m.awaitMessageComponent({filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id, time: 30000});
+            i = await m.awaitMessageComponent({
+                filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id,
+                time: 30000
+            });
         } catch (e) {
             closed = true;
             continue;

@@ -20,18 +20,20 @@ export interface LoggerOptions {
     list: any;
     hidden: {
         guild: string;
-    },
+    };
     separate?: {
         start?: string;
         end?: string;
-    }
+    };
 }
 
 async function isLogging(guild: string, type: string): Promise<boolean> {
     const config = await client.database.guilds.read(guild);
     if (!config.logging.logs.enabled) return false;
     if (!config.logging.logs.channel) return false;
-    if (!toHexArray(config.logging.logs.toLog).includes(type)) { return false; }
+    if (!toHexArray(config.logging.logs.toLog).includes(type)) {
+        return false;
+    }
     return true;
 }
 
@@ -52,16 +54,21 @@ export const Logger = {
         const delta = num2 - num1;
         return `${num1} -> ${num2} (${delta > 0 ? "+" : ""}${delta})`;
     },
-    entry(value: string | number | boolean | null | (string | boolean)[], displayValue: string): { value: string | boolean | null | (string | boolean | number)[]; displayValue: string } {
+    entry(
+        value: string | number | boolean | null | (string | boolean)[],
+        displayValue: string
+    ): { value: string | boolean | null | (string | boolean | number)[]; displayValue: string } {
         if (typeof value === "number") value = value.toString();
         return { value: value, displayValue: displayValue };
     },
     renderChannel(channel: Discord.GuildChannel | Discord.ThreadChannel | string) {
-        if (typeof channel === "string") channel = client.channels.cache.get(channel) as Discord.GuildChannel | Discord.ThreadChannel;
+        if (typeof channel === "string")
+            channel = client.channels.cache.get(channel) as Discord.GuildChannel | Discord.ThreadChannel;
         return `${channel.name} [<#${channel.id}>]`;
     },
     renderRole(role: Discord.Role | string, guild?: Discord.Guild | string) {
-        if (typeof role === "string") role = (typeof guild === "string" ? client.guilds.cache.get(guild) : guild)!.roles.cache.get(role)!;
+        if (typeof role === "string")
+            role = (typeof guild === "string" ? client.guilds.cache.get(guild) : guild)!.roles.cache.get(role)!;
         return `${role.name} [<@&${role.id}>]`;
     },
     renderEmoji(emoji: Discord.GuildEmoji) {
@@ -72,16 +79,20 @@ export const Logger = {
         yellow: 0xf2d478,
         green: 0x68d49e
     },
-    async getAuditLog(guild: Discord.Guild, event: Discord.GuildAuditLogsResolvable, delay?: number): Promise<Discord.GuildAuditLogsEntry[]> {
+    async getAuditLog(
+        guild: Discord.Guild,
+        event: Discord.GuildAuditLogsResolvable,
+        delay?: number
+    ): Promise<Discord.GuildAuditLogsEntry[]> {
         await wait(delay ?? 250);
-        const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map(m => m)
+        const auditLog = (await guild.fetchAuditLogs({ type: event })).entries.map((m) => m);
         return auditLog as Discord.GuildAuditLogsEntry[];
     },
     async log(log: LoggerOptions): Promise<void> {
-        if (!await isLogging(log.hidden.guild, log.meta.calculateType)) return;
-        console.log(log.hidden.guild)
+        if (!(await isLogging(log.hidden.guild, log.meta.calculateType))) return;
+        console.log(log.hidden.guild);
         const config = await client.database.guilds.read(log.hidden.guild);
-        console.log(config.logging.logs.channel)
+        console.log(config.logging.logs.channel);
 
         if (config.logging.logs.channel) {
             const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
@@ -102,8 +113,8 @@ export const Logger = {
                     .setTitle(`${getEmojiByName(log.meta.emoji)} ${log.meta.displayName}`)
                     .setDescription(
                         (log.separate.start ? log.separate.start + "\n" : "") +
-                        generateKeyValueList(description) +
-                        (log.separate.end ? "\n" + log.separate.end : "")
+                            generateKeyValueList(description) +
+                            (log.separate.end ? "\n" + log.separate.end : "")
                     )
                     .setTimestamp(log.meta.timestamp)
                     .setColor(log.meta.color);

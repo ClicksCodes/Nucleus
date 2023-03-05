@@ -1,4 +1,4 @@
-import { LinkWarningFooter } from './../../utils/defaults.js';
+import { LinkWarningFooter } from "./../../utils/defaults.js";
 import { ActionRowBuilder, ButtonBuilder, CommandInteraction, GuildMember, ButtonStyle, Message } from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
@@ -8,15 +8,14 @@ import client from "../../utils/client.js";
 import { areTicketsEnabled, create } from "../../actions/createModActionTicket.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 
-
-const command = (builder: SlashCommandSubcommandBuilder) => builder
-    .setName("nick")
-    .setDescription("Changes a users nickname")
-    .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
-    .addStringOption((option) =>
-        option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
-    );
-
+const command = (builder: SlashCommandSubcommandBuilder) =>
+    builder
+        .setName("nick")
+        .setDescription("Changes a users nickname")
+        .addUserOption((option) => option.setName("user").setDescription("The user to change").setRequired(true))
+        .addStringOption((option) =>
+            option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
+        );
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     const { log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
@@ -35,19 +34,27 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")!),
                     "new nickname": `${
-                        interaction.options.get("name")?.value as string ? interaction.options.get("name")?.value as string : "*No nickname*"
+                        (interaction.options.get("name")?.value as string)
+                            ? (interaction.options.get("name")?.value as string)
+                            : "*No nickname*"
                     }`
                 }) +
-                    `Are you sure you want to ${interaction.options.get("name")?.value as string ? "change" : "clear"} <@!${
-                        (interaction.options.getMember("user") as GuildMember).id
-                    }>'s nickname?`
+                    `Are you sure you want to ${
+                        (interaction.options.get("name")?.value as string) ? "change" : "clear"
+                    } <@!${(interaction.options.getMember("user") as GuildMember).id}>'s nickname?`
             )
             .setColor("Danger")
             .addCustomBoolean(
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild!.id)),
-                async () => await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, "Nickname changed"),
+                async () =>
+                    await create(
+                        interaction.guild!,
+                        interaction.options.getUser("user")!,
+                        interaction.user,
+                        "Nickname changed"
+                    ),
                 "An appeal ticket will be created",
                 null,
                 "CONTROL.TICKET",
@@ -69,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (confirmation.cancelled) timedOut = true;
         else if (confirmation.success !== undefined) success = true;
         else if (confirmation.components) {
-            notify = confirmation.components['notify']!.active;
+            notify = confirmation.components["notify"]!.active;
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
     } while (!timedOut && !success);
@@ -88,29 +95,38 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("PUNISH.NICKNAME.RED")
                         .setTitle("Nickname changed")
                         .setDescription(
-                            `Your nickname was ${interaction.options.get("name")?.value as string ? "changed" : "cleared"} in ${
-                                interaction.guild!.name
-                            }.` +
-                                (interaction.options.get("name")?.value as string
+                            `Your nickname was ${
+                                (interaction.options.get("name")?.value as string) ? "changed" : "cleared"
+                            } in ${interaction.guild!.name}.` +
+                                ((interaction.options.get("name")?.value as string)
                                     ? `\nIt is now: ${interaction.options.get("name")?.value as string}`
                                     : "") +
                                 "\n\n" +
                                 (createAppealTicket
-                                    ? `You can appeal this in the ticket created in <#${confirmation.components!["appeal"]!.response}>`
+                                    ? `You can appeal this in the ticket created in <#${
+                                          confirmation.components!["appeal"]!.response
+                                      }>`
                                     : "")
                         )
                         .setStatus("Danger")
-                ], components: []
+                ],
+                components: []
             };
             if (config.moderation.nick.text && config.moderation.nick.link) {
-                messageData.embeds[0]!.setFooter(LinkWarningFooter)
-                messageData.components.push(new ActionRowBuilder<ButtonBuilder>()
-                        .addComponents(new ButtonBuilder()
+                messageData.embeds[0]!.setFooter(LinkWarningFooter);
+                messageData.components.push(
+                    new ActionRowBuilder<ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.nick.text)
-                            .setURL(config.moderation.nick.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
-                        )
-                )
+                            .setURL(
+                                config.moderation.nick.link.replaceAll(
+                                    "{id}",
+                                    (interaction.options.getMember("user") as GuildMember).id
+                                )
+                            )
+                    )
+                );
             }
             dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
             dmSent = true;
@@ -166,7 +182,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             updatedBy: entry(interaction.user.id, renderUser(interaction.user))
         },
         separate: {
-            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+            end:
+                getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) +
+                ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild!.id
@@ -221,6 +239,7 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
 
 export { command, callback, check };
 export const metadata = {
-    longDescription: "Changes the nickname of a member. This is the name that shows in the member list and on messages.",
-    premiumOnly: true,
-}
+    longDescription:
+        "Changes the nickname of a member. This is the name that shows in the member list and on messages.",
+    premiumOnly: true
+};

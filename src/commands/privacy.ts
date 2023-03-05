@@ -1,5 +1,14 @@
 import { LoadingEmbed } from "../utils/defaults.js";
-import Discord, { SlashCommandBuilder, CommandInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, SelectMenuOptionBuilder, StringSelectMenuBuilder } from "discord.js";
+import Discord, {
+    SlashCommandBuilder,
+    CommandInteraction,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    StringSelectMenuOptionBuilder,
+    SelectMenuOptionBuilder,
+    StringSelectMenuBuilder
+} from "discord.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
@@ -10,7 +19,6 @@ import { Embed } from "../utils/defaults.js";
 const command = new SlashCommandBuilder()
     .setName("privacy")
     .setDescription("Information and options for you and your server's settings");
-
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const pages = [
@@ -48,7 +56,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Link scanning and Transcripts")
                     .setDescription(
-                            "Transcripts allow you to store all messages sent in a channel. Transcripts are stored in our database along with the rest of the server's settings but is accessible by anyone with the link, so a leaked link could show all messages sent in the channel.\n"
+                        "Transcripts allow you to store all messages sent in a channel. Transcripts are stored in our database along with the rest of the server's settings but is accessible by anyone with the link, so a leaked link could show all messages sent in the channel.\n"
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
@@ -59,26 +67,26 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     ].concat(
         (interaction.member as Discord.GuildMember).permissions.has("Administrator")
             ? [
-                new Embed()
-                    .setEmbed(
-                        new EmojiEmbed()
-                            .setTitle("Options")
-                            .setDescription("Below are buttons for controlling this servers privacy settings")
-                            .setEmoji("NUCLEUS.LOGO")
-                            .setStatus("Danger")
-                    )
-                    .setTitle("Options")
-                    .setDescription("Options")
-                    .setPageId(3)
-                    .setComponents([
-                        new ActionRowBuilder<ButtonBuilder>().addComponents([
-                            new ButtonBuilder()
-                                .setLabel("Clear all data")
-                                .setCustomId("clear-all-data")
-                                .setStyle(ButtonStyle.Danger)
-                        ])
-                    ])
-            ]
+                  new Embed()
+                      .setEmbed(
+                          new EmojiEmbed()
+                              .setTitle("Options")
+                              .setDescription("Below are buttons for controlling this servers privacy settings")
+                              .setEmoji("NUCLEUS.LOGO")
+                              .setStatus("Danger")
+                      )
+                      .setTitle("Options")
+                      .setDescription("Options")
+                      .setPageId(3)
+                      .setComponents([
+                          new ActionRowBuilder<ButtonBuilder>().addComponents([
+                              new ButtonBuilder()
+                                  .setLabel("Clear all data")
+                                  .setCustomId("clear-all-data")
+                                  .setStyle(ButtonStyle.Danger)
+                          ])
+                      ])
+              ]
             : []
     );
     const m = await interaction.reply({
@@ -86,7 +94,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         fetchReply: true,
         ephemeral: true
     });
-    let page = parseInt(client.preloadPage[interaction.channel!.id] ? client.preloadPage[interaction.channel!.id]?.argument! : "0");
+    let page = parseInt(
+        client.preloadPage[interaction.channel!.id] ? client.preloadPage[interaction.channel!.id]?.argument! : "0"
+    );
 
     let selectPaneOpen = false;
     let nextFooter = null;
@@ -146,7 +156,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             timedOut = true;
@@ -205,7 +221,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         components: []
     });
 };
-
 
 export { command };
 export { callback };

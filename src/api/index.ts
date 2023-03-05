@@ -1,5 +1,5 @@
-import type { Guild, GuildMember } from 'discord.js';
-import type { NucleusClient } from '../utils/client.js';
+import type { Guild, GuildMember } from "discord.js";
+import type { NucleusClient } from "../utils/client.js";
 //@ts-expect-error
 import express from "express";
 //@ts-expect-error
@@ -21,11 +21,11 @@ const runServer = (client: NucleusClient) => {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.verify[code]!.gID) as Guild | null;
+            const guild = (await client.guilds.fetch(client.verify[code]!.gID)) as Guild | null;
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(client.verify[code]!.uID) as GuildMember | null;
+            const member = (await guild.members.fetch(client.verify[code]!.uID)) as GuildMember | null;
             if (!member) {
                 return res.status(404);
             }
@@ -47,7 +47,9 @@ const runServer = (client: NucleusClient) => {
             });
             client.verify = Object.keys(client.verify)
                 .filter((k) => k !== code)
-                .reduce((obj, key) => {return { ...obj, [key]: client.verify[key]}}, {});
+                .reduce((obj, key) => {
+                    return { ...obj, [key]: client.verify[key] };
+                }, {});
             const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
             try {
                 const data = {
@@ -108,11 +110,11 @@ const runServer = (client: NucleusClient) => {
         const code = req.params.code;
         const secret = req.body.secret;
         if (secret === client.config.verifySecret) {
-            const guild = await client.guilds.fetch(client.roleMenu[code]!.guild) as Guild | null;
+            const guild = (await client.guilds.fetch(client.roleMenu[code]!.guild)) as Guild | null;
             if (!guild) {
                 return res.status(404);
             }
-            const member = await guild.members.fetch(client.roleMenu[code]!.user) as GuildMember | null;
+            const member = (await guild.members.fetch(client.roleMenu[code]!.user)) as GuildMember | null;
             if (!member) {
                 return res.status(404);
             }
@@ -187,7 +189,7 @@ const runServer = (client: NucleusClient) => {
         try {
             user = await client.users.fetch(id);
         } catch (e) {
-            console.log(e)
+            console.log(e);
             return res.status(404).send("Could not find a user by that id");
         }
         return res.status(200).send(user.username);

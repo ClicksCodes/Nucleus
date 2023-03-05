@@ -91,39 +91,39 @@ export default {
             timeout: false,
             role: null,
             text: null,
-            link: null,
+            link: null
         },
         kick: {
             text: null,
-            link: null,
+            link: null
         },
         ban: {
             text: null,
-            link: null,
+            link: null
         },
         softban: {
             text: null,
-            link: null,
+            link: null
         },
         warn: {
             text: null,
-            link: null,
+            link: null
         },
         role: {
             role: null,
             text: null,
-            link: null,
+            link: null
         },
         nick: {
             text: null,
-            link: null,
+            link: null
         }
     },
     tracks: [],
     roleMenu: {
         enabled: false,
         allowWebUI: false,
-        options: [],
+        options: []
     },
     tags: {},
     autoPublish: {

@@ -1,5 +1,5 @@
-import { GuildChannel, AuditLogEvent, ChannelType, TextChannel, VoiceChannel, StageChannel } from 'discord.js';
-import type { GuildAuditLogsEntry } from 'discord.js';
+import { GuildChannel, AuditLogEvent, ChannelType, TextChannel, VoiceChannel, StageChannel } from "discord.js";
+import type { GuildAuditLogsEntry } from "discord.js";
 //@ts-expect-error
 import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
@@ -10,12 +10,12 @@ import { capitalize } from "../utils/generateKeyValueList.js";
 let entry = c.logger.entry;
 
 const channelTypeEmoji: Record<number, string> = {
-    0: "Text",  // Text channel
-    2: "Voice",  // Voice channel
-    5: "Announcement",  // Announcement channel
-    13: "Stage",  // Stage channel
-    15: "Forum",  // Forum channel
-    99: "Rules"  // Rules channel
+    0: "Text", // Text channel
+    2: "Voice", // Voice channel
+    5: "Announcement", // Announcement channel
+    13: "Stage", // Stage channel
+    15: "Forum", // Forum channel
+    99: "Rules" // Rules channel
 };
 
 interface channelChanges {
@@ -39,19 +39,20 @@ interface channelChanges {
     autoArchiveDuration?: ReturnType<typeof entry>;
 }
 
-
-
 export const event = "channelUpdate";
 
 export async function callback(client: NucleusClient, oldChannel: GuildChannel, newChannel: GuildChannel) {
     const { getAuditLog, log, isLogging, NucleusColors, renderDelta, renderUser, renderChannel } = client.logger;
-    if (!await isLogging(newChannel.guild.id, "channelUpdate")) return;
+    if (!(await isLogging(newChannel.guild.id, "channelUpdate"))) return;
     const config = await client.memory.readGuildInfo(newChannel.guild.id);
     entry = client.logger.entry;
     if (newChannel.parent && newChannel.parent.id === config.tickets.category) return;
 
-    const auditLog: null | GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> = (await getAuditLog(newChannel.guild, AuditLogEvent.ChannelUpdate))
-        .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildChannel)!.id === newChannel.id)[0] as GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> | null;
+    const auditLog: null | GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> = (
+        await getAuditLog(newChannel.guild, AuditLogEvent.ChannelUpdate)
+    ).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildChannel)!.id === newChannel.id
+    )[0] as GuildAuditLogsEntry<AuditLogEvent.ChannelUpdate> | null;
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
 
@@ -62,11 +63,18 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
         channelId: entry(newChannel.id, `\`${newChannel.id}\``),
         channel: entry(newChannel.id, renderChannel(newChannel)),
         edited: entry(Date.now(), renderDelta(Date.now())),
-        editedBy: entry(auditLog.executor!.id, renderUser((await newChannel.guild.members.fetch(auditLog.executor!.id)).user)),
+        editedBy: entry(
+            auditLog.executor!.id,
+            renderUser((await newChannel.guild.members.fetch(auditLog.executor!.id)).user)
+        )
     };
-    if (oldChannel.name !== newChannel.name) changes.name = entry([oldChannel.name, newChannel.name], `${oldChannel.name} -> ${newChannel.name}`);
+    if (oldChannel.name !== newChannel.name)
+        changes.name = entry([oldChannel.name, newChannel.name], `${oldChannel.name} -> ${newChannel.name}`);
     if (oldChannel.position !== newChannel.position)
-        changes.position = entry([oldChannel.position.toString(), newChannel.position.toString()], `${oldChannel.position} -> ${newChannel.position}`);
+        changes.position = entry(
+            [oldChannel.position.toString(), newChannel.position.toString()],
+            `${oldChannel.position} -> ${newChannel.position}`
+        );
 
     switch (newChannel.type) {
         case ChannelType.PrivateThread:
@@ -94,20 +102,46 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
                 newTopic = "None";
             }
             const nsfw = ["", ""];
-            nsfw[0] = (oldChannel as TextChannel).nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
-            nsfw[1] = (newChannel as TextChannel).nsfw ? `${getEmojiByName("CONTROL.TICK")} Yes` : `${getEmojiByName("CONTROL.CROSS")} No`;
+            nsfw[0] = (oldChannel as TextChannel).nsfw
+                ? `${getEmojiByName("CONTROL.TICK")} Yes`
+                : `${getEmojiByName("CONTROL.CROSS")} No`;
+            nsfw[1] = (newChannel as TextChannel).nsfw
+                ? `${getEmojiByName("CONTROL.TICK")} Yes`
+                : `${getEmojiByName("CONTROL.CROSS")} No`;
             if (oldTopic !== newTopic)
-                changes.description = entry([(oldChannel as TextChannel).topic ?? "", (newChannel as TextChannel).topic ?? ""], `\nBefore: ${oldTopic}\nAfter: ${newTopic}`);
-            if ((oldChannel as TextChannel).nsfw !== (newChannel as TextChannel).nsfw) changes.nsfw = entry([(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"], `${nsfw[0]} -> ${nsfw[1]}`);
+                changes.description = entry(
+                    [(oldChannel as TextChannel).topic ?? "", (newChannel as TextChannel).topic ?? ""],
+                    `\nBefore: ${oldTopic}\nAfter: ${newTopic}`
+                );
+            if ((oldChannel as TextChannel).nsfw !== (newChannel as TextChannel).nsfw)
+                changes.nsfw = entry(
+                    [(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"],
+                    `${nsfw[0]} -> ${nsfw[1]}`
+                );
             if ((oldChannel as TextChannel).rateLimitPerUser !== (newChannel as TextChannel).rateLimitPerUser)
                 changes.slowmode = entry(
-                    [((oldChannel as TextChannel).rateLimitPerUser).toString(), ((newChannel as TextChannel).rateLimitPerUser).toString()],
-                    `${humanizeDuration((oldChannel as TextChannel).rateLimitPerUser * 1000)} -> ${humanizeDuration((newChannel as TextChannel).rateLimitPerUser * 1000)}`
+                    [
+                        (oldChannel as TextChannel).rateLimitPerUser.toString(),
+                        (newChannel as TextChannel).rateLimitPerUser.toString()
+                    ],
+                    `${humanizeDuration((oldChannel as TextChannel).rateLimitPerUser * 1000)} -> ${humanizeDuration(
+                        (newChannel as TextChannel).rateLimitPerUser * 1000
+                    )}`
                 );
-            if((oldChannel as TextChannel).defaultAutoArchiveDuration !== (newChannel as TextChannel).defaultAutoArchiveDuration) {
+            if (
+                (oldChannel as TextChannel).defaultAutoArchiveDuration !==
+                (newChannel as TextChannel).defaultAutoArchiveDuration
+            ) {
                 changes.autoArchiveDuration = entry(
-                    [((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString(), ((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString()],
-                    `${humanizeDuration(((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000)} -> ${humanizeDuration(((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000)}`
+                    [
+                        ((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString(),
+                        ((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString()
+                    ],
+                    `${humanizeDuration(
+                        ((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000
+                    )} -> ${humanizeDuration(
+                        ((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000
+                    )}`
                 );
             }
 
@@ -134,12 +168,27 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
                 newTopic = "None";
             }
             if ((oldChannel as TextChannel).nsfw !== (newChannel as TextChannel).nsfw) {
-                changes.nsfw = entry([(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"], `${(oldChannel as TextChannel).nsfw ? "On" : "Off"} -> ${(newChannel as TextChannel).nsfw ? "On" : "Off"}`);
+                changes.nsfw = entry(
+                    [(oldChannel as TextChannel).nsfw ? "On" : "Off", (newChannel as TextChannel).nsfw ? "On" : "Off"],
+                    `${(oldChannel as TextChannel).nsfw ? "On" : "Off"} -> ${
+                        (newChannel as TextChannel).nsfw ? "On" : "Off"
+                    }`
+                );
             }
-            if((oldChannel as TextChannel).defaultAutoArchiveDuration !== (newChannel as TextChannel).defaultAutoArchiveDuration) {
+            if (
+                (oldChannel as TextChannel).defaultAutoArchiveDuration !==
+                (newChannel as TextChannel).defaultAutoArchiveDuration
+            ) {
                 changes.autoArchiveDuration = entry(
-                    [((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString(), ((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString()],
-                    `${humanizeDuration(((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000)} -> ${humanizeDuration(((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000)}`
+                    [
+                        ((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString(),
+                        ((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320).toString()
+                    ],
+                    `${humanizeDuration(
+                        ((oldChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000
+                    )} -> ${humanizeDuration(
+                        ((newChannel as TextChannel).defaultAutoArchiveDuration ?? 4320) * 60 * 1000
+                    )}`
                 );
             }
             break;
@@ -149,16 +198,29 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             readableType = "Voice";
             displayName = "Voice Channel";
             if ((oldChannel as VoiceChannel).bitrate !== (newChannel as VoiceChannel).bitrate)
-                changes.bitrate = entry([(oldChannel as VoiceChannel).bitrate.toString(), (newChannel as VoiceChannel).bitrate.toString()], `${(oldChannel as VoiceChannel).bitrate} -> ${(newChannel as VoiceChannel).bitrate}`);
+                changes.bitrate = entry(
+                    [(oldChannel as VoiceChannel).bitrate.toString(), (newChannel as VoiceChannel).bitrate.toString()],
+                    `${(oldChannel as VoiceChannel).bitrate} -> ${(newChannel as VoiceChannel).bitrate}`
+                );
             if ((oldChannel as VoiceChannel).userLimit !== (newChannel as VoiceChannel).userLimit)
                 changes.maxUsers = entry(
-                    [(oldChannel as VoiceChannel).userLimit.toString(), (newChannel as VoiceChannel).userLimit.toString()],
-                    `${(oldChannel as VoiceChannel).userLimit ? (oldChannel as VoiceChannel).userLimit : "Unlimited"} -> ${(newChannel as VoiceChannel).userLimit}`
+                    [
+                        (oldChannel as VoiceChannel).userLimit.toString(),
+                        (newChannel as VoiceChannel).userLimit.toString()
+                    ],
+                    `${
+                        (oldChannel as VoiceChannel).userLimit ? (oldChannel as VoiceChannel).userLimit : "Unlimited"
+                    } -> ${(newChannel as VoiceChannel).userLimit}`
                 );
             if ((oldChannel as VoiceChannel).rtcRegion !== (newChannel as VoiceChannel).rtcRegion)
                 changes.region = entry(
-                    [(oldChannel as VoiceChannel).rtcRegion ?? "automatic", (newChannel as VoiceChannel).rtcRegion ?? "automatic"],
-                    `${capitalize((oldChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "automatic")} -> ${capitalize((newChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "automatic")}`
+                    [
+                        (oldChannel as VoiceChannel).rtcRegion ?? "automatic",
+                        (newChannel as VoiceChannel).rtcRegion ?? "automatic"
+                    ],
+                    `${capitalize(
+                        (oldChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "automatic"
+                    )} -> ${capitalize((newChannel as VoiceChannel).rtcRegion?.toUpperCase() ?? "automatic")}`
                 );
             break;
         }
@@ -183,16 +245,29 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
                 newTopic = "None";
             }
             if ((oldChannel as StageChannel).bitrate !== (newChannel as StageChannel).bitrate)
-                changes.bitrate = entry([(oldChannel as StageChannel).bitrate.toString(), (newChannel as StageChannel).bitrate.toString()], `${(oldChannel as StageChannel).bitrate} -> ${(newChannel as StageChannel).bitrate}`);
+                changes.bitrate = entry(
+                    [(oldChannel as StageChannel).bitrate.toString(), (newChannel as StageChannel).bitrate.toString()],
+                    `${(oldChannel as StageChannel).bitrate} -> ${(newChannel as StageChannel).bitrate}`
+                );
             if ((oldChannel as StageChannel).userLimit !== (newChannel as StageChannel).userLimit)
                 changes.maxUsers = entry(
-                    [(oldChannel as StageChannel).userLimit.toString(), (newChannel as StageChannel).userLimit.toString()],
-                    `${(oldChannel as StageChannel).userLimit ? (oldChannel as StageChannel).userLimit : "Unlimited"} -> ${(newChannel as StageChannel).userLimit}`
+                    [
+                        (oldChannel as StageChannel).userLimit.toString(),
+                        (newChannel as StageChannel).userLimit.toString()
+                    ],
+                    `${
+                        (oldChannel as StageChannel).userLimit ? (oldChannel as StageChannel).userLimit : "Unlimited"
+                    } -> ${(newChannel as StageChannel).userLimit}`
                 );
             if ((oldChannel as StageChannel).rtcRegion !== (newChannel as StageChannel).rtcRegion)
                 changes.region = entry(
-                    [(oldChannel as StageChannel).rtcRegion ?? "Automatic", (newChannel as StageChannel).rtcRegion ?? "Automatic"],
-                    `${capitalize((oldChannel as StageChannel).rtcRegion?.toLowerCase() ?? "automatic")} -> ${capitalize((newChannel as StageChannel).rtcRegion?.toLowerCase() ?? "automatic")}`
+                    [
+                        (oldChannel as StageChannel).rtcRegion ?? "Automatic",
+                        (newChannel as StageChannel).rtcRegion ?? "Automatic"
+                    ],
+                    `${capitalize(
+                        (oldChannel as StageChannel).rtcRegion?.toLowerCase() ?? "automatic"
+                    )} -> ${capitalize((newChannel as StageChannel).rtcRegion?.toLowerCase() ?? "automatic")}`
                 );
             break;
         }
@@ -210,8 +285,7 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
     }
     const ocType = channelTypeEmoji[oldChannel.type],
         ncType = channelTypeEmoji[newChannel.type];
-    if (oldChannel.type !== newChannel.type)
-        changes.type = entry([ocType!, ncType!], `${ocType!} -> ${readableType}`);
+    if (oldChannel.type !== newChannel.type) changes.type = entry([ocType!, ncType!], `${ocType!} -> ${readableType}`);
     if (!(Object.values(changes).length - 4)) return;
     const data = {
         meta: {

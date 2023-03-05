@@ -13,13 +13,13 @@ import {
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
-import { messageException } from '../utils/createTemporaryStorage.js';
+import { messageException } from "../utils/createTemporaryStorage.js";
 
 const noTopic = new EmojiEmbed()
     .setTitle("User not found")
     .setDescription("There is no user associated with this ticket.")
     .setStatus("Danger")
-    .setEmoji("CONTROL.BLOCKCROSS")
+    .setEmoji("CONTROL.BLOCKCROSS");
 
 export default async function (interaction: CommandInteraction | MessageComponentInteraction) {
     if (interaction.channel === null) return;
@@ -34,17 +34,16 @@ export default async function (interaction: CommandInteraction | MessageComponen
         const deleted = await (interaction.channel as TextChannel).bulkDelete(fetched, true);
         deletedCount = deleted.size;
         messages = messages.concat(Array.from(deleted.values() as Iterable<Message>));
-        if (messages.length === 1) messageException(interaction.guild!.id, interaction.channel.id, messages[0]!.id)
+        if (messages.length === 1) messageException(interaction.guild!.id, interaction.channel.id, messages[0]!.id);
     } while (deletedCount === 100);
-    messages = messages.filter(message => !(
-        message.components.some(
-            component => component.components.some(
-                child => child.customId?.includes("transcript") ?? false
+    messages = messages.filter(
+        (message) =>
+            !message.components.some((component) =>
+                component.components.some((child) => child.customId?.includes("transcript") ?? false)
             )
-        )
-    ));
+    );
 
-    let topic
+    let topic;
     let member: GuildMember = interaction.guild?.members.me!;
     if (interaction.channel instanceof TextChannel) {
         topic = interaction.channel.topic;
@@ -53,23 +52,24 @@ export default async function (interaction: CommandInteraction | MessageComponen
         if (mem) member = mem;
     } else {
         topic = interaction.channel.name;
-        const split = topic.split("-").map(p => p.trim()) as [string, string, string];
-        const mem = interaction.guild!.members.cache.get(split[1])
+        const split = topic.split("-").map((p) => p.trim()) as [string, string, string];
+        const mem = interaction.guild!.members.cache.get(split[1]);
         if (mem) member = mem;
     }
 
     const newOut = await client.database.transcripts.createTranscript(messages, interaction, member);
 
     const [code, key, iv] = await client.database.transcripts.create(newOut);
-    if(!code) return await interaction.reply({
-        embeds: [
-            new EmojiEmbed()
-                .setTitle("Error")
-                .setDescription("An error occurred while creating the transcript.")
-                .setStatus("Danger")
-                .setEmoji("CONTROL.BLOCKCROSS")
-        ]
-    })
+    if (!code)
+        return await interaction.reply({
+            embeds: [
+                new EmojiEmbed()
+                    .setTitle("Error")
+                    .setDescription("An error occurred while creating the transcript.")
+                    .setStatus("Danger")
+                    .setEmoji("CONTROL.BLOCKCROSS")
+            ]
+        });
     const guildConfig = await client.database.guilds.read(interaction.guild!.id);
     const m: Message = (await interaction.reply({
         embeds: [
@@ -86,7 +86,10 @@ export default async function (interaction: CommandInteraction | MessageComponen
         ],
         components: [
             new ActionRowBuilder<ButtonBuilder>().addComponents([
-                new ButtonBuilder().setLabel("View").setStyle(ButtonStyle.Link).setURL(`https://testing.coded.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`),
+                new ButtonBuilder()
+                    .setLabel("View")
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(`https://testing.coded.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`),
                 new ButtonBuilder()
                     .setLabel("Delete")
                     .setStyle(ButtonStyle.Danger)
@@ -100,7 +103,13 @@ export default async function (interaction: CommandInteraction | MessageComponen
     try {
         i = await m.awaitMessageComponent({
             time: 300000,
-            filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+            filter: (i) => {
+                return (
+                    i.user.id === interaction.user.id &&
+                    i.channel!.id === interaction.channel!.id &&
+                    i.message.id === m.id
+                );
+            }
         });
         await i.deferUpdate();
     } catch {

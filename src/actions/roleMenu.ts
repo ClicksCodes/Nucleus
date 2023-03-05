@@ -1,4 +1,4 @@
-import { unknownServerIcon } from './../utils/defaults.js';
+import { unknownServerIcon } from "./../utils/defaults.js";
 import {
     ButtonBuilder,
     CommandInteraction,
@@ -16,9 +16,9 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { LoadingEmbed } from "../utils/defaults.js";
 import type { GuildConfig } from "../utils/database.js";
-import { roleException } from '../utils/createTemporaryStorage.js';
-import addPlural from '../utils/plurals.js';
-import createPageIndicator from '../utils/createPageIndicator.js';
+import { roleException } from "../utils/createTemporaryStorage.js";
+import addPlural from "../utils/plurals.js";
+import createPageIndicator from "../utils/createPageIndicator.js";
 
 export interface RoleMenuSchema {
     guild: string;
@@ -42,23 +42,29 @@ interface ObjectSchema {
     }[];
 }
 
-export const configToDropdown = (placeholder: string, currentPageData: ObjectSchema, selectedRoles?: string[]): ActionRowBuilder<StringSelectMenuBuilder> => {
+export const configToDropdown = (
+    placeholder: string,
+    currentPageData: ObjectSchema,
+    selectedRoles?: string[]
+): ActionRowBuilder<StringSelectMenuBuilder> => {
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         new StringSelectMenuBuilder()
             .setCustomId("roles")
             .setPlaceholder(placeholder)
             .setMinValues(currentPageData.min)
             .setMaxValues(currentPageData.max)
-            .addOptions(currentPageData.options.map((option: {name: string; description: string | null; role: string;}) => {
-                const builder = new StringSelectMenuOptionBuilder()
-                    .setLabel(option.name)
-                    .setValue(option.role)
-                    .setDefault(selectedRoles ? selectedRoles.includes(option.role) : false);
-                if (option.description) builder.setDescription(option.description);
-                return builder;
-            }))
-    )
-}
+            .addOptions(
+                currentPageData.options.map((option: { name: string; description: string | null; role: string }) => {
+                    const builder = new StringSelectMenuOptionBuilder()
+                        .setLabel(option.name)
+                        .setValue(option.role)
+                        .setDefault(selectedRoles ? selectedRoles.includes(option.role) : false);
+                    if (option.description) builder.setDescription(option.description);
+                    return builder;
+                })
+            )
+    );
+};
 
 export async function callback(interaction: CommandInteraction | ButtonInteraction) {
     if (!interaction.member) return;
@@ -69,7 +75,9 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Roles")
-                    .setDescription("Self roles are currently disabled. Please contact a staff member or try again later.")
+                    .setDescription(
+                        "Self roles are currently disabled. Please contact a staff member or try again later."
+                    )
                     .setStatus("Danger")
                     .setEmoji("GUILD.GREEN")
             ],
@@ -80,21 +88,24 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Roles")
-                    .setDescription("There are no roles available. Please contact a staff member if you believe this is a mistake.")
+                    .setDescription(
+                        "There are no roles available. Please contact a staff member if you believe this is a mistake."
+                    )
                     .setStatus("Danger")
                     .setEmoji("GUILD.GREEN")
             ],
             ephemeral: true
         });
     const m = await interaction.reply({ embeds: LoadingEmbed, ephemeral: true, fetchReply: true });
-    if (config.roleMenu.allowWebUI) {  // TODO: Make rolemenu web ui
-        const loginMethods: {webUI: boolean} = {
+    if (config.roleMenu.allowWebUI) {
+        // TODO: Make rolemenu web ui
+        const loginMethods: { webUI: boolean } = {
             webUI: false
-        }
+        };
         try {
             const status = await fetch(client.config.baseUrl).then((res) => res.status);
             if (status !== 200) loginMethods.webUI = false;
-        } catch(e) {
+        } catch (e) {
             loginMethods.webUI = false;
         }
         if (Object.values(loginMethods).some((i) => i)) {
@@ -105,7 +116,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
                 let valid = false;
                 while (!valid) {
-                    itt ++;
+                    itt++;
                     code = "";
                     for (let i = 0; i < length; i++) {
                         code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -113,7 +124,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                     if (code in client.roleMenu) continue;
                     if (itt > 1000) {
                         itt = 0;
-                        length ++;
+                        length++;
                         continue;
                     }
                     valid = true;
@@ -143,10 +154,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                             .setStyle(ButtonStyle.Link)
                             .setDisabled(!loginMethods.webUI)
                             .setURL(`${client.config.baseUrl}nucleus/rolemenu?code=${code}`),
-                        new ButtonBuilder()
-                            .setLabel("In Discord")
-                            .setStyle(ButtonStyle.Primary)
-                            .setCustomId("discord")
+                        new ButtonBuilder().setLabel("In Discord").setStyle(ButtonStyle.Primary).setCustomId("discord")
                     ])
                 ]
             });
@@ -154,7 +162,13 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             try {
                 component = await m.awaitMessageComponent({
                     time: 300000,
-                    filter: (i) => { return i.user.id === interaction.user.id && i.channelId === interaction.channelId  && i.message.id === m.id}
+                    filter: (i) => {
+                        return (
+                            i.user.id === interaction.user.id &&
+                            i.channelId === interaction.channelId &&
+                            i.message.id === m.id
+                        );
+                    }
                 });
             } catch (e) {
                 console.log(e);
@@ -168,22 +182,26 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
     const selectedRoles: string[][] = [];
     const maxPage = options.length;
     const completedPages: boolean[] = options.map((option) => option.min === 0);
-    for (let i = 0; i < maxPage; i++) { selectedRoles.push([]); }
+    for (let i = 0; i < maxPage; i++) {
+        selectedRoles.push([]);
+    }
 
     let page = 0;
     let complete = completedPages.every((page) => page);
     let done = false;
 
     while (!(complete && done)) {
-        const currentPageData = options[page]!
+        const currentPageData = options[page]!;
         const embed = new EmojiEmbed()
             .setTitle("Roles")
             .setDescription(
                 `**${currentPageData.name}**\n` +
-                `> ${currentPageData.description}\n\n` +
-                (currentPageData.min === currentPageData.max ? `Select ${addPlural(currentPageData.min, "role")}` :
-                    `Select between ${currentPageData.min} and ${currentPageData.max} roles then press next`) + "\n\n" +
-                createPageIndicator(maxPage, page)
+                    `> ${currentPageData.description}\n\n` +
+                    (currentPageData.min === currentPageData.max
+                        ? `Select ${addPlural(currentPageData.min, "role")}`
+                        : `Select between ${currentPageData.min} and ${currentPageData.max} roles then press next`) +
+                    "\n\n" +
+                    createPageIndicator(maxPage, page)
             )
             .setStatus("Success")
             .setEmoji("GUILD.GREEN");
@@ -215,7 +233,13 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
         try {
             component = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id}
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch (e) {
             console.log(e);
@@ -230,7 +254,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             done = true;
         } else if (component.customId === "roles" && component.isStringSelectMenu()) {
             selectedRoles[page] = component.values;
-            completedPages[page] = true
+            completedPages[page] = true;
             page = Math.min(maxPage - 1, page + 1);
         }
         complete = completedPages.every((page) => page);
@@ -238,14 +262,15 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
 
     const fullRoleList: string[] = selectedRoles.flat();
 
-    const memberRoles = (interaction.member.roles as GuildMemberRoleManager).cache.map((r) => r.id);  // IDs
-    let rolesToRemove = config.roleMenu.options.map((o) => o.options.map((o) => o.role)).flat();  // IDs
-    rolesToRemove = rolesToRemove.filter((r) => memberRoles.includes(r)).filter((r) => !fullRoleList.includes(r))  // IDs
-    let roleObjectsToAdd = fullRoleList.map((r) => interaction.guild!.roles.cache.get(r))  // Role objects
+    const memberRoles = (interaction.member.roles as GuildMemberRoleManager).cache.map((r) => r.id); // IDs
+    let rolesToRemove = config.roleMenu.options.map((o) => o.options.map((o) => o.role)).flat(); // IDs
+    rolesToRemove = rolesToRemove.filter((r) => memberRoles.includes(r)).filter((r) => !fullRoleList.includes(r)); // IDs
+    let roleObjectsToAdd = fullRoleList
+        .map((r) => interaction.guild!.roles.cache.get(r)) // Role objects
         .filter((r) => r !== undefined) as Role[];
-    roleObjectsToAdd = roleObjectsToAdd.filter((r) => !memberRoles.includes(r.id));  // Role objects
+    roleObjectsToAdd = roleObjectsToAdd.filter((r) => !memberRoles.includes(r.id)); // Role objects
     try {
-        roleException(interaction.guild.id, interaction.user.id)
+        roleException(interaction.guild.id, interaction.user.id);
         await (interaction.member.roles as GuildMemberRoleManager).remove(rolesToRemove);
         await (interaction.member.roles as GuildMemberRoleManager).add(roleObjectsToAdd);
     } catch (e) {

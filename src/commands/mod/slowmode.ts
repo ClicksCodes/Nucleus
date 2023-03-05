@@ -16,25 +16,25 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setDescription("The delay between messages")
                 .setRequired(false)
                 .addChoices(
-                    {name: "Off", value: "0"},
-                    {name: "5 seconds", value: "5"},
-                    {name: "10 seconds", value: "10"},
-                    {name: "15 seconds", value: "15"},
-                    {name: "30 seconds", value: "30"},
-                    {name: "1 minute", value: "60"},
-                    {name: "2 minutes", value: "120"},
-                    {name: "5 minutes", value: "300"},
-                    {name: "10 minutes", value: "600"},
-                    {name: "15 minutes", value: "900"},
-                    {name: "30 minutes", value: "1800"},
-                    {name: "1 hour", value: "3600"},
-                    {name: "2 hours", value: "7200"},
-                    {name: "6 hours", value: "21600"}
+                    { name: "Off", value: "0" },
+                    { name: "5 seconds", value: "5" },
+                    { name: "10 seconds", value: "10" },
+                    { name: "15 seconds", value: "15" },
+                    { name: "30 seconds", value: "30" },
+                    { name: "1 minute", value: "60" },
+                    { name: "2 minutes", value: "120" },
+                    { name: "5 minutes", value: "300" },
+                    { name: "10 minutes", value: "600" },
+                    { name: "15 minutes", value: "900" },
+                    { name: "30 minutes", value: "1800" },
+                    { name: "1 hour", value: "3600" },
+                    { name: "2 hours", value: "7200" },
+                    { name: "6 hours", value: "21600" }
                 )
         );
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    let time = parseInt(interaction.options.get("time")?.value as string || "0");
+    let time = parseInt((interaction.options.get("time")?.value as string) || "0");
     if (time === 0 && (interaction.channel as TextChannel).rateLimitPerUser === 0) {
         time = 10;
     }
@@ -82,13 +82,15 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!member.permissions.has("ManageChannels")) return "You do not have the *Manage Channels* permission";
     if (partial) return true;
     // Check if Nucleus can set the slowmode
-    if (!interaction.guild!.members.me!.permissions.has("ManageChannels")) return "I do not have the *Manage Channels* permission";
+    if (!interaction.guild!.members.me!.permissions.has("ManageChannels"))
+        return "I do not have the *Manage Channels* permission";
     // Allow slowmode
     return true;
 };
 
 export { command, callback, check };
 export const metadata = {
-    longDescription: "Stops members from being able to send messages without waiting a certain amount of time between messages.",
-    premiumOnly: true,
-}
+    longDescription:
+        "Stops members from being able to send messages without waiting a certain amount of time between messages.",
+    premiumOnly: true
+};

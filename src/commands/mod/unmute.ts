@@ -29,8 +29,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")!),
                     reason: `\n> ${reason ? reason : "*No reason provided*"}`
-                }) +
-                    `Are you sure you want to unmute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
+                }) + `Are you sure you want to unmute <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .setColor("Danger")
             .addCustomBoolean(
@@ -115,7 +114,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             unmutedBy: entry(interaction.user.id, renderUser(interaction.user))
         },
         separate: {
-            end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+            end:
+                getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) +
+                ` The user was ${notify ? "" : "not "}notified`
         },
         hidden: {
             guild: interaction.guild.id
@@ -139,8 +140,7 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
     // Check if the user has moderate_members permission
-    if (!member.permissions.has("ModerateMembers"))
-        return "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("ModerateMembers")) return "You do not have the *Moderate Members* permission";
     if (partial) return true;
     const me = interaction.guild.members.me!;
     const apply = interaction.options.getMember("user") as GuildMember;

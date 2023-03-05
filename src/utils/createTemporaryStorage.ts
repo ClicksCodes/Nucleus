@@ -21,12 +21,12 @@ export function preloadPage(target: string, command: string, message: string) {
     client.preloadPage[target] = {
         command: command,
         argument: message
-    }
+    };
     setTimeout(() => {
         const object = Object.entries(client.preloadPage).filter((entry) => {
-            const [k, _] = entry
+            const [k, _] = entry;
             return k !== target;
-        })
+        });
         client.preloadPage = Object.fromEntries(object);
     }, 60 * 5 * 1000);
 }

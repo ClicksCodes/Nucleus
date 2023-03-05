@@ -1,13 +1,14 @@
-import { AuditLogEvent } from 'discord.js';
+import { AuditLogEvent } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
-import type { GuildEmoji, GuildAuditLogsEntry } from 'discord.js'
+import type { GuildEmoji, GuildAuditLogsEntry } from "discord.js";
 export const event = "emojiCreate";
 
 export async function callback(client: NucleusClient, emoji: GuildEmoji) {
     const { getAuditLog, log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderEmoji } = client.logger;
-    if (!await isLogging(emoji.guild.id, "emojiUpdate")) return;
-    const auditLog = (await getAuditLog(emoji.guild, AuditLogEvent.EmojiCreate))
-    .filter((entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === emoji.id)[0];
+    if (!(await isLogging(emoji.guild.id, "emojiUpdate"))) return;
+    const auditLog = (await getAuditLog(emoji.guild, AuditLogEvent.EmojiCreate)).filter(
+        (entry: GuildAuditLogsEntry) => (entry.target as GuildEmoji)!.id === emoji.id
+    )[0];
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     const data = {
@@ -31,4 +32,3 @@ export async function callback(client: NucleusClient, emoji: GuildEmoji) {
     };
     log(data);
 }
-

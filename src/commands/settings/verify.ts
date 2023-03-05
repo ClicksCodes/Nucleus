@@ -16,10 +16,7 @@ import { getCommandMentionByName } from "../../utils/getCommandDataByName.js";
 import lodash from "lodash";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
-    builder
-        .setName("verify")
-        .setDescription("Manage the role given after a user runs /verify")
-
+    builder.setName("verify").setDescription("Manage the role given after a user runs /verify");
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (!interaction.guild) return;
@@ -33,33 +30,31 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let config = await client.database.guilds.read(interaction.guild.id);
     let data = Object.assign({}, config.verify);
     do {
-        const selectMenu = new ActionRowBuilder<RoleSelectMenuBuilder>()
-        .addComponents(
-            new RoleSelectMenuBuilder()
-                .setCustomId("role")
-                .setPlaceholder("Select a role")
+        const selectMenu = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
+            new RoleSelectMenuBuilder().setCustomId("role").setPlaceholder("Select a role")
         );
 
-        const buttons = new ActionRowBuilder<ButtonBuilder>()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId("switch")
-                    .setLabel(data.enabled ? "Enabled" : "Disabled")
-                    .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
-                    .setEmoji(getEmojiByName(data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id") as APIMessageComponentEmoji),
-                new ButtonBuilder()
-                    .setCustomId("save")
-                    .setLabel("Save")
-                    .setStyle(ButtonStyle.Success)
-                    .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
-                    .setDisabled(lodash.isEqual(config.verify, data))
-            );
+        const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+                .setCustomId("switch")
+                .setLabel(data.enabled ? "Enabled" : "Disabled")
+                .setStyle(data.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                .setEmoji(
+                    getEmojiByName(data.enabled ? "CONTROL.TICK" : "CONTROL.CROSS", "id") as APIMessageComponentEmoji
+                ),
+            new ButtonBuilder()
+                .setCustomId("save")
+                .setLabel("Save")
+                .setStyle(ButtonStyle.Success)
+                .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
+                .setDisabled(lodash.isEqual(config.verify, data))
+        );
 
         const embed = new EmojiEmbed()
             .setTitle("Verify Role")
             .setDescription(
                 `Select a role to be given to users after they run ${getCommandMentionByName("verify")}` +
-                `\n\nCurrent role: ${config.verify.role ? `<@&${config.verify.role}>` : "None"}`
+                    `\n\nCurrent role: ${config.verify.role ? `<@&${config.verify.role}>` : "None"}`
             )
             .setStatus("Success")
             .setEmoji("CHANNEL.TEXT.CREATE");
@@ -73,7 +68,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id }
+                filter: (i) => {
+                    return i.user.id === interaction.user.id;
+                }
             });
         } catch (e) {
             closed = true;
@@ -82,26 +79,25 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
         await i.deferUpdate();
 
-        if(i.isButton()) {
+        if (i.isButton()) {
             switch (i.customId) {
                 case "save": {
-                    client.database.guilds.write(interaction.guild.id, {"verify": data} )
+                    client.database.guilds.write(interaction.guild.id, { verify: data });
                     config = await client.database.guilds.read(interaction.guild.id);
                     data = Object.assign({}, config.verify);
                     await client.memory.forceUpdate(interaction.guild.id);
-                    break
+                    break;
                 }
                 case "switch": {
                     data.enabled = !data.enabled;
-                    break
+                    break;
                 }
             }
         } else {
             data.role = i.values[0]!;
         }
-
     } while (!closed);
-    await interaction.deleteReply()
+    await interaction.deleteReply();
 };
 
 const check = (interaction: CommandInteraction, _partial: boolean = false) => {

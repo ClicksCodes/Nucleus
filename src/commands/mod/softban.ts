@@ -1,4 +1,11 @@
-import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, User, ButtonStyle } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildMember,
+    ActionRowBuilder,
+    ButtonBuilder,
+    User,
+    ButtonStyle
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -7,7 +14,6 @@ import addPlurals from "../../utils/plurals.js";
 import client from "../../utils/client.js";
 import { LinkWarningFooter } from "../../utils/defaults.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
-
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder
@@ -22,7 +28,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setMaxValue(7)
                 .setRequired(false)
         );
-
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (!interaction.guild) return;
@@ -40,12 +45,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             .setDescription(
                 keyValueList({
                     user: renderUser(interaction.options.getUser("user")!),
-                    reason: reason ? "\n> " + (reason).replaceAll("\n", "\n> ") : "*No reason provided*"
+                    reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n` +
                     `${addPlurals(
-                        (interaction.options.get("delete")?.value as number | null) ?? 0, "day")
-                    } of messages will be deleted\n\n` +
+                        (interaction.options.get("delete")?.value as number | null) ?? 0,
+                        "day"
+                    )} of messages will be deleted\n\n` +
                     `Are you sure you want to softban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
             )
             .addCustomBoolean(
@@ -67,15 +73,20 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         else if (confirmation.success !== undefined) chosen = true;
         else if (confirmation.newReason) reason = confirmation.newReason;
         else if (confirmation.components) notify = confirmation.components["notify"]!.active;
-    } while (!timedOut && !chosen)
+    } while (!timedOut && !chosen);
     if (timedOut || !confirmation.success) return;
-    reason = reason.length ? reason : null
+    reason = reason.length ? reason : null;
     let dmSent = false;
     let dmMessage;
     const config = await client.database.guilds.read(interaction.guild.id);
     try {
         if (notify) {
-            if (reason) { reason = reason.split("\n").map((line) => "> " + line).join("\n") }
+            if (reason) {
+                reason = reason
+                    .split("\n")
+                    .map((line) => "> " + line)
+                    .join("\n");
+            }
             const messageData: {
                 embeds: EmojiEmbed[];
                 components: ActionRowBuilder<ButtonBuilder>[];
@@ -93,14 +104,20 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 components: []
             };
             if (config.moderation.softban.text && config.moderation.softban.link) {
-                messageData.embeds[0]!.setFooter(LinkWarningFooter)
-                messageData.components.push(new ActionRowBuilder<Discord.ButtonBuilder>()
-                        .addComponents(new ButtonBuilder()
+                messageData.embeds[0]!.setFooter(LinkWarningFooter);
+                messageData.components.push(
+                    new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                        new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.softban.text)
-                            .setURL(config.moderation.softban.link.replaceAll("{id}", (interaction.options.getMember("user") as GuildMember).id))
-                        )
-                )
+                            .setURL(
+                                config.moderation.softban.link.replaceAll(
+                                    "{id}",
+                                    (interaction.options.getMember("user") as GuildMember).id
+                                )
+                            )
+                    )
+                );
             }
             dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
             dmSent = true;
@@ -110,7 +127,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     }
     try {
         const member = interaction.options.getMember("user") as GuildMember;
-        const days: number = interaction.options.get("delete")?.value as number | null ?? 0;
+        const days: number = (interaction.options.get("delete")?.value as number | null) ?? 0;
         member.ban({
             deleteMessageSeconds: days * 24 * 60 * 60,
             reason: reason ?? "*No reason provided*"
@@ -137,7 +154,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 serverMemberCount: interaction.guild.memberCount
             },
             separate: {
-                end: getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) + ` The user was ${notify ? "" : "not "}notified`
+                end:
+                    getEmojiByName("ICONS.NOTIFY." + (notify ? "ON" : "OFF")) +
+                    ` The user was ${notify ? "" : "not "}notified`
             },
             hidden: {
                 guild: interaction.guild.id
@@ -181,12 +200,12 @@ const check = async (interaction: CommandInteraction, partial: boolean = false) 
     let apply = interaction.options.getUser("user") as User | GuildMember;
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
-    let applyPos = 0
+    let applyPos = 0;
     try {
-        apply = await interaction.guild.members.fetch(apply.id) as GuildMember
+        apply = (await interaction.guild.members.fetch(apply.id)) as GuildMember;
         applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     } catch {
-        apply = apply as User
+        apply = apply as User;
     }
     // Do not allow banning the owner
     if (member.id === interaction.guild.ownerId) return "You cannot softban the owner of the server";

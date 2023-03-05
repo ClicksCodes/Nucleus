@@ -29,11 +29,15 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const guild = interaction.guild!;
     const member = (interaction.options.getMember("user") ?? interaction.member) as Discord.GuildMember;
     await userAbout(guild, member, interaction);
-}
+};
 
-async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, interaction: Discord.CommandInteraction | Discord.ContextMenuCommandInteraction) {
-    await member.user.fetch()
-    await member.fetch()
+async function userAbout(
+    guild: Discord.Guild,
+    member: Discord.GuildMember,
+    interaction: Discord.CommandInteraction | Discord.ContextMenuCommandInteraction
+) {
+    await member.user.fetch();
+    await member.fetch();
     await interaction.reply({
         embeds: LoadingEmbed,
         fetchReply: true,
@@ -59,10 +63,18 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
     ) {
         flags.push("CLICKSDEVELOPER");
     }
-    if (member.user.flags) { member.user.flags.toArray().map((flag) => { flags.push(flag.toString()); }); }
-    if (member.user.bot) { flags.push("BOT"); }
+    if (member.user.flags) {
+        member.user.flags.toArray().map((flag) => {
+            flags.push(flag.toString());
+        });
+    }
+    if (member.user.bot) {
+        flags.push("BOT");
+    }
     // Check if they are boosting the server
-    if (member.premiumSince) { flags.push("BOOSTER"); }
+    if (member.premiumSince) {
+        flags.push("BOOSTER");
+    }
     const nameReplacements: Record<string, string> = {
         NUCLEUSDEVELOPER: "**Nucleus Developer**",
         CLICKSDEVELOPER: "Clicks Developer",
@@ -79,7 +91,8 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         Staff: "Discord Staff",
         VerifiedDeveloper: "Verified Bot Developer",
         ActiveDeveloper: "Active Developer",
-        Quarantined: "Quarantined [[What does this mean?]](https://support.discord.com/hc/en-us/articles/6461420677527)",
+        Quarantined:
+            "Quarantined [[What does this mean?]](https://support.discord.com/hc/en-us/articles/6461420677527)",
         Spammer: "Likely Spammer"
         // CertifiedModerator
         // VerifiedBot
@@ -139,24 +152,27 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
                     .setStatus("Success")
                     .setEmoji("MEMBER.JOIN")
                     .setDescription(
-                        flags.map((flag) => {
-                            if (nameReplacements[flag]) {
-                                const emoji = getEmojiByName(`BADGES.${flag}`)
-                                if (emoji) return (emoji + " " + nameReplacements[flag] + "\n");
-                                else return nameReplacements[flag] + "\n";
-                            }
-                        }).join("") + "\n" +
-                        generateKeyValueList({
-                            member: renderUser(member.user),
-                            nickname: member.nickname ?? "*None set*",
-                            id: `\`${member.id}\``,
-                            "joined the server": renderDelta(member.joinedTimestamp!),
-                            "joined discord": renderDelta(member.user.createdTimestamp),
-                            "boost status": member.premiumSince
-                                ? `Started boosting ${renderDelta(member.premiumSinceTimestamp!)}`
-                                : "*Not boosting*",
-                            "join position": `${joinPos + 1}`
-                        })
+                        flags
+                            .map((flag) => {
+                                if (nameReplacements[flag]) {
+                                    const emoji = getEmojiByName(`BADGES.${flag}`);
+                                    if (emoji) return emoji + " " + nameReplacements[flag] + "\n";
+                                    else return nameReplacements[flag] + "\n";
+                                }
+                            })
+                            .join("") +
+                            "\n" +
+                            generateKeyValueList({
+                                member: renderUser(member.user),
+                                nickname: member.nickname ?? "*None set*",
+                                id: `\`${member.id}\``,
+                                "joined the server": renderDelta(member.joinedTimestamp!),
+                                "joined discord": renderDelta(member.user.createdTimestamp),
+                                "boost status": member.premiumSince
+                                    ? `Started boosting ${renderDelta(member.premiumSinceTimestamp!)}`
+                                    : "*Not boosting*",
+                                "join position": `${joinPos + 1}`
+                            })
                     )
                     .setThumbnail(member.user.displayAvatarURL())
             )
@@ -174,7 +190,10 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
                             member: renderUser(member.user),
                             id: `\`${member.id}\``,
                             roles: `${member.roles.cache.size - 1}`
-                        }) + "\n" + (s.length > 0 ? s : "*None*") + "\n"
+                        }) +
+                            "\n" +
+                            (s.length > 0 ? s : "*None*") +
+                            "\n"
                     )
             )
             .setTitle("Roles")
@@ -199,7 +218,9 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
             .setDescription("Key permissions the user has")
             .setPageId(2)
     ];
-    if (member.user.bannerURL() ) { embeds[0]!.embed.setImage(member.user.bannerURL()!); }
+    if (member.user.bannerURL()) {
+        embeds[0]!.embed.setImage(member.user.bannerURL()!);
+    }
     let page = 0;
     let timedOut = false;
     for (const embed of embeds) {
@@ -255,7 +276,13 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         try {
             i = await m.awaitMessageComponent({
                 time: 300000,
-                filter: (i) => { return i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id && i.message.id === m.id }
+                filter: (i) => {
+                    return (
+                        i.user.id === interaction.user.id &&
+                        i.channel!.id === interaction.channel!.id &&
+                        i.message.id === m.id
+                    );
+                }
             });
         } catch {
             timedOut = true;
@@ -281,7 +308,7 @@ async function userAbout(guild: Discord.Guild, member: Discord.GuildMember, inte
         embeds: [em],
         components: []
     });
-};
+}
 
 export { command };
 export { callback };
