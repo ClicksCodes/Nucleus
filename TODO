@@ -1,2 +1,3 @@
 Server rules
 verificationRequired on welcome
+Remove channels from autopublish when they're deleted
