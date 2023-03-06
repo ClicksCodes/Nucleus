@@ -25,9 +25,9 @@ import createPageIndicator from "../../utils/createPageIndicator.js";
 import { configToDropdown } from "../../actions/roleMenu.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import ellipsis from "../../utils/ellipsis.js";
-import lodash from "lodash";
+import _ from "lodash";
 
-const isEqual = lodash.isEqual;
+const isEqual = _.isEqual;
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder.setName("rolemenu").setDescription("rolemenu");
 
@@ -163,19 +163,20 @@ const editNameDescription = async (
     return [name, description];
 };
 
+const defaultRoleMenuData = {
+    name: "Role Menu Page",
+    description: "A new role menu page",
+    min: 0,
+    max: 0,
+    options: []
+};
+
 const editRoleMenuPage = async (
     interaction: StringSelectMenuInteraction | ButtonInteraction,
     m: Message,
     data?: ObjectSchema
 ): Promise<ObjectSchema | null> => {
-    if (!data)
-        data = {
-            name: "Role Menu Page",
-            description: "A new role menu page",
-            min: 0,
-            max: 0,
-            options: []
-        };
+    if (!data) data = _.cloneDeep(defaultRoleMenuData)
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId("back")
@@ -357,7 +358,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let page = 0;
     let closed = false;
     const config = await client.database.guilds.read(interaction.guild.id);
-    let currentObject: ObjectSchema[] = config.roleMenu.options;
+    let currentObject: ObjectSchema[] = _.cloneDeep(config.roleMenu.options);
     let modified = false;
     do {
         const embed = new EmojiEmbed().setTitle("Role Menu").setEmoji("GUILD.GREEN").setStatus("Success");
@@ -392,7 +393,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setCustomId("next")
                 .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Primary)
-                .setDisabled(page === Object.keys(currentObject).length - 1),
+                .setDisabled(page === Object.keys(currentObject).length - 1 || noRoleMenus),
             new ButtonBuilder()
                 .setCustomId("add")
                 .setLabel("New Page")
@@ -472,7 +473,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "add": {
                     const newPage = await editRoleMenuPage(i, m);
-                    if (!newPage) break;
+                    if (_.isEqual(newPage, defaultRoleMenuData)) break;
                     currentObject.push();
                     page = currentObject.length - 1;
                     break;

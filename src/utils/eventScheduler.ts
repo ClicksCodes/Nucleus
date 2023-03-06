@@ -40,7 +40,7 @@ class EventScheduler {
             await client.database.transcripts.upload({
                 channelID: channel.id,
                 messageID: m.id,
-                transcript: job.attrs.data.transcript
+                code: job.attrs.data.transcript
             });
             await job.remove();
         });
