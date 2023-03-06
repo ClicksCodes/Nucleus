@@ -55,7 +55,7 @@ export class Guilds {
             } catch (e) {
                 guildObj = null;
             }
-            if(!guildObj) await this.delete(guild.id);
+            if (!guildObj) await this.delete(guild.id);
         }
     }
 
@@ -251,8 +251,13 @@ export class Transcript {
             .replace(/\//g, "_")
             .replace(/\+/g, "-")
             .substring(0, 32);
-        const iv = getIV().toString("base64").substring(0, 16).replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
-	console.log(iv);
+        const iv = getIV()
+            .toString("base64")
+            .substring(0, 16)
+            .replace(/=/g, "")
+            .replace(/\//g, "_")
+            .replace(/\+/g, "-");
+        console.log(iv);
         for (const message of transcript.messages) {
             if (message.content) {
                 const encCipher = crypto.createCipheriv("AES-256-CBC", key, iv);
@@ -321,10 +326,10 @@ export class Transcript {
     }
 
     async read(code: string, key: string, iv: string) {
-        console.log("Transcript read")
+        console.log("Transcript read");
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
-	console.log(doc)
+        console.log(doc);
         if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
         if (findDoc) {
             const message = await (
@@ -350,7 +355,7 @@ export class Transcript {
             if (!data) return null;
             doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
-	console.log(doc)
+        console.log(doc);
         if (!doc) return null;
         for (const message of doc.messages) {
             if (message.content) {
@@ -406,8 +411,8 @@ export class Transcript {
                     topRole: {
                         color: message.member ? message.member.roles.highest.color : 0x000000
                     },
-                    iconURL: (message.member?.user || message.author)?.displayAvatarURL({ forceStatic: true }),
-                    bot: message.author?.bot || false
+                    iconURL: (message.member?.user || message.author).displayAvatarURL({ forceStatic: true }),
+                    bot: message.author.bot || false
                 },
                 createdTimestamp: message.createdTimestamp
             };

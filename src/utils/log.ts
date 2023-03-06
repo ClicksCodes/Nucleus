@@ -4,7 +4,7 @@ import { toHexArray } from "./calculate.js";
 import { promisify } from "util";
 import generateKeyValueList from "./generateKeyValueList.js";
 import client from "./client.js";
-import {DiscordAPIError} from "discord.js";
+import { DiscordAPIError } from "discord.js";
 
 const wait = promisify(setTimeout);
 
@@ -44,12 +44,12 @@ export const Logger = {
         return `${user.username} [<@${user.id}>]`;
     },
     renderTime(t: number) {
-        if(isNaN(t)) return "Unknown"
+        if (isNaN(t)) return "Unknown";
         t = Math.floor((t /= 1000));
         return `<t:${t}:D> at <t:${t}:T>`;
     },
     renderDelta(t: number) {
-        if(isNaN(t)) return "Unknown"
+        if (isNaN(t)) return "Unknown";
         t = Math.floor((t /= 1000));
         return `<t:${t}:R> (<t:${t}:D> at <t:${t}:T>)`;
     },

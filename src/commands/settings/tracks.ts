@@ -248,7 +248,8 @@ const editTrack = async (
                     }need a role in this track\n` +
                     `${getEmojiByName("CONTROL." + (current.retainPrevious ? "TICK" : "CROSS"))} Members ${
                         current.retainPrevious ? "" : "don't "
-                    }keep all roles below their current highest\n\n` + (previousMessage ? previousMessage + "\n\n": "") +
+                    }keep all roles below their current highest\n\n` +
+                    (previousMessage ? previousMessage + "\n\n" : "") +
                     createVerticalTrack(
                         mapped.map((role) => renderRole(role)),
                         new Array(current.track.length).fill(false),
@@ -322,7 +323,7 @@ const editTrack = async (
                 case "addRole": {
                     const role = out.values![0]!;
                     const roleObj = roles.get(role)!;
-                    if (roleObj.position >= (interaction.member as GuildMember).roles.highest.position){
+                    if (roleObj.position >= (interaction.member as GuildMember).roles.highest.position) {
                         previousMessage = "You can't add a role that is higher than your highest role.";
                     } else {
                         if (!current.track.includes(role)) {
