@@ -367,13 +367,14 @@ export class Transcript {
     }
 
     async createTranscript(
+        type: "ticket" | "purge",
         messages: Message[],
         interaction: MessageComponentInteraction | CommandInteraction,
         member: GuildMember
     ) {
         const interactionMember = await interaction.guild?.members.fetch(interaction.user.id);
         const newOut: Omit<TranscriptSchema, "code"> = {
-            type: "ticket",
+            type: type,
             for: {
                 username: member!.user.username,
                 discriminator: parseInt(member!.user.discriminator),

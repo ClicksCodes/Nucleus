@@ -170,6 +170,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         };
         log(data);
         const newOut = await client.database.transcripts.createTranscript(
+            "purge",
             deleted,
             interaction,
             interaction.member as GuildMember
@@ -336,6 +337,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             )
             .map((message) => message as Message);
         const newOut = await client.database.transcripts.createTranscript(
+            "purge",
             messageArray,
             interaction,
             interaction.member as GuildMember

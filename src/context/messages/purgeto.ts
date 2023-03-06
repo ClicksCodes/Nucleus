@@ -225,6 +225,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
         )
         .map((message) => message as Message);
     const transcript = await client.database.transcripts.createTranscript(
+        "purge",
         messageArray,
         interaction,
         interaction.member as GuildMember
