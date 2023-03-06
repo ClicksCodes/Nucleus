@@ -163,19 +163,20 @@ const editNameDescription = async (
     return [name, description];
 };
 
+const defaultRoleMenuData = {
+    name: "Role Menu Page",
+    description: "A new role menu page",
+    min: 0,
+    max: 0,
+    options: []
+};
+
 const editRoleMenuPage = async (
     interaction: StringSelectMenuInteraction | ButtonInteraction,
     m: Message,
     data?: ObjectSchema
 ): Promise<ObjectSchema | null> => {
-    if (!data)
-        data = {
-            name: "Role Menu Page",
-            description: "A new role menu page",
-            min: 0,
-            max: 0,
-            options: []
-        };
+    if (!data) data = _.cloneDeep(defaultRoleMenuData)
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId("back")
@@ -472,7 +473,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "add": {
                     const newPage = await editRoleMenuPage(i, m);
-                    if (!newPage) break;
+                    if (_.isEqual(newPage, defaultRoleMenuData)) break;
                     currentObject.push();
                     page = currentObject.length - 1;
                     break;

@@ -28,6 +28,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import ellipsis from "../../utils/ellipsis.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import _ from "lodash";
 
 const { renderRole } = client.logger;
 
@@ -96,7 +97,8 @@ const editName = async (
 };
 
 const reorderTracks = async (
-    interaction: ButtonInteraction,
+    interaction: ButtonInteraction | StringSelectMenuInteraction,
+    buttonInteraction: ButtonInteraction,
     m: Message,
     roles: Collection<string, Role>,
     currentObj: string[]
@@ -132,7 +134,7 @@ const reorderTracks = async (
     let out: StringSelectMenuInteraction | ButtonInteraction | null;
     try {
         out = (await m.awaitMessageComponent({
-            filter: (i) => i.channel!.id === interaction.channel!.id,
+            filter: (i) => i.channel!.id === buttonInteraction.channel!.id,
             time: 300000
         })) as StringSelectMenuInteraction | ButtonInteraction | null;
     } catch (e) {
@@ -152,6 +154,14 @@ const reorderTracks = async (
     return newOrder;
 };
 
+const defaultTrackData = {
+    name: "",
+    retainPrevious: false,
+    nullable: true,
+    track: [],
+    manageableBy: []
+};
+
 const editTrack = async (
     interaction: ButtonInteraction | StringSelectMenuInteraction,
     message: Message,
@@ -160,13 +170,7 @@ const editTrack = async (
 ) => {
     const isAdmin = (interaction.member!.permissions as PermissionsBitField).has("Administrator");
     if (!current) {
-        current = {
-            name: "",
-            retainPrevious: false,
-            nullable: true,
-            track: [],
-            manageableBy: []
-        };
+        current = _.cloneDeep(defaultTrackData);
     }
 
     const roleSelect = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
@@ -292,7 +296,7 @@ const editTrack = async (
                 }
                 case "reorder": {
                     out.deferUpdate();
-                    current.track = (await reorderTracks(out, message, roles, current.track))!;
+                    current.track = (await reorderTracks(interaction, out, message, roles, current.track))!;
                     break;
                 }
                 case "retainPrevious": {
@@ -466,7 +470,7 @@ const callback = async (interaction: CommandInteraction) => {
                 }
                 case "add": {
                     const newPage = await editTrack(i, m, roles);
-                    if (!newPage) break;
+                    if (_.isEqual(newPage, defaultTrackData)) break;
                     tracks.push();
                     page = tracks.length - 1;
                     break;
