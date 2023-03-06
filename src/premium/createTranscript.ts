@@ -57,7 +57,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
         if (mem) member = mem;
     }
 
-    const newOut = await client.database.transcripts.createTranscript(messages, interaction, member);
+    const newOut = await client.database.transcripts.createTranscript("ticket", messages, interaction, member);
 
     const [code, key, iv] = await client.database.transcripts.create(newOut);
     if (!code)
