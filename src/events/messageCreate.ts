@@ -20,7 +20,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         message.channel.type === ChannelType.GuildAnnouncement &&
         message.reference === null
     ) {
-        if(message.channel.permissionsFor(message.guild.members.me!)!.has("ManageMessages")) {
+        if (message.channel.permissionsFor(message.guild.members.me!)!.has("ManageMessages")) {
             await message.crosspost();
         } else {
             singleNotify(`I don't have permissions to publish in <#${message.channel.id}>`, message.guild.id, true);

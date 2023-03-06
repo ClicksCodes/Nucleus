@@ -193,8 +193,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         );
     }
 
-    let userPremiumServers;
-    if ((dbMember?.appliesTo.length ?? 0) > 0) userPremiumServers = "\nIf you want to remove premium from a server, run this command in your DMs with me.";
+    let userPremiumServers = "";
+    if ((dbMember?.appliesTo.length ?? 0) > 0)
+        userPremiumServers = "\nIf you want to remove premium from a server, run this command in your DMs with me.";
 
     interaction.editReply({
         embeds: [
@@ -223,7 +224,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Premium")
                     .setDescription(
-                        `You have already activated premium on the maximum amount of servers!` + userPremiumServers + firstDescription
+                        `You have already activated premium on the maximum amount of servers!` +
+                            userPremiumServers +
+                            firstDescription
                     )
                     .setEmoji("NUCLEUS.PREMIUMACTIVATE")
                     .setStatus("Danger")
@@ -236,7 +239,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Premium")
-                    .setDescription(`You have activated premium on this server!` + userPremiumServers + firstDescription)
+                    .setDescription(
+                        `You have activated premium on this server!` + userPremiumServers + firstDescription
+                    )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
             ],

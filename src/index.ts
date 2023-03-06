@@ -17,7 +17,6 @@ client.on("ready", async () => {
     }
     await client.database.premium.checkAllPremium();
     await client.database.guilds.updateAllGuilds();
-
 });
 
 process.on("unhandledRejection", (err) => {
