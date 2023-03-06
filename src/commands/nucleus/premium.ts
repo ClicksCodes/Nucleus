@@ -193,7 +193,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         );
     }
 
-    let userPremiumServers;
+    let userPremiumServers = "";
     if ((dbMember?.appliesTo.length ?? 0) > 0) userPremiumServers = "\nIf you want to remove premium from a server, run this command in your DMs with me.";
 
     interaction.editReply({

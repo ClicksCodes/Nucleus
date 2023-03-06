@@ -251,7 +251,8 @@ export class Transcript {
             .replace(/\//g, "_")
             .replace(/\+/g, "-")
             .substring(0, 32);
-        const iv = getIV().toString("base64").replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
+        const iv = getIV().toString("base64").substring(0, 16).replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
+	console.log(iv);
         for (const message of transcript.messages) {
             if (message.content) {
                 const encCipher = crypto.createCipheriv("AES-256-CBC", key, iv);
@@ -320,9 +321,10 @@ export class Transcript {
     }
 
     async read(code: string, key: string, iv: string) {
-        // console.log("Transcript read")
+        console.log("Transcript read")
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
+	console.log(doc)
         if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
         if (findDoc) {
             const message = await (
@@ -348,6 +350,7 @@ export class Transcript {
             if (!data) return null;
             doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
+	console.log(doc)
         if (!doc) return null;
         for (const message of doc.messages) {
             if (message.content) {
@@ -401,15 +404,15 @@ export class Transcript {
                     discriminator: parseInt(message.author.discriminator),
                     id: message.author.id,
                     topRole: {
-                        color: message.member!.roles.highest.color
+                        color: message.member ? message.member.roles.highest.color : 0x000000
                     },
-                    iconURL: message.member!.user.displayAvatarURL({ forceStatic: true }),
-                    bot: message.author.bot
+                    iconURL: (message.member?.user || message.author)?.displayAvatarURL({ forceStatic: true }),
+                    bot: message.author?.bot || false
                 },
                 createdTimestamp: message.createdTimestamp
             };
             if (message.member?.nickname) msg.author.nickname = message.member.nickname;
-            if (message.member!.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
+            if (message.member?.roles.icon) msg.author.topRole.badgeURL = message.member!.roles.icon.iconURL()!;
             if (message.content) msg.content = message.content;
             if (message.embeds.length > 0)
                 msg.embeds = message.embeds.map((embed) => {
