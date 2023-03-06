@@ -70,7 +70,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
     if (!interaction.member) return;
     if (!interaction.guild) return;
     const config = await client.database.guilds.read(interaction.guild.id);
-    if (!config.roleMenu.enabled)
+    if (!config.roleMenu.enabled) {
         return await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -83,6 +83,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             ],
             ephemeral: true
         });
+    }
     if (config.roleMenu.options.length === 0)
         return await interaction.reply({
             embeds: [

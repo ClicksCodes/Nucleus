@@ -221,7 +221,7 @@ interface TranscriptSchema {
 interface findDocSchema {
     channelID: string;
     messageID: string;
-    transcript: string;
+    code: string;
 }
 
 export class Transcript {
@@ -284,8 +284,12 @@ export class Transcript {
     async deleteAll(guild: string) {
         // console.log("Transcript delete")
         const filteredDocs = await this.transcripts.find({ guild: guild }).toArray();
+        const filteredDocs1  = await this.messageToTranscript.find({ guild: guild }).toArray();
         for (const doc of filteredDocs) {
             await this.transcripts.deleteOne({ code: doc.code });
+        }
+        for (const doc of filteredDocs1) {
+            await this.messageToTranscript.deleteOne({ code: doc.code });
         }
     }
 
@@ -293,7 +297,7 @@ export class Transcript {
         // console.log("Transcript read")
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
-        if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
+        if (!doc) findDoc = await this.messageToTranscript.findOne({ code: code });
         if (findDoc) {
             const message = await (
                 client.channels.cache.get(findDoc.channelID) as Discord.TextBasedChannel | null
@@ -330,7 +334,7 @@ export class Transcript {
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
         console.log(doc);
-        if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
+        if (!doc) findDoc = await this.messageToTranscript.findOne({ code: code });
         if (findDoc) {
             const message = await (
                 client.channels.cache.get(findDoc.channelID) as Discord.TextBasedChannel | null
@@ -412,7 +416,7 @@ export class Transcript {
                     topRole: {
                         color: message.member ? message.member.roles.highest.color : 0x000000
                     },
-                    iconURL: (message.member?.user || message.author).displayAvatarURL({ forceStatic: true }),
+                    iconURL: (message.member?.user ?? message.author).displayAvatarURL({ forceStatic: true }),
                     bot: message.author.bot || false
                 },
                 createdTimestamp: message.createdTimestamp

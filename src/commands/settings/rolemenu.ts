@@ -25,9 +25,9 @@ import createPageIndicator from "../../utils/createPageIndicator.js";
 import { configToDropdown } from "../../actions/roleMenu.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import ellipsis from "../../utils/ellipsis.js";
-import lodash from "lodash";
+import _ from "lodash";
 
-const isEqual = lodash.isEqual;
+const isEqual = _.isEqual;
 
 const command = (builder: SlashCommandSubcommandBuilder) => builder.setName("rolemenu").setDescription("rolemenu");
 
@@ -357,7 +357,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let page = 0;
     let closed = false;
     const config = await client.database.guilds.read(interaction.guild.id);
-    let currentObject: ObjectSchema[] = config.roleMenu.options;
+    let currentObject: ObjectSchema[] = _.cloneDeep(config.roleMenu.options);
     let modified = false;
     do {
         const embed = new EmojiEmbed().setTitle("Role Menu").setEmoji("GUILD.GREEN").setStatus("Success");
@@ -392,7 +392,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setCustomId("next")
                 .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Primary)
-                .setDisabled(page === Object.keys(currentObject).length - 1),
+                .setDisabled(page === Object.keys(currentObject).length - 1 || noRoleMenus),
             new ButtonBuilder()
                 .setCustomId("add")
                 .setLabel("New Page")

@@ -382,7 +382,7 @@ const callback = async (interaction: CommandInteraction) => {
                 .setCustomId("next")
                 .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Primary)
-                .setDisabled(page === tracks.length - 1),
+                .setDisabled(page === tracks.length - 1 || noTracks),
             new ButtonBuilder()
                 .setCustomId("add")
                 .setLabel("New Track")
