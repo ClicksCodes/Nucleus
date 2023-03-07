@@ -1,5 +1,12 @@
 import { LinkWarningFooter, LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildMember,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ButtonInteraction
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -49,7 +56,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction | ButtonInteraction, member?: GuildMember): Promise<unknown> => {
+const callback = async (
+    interaction: CommandInteraction | ButtonInteraction,
+    member?: GuildMember
+): Promise<unknown> => {
     if (!interaction.guild) return;
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
     let time: { days: number; hours: number; minutes: number; seconds: number } | null = null;
@@ -62,7 +72,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             seconds: (interaction.options.get("seconds")?.value as number | null) ?? 0
         };
     } else {
-        time = {days: 0, hours: 0, minutes: 0, seconds: 0};
+        time = { days: 0, hours: 0, minutes: 0, seconds: 0 };
     }
     if (!member) return;
     const config = await client.database.guilds.read(interaction.guild.id);
@@ -203,8 +213,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild.id)),
-                async () =>
-                    await create(interaction.guild!, member!.user, interaction.user, reason),
+                async () => await create(interaction.guild!, member!.user, interaction.user, reason),
                 "An appeal ticket will be created when Confirm is clicked",
                 null,
                 "CONTROL.TICKET",

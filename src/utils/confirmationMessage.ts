@@ -37,7 +37,13 @@ class confirmationMessage {
     inverted = false;
     reason: string | null = null;
 
-    modals: {buttonText: string, emoji: string, customId: string, modal: Discord.ModalBuilder, value: string | undefined}[] = [];
+    modals: {
+        buttonText: string;
+        emoji: string;
+        customId: string;
+        modal: Discord.ModalBuilder;
+        value: string | undefined;
+    }[] = [];
 
     constructor(interaction: CommandInteraction | ButtonInteraction) {
         this.interaction = interaction;
@@ -102,7 +108,7 @@ class confirmationMessage {
     }
     addModal(buttonText: string, emoji: string, customId: string, current: string, modal: Discord.ModalBuilder) {
         modal.setCustomId(customId);
-        this.modals.push({buttonText, emoji, customId, modal, value: current});
+        this.modals.push({ buttonText, emoji, customId, modal, value: current });
         return this;
     }
     async send(editOnly?: boolean): Promise<{
@@ -110,7 +116,13 @@ class confirmationMessage {
         cancelled?: boolean;
         components?: Record<string, CustomBoolean<unknown>>;
         newReason?: string;
-        modals?: {buttonText: string, emoji: string, customId: string, modal: Discord.ModalBuilder, value: string | undefined}[];
+        modals?: {
+            buttonText: string;
+            emoji: string;
+            customId: string;
+            modal: Discord.ModalBuilder;
+            value: string | undefined;
+        }[];
     }> {
         let cancelled = false;
         let success: boolean | undefined = undefined;
@@ -212,7 +224,7 @@ class confirmationMessage {
                     time: 300000
                 });
             } catch (e) {
-                success = false
+                success = false;
                 break;
             }
             if (component.customId === "yes") {
@@ -291,7 +303,12 @@ class confirmationMessage {
                     continue;
                 }
             } else if (this.modals.map((m) => m.customId).includes(component.customId)) {
-                const chosenModal = this.modals.find((component => m => m.customId === component.customId)(component));
+                const chosenModal = this.modals.find(
+                    (
+                        (component) => (m) =>
+                            m.customId === component.customId
+                    )(component)
+                );
                 await component.showModal(chosenModal!.modal);
                 await this.interaction.editReply({
                     embeds: [
@@ -364,7 +381,12 @@ class confirmationMessage {
         const modals = this.modals;
         const typedReturnValue = returnValue as
             | { cancelled: true }
-            | { success: boolean; components: Record<string, CustomBoolean<unknown>>; modals: typeof modals; newReason?: string }
+            | {
+                  success: boolean;
+                  components: Record<string, CustomBoolean<unknown>>;
+                  modals: typeof modals;
+                  newReason?: string;
+              }
             | { newReason: string; components: Record<string, CustomBoolean<unknown>>; modals: typeof modals }
             | { components: Record<string, CustomBoolean<unknown>>; modals: typeof modals };
 

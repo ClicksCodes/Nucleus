@@ -1,4 +1,11 @@
-import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildMember,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ButtonInteraction
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -14,7 +21,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Warns a user")
         .addUserOption((option) => option.setName("user").setDescription("The user to warn").setRequired(true));
 
-const callback = async (interaction: CommandInteraction | ButtonInteraction, member?: GuildMember): Promise<unknown> => {
+const callback = async (
+    interaction: CommandInteraction | ButtonInteraction,
+    member?: GuildMember
+): Promise<unknown> => {
     if (!interaction.guild) return;
     const { log, NucleusColors, renderUser, entry } = client.logger;
     if (!interaction.isButton()) member = interaction.options.getMember("user") as GuildMember;
@@ -41,8 +51,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild.id)),
-                async () =>
-                    await create(interaction.guild!, member!.user, interaction.user, reason),
+                async () => await create(interaction.guild!, member!.user, interaction.user, reason),
                 "An appeal ticket will be created",
                 null,
                 "CONTROL.TICKET",
@@ -110,12 +119,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.warn.text)
-                            .setURL(
-                                config.moderation.warn.link.replaceAll(
-                                    "{id}",
-                                    member.id
-                                )
-                            )
+                            .setURL(config.moderation.warn.link.replaceAll("{id}", member.id))
                     )
                 );
             }
@@ -135,10 +139,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             timestamp: Date.now()
         },
         list: {
-            user: entry(
-                member.user.id,
-                renderUser(member.user)
-            ),
+            user: entry(member.user.id, renderUser(member.user)),
             warnedBy: entry(interaction.member!.user.id, renderUser(interaction.member!.user as Discord.User)),
             reason: reason ? reason : "*No reason provided*"
         },
@@ -151,13 +152,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             guild: interaction.guild.id
         }
     };
-    await client.database.history.create(
-        "warn",
-        interaction.guild.id,
-        member.user,
-        interaction.user,
-        reason
-    );
+    await client.database.history.create("warn", interaction.guild.id, member.user, interaction.user, reason);
     log(data);
     const failed = !dmSent && notify;
     if (!failed) {
@@ -179,9 +174,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             components: []
         });
     } else {
-        const canSeeChannel = member
-            .permissionsIn(interaction.channel as Discord.TextChannel)
-            .has("ViewChannel");
+        const canSeeChannel = member.permissionsIn(interaction.channel as Discord.TextChannel).has("ViewChannel");
         const m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()

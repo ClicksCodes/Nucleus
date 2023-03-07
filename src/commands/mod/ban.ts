@@ -34,7 +34,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
     let deleteDays;
     if (!interaction.isButton()) {
         member = interaction.options.getMember("user") as GuildMember;
-        deleteDays = (interaction.options.get("delete")?.value as number | null) ?? 0
+        deleteDays = (interaction.options.get("delete")?.value as number | null) ?? 0;
     } else {
         deleteDays = 0;
     }
@@ -115,12 +115,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.ban.text)
-                            .setURL(
-                                config.moderation.ban.link.replaceAll(
-                                    "{id}",
-                                    member.id
-                                )
-                            )
+                            .setURL(config.moderation.ban.link.replaceAll("{id}", member.id))
                     )
                 );
             }
@@ -204,7 +199,7 @@ const check = (interaction: CommandInteraction | ButtonInteraction, partial: boo
         apply = target!;
     } else {
         apply = interaction.options.getMember("user") as GuildMember;
-    };
+    }
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;

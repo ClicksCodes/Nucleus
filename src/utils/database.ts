@@ -836,9 +836,7 @@ export class Premium {
     }
 }
 
-export class Plugins {
-    
-}
+// export class Plugins {}
 
 export interface GuildConfig {
     id: string;

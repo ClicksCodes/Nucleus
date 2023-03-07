@@ -1,5 +1,16 @@
 import { LinkWarningFooter } from "./../../utils/defaults.js";
-import { ActionRowBuilder, ButtonBuilder, CommandInteraction, GuildMember, ButtonStyle, Message, ButtonInteraction, ModalBuilder, TextInputBuilder, TextInputStyle } from "discord.js";
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    CommandInteraction,
+    GuildMember,
+    ButtonStyle,
+    Message,
+    ButtonInteraction,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -17,7 +28,10 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction | ButtonInteraction, member?: GuildMember): Promise<unknown> => {
+const callback = async (
+    interaction: CommandInteraction | ButtonInteraction,
+    member?: GuildMember
+): Promise<unknown> => {
     const { log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
     let newNickname;
     if (!interaction.isButton()) {
@@ -39,28 +53,15 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             .setDescription(
                 keyValueList({
                     user: renderUser(member.user),
-                    "new nickname": `${
-                        newNickname
-                            ? newNickname
-                            : "*No nickname*"
-                    }`
-                }) +
-                    `Are you sure you want to ${
-                        newNickname ? "change" : "clear"
-                    } <@!${member.id}>'s nickname?`
+                    "new nickname": `${newNickname ? newNickname : "*No nickname*"}`
+                }) + `Are you sure you want to ${newNickname ? "change" : "clear"} <@!${member.id}>'s nickname?`
             )
             .setColor("Danger")
             .addCustomBoolean(
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild!.id)),
-                async () =>
-                    await create(
-                        interaction.guild!,
-                        member!.user,
-                        interaction.user,
-                        "Nickname changed"
-                    ),
+                async () => await create(interaction.guild!, member!.user, interaction.user, "Nickname changed"),
                 "An appeal ticket will be created",
                 null,
                 "CONTROL.TICKET",
@@ -81,18 +82,16 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                 "ICONS.EDIT",
                 "modal",
                 newNickname ?? "",
-                new ModalBuilder()
-                    .setTitle("Editing nickname")
-                    .addComponents(
-                        new ActionRowBuilder<TextInputBuilder>().addComponents(
-                            new TextInputBuilder()
-                                .setCustomId("default")
-                                .setLabel("Nickname")
-                                .setMaxLength(32)
-                                .setRequired(false)
-                                .setStyle(TextInputStyle.Short)
-                                .setValue(newNickname ? newNickname : " ")
-                        )
+                new ModalBuilder().setTitle("Editing nickname").addComponents(
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(
+                        new TextInputBuilder()
+                            .setCustomId("default")
+                            .setLabel("Nickname")
+                            .setMaxLength(32)
+                            .setRequired(false)
+                            .setStyle(TextInputStyle.Short)
+                            .setValue(newNickname ? newNickname : " ")
+                    )
                 )
             )
             .setFailedMessage("No changes were made", "Success", "PUNISH.NICKNAME.GREEN")
@@ -104,7 +103,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             notify = confirmation.components["notify"]!.active;
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
-        if (confirmation.modals) newNickname = confirmation.modals![0]!.value
+        if (confirmation.modals) newNickname = confirmation.modals![0]!.value;
     } while (!timedOut && !success);
     if (timedOut || !success) return;
     let dmSent = false;
@@ -121,12 +120,8 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                         .setEmoji("PUNISH.NICKNAME.RED")
                         .setTitle("Nickname changed")
                         .setDescription(
-                            `Your nickname was ${
-                                newNickname ? "changed" : "cleared"
-                            } in ${interaction.guild!.name}.` +
-                                (newNickname
-                                    ? `\nIt is now: ${newNickname}`
-                                    : "") +
+                            `Your nickname was ${newNickname ? "changed" : "cleared"} in ${interaction.guild!.name}.` +
+                                (newNickname ? `\nIt is now: ${newNickname}` : "") +
                                 "\n\n" +
                                 (createAppealTicket
                                     ? `You can appeal this in the ticket created in <#${
@@ -145,12 +140,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.nick.text)
-                            .setURL(
-                                config.moderation.nick.link.replaceAll(
-                                    "{id}",
-                                    member.id
-                                )
-                            )
+                            .setURL(config.moderation.nick.link.replaceAll("{id}", member.id))
                     )
                 );
             }

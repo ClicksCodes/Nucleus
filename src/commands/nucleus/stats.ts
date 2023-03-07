@@ -1,4 +1,18 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, ChannelType, CommandInteraction, ComponentType, Guild, ModalBuilder, ModalSubmitInteraction, TextInputBuilder, TextInputStyle } from "discord.js";
+import {
+    ActionRowBuilder,
+    AttachmentBuilder,
+    ButtonBuilder,
+    ButtonInteraction,
+    ButtonStyle,
+    ChannelType,
+    CommandInteraction,
+    ComponentType,
+    Guild,
+    ModalBuilder,
+    ModalSubmitInteraction,
+    TextInputBuilder,
+    TextInputStyle
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import client from "../../utils/client.js";
@@ -8,7 +22,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("stats").setDescription("Gets the bot's stats");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    const description = `**Servers:** ${client.guilds.cache.size}\n` + `**Ping:** \`${client.ws.ping * 2}ms\``
+    const description = `**Servers:** ${client.guilds.cache.size}\n` + `**Ping:** \`${client.ws.ping * 2}ms\``;
     const m = await interaction.reply({
         embeds: [
             new EmojiEmbed()
@@ -28,30 +42,39 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(description)
                     .setStatus("Success")
                     .setEmoji("SETTINGS.STATS.GREEN")
-            ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId("mod:nickname:599498449733550102").setLabel("Testing").setStyle(ButtonStyle.Primary)
-            )]
+            ],
+            components: [
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId("mod:nickname:599498449733550102")
+                        .setLabel("Testing")
+                        .setStyle(ButtonStyle.Primary)
+                )
+            ]
         });
 
         const modal = new ModalBuilder()
             .addComponents(
-                new ActionRowBuilder<TextInputBuilder>()
-                    .addComponents(
-                        new TextInputBuilder()
-                            .setStyle(TextInputStyle.Short)
-                            .setLabel("Guild ID")
-                            .setCustomId("guildID")
-                            .setPlaceholder("Guild ID")
-                            .setMinLength(16)
-                            .setMaxLength(25)
-                    )
+                new ActionRowBuilder<TextInputBuilder>().addComponents(
+                    new TextInputBuilder()
+                        .setStyle(TextInputStyle.Short)
+                        .setLabel("Guild ID")
+                        .setCustomId("guildID")
+                        .setPlaceholder("Guild ID")
+                        .setMinLength(16)
+                        .setMaxLength(25)
+                )
             )
             .setTitle("Admin Panel")
-            .setCustomId("adminPanel")
+            .setCustomId("adminPanel");
         let i1: ButtonInteraction;
-        const channel = await client.channels.fetch(interaction.channelId)
-        if(!channel || [ChannelType.GuildCategory, ChannelType.GroupDM, ChannelType.GuildStageVoice].includes(channel.type)) return;
+        const channel = await client.channels.fetch(interaction.channelId);
+        if (
+            !channel ||
+            [ChannelType.GuildCategory, ChannelType.GroupDM, ChannelType.GuildStageVoice].includes(channel.type)
+        )
+            return;
         // console.log(interaction)
         if (!("awaitMessageComponent" in channel)) return;
         try {
@@ -59,27 +82,28 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 filter: (i) => i.customId === "admin" && i.user.id === interaction.user.id,
                 time: 300000
             });
-        } catch (e) { console.log(e); return }
-        await i1.showModal(modal)
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+        await i1.showModal(modal);
         let out: ModalSubmitInteraction;
         try {
             out = await i1.awaitModalSubmit({
                 filter: (i) => i.customId === "adminPanel" && i.user.id === interaction.user.id,
                 time: 300000
-            })
-        } catch { return }
+            });
+        } catch {
+            return;
+        }
         out.deferUpdate();
         const GuildID = out.fields.getTextInputValue("guildID");
         if (!client.guilds.cache.has(GuildID)) {
             await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Admin")
-                        .setDescription("Not in server")
-                        .setStatus("Danger")
-                ], components: []
+                embeds: [new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")],
+                components: []
             });
-        };
+        }
 
         await interaction.editReply({
             embeds: [],
@@ -91,24 +115,23 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     new ButtonBuilder().setCustomId("purge").setLabel("Delete data").setStyle(ButtonStyle.Danger),
                     new ButtonBuilder().setCustomId("cache").setLabel("Reset cache").setStyle(ButtonStyle.Success)
                 )
-        ]});
+            ]
+        });
         let i;
         try {
             i = await m.awaitMessageComponent<ComponentType.Button>({
                 filter: (i) => i.user.id === interaction.user.id,
                 time: 300000
-            })
-        } catch { return }
+            });
+        } catch {
+            return;
+        }
         i.deferUpdate();
-        const guild = await client.guilds.fetch(GuildID) as Guild | null;
+        const guild = (await client.guilds.fetch(GuildID)) as Guild | null;
         if (!guild) {
             await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Admin")
-                        .setDescription("Not in server")
-                        .setStatus("Danger")
-                ], components: []
+                embeds: [new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")],
+                components: []
             });
             return;
         }
@@ -119,17 +142,17 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setTitle("Stats")
                         .setDescription(
                             `**Name:** ${guild.name}\n` +
-                            `**ID:** \`${guild.id}\`\n` +
-                            `**Owner:** ${client.users.cache.get(guild.ownerId)!.tag}\n` +
-                            `**Member Count:** ${guild.memberCount}\n` +
-                            `**Created:** <t:${guild.createdTimestamp}:F>\n` +
-                            `**Added Nucleus:** <t:${guild.members.me!.joinedTimestamp}:R>\n` +
-                            `**Nucleus' Perms:** https://discordapi.com/permissions.html#${guild.members.me!.permissions.valueOf()}\n`
+                                `**ID:** \`${guild.id}\`\n` +
+                                `**Owner:** ${client.users.cache.get(guild.ownerId)!.tag}\n` +
+                                `**Member Count:** ${guild.memberCount}\n` +
+                                `**Created:** <t:${guild.createdTimestamp}:F>\n` +
+                                `**Added Nucleus:** <t:${guild.members.me!.joinedTimestamp}:R>\n` +
+                                `**Nucleus' Perms:** https://discordapi.com/permissions.html#${guild.members.me!.permissions.valueOf()}\n`
                         )
                         .setStatus("Success")
                         .setEmoji("SETTINGS.STATS.GREEN")
                 ]
-            })
+            });
         } else if (i.customId === "leave") {
             await guild.leave();
             await interaction.editReply({
@@ -139,8 +162,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setDescription(`Left ${guild.name}`)
                         .setStatus("Success")
                         .setEmoji("SETTINGS.STATS.GREEN")
-                ], components: []
-            })
+                ],
+                components: []
+            });
         } else if (i.customId === "data") {
             // Get all the data and convert to a string
             const data = await client.database.guilds.read(guild.id);
@@ -150,9 +174,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             await interaction.editReply({
                 embeds: [
                     new EmojiEmbed().setTitle("Data").setDescription(`Data for ${guild.name}`).setStatus("Success")
-                ], components: [],
+                ],
+                components: [],
                 files: [attachment]
-            })
+            });
         } else if (i.customId === "purge") {
             await client.database.guilds.delete(GuildID);
             await client.database.history.delete(GuildID);
@@ -165,8 +190,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setDescription(`Deleted data for ${guild.name}`)
                         .setStatus("Success")
                         .setEmoji("SETTINGS.STATS.GREEN")
-                ], components: []
-            })
+                ],
+                components: []
+            });
         } else if (i.customId === "cache") {
             await client.memory.forceUpdate(guild.id);
             await interaction.editReply({
@@ -176,8 +202,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setDescription(`Reset cache for ${guild.name}`)
                         .setStatus("Success")
                         .setEmoji("SETTINGS.STATS.GREEN")
-                ], components: []
-            })
+                ],
+                components: []
+            });
         }
     }
 };

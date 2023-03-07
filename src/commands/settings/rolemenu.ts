@@ -176,7 +176,7 @@ const editRoleMenuPage = async (
     m: Message,
     data?: ObjectSchema
 ): Promise<ObjectSchema | null> => {
-    if (!data) data = _.cloneDeep(defaultRoleMenuData)
+    if (!data) data = _.cloneDeep(defaultRoleMenuData);
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId("back")

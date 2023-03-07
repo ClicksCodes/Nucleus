@@ -19,10 +19,7 @@ export const event = "interactionCreate";
 
 async function errorMessage(interaction: ButtonInteraction, message: string) {
     await interaction.reply({
-        embeds: [new EmojiEmbed()
-            .setDescription(message)
-            .setStatus("Danger")
-        ],
+        embeds: [new EmojiEmbed().setDescription(message).setStatus("Danger")],
         ephemeral: true,
         components: []
     });
@@ -60,23 +57,27 @@ async function interactionCreate(interaction: Interaction) {
             const member = await interaction.guild?.members.fetch(memberId!);
             switch (action) {
                 case "kick": {
-                    const check = await kickCheck(interaction, false, member)
+                    const check = await kickCheck(interaction, false, member);
                     if (check !== true) return await errorMessage(interaction, check!);
                     return await kickCallback(interaction, member);
-                } case "ban": {
-                    const check = await banCheck(interaction, false, member)
+                }
+                case "ban": {
+                    const check = await banCheck(interaction, false, member);
                     if (check !== true) return await errorMessage(interaction, check!);
                     return await banCallback(interaction, member);
-                } case "mute": {
-                    const check = await muteCheck(interaction, false, member)
+                }
+                case "mute": {
+                    const check = await muteCheck(interaction, false, member);
                     if (check !== true) return await errorMessage(interaction, check!);
                     return await muteCallback(interaction, member);
-                } case "nickname": {
-                    const check = await nicknameCheck(interaction, false, member)
+                }
+                case "nickname": {
+                    const check = await nicknameCheck(interaction, false, member);
                     if (check !== true) return await errorMessage(interaction, check || "Something went wrong");
                     return await nicknameCallback(interaction, member);
-                } case "warn": {
-                    const check = await warnCheck(interaction, false, member)
+                }
+                case "warn": {
+                    const check = await warnCheck(interaction, false, member);
                     if (check !== true) return await errorMessage(interaction, check!);
                     return await warnCallback(interaction, member);
                 }

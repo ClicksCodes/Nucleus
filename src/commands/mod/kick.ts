@@ -103,12 +103,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.kick.text)
-                            .setURL(
-                                config.moderation.kick.link.replaceAll(
-                                    "{id}",
-                                    member.id
-                                )
-                            )
+                            .setURL(config.moderation.kick.link.replaceAll("{id}", member.id))
                     )
                 );
             }
