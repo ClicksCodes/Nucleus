@@ -23,7 +23,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         if (message.channel.permissionsFor(message.guild.members.me!)!.has("ManageMessages")) {
             await message.crosspost();
         } else {
-            singleNotify(`I don't have permissions to publish in <#${message.channel.id}>`, message.guild.id, true);
+            singleNotify(`Nucleus does not have Manage Messages in <#${message.channel.id}>`, message.guild.id, true);
         }
     }
 
@@ -75,7 +75,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 const data = {
                     meta: {
                         type: "messageDelete",
-                        displayName: "Message Deleted (Automated, Contained Invite)",
+                        displayName: "Message Deleted",
                         calculateType: "autoModeratorDeleted",
                         color: NucleusColors.red,
                         emoji: "MESSAGE.DELETE",

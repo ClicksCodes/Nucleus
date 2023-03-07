@@ -68,7 +68,7 @@ For more information, see the [about](https://clicks.codes/nucleus/verify/about)
 
 You can run `/privacy` to view and manage all data stored about your server.
 
-You should always know what we know and store about you, so here is the complete list.
+You should always know what we know and store about you, so [here is the complete list](https://clicksminuteper.github.io/policies/nucleus).
 
 ### Self hosting
 
