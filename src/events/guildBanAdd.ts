@@ -8,7 +8,7 @@ export const event = "guildBanAdd";
 
 export async function callback(client: NucleusClient, ban: GuildBan) {
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, getAuditLog } = client.logger;
-    await statsChannelRemove(client, undefined, ban.guild, ban.user);
+    await statsChannelRemove(ban.user, ban.guild);
     purgeByUser(ban.user.id, ban.guild.id);
     if (!(await isLogging(ban.guild.id, "guildMemberPunish"))) return;
     const auditLog: GuildAuditLogsEntry | undefined = (await getAuditLog(ban.guild, AuditLogEvent.MemberBanAdd)).filter(

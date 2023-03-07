@@ -16,10 +16,8 @@ import defaultData from "../config/default.js";
 
 let username, password;
 
-// @ts-expect-error
-if (Object.keys(config.mongoOptions).includes("username")) username = encodeURIComponent(config.mongoOptions.username);
-// @ts-expect-error
-if (Object.keys(config.mongoOptions).includes("password")) password = encodeURIComponent(config.mongoOptions.password);
+if ("username" in config.mongoOptions) username = encodeURIComponent(config.mongoOptions.username as string);
+if ("password" in config.mongoOptions) password = encodeURIComponent(config.mongoOptions.password as string);
 
 const mongoClient = new MongoClient(
     username
@@ -224,7 +222,7 @@ interface TranscriptSchema {
 interface findDocSchema {
     channelID: string;
     messageID: string;
-    transcript: string;
+    code: string;
 }
 
 export class Transcript {
