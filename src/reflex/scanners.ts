@@ -5,6 +5,9 @@ import Tesseract from "node-tesseract-ocr";
 import type Discord from "discord.js";
 import client from "../utils/client.js";
 import { createHash } from "crypto";
+import * as nsfwjs from 'nsfwjs';
+import * as clamscan from 'clamscan'
+import * as tf from "@tensorflow/tfjs-node";
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -15,32 +18,18 @@ interface MalwareSchema {
     errored?: boolean;
 }
 
+const model = await nsfwjs.load();
+
 export async function testNSFW(link: string): Promise<NSFWSchema> {
-    const [p, hash] = await saveAttachment(link);
+    const [fileName, hash] = await saveAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
     if (alreadyHaveCheck) return { nsfw: alreadyHaveCheck.data };
-    const data = new URLSearchParams();
-    const r = createReadStream(p);
-    data.append("file", r.read(fs.statSync(p).size));
-    const result = await fetch("https://unscan.p.rapidapi.com/", {
-        method: "POST",
-        headers: {
-            "X-RapidAPI-Key": client.config.rapidApiKey,
-            "X-RapidAPI-Host": "unscan.p.rapidapi.com"
-        },
-        body: data
-    })
-        .then((response) =>
-            response.status === 200 ? (response.json() as Promise<NSFWSchema>) : { nsfw: false, errored: true }
-        )
-        .catch((err) => {
-            console.error(err);
-            return { nsfw: false, errored: true };
-        });
-    if (!result.errored) {
-        client.database.scanCache.write(hash, result.nsfw);
-    }
-    return { nsfw: result.nsfw };
+
+    // const image = tf.node.decodePng()
+
+    // const result = await model.classify(image)
+
+    return { nsfw: false };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
