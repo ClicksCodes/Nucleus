@@ -111,7 +111,6 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 timestamp: Date.now()
             },
             list: {
-                memberId: entry(after.id, `\`${after.id}\``),
                 name: entry(after.user.id, renderUser(after.user)),
                 before: entry(before.nickname, before.nickname ? before.nickname : "*None*"),
                 after: entry(after.nickname, after.nickname ? after.nickname : "*None*"),
