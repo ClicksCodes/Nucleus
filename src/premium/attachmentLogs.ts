@@ -2,7 +2,7 @@ import { getCommandMentionByName } from "./../utils/getCommandDataByName.js";
 import client from "../utils/client.js";
 import keyValueList from "../utils/generateKeyValueList.js";
 import singleNotify from "../utils/singleNotify.js";
-import { saveAttachment } from "../reflex/scanners.js";
+import { streamAttachment } from "../reflex/scanners.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import addPlural from "../utils/plurals.js";
 import type { GuildTextBasedChannel, Message } from "discord.js";
@@ -14,7 +14,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
     const attachments = [];
     for (const attachment of message.attachments.values()) {
         attachments.push({
-            local: (await saveAttachment(attachment.url))[0],
+            local: (await streamAttachment(attachment.url))[0],
             url: attachment.url,
             height: attachment.height,
             width: attachment.width,
@@ -25,7 +25,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
     for (const link of links) {
         if (link.toLowerCase().match(/\.(jpg|jpeg|png|gif|gifv|webm|webp|mp4|wav|mp3|ogg)$/gi)) {
             attachments.push({
-                local: (await saveAttachment(link))[0],
+                local: (await streamAttachment(link))[0],
                 url: link,
                 height: null,
                 width: null

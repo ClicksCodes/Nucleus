@@ -21,7 +21,7 @@
         "mongodb": "^4.7.0",
         "node-fetch": "^3.3.0",
         "node-tesseract-ocr": "^2.2.1",
-        "nsfwjs": "2.4.2",
+        "nsfwjs": "https://github.com/infinitered/nsfwjs",
         "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
         "systeminformation": "^5.17.3"

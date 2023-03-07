@@ -5,9 +5,9 @@ import Tesseract from "node-tesseract-ocr";
 import type Discord from "discord.js";
 import client from "../utils/client.js";
 import { createHash } from "crypto";
-// import * as nsfwjs from "nsfwjs";
-// import * as clamscan from "clamscan";
-// import * as tf from "@tensorflow/tfjs-node";
+import * as nsfwjs from "nsfwjs/src";
+import * as clamscan from "clamscan";
+import * as tf from "@tensorflow/tfjs-node";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
@@ -21,26 +21,28 @@ interface MalwareSchema {
     errored?: boolean;
 }
 
-// const model = await nsfwjs.load();
+const nsfw_model = await nsfwjs.load();
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
-    const [_fileName, hash] = await saveAttachment(link);
+    const [fileStream, hash] = await streamAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck) return { nsfw: alreadyHaveCheck.data };
+    if (alreadyHaveCheck?.nsfw) return { nsfw: alreadyHaveCheck.nsfw };
 
-    // const image = tf.node.decodePng()
+    const image = tf.node.decodeImage(new Uint8Array(fileStream), 3) as tf.Tensor3D;
 
-    // const result = await model.classify(image)
+    const predictions = (await nsfw_model.classify(image, 1))[0]!;
+    image.dispose();
 
-    return { nsfw: false };
+    return { nsfw: predictions.className === "Hentai" || predictions.className === "Porn" };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
-    const [p, hash] = await saveAttachment(link);
+    const [p, hash] = await streamAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck) return { safe: alreadyHaveCheck.data };
+    if (alreadyHaveCheck?.malware) return { safe: alreadyHaveCheck.malware };
+    return { safe: true };
     const data = new URLSearchParams();
-    const f = createReadStream(p);
+    // const f = createReadStream(p);
     data.append("file", f.read(fs.statSync(p).size));
     const result = await fetch("https://unscan.p.rapidapi.com/malware", {
         method: "POST",
@@ -58,14 +60,14 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
             return { safe: true, errored: true };
         });
     if (!result.errored) {
-        client.database.scanCache.write(hash, result.safe);
+        client.database.scanCache.write(hash, "malware", result.safe);
     }
     return { safe: result.safe };
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
     const alreadyHaveCheck = await client.database.scanCache.read(link);
-    if (alreadyHaveCheck) return { safe: alreadyHaveCheck.data, tags: [] };
+    if (alreadyHaveCheck?.bad_link) return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags };
     const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
         method: "POST",
         headers: {
@@ -79,19 +81,19 @@ export async function testLink(link: string): Promise<{ safe: boolean; tags: str
             console.error(err);
             return { safe: true, tags: [] };
         });
-    client.database.scanCache.write(link, scanned.safe ?? true, []);
+    client.database.scanCache.write(link, "bad_link", scanned.safe ?? true, scanned.tags ?? []);
     return {
         safe: scanned.safe ?? true,
         tags: scanned.tags ?? []
     };
 }
 
-export async function saveAttachment(link: string): Promise<[string, string]> {
+export async function streamAttachment(link: string): Promise<[ArrayBuffer, string]> {
     const image = await (await fetch(link)).arrayBuffer();
     const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
     const enc = new TextDecoder("utf-8");
     writeFileSync(fileName, new DataView(image), "base64");
-    return [fileName, createHash("sha512").update(enc.decode(image), "base64").digest("base64")];
+    return [image, createHash("sha512").update(enc.decode(image), "base64").digest("base64")];
 }
 
 const linkTypes = {
@@ -218,11 +220,10 @@ export async function doMemberChecks(member: Discord.GuildMember, guild: Discord
     const avatarCheck =
         guildData.filters.images.NSFW && (await NSFWCheck(member.user.displayAvatarURL({ forceStatic: true })));
     // Does the username contain an invite
-    const inviteCheck =
-        guildData.filters.invite.enabled && member.user.username.match(/discord\.gg\/[a-zA-Z0-9]+/gi) !== null;
+    const inviteCheck = guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.user.username);
     // Does the nickname contain an invite
     const nicknameInviteCheck =
-        guildData.filters.invite.enabled && member.nickname?.match(/discord\.gg\/[a-zA-Z0-9]+/gi) !== null;
+        guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.nickname ?? "");
 
     if (
         usernameCheck !== null ||
