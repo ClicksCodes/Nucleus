@@ -5,7 +5,7 @@ import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js"
 export const event = "guildUpdate";
 
 export async function callback(client: NucleusClient, before: Guild, after: Guild) {
-    await statsChannelUpdate(client, after.members.me!);
+    await statsChannelUpdate(after.members.me!.user, after);
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (!(await isLogging(after.id, "guildUpdate"))) return;
     const auditLog = (await getAuditLog(after, AuditLogEvent.GuildUpdate)).filter(

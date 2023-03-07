@@ -28,7 +28,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(description)
                     .setStatus("Success")
                     .setEmoji("SETTINGS.STATS.GREEN")
-            ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary))]
+            ], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId("mod:nickname:599498449733550102").setLabel("Testing").setStyle(ButtonStyle.Primary)
+            )]
         });
 
         const modal = new ModalBuilder()

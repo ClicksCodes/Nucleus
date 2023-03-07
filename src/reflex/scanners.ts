@@ -8,6 +8,9 @@ import { createHash } from "crypto";
 import * as nsfwjs from 'nsfwjs';
 import * as clamscan from 'clamscan'
 import * as tf from "@tensorflow/tfjs-node";
+import EmojiEmbed from "../utils/generateEmojiEmbed.js";
+import getEmojiByName from "../utils/getEmojiByName.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -164,7 +167,8 @@ export async function MalwareCheck(element: string): Promise<boolean> {
     }
 }
 
-export function TestString(string: string, soft: string[], strict: string[]): object | null {
+export function TestString(string: string, soft: string[], strict: string[], enabled?: boolean): {word: string, type: string} | null {
+    if (!enabled) return null;
     for (const word of strict) {
         if (string.toLowerCase().includes(word)) {
             return { word: word, type: "strict" };
@@ -173,7 +177,7 @@ export function TestString(string: string, soft: string[], strict: string[]): ob
     for (const word of soft) {
         for (const word2 of string.match(/[a-z]+/gi) ?? []) {
             if (word2 === word) {
-                return { word: word, type: "strict" };
+                return { word: word, type: "soft" };
             }
         }
     }
@@ -187,4 +191,77 @@ export async function TestImage(url: string): Promise<string | null> {
         psm: 3
     });
     return text;
+}
+
+export async function doMemberChecks(member: Discord.GuildMember, guild: Discord.Guild): Promise<void> {
+    if (member.user.bot) return;
+    const guildData = await client.database.guilds.read(guild.id);
+    if (!guildData.logging.staff.channel) return;
+    const [ loose, strict ] = [guildData.filters.wordFilter.words.loose, guildData.filters.wordFilter.words.strict];
+    // Does the username contain filtered words
+    const usernameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
+    // Does the nickname contain filtered words
+    const nicknameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+    // Does the profile picture contain filtered words
+    const avatarTextCheck = TestString(await TestImage(member.user.displayAvatarURL({ forceStatic: true })) ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+    // Is the profile picture NSFW
+    const avatarCheck = guildData.filters.images.NSFW && await NSFWCheck(member.user.displayAvatarURL({ forceStatic: true }));
+    // Does the username contain an invite
+    const inviteCheck = guildData.filters.invite.enabled && member.user.username.match(/discord\.gg\/[a-zA-Z0-9]+/gi) !== null;
+    // Does the nickname contain an invite
+    const nicknameInviteCheck = guildData.filters.invite.enabled && member.nickname?.match(/discord\.gg\/[a-zA-Z0-9]+/gi) !== null;
+
+    if (usernameCheck !== null || nicknameCheck !== null || avatarCheck || inviteCheck || nicknameInviteCheck || avatarTextCheck !== null) {
+        const infractions = [];
+        if (usernameCheck !== null) {
+            infractions.push(`Username contains a ${usernameCheck.type}ly filtered word (${usernameCheck.word})`);
+        } if (nicknameCheck !== null) {
+            infractions.push(`Nickname contains a ${nicknameCheck.type}ly filtered word (${nicknameCheck.word})`);
+        } if (avatarCheck) {
+            infractions.push("Profile picture is NSFW");
+        } if (inviteCheck) {
+            infractions.push("Username contains an invite");
+        } if (nicknameInviteCheck) {
+            infractions.push("Nickname contains an invite");
+        } if (avatarTextCheck !== null) {
+            infractions.push(`Profile picture contains a ${avatarTextCheck.type}ly filtered word: ${avatarTextCheck.word}`);
+        }
+        if (infractions.length === 0) return;
+        // This is bad - Warn in the staff notifications channel
+        const filter = getEmojiByName("ICONS.FILTER");
+        const channel = guild.channels.cache.get(guildData.logging.staff.channel) as Discord.TextChannel;
+        const embed = new EmojiEmbed()
+            .setTitle("Member Flagged")
+            .setEmoji("ICONS.FLAGS.RED")
+            .setStatus("Danger")
+            .setDescription(`**Member:** ${member.user.username} (<@${member.user.id}>)\n\n` +
+                infractions.map((element) => `${filter} ${element}`).join("\n")
+            )
+        await channel.send({
+            embeds: [embed],
+            components: [new ActionRowBuilder<ButtonBuilder>().addComponents(...[
+                new ButtonBuilder()
+                    .setCustomId(`mod:warn:${member.user.id}`)
+                    .setLabel("Warn")
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId(`mod:mute:${member.user.id}`)
+                    .setLabel("Mute")
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId(`mod:kick:${member.user.id}`)
+                    .setLabel("Kick")
+                    .setStyle(ButtonStyle.Danger),
+                new ButtonBuilder()
+                    .setCustomId(`mod:ban:${member.user.id}`)
+                    .setLabel("Ban")
+                    .setStyle(ButtonStyle.Danger),
+            ].concat((usernameCheck !== null || nicknameCheck !== null || avatarTextCheck !== null) ? [
+                new ButtonBuilder()
+                    .setCustomId(`mod:nickname:${member.user.id}`)
+                    .setLabel("Change Name")
+                    .setStyle(ButtonStyle.Primary)
+            ] : []))]
+        });
+    }
 }

@@ -14,14 +14,17 @@ import * as crypto from "crypto";
 import _ from "lodash";
 import defaultData from "../config/default.js";
 
-const username = encodeURIComponent(config.mongoOptions.username);
-const password = encodeURIComponent(config.mongoOptions.password);
+let username, password;
+
+// @ts-expect-error
+if (Object.keys(config.mongoOptions).includes("username")) username = encodeURIComponent(config.mongoOptions.username);
+// @ts-expect-error
+if (Object.keys(config.mongoOptions).includes("password")) password = encodeURIComponent(config.mongoOptions.password);
 
 const mongoClient = new MongoClient(
     username
-        ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT`
-        : `mongodb://${config.mongoOptions.host}`,
-    { authSource: config.mongoOptions.authSource }
+        ? `mongodb://${username}:${password}@${config.mongoOptions.host}?authMechanism=DEFAULT&authSource=${config.mongoOptions.authSource}`
+        : `mongodb://${config.mongoOptions.host}`
 );
 await mongoClient.connect();
 const database = mongoClient.db();
@@ -221,7 +224,7 @@ interface TranscriptSchema {
 interface findDocSchema {
     channelID: string;
     messageID: string;
-    code: string;
+    transcript: string;
 }
 
 export class Transcript {
@@ -284,12 +287,8 @@ export class Transcript {
     async deleteAll(guild: string) {
         // console.log("Transcript delete")
         const filteredDocs = await this.transcripts.find({ guild: guild }).toArray();
-        const filteredDocs1  = await this.messageToTranscript.find({ guild: guild }).toArray();
         for (const doc of filteredDocs) {
             await this.transcripts.deleteOne({ code: doc.code });
-        }
-        for (const doc of filteredDocs1) {
-            await this.messageToTranscript.deleteOne({ code: doc.code });
         }
     }
 
@@ -297,7 +296,7 @@ export class Transcript {
         // console.log("Transcript read")
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
-        if (!doc) findDoc = await this.messageToTranscript.findOne({ code: code });
+        if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
         if (findDoc) {
             const message = await (
                 client.channels.cache.get(findDoc.channelID) as Discord.TextBasedChannel | null
@@ -334,7 +333,7 @@ export class Transcript {
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
         console.log(doc);
-        if (!doc) findDoc = await this.messageToTranscript.findOne({ code: code });
+        if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
         if (findDoc) {
             const message = await (
                 client.channels.cache.get(findDoc.channelID) as Discord.TextBasedChannel | null
@@ -835,6 +834,10 @@ export class Premium {
         this.cache.set(guild, [false, "", 0, false, new Date(Date.now() + this.cacheTimeout)]);
         return await this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
+}
+
+export class Plugins {
+    
 }
 
 export interface GuildConfig {
