@@ -1,5 +1,12 @@
 import { LinkWarningFooter, LoadingEmbed } from "../../utils/defaults.js";
-import Discord, { CommandInteraction, GuildMember, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import Discord, {
+    CommandInteraction,
+    GuildMember,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ButtonInteraction
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -49,16 +56,25 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+const callback = async (
+    interaction: CommandInteraction | ButtonInteraction,
+    member?: GuildMember
+): Promise<unknown> => {
     if (!interaction.guild) return;
     const { log, NucleusColors, renderUser, entry, renderDelta } = client.logger;
-    const member = interaction.options.getMember("user") as GuildMember;
-    const time: { days: number; hours: number; minutes: number; seconds: number } = {
-        days: (interaction.options.get("days")?.value as number | null) ?? 0,
-        hours: (interaction.options.get("hours")?.value as number | null) ?? 0,
-        minutes: (interaction.options.get("minutes")?.value as number | null) ?? 0,
-        seconds: (interaction.options.get("seconds")?.value as number | null) ?? 0
-    };
+    let time: { days: number; hours: number; minutes: number; seconds: number } | null = null;
+    if (!interaction.isButton()) {
+        member = interaction.options.getMember("user") as GuildMember;
+        time = {
+            days: (interaction.options.get("days")?.value as number | null) ?? 0,
+            hours: (interaction.options.get("hours")?.value as number | null) ?? 0,
+            minutes: (interaction.options.get("minutes")?.value as number | null) ?? 0,
+            seconds: (interaction.options.get("seconds")?.value as number | null) ?? 0
+        };
+    } else {
+        time = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+    if (!member) return;
     const config = await client.database.guilds.read(interaction.guild.id);
     let serverSettingsDescription = config.moderation.mute.timeout ? "given a timeout" : "";
     if (config.moderation.mute.role)
@@ -197,8 +213,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild.id)),
-                async () =>
-                    await create(interaction.guild!, interaction.options.getUser("user")!, interaction.user, reason),
+                async () => await create(interaction.guild!, member!.user, interaction.user, reason),
                 "An appeal ticket will be created when Confirm is clicked",
                 null,
                 "CONTROL.TICKET",
@@ -275,12 +290,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.mute.text)
-                            .setURL(
-                                config.moderation.mute.link.replaceAll(
-                                    "{id}",
-                                    (interaction.options.getMember("user") as GuildMember).id
-                                )
-                            )
+                            .setURL(config.moderation.mute.link.replaceAll("{id}", member.id))
                     )
                 );
             }
@@ -399,14 +409,19 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = async (interaction: CommandInteraction, partial: boolean = false) => {
+const check = (interaction: CommandInteraction | ButtonInteraction, partial: boolean = false, target?: GuildMember) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
     // Check if the user has moderate_members permission
     if (!member.permissions.has("ModerateMembers")) return "You do not have the *Moderate Members* permission";
     if (partial) return true;
     const me = interaction.guild.members.me!;
-    const apply = interaction.options.getMember("user") as GuildMember;
+    let apply;
+    if (interaction.isButton()) {
+        apply = target!;
+    } else {
+        apply = interaction.options.getMember("user") as GuildMember;
+    }
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;

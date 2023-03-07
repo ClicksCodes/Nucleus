@@ -3,9 +3,9 @@ import Discord, {
     GuildMember,
     ActionRowBuilder,
     ButtonBuilder,
-    User,
     ButtonStyle,
-    SlashCommandSubcommandBuilder
+    SlashCommandSubcommandBuilder,
+    ButtonInteraction
 } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -29,8 +29,16 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
                 .setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<void> => {
+const callback = async (interaction: CommandInteraction | ButtonInteraction, member?: GuildMember): Promise<void> => {
     if (!interaction.guild) return;
+    let deleteDays;
+    if (!interaction.isButton()) {
+        member = interaction.options.getMember("user") as GuildMember;
+        deleteDays = (interaction.options.get("delete")?.value as number | null) ?? 0;
+    } else {
+        deleteDays = 0;
+    }
+    if (!member) return;
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace the command arguments with a modal
     let reason = null;
@@ -44,15 +52,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             .setTitle("Ban")
             .setDescription(
                 keyValueList({
-                    user: renderUser(interaction.options.getUser("user")!),
+                    user: renderUser(member.user),
                     reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
                 }) +
                     `The user **will${notify ? "" : " not"}** be notified\n` +
-                    `${addPlurals(
-                        (interaction.options.get("delete")?.value as number | null) ?? 0,
-                        "day"
-                    )} of messages will be deleted\n\n` +
-                    `Are you sure you want to ban <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
+                    `${addPlurals(deleteDays, "day")} of messages will be deleted\n\n` +
+                    `Are you sure you want to ban <@!${member.id}>?`
             )
             .addCustomBoolean(
                 "notify",
@@ -110,26 +115,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.ban.text)
-                            .setURL(
-                                config.moderation.ban.link.replaceAll(
-                                    "{id}",
-                                    (interaction.options.getMember("user") as GuildMember).id
-                                )
-                            )
+                            .setURL(config.moderation.ban.link.replaceAll("{id}", member.id))
                     )
                 );
             }
-            dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
+            dmMessage = await member.send(messageData);
             dmSent = true;
         }
     } catch {
         dmSent = false;
     }
     try {
-        const member = interaction.options.getMember("user") as GuildMember;
-        const days: number = (interaction.options.get("delete")?.value as number | null) ?? 0;
         member.ban({
-            deleteMessageSeconds: days * 24 * 60 * 60,
+            deleteMessageSeconds: deleteDays * 24 * 60 * 60,
             reason: reason ?? "*No reason provided*"
         });
         await client.database.history.create("ban", interaction.guild.id, member.user, interaction.user, reason);
@@ -189,23 +187,22 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     });
 };
 
-const check = async (interaction: CommandInteraction, partial: boolean = false) => {
+const check = (interaction: CommandInteraction | ButtonInteraction, partial: boolean = false, target?: GuildMember) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
     // Check if the user has ban_members permission
     if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
     if (partial) return true;
     const me = interaction.guild.members.me!;
-    let apply = interaction.options.getUser("user") as User | GuildMember;
+    let apply: GuildMember;
+    if (interaction.isButton()) {
+        apply = target!;
+    } else {
+        apply = interaction.options.getMember("user") as GuildMember;
+    }
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
-    let applyPos = 0;
-    try {
-        apply = (await interaction.guild.members.fetch(apply.id)) as GuildMember;
-        applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
-    } catch {
-        apply = apply as User;
-    }
+    const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;
     // Do not allow banning the owner
     if (member.id === interaction.guild.ownerId) return "You cannot ban the owner of the server";
     // Check if Nucleus can ban the member

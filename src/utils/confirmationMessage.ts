@@ -1,4 +1,4 @@
-import { TextInputBuilder } from "discord.js";
+import { ButtonInteraction, TextInputBuilder } from "discord.js";
 import Discord, {
     CommandInteraction,
     Message,
@@ -24,7 +24,7 @@ interface CustomBoolean<T> {
 }
 
 class confirmationMessage {
-    interaction: CommandInteraction;
+    interaction: CommandInteraction | ButtonInteraction;
     title = "";
     emoji = "";
     redEmoji: string | null = null;
@@ -37,7 +37,15 @@ class confirmationMessage {
     inverted = false;
     reason: string | null = null;
 
-    constructor(interaction: CommandInteraction) {
+    modals: {
+        buttonText: string;
+        emoji: string;
+        customId: string;
+        modal: Discord.ModalBuilder;
+        value: string | undefined;
+    }[] = [];
+
+    constructor(interaction: CommandInteraction | ButtonInteraction) {
         this.interaction = interaction;
     }
 
@@ -98,11 +106,23 @@ class confirmationMessage {
         this.reason = reason;
         return this;
     }
+    addModal(buttonText: string, emoji: string, customId: string, current: string, modal: Discord.ModalBuilder) {
+        modal.setCustomId(customId);
+        this.modals.push({ buttonText, emoji, customId, modal, value: current });
+        return this;
+    }
     async send(editOnly?: boolean): Promise<{
         success?: boolean;
         cancelled?: boolean;
         components?: Record<string, CustomBoolean<unknown>>;
         newReason?: string;
+        modals?: {
+            buttonText: string;
+            emoji: string;
+            customId: string;
+            modal: Discord.ModalBuilder;
+            value: string | undefined;
+        }[];
     }> {
         let cancelled = false;
         let success: boolean | undefined = undefined;
@@ -131,6 +151,16 @@ class confirmationMessage {
                 if (v.emoji !== undefined) button.setEmoji(getEmojiByName(v.emoji, "id"));
                 fullComponents.push(button);
             });
+            for (const modal of this.modals) {
+                fullComponents.push(
+                    new Discord.ButtonBuilder()
+                        .setCustomId(modal.customId)
+                        .setLabel(modal.buttonText)
+                        .setStyle(ButtonStyle.Primary)
+                        .setEmoji(getEmojiByName(modal.emoji, "id"))
+                        .setDisabled(false)
+                );
+            }
             if (this.reason !== null)
                 fullComponents.push(
                     new Discord.ButtonBuilder()
@@ -183,7 +213,6 @@ class confirmationMessage {
                     m = (await this.interaction.reply(object)) as unknown as Message;
                 }
             } catch (e) {
-                console.log(e);
                 cancelled = true;
                 continue;
             }
@@ -273,6 +302,51 @@ class confirmationMessage {
                     returnComponents = true;
                     continue;
                 }
+            } else if (this.modals.map((m) => m.customId).includes(component.customId)) {
+                const chosenModal = this.modals.find(
+                    (
+                        (component) => (m) =>
+                            m.customId === component.customId
+                    )(component)
+                );
+                await component.showModal(chosenModal!.modal);
+                await this.interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed()
+                            .setTitle(this.title)
+                            .setDescription("Modal opened. If you can't see it, click back and try again.")
+                            .setStatus(this.color)
+                            .setEmoji(this.emoji)
+                    ],
+                    components: [
+                        new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                            new ButtonBuilder()
+                                .setLabel("Back")
+                                .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                                .setStyle(ButtonStyle.Primary)
+                                .setCustomId("back")
+                        )
+                    ]
+                });
+                let out;
+                try {
+                    out = (await modalInteractionCollector(
+                        m,
+                        this.interaction.user
+                    )) as Discord.ModalSubmitInteraction | null;
+                } catch (e) {
+                    console.log(e);
+                    cancelled = true;
+                    continue;
+                }
+                if (out === null || out.isButton()) {
+                    continue;
+                }
+                if (out instanceof ModalSubmitInteraction) {
+                    chosenModal!.value = out.fields.getTextInputValue("default");
+                }
+                returnComponents = true;
+                continue;
             } else {
                 component.deferUpdate();
                 this.customButtons[component.customId]!.active = !this.customButtons[component.customId]!.active;
@@ -297,17 +371,24 @@ class confirmationMessage {
                 ],
                 components: []
             });
-            return { success: false };
+            return { success: false, cancelled: returnValue.cancelled ?? false };
         }
         if (returnComponents || success !== undefined) returnValue.components = this.customButtons;
         if (success !== undefined) returnValue.success = success;
         if (newReason) returnValue.newReason = newReason;
+        returnValue.modals = this.modals;
 
+        const modals = this.modals;
         const typedReturnValue = returnValue as
             | { cancelled: true }
-            | { success: boolean; components: Record<string, CustomBoolean<unknown>>; newReason?: string }
-            | { newReason: string; components: Record<string, CustomBoolean<unknown>> }
-            | { components: Record<string, CustomBoolean<unknown>> };
+            | {
+                  success: boolean;
+                  components: Record<string, CustomBoolean<unknown>>;
+                  modals: typeof modals;
+                  newReason?: string;
+              }
+            | { newReason: string; components: Record<string, CustomBoolean<unknown>>; modals: typeof modals }
+            | { components: Record<string, CustomBoolean<unknown>>; modals: typeof modals };
 
         return typedReturnValue;
     }

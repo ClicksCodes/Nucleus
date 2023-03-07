@@ -2,12 +2,14 @@ import type { GuildMember } from "discord.js";
 import { callback as statsChannelAdd } from "../reflex/statsChannelUpdate.js";
 import { callback as welcome } from "../reflex/welcome.js";
 import type { NucleusClient } from "../utils/client.js";
+import { doMemberChecks } from "../reflex/scanners.js";
 
 export const event = "guildMemberAdd";
 
 export async function callback(client: NucleusClient, member: GuildMember) {
-    welcome(client, member);
-    statsChannelAdd(client, member);
+    welcome(member);
+    statsChannelAdd(member.user, member.guild);
+    doMemberChecks(member, member.guild);
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (!(await isLogging(member.guild.id, "guildMemberUpdate"))) return;
     await client.database.history.create("join", member.guild.id, member.user, null, null);

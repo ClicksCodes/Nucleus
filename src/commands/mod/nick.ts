@@ -1,5 +1,16 @@
 import { LinkWarningFooter } from "./../../utils/defaults.js";
-import { ActionRowBuilder, ButtonBuilder, CommandInteraction, GuildMember, ButtonStyle, Message } from "discord.js";
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    CommandInteraction,
+    GuildMember,
+    ButtonStyle,
+    Message,
+    ButtonInteraction,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle
+} from "discord.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import confirmationMessage from "../../utils/confirmationMessage.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
@@ -17,44 +28,40 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
             option.setName("name").setDescription("The name to set | Leave blank to clear").setRequired(false)
         );
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+const callback = async (
+    interaction: CommandInteraction | ButtonInteraction,
+    member?: GuildMember
+): Promise<unknown> => {
     const { log, NucleusColors, entry, renderDelta, renderUser } = client.logger;
+    let newNickname;
+    if (!interaction.isButton()) {
+        member = interaction.options.getMember("user") as GuildMember;
+        newNickname = interaction.options.get("name")?.value as string | undefined;
+    }
+    if (!member) return;
     // TODO:[Modals] Replace this with a modal
-    let notify = true;
+    let notify = false;
     let confirmation;
     let timedOut = false;
     let success = false;
     let createAppealTicket = false;
-    let firstRun = true;
+    let firstRun = !interaction.isButton();
     do {
         confirmation = await new confirmationMessage(interaction)
             .setEmoji("PUNISH.NICKNAME.RED")
             .setTitle("Nickname")
             .setDescription(
                 keyValueList({
-                    user: renderUser(interaction.options.getUser("user")!),
-                    "new nickname": `${
-                        (interaction.options.get("name")?.value as string)
-                            ? (interaction.options.get("name")?.value as string)
-                            : "*No nickname*"
-                    }`
-                }) +
-                    `Are you sure you want to ${
-                        (interaction.options.get("name")?.value as string) ? "change" : "clear"
-                    } <@!${(interaction.options.getMember("user") as GuildMember).id}>'s nickname?`
+                    user: renderUser(member.user),
+                    "new nickname": `${newNickname ? newNickname : "*No nickname*"}`
+                }) + `Are you sure you want to ${newNickname ? "change" : "clear"} <@!${member.id}>'s nickname?`
             )
             .setColor("Danger")
             .addCustomBoolean(
                 "appeal",
                 "Create appeal ticket",
                 !(await areTicketsEnabled(interaction.guild!.id)),
-                async () =>
-                    await create(
-                        interaction.guild!,
-                        interaction.options.getUser("user")!,
-                        interaction.user,
-                        "Nickname changed"
-                    ),
+                async () => await create(interaction.guild!, member!.user, interaction.user, "Nickname changed"),
                 "An appeal ticket will be created",
                 null,
                 "CONTROL.TICKET",
@@ -70,6 +77,23 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 "ICONS.NOTIFY." + (notify ? "ON" : "OFF"),
                 notify
             )
+            .addModal(
+                "Change nickname",
+                "ICONS.EDIT",
+                "modal",
+                newNickname ?? "",
+                new ModalBuilder().setTitle("Editing nickname").addComponents(
+                    new ActionRowBuilder<TextInputBuilder>().addComponents(
+                        new TextInputBuilder()
+                            .setCustomId("default")
+                            .setLabel("Nickname")
+                            .setMaxLength(32)
+                            .setRequired(false)
+                            .setStyle(TextInputStyle.Short)
+                            .setValue(newNickname ? newNickname : " ")
+                    )
+                )
+            )
             .setFailedMessage("No changes were made", "Success", "PUNISH.NICKNAME.GREEN")
             .send(!firstRun);
         firstRun = false;
@@ -79,6 +103,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             notify = confirmation.components["notify"]!.active;
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
+        if (confirmation.modals) newNickname = confirmation.modals![0]!.value;
     } while (!timedOut && !success);
     if (timedOut || !success) return;
     let dmSent = false;
@@ -95,12 +120,8 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setEmoji("PUNISH.NICKNAME.RED")
                         .setTitle("Nickname changed")
                         .setDescription(
-                            `Your nickname was ${
-                                (interaction.options.get("name")?.value as string) ? "changed" : "cleared"
-                            } in ${interaction.guild!.name}.` +
-                                ((interaction.options.get("name")?.value as string)
-                                    ? `\nIt is now: ${interaction.options.get("name")?.value as string}`
-                                    : "") +
+                            `Your nickname was ${newNickname ? "changed" : "cleared"} in ${interaction.guild!.name}.` +
+                                (newNickname ? `\nIt is now: ${newNickname}` : "") +
                                 "\n\n" +
                                 (createAppealTicket
                                     ? `You can appeal this in the ticket created in <#${
@@ -119,29 +140,20 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.nick.text)
-                            .setURL(
-                                config.moderation.nick.link.replaceAll(
-                                    "{id}",
-                                    (interaction.options.getMember("user") as GuildMember).id
-                                )
-                            )
+                            .setURL(config.moderation.nick.link.replaceAll("{id}", member.id))
                     )
                 );
             }
-            dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
+            dmMessage = await member.send(messageData);
             dmSent = true;
         }
     } catch {
         dmSent = false;
     }
-    let member: GuildMember;
     let before: string | null;
-    let nickname: string | undefined;
     try {
-        member = interaction.options.getMember("user") as GuildMember;
         before = member.nickname;
-        nickname = interaction.options.get("name")?.value as string | undefined;
-        member.setNickname(nickname ?? null, "Nucleus Nickname command");
+        member.setNickname(newNickname ?? null, "Nucleus Nickname command");
         await client.database.history.create(
             "nickname",
             interaction.guild!.id,
@@ -149,7 +161,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             interaction.user,
             null,
             before,
-            nickname
+            newNickname
         );
     } catch {
         await interaction.editReply({
@@ -175,9 +187,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             timestamp: Date.now()
         },
         list: {
-            memberId: entry(member.id, `\`${member.id}\``),
+            member: entry(member.id, renderUser(member.user)),
             before: entry(before, before ?? "*No nickname set*"),
-            after: entry(nickname ?? null, nickname ?? "*No nickname set*"),
+            after: entry(newNickname ?? null, newNickname ?? "*No nickname set*"),
             updated: entry(Date.now(), renderDelta(Date.now())),
             updatedBy: entry(interaction.user.id, renderUser(interaction.user))
         },
@@ -210,13 +222,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = async (interaction: CommandInteraction, partial: boolean = false) => {
+const check = async (interaction: CommandInteraction | ButtonInteraction, partial: boolean, target?: GuildMember) => {
     const member = interaction.member as GuildMember;
     // Check if the user has manage_nicknames permission
     if (!member.permissions.has("ManageNicknames")) return "You do not have the *Manage Nicknames* permission";
     if (partial) return true;
     const me = interaction.guild!.members.me!;
-    const apply = interaction.options.getMember("user") as GuildMember;
+    let apply: GuildMember;
+    if (interaction.isButton()) {
+        apply = target!;
+    } else {
+        apply = interaction.options.getMember("user") as GuildMember;
+    }
     const memberPos = member.roles.cache.size ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size ? apply.roles.highest.position : 0;

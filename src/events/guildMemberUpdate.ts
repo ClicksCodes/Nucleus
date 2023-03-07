@@ -2,6 +2,7 @@ import { AuditLogEvent, GuildAuditLogsEntry, GuildMember } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 import type { LoggerOptions } from "../utils/log.js";
 import { generalException } from "../utils/createTemporaryStorage.js";
+import { doMemberChecks } from "../reflex/scanners.js";
 
 export const event = "guildMemberUpdate";
 
@@ -92,6 +93,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     if (before.nickname !== after.nickname) {
+        doMemberChecks(after, after.guild);
         await client.database.history.create(
             "nickname",
             after.guild.id,
@@ -111,7 +113,6 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 timestamp: Date.now()
             },
             list: {
-                memberId: entry(after.id, `\`${after.id}\``),
                 name: entry(after.user.id, renderUser(after.user)),
                 before: entry(before.nickname, before.nickname ? before.nickname : "*None*"),
                 after: entry(after.nickname, after.nickname ? after.nickname : "*None*"),

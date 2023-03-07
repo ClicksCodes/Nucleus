@@ -1,13 +1,16 @@
 {
     "dependencies": {
-        "@discordjs/rest": "^0.2.0-canary.0",
         "@hokify/agenda": "^6.2.12",
+        "@tensorflow/tfjs": "^4.0.0",
+        "@tensorflow/tfjs-node": "^4.2.0",
         "@total-typescript/ts-reset": "^0.3.7",
         "@tsconfig/node18-strictest-esm": "^1.0.0",
         "@types/node": "^18.14.6",
         "@ungap/structured-clone": "^1.0.1",
         "agenda": "^4.3.0",
         "body-parser": "^1.20.0",
+        "canvas": "^2.11.0",
+        "clamscan": "^2.1.2",
         "discord.js": "^14.7.1",
         "eslint": "^8.21.0",
         "express": "^4.18.1",
@@ -18,11 +21,10 @@
         "mongodb": "^4.7.0",
         "node-fetch": "^3.3.0",
         "node-tesseract-ocr": "^2.2.1",
+        "nsfwjs": "2.4.2",
+        "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
         "systeminformation": "^5.17.3"
-    },
-    "resolutions": {
-        "discord-api-types": "0.37.23"
     },
     "name": "nucleus",
     "version": "0.0.1",
@@ -38,7 +40,8 @@
         "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To view errors in more detail, please run `yarn lint`'; true",
         "lint-ci": "echo 'Style checking...' && prettier --check . && echo 'Linting...' && eslint src",
         "setup": "node Installer.js",
-        "win-force-build": "clear | rm -r dist | tsc-suppress"
+        "win-force-build": "clear | rm -r dist | tsc-suppress",
+        "audit-fix": "yarn-audit-fix"
     },
     "repository": {
         "type": "git",
@@ -57,6 +60,7 @@
     "private": false,
     "type": "module",
     "devDependencies": {
+        "@types/clamscan": "^2.0.4",
         "@types/lodash": "^4.14.191",
         "@typescript-eslint/eslint-plugin": "^5.32.0",
         "@typescript-eslint/parser": "^5.32.0",
@@ -64,6 +68,7 @@
         "prettier": "^2.7.1",
         "prettier-eslint": "^15.0.1",
         "tsc-suppress": "^1.0.7",
-        "typescript": "^4.9.4"
+        "typescript": "^4.9.4",
+        "yarn-audit-fix": "^9.3.9"
     }
 }

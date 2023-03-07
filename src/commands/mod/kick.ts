@@ -5,7 +5,8 @@ import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
-    SlashCommandSubcommandBuilder
+    SlashCommandSubcommandBuilder,
+    ButtonInteraction
 } from "discord.js";
 // @ts-expect-error
 import humanizeDuration from "humanize-duration";
@@ -22,8 +23,12 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
         .setDescription("Kicks a user from the server")
         .addUserOption((option) => option.setName("user").setDescription("The user to kick").setRequired(true));
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+const callback = async (interaction: CommandInteraction | ButtonInteraction, member?: GuildMember): Promise<void> => {
     if (!interaction.guild) return;
+    if (!interaction.isButton()) {
+        member = interaction.options.getMember("user") as GuildMember;
+    }
+    if (!member) return;
     const { renderUser } = client.logger;
     // TODO:[Modals] Replace this with a modal
     let reason: string | null = null;
@@ -37,9 +42,9 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             .setTitle("Kick")
             .setDescription(
                 keyValueList({
-                    user: renderUser(interaction.options.getUser("user")!),
+                    user: renderUser(member.user),
                     reason: reason ? "\n> " + reason.replaceAll("\n", "\n> ") : "*No reason provided*"
-                }) + `Are you sure you want to kick <@!${(interaction.options.getMember("user") as GuildMember).id}>?`
+                }) + `Are you sure you want to kick <@!${member.id}>?`
             )
             .setColor("Danger")
             .addCustomBoolean(
@@ -98,24 +103,18 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         new ButtonBuilder()
                             .setStyle(ButtonStyle.Link)
                             .setLabel(config.moderation.kick.text)
-                            .setURL(
-                                config.moderation.kick.link.replaceAll(
-                                    "{id}",
-                                    (interaction.options.getMember("user") as GuildMember).id
-                                )
-                            )
+                            .setURL(config.moderation.kick.link.replaceAll("{id}", member.id))
                     )
                 );
             }
-            dmMessage = await (interaction.options.getMember("user") as GuildMember).send(messageData);
+            dmMessage = await member.send(messageData);
             dmSent = true;
         }
     } catch {
         dmSent = false;
     }
     try {
-        (interaction.options.getMember("user") as GuildMember).kick(reason || "No reason provided");
-        const member = interaction.options.getMember("user") as GuildMember;
+        member.kick(reason || "No reason provided");
         await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
         const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
         const timeInServer = member.joinedTimestamp
@@ -186,7 +185,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 };
 
-const check = (interaction: CommandInteraction, partial: boolean = false) => {
+const check = (interaction: CommandInteraction | ButtonInteraction, partial: boolean = false, target?: GuildMember) => {
     if (!interaction.guild) return;
 
     const member = interaction.member as GuildMember;
@@ -195,7 +194,12 @@ const check = (interaction: CommandInteraction, partial: boolean = false) => {
     if (partial) return true;
 
     const me = interaction.guild.members.me!;
-    const apply = interaction.options.getMember("user") as GuildMember;
+    let apply: GuildMember;
+    if (interaction.isButton()) {
+        apply = target!;
+    } else {
+        apply = interaction.options.getMember("user") as GuildMember;
+    }
     const memberPos = member.roles.cache.size > 1 ? member.roles.highest.position : 0;
     const mePos = me.roles.cache.size > 1 ? me.roles.highest.position : 0;
     const applyPos = apply.roles.cache.size > 1 ? apply.roles.highest.position : 0;

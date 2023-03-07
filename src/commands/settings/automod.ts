@@ -1069,17 +1069,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             closed = true;
             continue;
         }
-        await i.deferUpdate();
         if (i.isButton()) {
+            await i.deferUpdate();
             await client.database.guilds.write(interaction.guild.id, { filters: config });
             await client.memory.forceUpdate(interaction.guild.id);
         } else {
             switch (i.values[0]) {
                 case "invites": {
+                    i.deferUpdate();
                     config.invite = await inviteMenu(i, m, config.invite);
                     break;
                 }
                 case "mentions": {
+                    i.deferUpdate();
                     config.pings = await mentionMenu(i, m, config.pings);
                     break;
                 }
@@ -1088,15 +1090,18 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     break;
                 }
                 case "malware": {
+                    i.deferUpdate();
                     config.malware = !config.malware;
                     break;
                 }
                 case "images": {
+                    i.deferUpdate();
                     const next = await imageMenu(i, m, config.images);
                     config.images = next;
                     break;
                 }
                 case "clean": {
+                    i.deferUpdate();
                     const next = await cleanMenu(i, m, config.clean);
                     config.clean = next;
                     break;

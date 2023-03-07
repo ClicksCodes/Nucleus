@@ -30,7 +30,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     if (message.author.bot) return;
     if (message.channel.isDMBased()) return;
     try {
-        await statsChannelUpdate(client, await message.guild.members.fetch(message.author.id));
+        await statsChannelUpdate((await message.guild.members.fetch(message.author.id)).user, message.guild);
     } catch (e) {
         console.log(e);
     }

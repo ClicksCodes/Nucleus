@@ -4,12 +4,26 @@ import create from "../actions/tickets/create.js";
 import close from "../actions/tickets/delete.js";
 import createTranscript from "../premium/createTranscript.js";
 
-import type { Interaction } from "discord.js";
+import type { ButtonInteraction, Interaction } from "discord.js";
 import type Discord from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 
+import { callback as banCallback, check as banCheck } from "../commands/mod/ban.js";
+import { callback as kickCallback, check as kickCheck } from "../commands/mod/kick.js";
+import { callback as muteCallback, check as muteCheck } from "../commands/mod/mute.js";
+import { callback as nicknameCallback, check as nicknameCheck } from "../commands/mod/nick.js";
+import { callback as warnCallback, check as warnCheck } from "../commands/mod/warn.js";
+
 export const event = "interactionCreate";
+
+async function errorMessage(interaction: ButtonInteraction, message: string) {
+    await interaction.reply({
+        embeds: [new EmojiEmbed().setDescription(message).setStatus("Danger")],
+        ephemeral: true,
+        components: []
+    });
+}
 
 async function interactionCreate(interaction: Interaction) {
     if (interaction.isButton()) {
@@ -34,6 +48,39 @@ async function interactionCreate(interaction: Interaction) {
             }
             case "suggestionDeny": {
                 return await modifySuggestion(interaction, false);
+            }
+        }
+        // Mod actions
+        if (interaction.customId.startsWith("mod:")) {
+            const action = interaction.customId.split(":")[1];
+            const memberId = interaction.customId.split(":")[2];
+            const member = await interaction.guild?.members.fetch(memberId!);
+            switch (action) {
+                case "kick": {
+                    const check = await kickCheck(interaction, false, member);
+                    if (check !== true) return await errorMessage(interaction, check!);
+                    return await kickCallback(interaction, member);
+                }
+                case "ban": {
+                    const check = await banCheck(interaction, false, member);
+                    if (check !== true) return await errorMessage(interaction, check!);
+                    return await banCallback(interaction, member);
+                }
+                case "mute": {
+                    const check = await muteCheck(interaction, false, member);
+                    if (check !== true) return await errorMessage(interaction, check!);
+                    return await muteCallback(interaction, member);
+                }
+                case "nickname": {
+                    const check = await nicknameCheck(interaction, false, member);
+                    if (check !== true) return await errorMessage(interaction, check || "Something went wrong");
+                    return await nicknameCallback(interaction, member);
+                }
+                case "warn": {
+                    const check = await warnCheck(interaction, false, member);
+                    if (check !== true) return await errorMessage(interaction, check!);
+                    return await warnCallback(interaction, member);
+                }
             }
         }
     }
