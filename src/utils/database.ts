@@ -14,8 +14,12 @@ import * as crypto from "crypto";
 import _ from "lodash";
 import defaultData from "../config/default.js";
 
-const username = encodeURIComponent(config.mongoOptions.username);
-const password = encodeURIComponent(config.mongoOptions.password);
+let username, password;
+
+// @ts-expect-error
+if (Object.keys(config.mongoOptions).includes("username")) username = encodeURIComponent(config.mongoOptions.username);
+// @ts-expect-error
+if (Object.keys(config.mongoOptions).includes("password")) password = encodeURIComponent(config.mongoOptions.password);
 
 const mongoClient = new MongoClient(
     username
@@ -412,7 +416,7 @@ export class Transcript {
                     topRole: {
                         color: message.member ? message.member.roles.highest.color : 0x000000
                     },
-                    iconURL: (message.member?.user || message.author).displayAvatarURL({ forceStatic: true }),
+                    iconURL: (message.member?.user ?? message.author).displayAvatarURL({ forceStatic: true }),
                     bot: message.author.bot || false
                 },
                 createdTimestamp: message.createdTimestamp
@@ -831,6 +835,10 @@ export class Premium {
         this.cache.set(guild, [false, "", 0, false, new Date(Date.now() + this.cacheTimeout)]);
         return await this.premium.updateOne({ user: user }, { $pull: { appliesTo: guild } });
     }
+}
+
+export class Plugins {
+    
 }
 
 export interface GuildConfig {

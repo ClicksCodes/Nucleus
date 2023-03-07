@@ -11,11 +11,10 @@ declare const config: {
     userContextFolder: string;
     verifySecret: string;
     mongoOptions: {
-        username: string;
-        password: string;
-        database: string;
+        username?: string;
+        password?: string;
         host: string;
-        authSource: string;
+        authSource?: string;
     };
     baseUrl: string;
     rapidApiKey: string;
