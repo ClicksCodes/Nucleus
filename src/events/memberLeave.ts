@@ -9,7 +9,7 @@ export const event = "guildMemberRemove";
 export async function callback(client: NucleusClient, member: GuildMember) {
     const startTime = Date.now() - 10 * 1000;
     purgeByUser(member.id, member.guild.id);
-    await statsChannelRemove(client, member);
+    await statsChannelRemove(member.user, member.guild);
     const { getAuditLog, isLogging, log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (!(await isLogging(member.guild.id, "guildMemberUpdate"))) return;
     const kickAuditLog = (await getAuditLog(member.guild as Guild, AuditLogEvent.MemberKick)).filter(
