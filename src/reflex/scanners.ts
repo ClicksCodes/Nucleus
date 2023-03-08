@@ -32,7 +32,7 @@ const clamscanner = await new ClamScan().init({
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const [fileStream, hash] = await streamAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck?.nsfw) return { nsfw: alreadyHaveCheck.nsfw };
+    if (alreadyHaveCheck?.nsfw !== undefined) return { nsfw: alreadyHaveCheck.nsfw };
 
     const image = tf.tensor3d(new Uint8Array(fileStream));
 
@@ -48,7 +48,7 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
 export async function testMalware(link: string): Promise<MalwareSchema> {
     const [fileName, hash] = await saveAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck?.malware) return { safe: alreadyHaveCheck.malware };
+    if (alreadyHaveCheck?.malware !== undefined) return { safe: alreadyHaveCheck.malware };
     let malware;
     try {
         malware = (await clamscanner.scanFile(fileName)).isInfected;
@@ -61,7 +61,7 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
     const alreadyHaveCheck = await client.database.scanCache.read(link);
-    if (alreadyHaveCheck?.bad_link) return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags ?? [] };
+    if (alreadyHaveCheck?.bad_link !== undefined) return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags ?? [] };
     const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
         method: "POST",
         headers: {
