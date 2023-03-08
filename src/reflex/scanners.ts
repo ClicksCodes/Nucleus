@@ -6,7 +6,7 @@ import type Discord from "discord.js";
 import client from "../utils/client.js";
 import { createHash } from "crypto";
 import * as nsfwjs from "nsfwjs";
-// import * as clamscan from "clamscan";
+import ClamScan from "clamscan";
 import * as tf from "@tensorflow/tfjs-node";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
@@ -22,6 +22,7 @@ interface MalwareSchema {
 }
 
 const nsfw_model = await nsfwjs.load();
+const clamscanner = await new ClamScan().init({});
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const [fileStream, hash] = await streamAttachment(link);
@@ -37,32 +38,17 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
-    const [_, hash] = await saveAttachment(link);
+    const [fileName, hash] = await saveAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
     if (alreadyHaveCheck?.malware) return { safe: alreadyHaveCheck.malware };
-    return { safe: true };
-    // const data = new URLSearchParams();
-    // // const f = createReadStream(p);
-    // data.append("file", f.read(fs.statSync(p).size));
-    // const result = await fetch("https://unscan.p.rapidapi.com/malware", {
-    //     method: "POST",
-    //     headers: {
-    //         "X-RapidAPI-Key": client.config.rapidApiKey,
-    //         "X-RapidAPI-Host": "unscan.p.rapidapi.com"
-    //     },
-    //     body: data
-    // })
-    //     .then((response) =>
-    //         response.status === 200 ? (response.json() as Promise<MalwareSchema>) : { safe: true, errored: true }
-    //     )
-    //     .catch((err) => {
-    //         console.error(err);
-    //         return { safe: true, errored: true };
-    //     });
-    // if (!result.errored) {
-    //     client.database.scanCache.write(hash, "malware", result.safe);
-    // }
-    // return { safe: result.safe };
+    let safe;
+    try {
+        safe = !(await clamscanner.scanFile(fileName)).isInfected;
+    } catch (e) {
+        return { safe: true };
+    }
+    client.database.scanCache.write(hash, "malware", safe);
+    return { safe };
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
