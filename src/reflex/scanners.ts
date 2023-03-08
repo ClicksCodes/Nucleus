@@ -11,6 +11,7 @@ import * as tf from "@tensorflow/tfjs-node";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import config from "../config/main.js";
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -22,7 +23,11 @@ interface MalwareSchema {
 }
 
 const nsfw_model = await nsfwjs.load();
-const clamscanner = await new ClamScan().init({});
+const clamscanner = await new ClamScan().init({
+    clamdscan: {
+        socket: config.clamavSocket
+    }
+});
 
 export async function testNSFW(link: string): Promise<NSFWSchema> {
     const [fileStream, hash] = await streamAttachment(link);
@@ -34,26 +39,29 @@ export async function testNSFW(link: string): Promise<NSFWSchema> {
     const predictions = (await nsfw_model.classify(image, 1))[0]!;
     image.dispose();
 
-    return { nsfw: predictions.className === "Hentai" || predictions.className === "Porn" };
+    const nsfw = predictions.className === "Hentai" || predictions.className === "Porn";
+    await client.database.scanCache.write(hash, "nsfw", nsfw);
+
+    return { nsfw };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
     const [fileName, hash] = await saveAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
     if (alreadyHaveCheck?.malware) return { safe: alreadyHaveCheck.malware };
-    let safe;
+    let malware;
     try {
-        safe = !(await clamscanner.scanFile(fileName)).isInfected;
+        malware = (await clamscanner.scanFile(fileName)).isInfected;
     } catch (e) {
         return { safe: true };
     }
-    client.database.scanCache.write(hash, "malware", safe);
-    return { safe };
+    client.database.scanCache.write(hash, "malware", malware);
+    return { safe: !malware };
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
     const alreadyHaveCheck = await client.database.scanCache.read(link);
-    if (alreadyHaveCheck?.bad_link) return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags };
+    if (alreadyHaveCheck?.bad_link) return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags ?? [] };
     const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
         method: "POST",
         headers: {

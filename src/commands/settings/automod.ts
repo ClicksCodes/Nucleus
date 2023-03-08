@@ -1090,18 +1090,18 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     break;
                 }
                 case "malware": {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     config.malware = !config.malware;
                     break;
                 }
                 case "images": {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     const next = await imageMenu(i, m, config.images);
                     config.images = next;
                     break;
                 }
                 case "clean": {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     const next = await cleanMenu(i, m, config.clean);
                     config.clean = next;
                     break;
