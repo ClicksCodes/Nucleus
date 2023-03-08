@@ -606,9 +606,10 @@ export class ScanCache {
     }
 
     async write(hash: string, type: "nsfw" | "malware" | "bad_link", data: boolean, tags?: string[]) {
-        await this.scanCache.insertOne(
+        await this.scanCache.updateOne(
+            { hash: hash },
             { hash: hash, [type]: data, tags: tags ?? [], addedAt: new Date() },
-            collectionOptions
+            Object.assign({ upsert: true }, collectionOptions)
         );
     }
 
