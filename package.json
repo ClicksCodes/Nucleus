@@ -1,7 +1,7 @@
 {
     "dependencies": {
         "@hokify/agenda": "^6.2.12",
-        "@tensorflow/tfjs": "^4.0.0",
+        "@tensorflow/tfjs": "^3.18.0",
         "@tensorflow/tfjs-node": "^4.2.0",
         "@total-typescript/ts-reset": "^0.3.7",
         "@tsconfig/node18-strictest-esm": "^1.0.0",
@@ -21,7 +21,7 @@
         "mongodb": "^4.7.0",
         "node-fetch": "^3.3.0",
         "node-tesseract-ocr": "^2.2.1",
-        "nsfwjs": "2.4.2",
+        "nsfwjs": "^2.4.2",
         "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
         "systeminformation": "^5.17.3"

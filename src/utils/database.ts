@@ -588,7 +588,9 @@ export class History {
 interface ScanCacheSchema {
     addedAt: Date;
     hash: string;
-    data: boolean;
+    nsfw?: boolean;
+    malware?: boolean;
+    bad_link?: boolean;
     tags: string[];
 }
 
@@ -600,14 +602,12 @@ export class ScanCache {
     }
 
     async read(hash: string) {
-        // console.log("ScanCache read");
         return await this.scanCache.findOne({ hash: hash });
     }
 
-    async write(hash: string, data: boolean, tags?: string[]) {
-        // console.log("ScanCache write");
+    async write(hash: string, type: "nsfw" | "malware" | "bad_link", data: boolean, tags?: string[]) {
         await this.scanCache.insertOne(
-            { hash: hash, data: data, tags: tags ?? [], addedAt: new Date() },
+            { hash: hash, [type]: data, tags: tags ?? [], addedAt: new Date() },
             collectionOptions
         );
     }
