@@ -42,7 +42,8 @@
         "lint-ci": "echo 'Style checking...' && prettier --check . && echo 'Linting...' && eslint src",
         "setup": "node Installer.js",
         "win-force-build": "clear | rm -r dist | tsc-suppress",
-        "audit-fix": "yarn-audit-fix"
+        "audit-fix": "yarn-audit-fix",
+        "versions": "yarn versions && yarn list && node --version"
     },
     "repository": {
         "type": "git",
