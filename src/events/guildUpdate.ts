@@ -93,5 +93,5 @@ export async function callback(client: NucleusClient, before: Guild, after: Guil
             guild: after.id
         }
     };
-    log(data);
+    await log(data);
 }

@@ -33,5 +33,5 @@ export async function callback(client: NucleusClient, ban: GuildBan) {
             guild: ban.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

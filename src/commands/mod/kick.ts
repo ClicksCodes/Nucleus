@@ -114,7 +114,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
         dmSent = false;
     }
     try {
-        member.kick(reason || "No reason provided");
+        await member.kick(reason || "No reason provided");
         await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
         const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
         const timeInServer = member.joinedTimestamp
@@ -157,7 +157,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
             data.list.joined = entry(member.joinedTimestamp.toString(), renderDelta(member.joinedTimestamp));
         }
         await client.database.history.create("kick", interaction.guild.id, member.user, interaction.user, reason);
-        log(data);
+        await log(data);
     } catch {
         await interaction.editReply({
             embeds: [

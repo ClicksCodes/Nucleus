@@ -155,7 +155,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                 new ActionRowBuilder<ButtonBuilder>().addComponents(formattedTicketTypes.slice(i, i + 5))
             );
         }
-        component.update({
+        await component.update({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Create Ticket")
@@ -280,7 +280,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             type: Discord.ChannelType.PrivateThread,
             reason: "Creating ticket"
         })) as Discord.PrivateThreadChannel;
-        c.members.add(interaction.member!.user.id);
+        await c.members.add(interaction.member!.user.id);
         try {
             await c.send({
                 content:
@@ -357,7 +357,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             guild: interaction.guild.id
         }
     };
-    log(data);
+    await log(data);
     await interaction.editReply({
         embeds: [
             new EmojiEmbed()

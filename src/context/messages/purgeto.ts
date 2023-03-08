@@ -19,14 +19,14 @@ const command = new ContextMenuCommandBuilder().setName("Purge up to here");
 async function waitForButton(m: Discord.Message, member: Discord.GuildMember): Promise<boolean> {
     let component;
     try {
-        component = m.awaitMessageComponent({
+        component = await m.awaitMessageComponent({
             time: 200000,
             filter: (i) => i.user.id === member.id && i.channel!.id === m.channel.id && i.message.id === m.id
         });
     } catch (e) {
         return false;
     }
-    (await component).deferUpdate();
+    await component.deferUpdate();
     return true;
 }
 
@@ -210,7 +210,7 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
             guild: interaction.guild!.id
         }
     };
-    log(data);
+    await log(data);
     const messages: Message[] = deleted
         .map((m) => m)
         .filter((m) => m instanceof Message)

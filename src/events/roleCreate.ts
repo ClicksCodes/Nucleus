@@ -30,5 +30,5 @@ export async function callback(client: NucleusClient, role: Role) {
             guild: role.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

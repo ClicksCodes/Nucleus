@@ -1076,12 +1076,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } else {
             switch (i.values[0]) {
                 case "invites": {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     config.invite = await inviteMenu(i, m, config.invite);
                     break;
                 }
                 case "mentions": {
-                    i.deferUpdate();
+                    await i.deferUpdate();
                     config.pings = await mentionMenu(i, m, config.pings);
                     break;
                 }

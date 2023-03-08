@@ -8,7 +8,7 @@ import { record as recordPerformance } from "./utils/performanceTesting/record.j
 
 client.on("ready", async () => {
     console.log(`Logged in as ${client.user!.tag}!`);
-    register();
+    await register();
     runServer(client);
     if (config.enableDevelopment) {
         client.fetchedCommands = await client.guilds.cache.get(config.developmentGuildID)?.commands.fetch()!;

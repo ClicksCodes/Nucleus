@@ -301,5 +301,5 @@ export async function callback(client: NucleusClient, oldChannel: GuildChannel, 
             guild: newChannel.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

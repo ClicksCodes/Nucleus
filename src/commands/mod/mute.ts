@@ -132,7 +132,7 @@ const callback = async (
         } catch {
             return;
         }
-        component.deferUpdate();
+        await component.deferUpdate();
         if (component.customId === "cancel")
             return interaction.editReply({
                 embeds: [
@@ -389,7 +389,7 @@ const callback = async (
             guild: interaction.guild.id
         }
     };
-    log(data);
+    await log(data);
     const failed = !status.dm && notify;
     await interaction.editReply({
         embeds: [

@@ -130,7 +130,7 @@ export async function callback(client: NucleusClient, channel: Discord.GuildChan
                 guild: channel.guild.id
             }
         };
-        log(data);
+        await log(data);
     } catch (e) {
         console.log(e);
     }

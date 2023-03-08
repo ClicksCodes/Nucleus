@@ -103,5 +103,5 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             guild: newMessage.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

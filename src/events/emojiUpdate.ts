@@ -37,5 +37,5 @@ export async function callback(client: NucleusClient, oldEmoji: GuildEmoji, newE
             guild: newEmoji.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

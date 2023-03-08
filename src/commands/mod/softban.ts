@@ -128,7 +128,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     try {
         const member = interaction.options.getMember("user") as GuildMember;
         const days: number = (interaction.options.get("delete")?.value as number | null) ?? 0;
-        member.ban({
+        await member.ban({
             deleteMessageSeconds: days * 24 * 60 * 60,
             reason: reason ?? "*No reason provided*"
         });
@@ -162,7 +162,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 guild: interaction.guild.id
             }
         };
-        log(data);
+        await log(data);
     } catch {
         await interaction.editReply({
             embeds: [

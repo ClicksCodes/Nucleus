@@ -12,7 +12,7 @@ interface PropSchema {
 export async function callback(user: User, guild: Guild) {
     guild = await client.guilds.fetch(guild.id);
     const config = await client.database.guilds.read(guild.id);
-    Object.entries(config.stats).forEach(async ([channel, props]) => {
+    Object.entries(config.stats).forEach(([channel, props]) => void (async () => {
         if ((props as PropSchema).enabled) {
             let string = (props as PropSchema).name;
             if (!string) return;
@@ -41,5 +41,5 @@ export async function callback(user: User, guild: Guild) {
                 console.error(e);
             }
         }
-    });
+    })());
 }

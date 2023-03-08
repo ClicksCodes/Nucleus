@@ -175,7 +175,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
                 console.log(e);
                 return;
             }
-            component.deferUpdate();
+            await component.deferUpdate();
         }
     }
 
@@ -246,7 +246,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             console.log(e);
             return;
         }
-        component.deferUpdate();
+        await component.deferUpdate();
         if (component.customId === "back") {
             page = Math.max(0, page - 1);
         } else if (component.customId === "next") {

@@ -55,7 +55,7 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
     } catch (e) {
         return { safe: true };
     }
-    client.database.scanCache.write(hash, "malware", malware);
+    await client.database.scanCache.write(hash, "malware", malware);
     return { safe: !malware };
 }
 
@@ -75,7 +75,7 @@ export async function testLink(link: string): Promise<{ safe: boolean; tags: str
             console.error(err);
             return { safe: true, tags: [] };
         });
-    client.database.scanCache.write(link, "bad_link", scanned.safe ?? true, scanned.tags ?? []);
+    await client.database.scanCache.write(link, "bad_link", scanned.safe ?? true, scanned.tags ?? []);
     return {
         safe: scanned.safe ?? true,
         tags: scanned.tags ?? []
@@ -90,7 +90,7 @@ export async function streamAttachment(link: string): Promise<[ArrayBuffer, stri
 
 export async function saveAttachment(link: string): Promise<[string, string]> {
     const image = await (await fetch(link)).arrayBuffer();
-    const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
+    const fileName = await generateFileName(link.split("/").pop()!.split(".").pop()!);
     const enc = new TextDecoder("utf-8");
     writeFileSync(fileName, new DataView(image), "base64");
     return [fileName, createHash("sha512").update(enc.decode(image), "base64").digest("base64")];

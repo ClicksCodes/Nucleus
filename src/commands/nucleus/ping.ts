@@ -13,7 +13,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const initial = Date.now();
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
     const ping = Date.now() - initial;
-    interaction.editReply({
+    await interaction.editReply({
         embeds: [
             new EmojiEmbed()
                 .setTitle("Ping")

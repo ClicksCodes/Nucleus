@@ -268,7 +268,7 @@ export class Transcript {
 
         const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }), collectionOptions);
         if (doc.acknowledged) {
-            client.database.eventScheduler.schedule(
+            await client.database.eventScheduler.schedule(
                 "deleteTranscript",
                 (Date.now() + 1000 * 60 * 60 * 24 * 7).toString(),
                 { guild: transcript.guild, code: code, iv: iv, key: key }

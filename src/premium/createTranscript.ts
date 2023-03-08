@@ -134,7 +134,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
             guild: interaction.guild!.id
         }
     };
-    log(data);
+    await log(data);
     await interaction.channel.delete();
     return;
 }

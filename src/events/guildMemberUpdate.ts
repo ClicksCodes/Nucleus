@@ -84,7 +84,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 });
             }
             data = Object.assign(data, { list: list });
-            log(data);
+            await log(data);
         }
     }
     const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberUpdate)).filter(
@@ -93,7 +93,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     if (before.nickname !== after.nickname) {
-        doMemberChecks(after, after.guild);
+        await doMemberChecks(after, after.guild);
         await client.database.history.create(
             "nickname",
             after.guild.id,
@@ -123,7 +123,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 guild: after.guild.id
             }
         };
-        log(data);
+        await log(data);
     }
     if (
         (before.communicationDisabledUntilTimestamp ?? 0) < Date.now() &&
@@ -163,8 +163,8 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 guild: after.guild.id
             }
         };
-        log(data);
-        client.database.eventScheduler.schedule("naturalUnmute", after.communicationDisabledUntil?.toISOString()!, {
+        await log(data);
+        await client.database.eventScheduler.schedule("naturalUnmute", after.communicationDisabledUntil?.toISOString()!, {
             guild: after.guild.id,
             user: after.id,
             expires: after.communicationDisabledUntilTimestamp
@@ -204,8 +204,8 @@ export async function callback(client: NucleusClient, before: GuildMember, after
                 guild: after.guild.id
             }
         };
-        log(data);
-        client.database.eventScheduler.cancel("naturalUnmute", {
+        await log(data);
+        await client.database.eventScheduler.cancel("naturalUnmute", {
             guild: after.guild.id,
             user: after.id,
             expires: before.communicationDisabledUntilTimestamp

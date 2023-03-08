@@ -106,7 +106,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     const member = await (await interaction.client.guilds.fetch("684492926528651336")).members
         .fetch(interaction.user.id)
         .catch(() => {
-            interaction.editReply({
+            void interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Premium")
@@ -197,7 +197,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     if ((dbMember?.appliesTo.length ?? 0) > 0)
         userPremiumServers = "\nIf you want to remove premium from a server, run this command in your DMs with me.";
 
-    interaction.editReply({
+    await interaction.editReply({
         embeds: [
             new EmojiEmbed()
                 .setTitle("Premium")
@@ -216,10 +216,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     } catch (e) {
         return;
     }
-    i.deferUpdate();
+    await i.deferUpdate();
     const guild = i.guild!;
     if (count - appliesTo.length <= 0) {
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Premium")
@@ -235,7 +235,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         });
     } else {
         await client.database.premium.addPremium(interaction.user.id, guild.id);
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Premium")

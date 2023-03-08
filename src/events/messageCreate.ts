@@ -23,7 +23,11 @@ export async function callback(_client: NucleusClient, message: Message) {
         if (message.channel.permissionsFor(message.guild.members.me!)!.has("ManageMessages")) {
             await message.crosspost();
         } else {
-            singleNotify(`Nucleus does not have Manage Messages in <#${message.channel.id}>`, message.guild.id, true);
+            await singleNotify(
+                `Nucleus does not have Manage Messages in <#${message.channel.id}>`,
+                message.guild.id,
+                true
+            );
         }
     }
 
@@ -71,7 +75,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         if (!config.filters.invite.allowed.channels.includes(message.channel.id)) {
             if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(content)) {
                 messageException(message.guild.id, message.channel.id, message.id);
-                message.delete();
+                await message.delete();
                 const data = {
                     meta: {
                         type: "messageDelete",

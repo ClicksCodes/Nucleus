@@ -353,12 +353,12 @@ export default async (guild: Guild, interaction?: CommandInteraction) => {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
             em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({ text: "Message closed" });
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [em],
                 components: []
             });
         } else {
-            m.delete();
+            await m.delete();
         }
     }
 };
