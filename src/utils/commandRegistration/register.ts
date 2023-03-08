@@ -181,11 +181,19 @@ async function registerCommandHandler() {
     client.on("interactionCreate", async (interaction: Interaction) => {
         if (interaction.isUserContextMenuCommand()) {
             const commandName = "contextCommands/user/" + interaction.commandName;
-            await execute(client.commands[commandName]![0]?.check, client.commands[commandName]![0]?.callback, interaction);
+            await execute(
+                client.commands[commandName]![0]?.check,
+                client.commands[commandName]![0]?.callback,
+                interaction
+            );
             return;
         } else if (interaction.isMessageContextMenuCommand()) {
             const commandName = "contextCommands/message/" + interaction.commandName;
-            await execute(client.commands[commandName]![0]?.check, client.commands[commandName]![0]?.callback, interaction);
+            await execute(
+                client.commands[commandName]![0]?.check,
+                client.commands[commandName]![0]?.callback,
+                interaction
+            );
             return;
         } else if (interaction.isAutocomplete()) {
             const commandName = interaction.commandName;

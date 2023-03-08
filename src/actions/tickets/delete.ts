@@ -179,7 +179,7 @@ async function purgeByUser(member: string, guild: string) {
             } catch (e) {
                 console.error(e);
             }
-        };
+        }
     } else {
         // For threads, the name is the users name, id, then the word Active
         const channel = tickets as Discord.TextChannel;
@@ -191,7 +191,7 @@ async function purgeByUser(member: string, guild: string) {
             } catch (e) {
                 console.error(e);
             }
-        };
+        }
     }
     if (!deleted) return;
     const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;

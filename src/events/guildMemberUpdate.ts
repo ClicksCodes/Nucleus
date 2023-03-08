@@ -164,11 +164,15 @@ export async function callback(client: NucleusClient, before: GuildMember, after
             }
         };
         await log(data);
-        await client.database.eventScheduler.schedule("naturalUnmute", after.communicationDisabledUntil?.toISOString()!, {
-            guild: after.guild.id,
-            user: after.id,
-            expires: after.communicationDisabledUntilTimestamp
-        });
+        await client.database.eventScheduler.schedule(
+            "naturalUnmute",
+            after.communicationDisabledUntil?.toISOString()!,
+            {
+                guild: after.guild.id,
+                user: after.id,
+                expires: after.communicationDisabledUntilTimestamp
+            }
+        );
     }
     if (
         after.communicationDisabledUntil === null &&
