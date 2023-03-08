@@ -7,7 +7,7 @@ import client from "../utils/client.js";
 import { createHash } from "crypto";
 import * as nsfwjs from "nsfwjs";
 // import * as clamscan from "clamscan";
-import * as tf from "@tensorflow/tfjs";
+import * as tf from "@tensorflow/tfjs-node";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
