@@ -1,3 +1,4 @@
+#!/bin
 import type { Guild, GuildMember } from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 //@ts-expect-error

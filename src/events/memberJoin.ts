@@ -9,7 +9,7 @@ export const event = "guildMemberAdd";
 export async function callback(client: NucleusClient, member: GuildMember) {
     await welcome(member);
     await statsChannelAdd(member.user, member.guild);
-    await doMemberChecks(member, member.guild);
+    await doMemberChecks(member);
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (!(await isLogging(member.guild.id, "guildMemberUpdate"))) return;
     await client.database.history.create("join", member.guild.id, member.user, null, null);

@@ -5,12 +5,14 @@ import Discord, {
     ButtonBuilder,
     ButtonStyle,
     ChannelSelectMenuBuilder,
-    ChannelType
+    ChannelType,
+    ComponentType
 } from "discord.js";
 import EmojiEmbed from "../../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../../utils/getEmojiByName.js";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import client from "../../../utils/client.js";
+import _ from "lodash";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("warnings").setDescription("Settings for the staff notifications channel");
@@ -24,7 +26,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     });
 
     let data = await client.database.guilds.read(interaction.guild.id);
-    let channel = data.logging.staff.channel;
+    let channel = _.clone(data.logging.staff.channel);
     let closed = false;
     do {
         const channelMenu = new ActionRowBuilder<ChannelSelectMenuBuilder>().addComponents(
@@ -45,7 +47,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 .setLabel("Save")
                 .setStyle(ButtonStyle.Success)
                 .setEmoji(getEmojiByName("ICONS.SAVE", "id") as Discord.APIMessageComponentEmoji)
-                .setDisabled(channel === data.logging.staff.channel)
+                .setDisabled(_.isEqual(channel, data.logging.staff.channel))
         );
 
         const embed = new EmojiEmbed()
@@ -62,12 +64,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             components: [channelMenu, buttons]
         });
 
-        let i: Discord.ButtonInteraction | Discord.SelectMenuInteraction;
+        let i: Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction;
         try {
-            i = (await interaction.channel!.awaitMessageComponent({
+            i = (await interaction.channel!.awaitMessageComponent<ComponentType.Button | ComponentType.ChannelSelect>({
                 filter: (i: Discord.Interaction) => i.user.id === interaction.user.id,
                 time: 300000
-            })) as Discord.ButtonInteraction | Discord.SelectMenuInteraction;
+            }))
         } catch (e) {
             closed = true;
             continue;
@@ -81,7 +83,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 }
                 case "save": {
                     await client.database.guilds.write(interaction.guild!.id, {
-                        "logging.warnings.channel": channel
+                        "logging.staff.channel": channel
                     });
                     data = await client.database.guilds.read(interaction.guild!.id);
                     await client.memory.forceUpdate(interaction.guild!.id);

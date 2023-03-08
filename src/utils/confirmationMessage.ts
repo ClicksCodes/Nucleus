@@ -291,8 +291,11 @@ class confirmationMessage {
                     cancelled = true;
                     continue;
                 }
-                if (out === null || out.isButton()) {
+                if (out === null) {
                     cancelled = true;
+                    continue;
+                }
+                if (out.isButton()) {
                     continue;
                 }
                 if (out instanceof ModalSubmitInteraction) {
@@ -339,7 +342,11 @@ class confirmationMessage {
                     cancelled = true;
                     continue;
                 }
-                if (out === null || out.isButton()) {
+                if (out === null) {
+                    cancelled = true;
+                    continue;
+                }
+                if (out.isButton()) {
                     continue;
                 }
                 if (out instanceof ModalSubmitInteraction) {

@@ -93,7 +93,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
     if (!auditLog) return;
     if (auditLog.executor!.id === client.user!.id) return;
     if (before.nickname !== after.nickname) {
-        await doMemberChecks(after, after.guild);
+        await doMemberChecks(after);
         await client.database.history.create(
             "nickname",
             after.guild.id,
@@ -125,6 +125,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
         };
         await log(data);
     }
+    if (before.displayAvatarURL !== after.displayAvatarURL) await doMemberChecks(after);
     if (
         (before.communicationDisabledUntilTimestamp ?? 0) < Date.now() &&
         new Date(after.communicationDisabledUntil ?? 0).getTime() > Date.now()
