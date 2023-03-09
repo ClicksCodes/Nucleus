@@ -2,18 +2,22 @@
 name: Feature request
 about: I want something added to Nucleus
 title: "[FEATURE]"
-labels: ""
+labels: "✓ Feature"
 assignees: PineaFan
+
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Is this related to a bug? If so, briefly explain the bug below**
+N/A
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**What's your idea?**
+A clear and concise description of what you'd like us to add
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**How would you like it implemented?**
+List any options you'd like your feature to add here
+
+**How does this help?**
+If it helps with the feature, explain your use case and how this feature helps to solve the problem
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+Add any other context about the feature request

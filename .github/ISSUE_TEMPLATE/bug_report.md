@@ -1,32 +1,29 @@
 ---
 name: Bug report
-about: Something doesn't work how you expect it to
+about: Something didn't work like you expected
 title: "[BUG]"
-labels: ""
+labels: "\U0001F41B Bug"
 assignees: PineaFan
+
 ---
 
 [Describe the bug in one line, keep it concise]
 
-**To Reproduce**
-Steps to reproduce the behaviour:
+**Command or Feature:**
+The name of the command (e.g. /settings filters) or the feature (e.g. Message edit logs)
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See an error
+**Steps to reproduce:**
+1. Run ...
+2. Press ...
 
-**Expected behaviour**
-A clear and concise description of what you expected to happen.
+**Expected behaviour:**
+Explain what you expected to happen in one line
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Actual behaviour:**
+What was meant to happen?
 
-**Desktop (please complete the following information):**
-
--   OS: [e.g. iOS]
--   Browser [e.g. chrome, safari]
--   Version [e.g. 22]
+**Version:**
+Let us know the date this happened, so we can check if it's already been fixed
 
 **Additional context**
 Add any other context about the problem here.
