@@ -1086,6 +1086,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     break;
                 }
                 case "words": {
+                    await i.deferUpdate();
                     config.wordFilter = await wordMenu(i, m, config.wordFilter);
                     break;
                 }
