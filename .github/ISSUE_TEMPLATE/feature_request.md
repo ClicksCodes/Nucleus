@@ -4,7 +4,6 @@ about: I want something added to Nucleus
 title: "[FEATURE]"
 labels: "✓ Feature"
 assignees: PineaFan
-
 ---
 
 **Is this related to a bug? If so, briefly explain the bug below**

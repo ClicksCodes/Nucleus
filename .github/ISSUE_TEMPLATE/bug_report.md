@@ -4,7 +4,6 @@ about: Something didn't work like you expected
 title: "[BUG]"
 labels: "\U0001F41B Bug"
 assignees: PineaFan
-
 ---
 
 [Describe the bug in one line, keep it concise]
@@ -13,6 +12,7 @@ assignees: PineaFan
 The name of the command (e.g. /settings filters) or the feature (e.g. Message edit logs)
 
 **Steps to reproduce:**
+
 1. Run ...
 2. Press ...
 
