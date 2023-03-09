@@ -12,7 +12,8 @@ export async function callback(client: NucleusClient, before: GuildMember, after
         await client.database.premium.checkAllPremium(after);
     }
 
-    if (before.displayAvatarURL({forceStatic: true}) !== after.displayAvatarURL({forceStatic: true})) await doMemberChecks(after);
+    if (before.displayAvatarURL({ forceStatic: true }) !== after.displayAvatarURL({ forceStatic: true }))
+        await doMemberChecks(after);
     if (!before.roles.cache.equals(after.roles.cache)) {
         const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberRoleUpdate)).filter(
             (entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id

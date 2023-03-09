@@ -21,3 +21,4 @@ ClicksMigratingProblems/oldData/
 ClicksMigratingProblems/oldData copy/
 
 .direnv/
+src/reflex/nsfwjs/**/*
