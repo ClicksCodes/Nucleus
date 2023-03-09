@@ -66,10 +66,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
         let i: Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction;
         try {
-            i = (await interaction.channel!.awaitMessageComponent<ComponentType.Button | ComponentType.ChannelSelect>({
+            i = await interaction.channel!.awaitMessageComponent<ComponentType.Button | ComponentType.ChannelSelect>({
                 filter: (i: Discord.Interaction) => i.user.id === interaction.user.id,
                 time: 300000
-            }))
+            });
         } catch (e) {
             closed = true;
             continue;

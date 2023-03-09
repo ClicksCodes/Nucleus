@@ -124,7 +124,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             await NSFWCheck({
                 url: (interaction.member as GuildMember).user.displayAvatarURL({ extension: "png", forceStatic: true }),
                 height: 1024,
-                width: 1024,
+                width: 1024
             })
         ) {
             return await interaction.editReply({

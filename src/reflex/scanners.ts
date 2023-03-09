@@ -12,7 +12,7 @@ import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import config from "../config/main.js";
-import gm from 'gm';
+import gm from "gm";
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -37,14 +37,18 @@ export async function testNSFW(attachment: {
 }): Promise<NSFWSchema> {
     const [fileStream, hash] = await streamAttachment(attachment.url);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck && ("nsfw" in alreadyHaveCheck!)) {
-        return { nsfw: alreadyHaveCheck.nsfw }
-    };
+    if (alreadyHaveCheck && "nsfw" in alreadyHaveCheck!) {
+        return { nsfw: alreadyHaveCheck.nsfw };
+    }
 
-    const converted = await new Promise((resolve, reject) => gm(fileStream).command("convert").toBuffer("PNG", (err, buf) => {
-        if (err) return reject(err);
-        resolve(buf);
-    })) as Buffer;
+    const converted = (await new Promise((resolve, reject) =>
+        gm(fileStream)
+            .command("convert")
+            .toBuffer("PNG", (err, buf) => {
+                if (err) return reject(err);
+                resolve(buf);
+            })
+    )) as Buffer;
     const array = new Uint8Array(converted);
 
     const img = tf.node.decodeImage(array) as tf.Tensor3D;
@@ -159,7 +163,7 @@ export async function NSFWCheck(element: {
     try {
         return (await testNSFW(element)).nsfw;
     } catch (e) {
-        console.log(e)
+        console.log(e);
         return false;
     }
 }
@@ -211,18 +215,18 @@ export async function TestImage(url: string): Promise<string | null> {
 
 export async function doMemberChecks(member: Discord.GuildMember): Promise<void> {
     if (member.user.bot) return;
-    console.log("Checking member " + member.user.tag)
+    console.log("Checking member " + member.user.tag);
     const guild = member.guild;
     const guildData = await client.database.guilds.read(guild.id);
     if (!guildData.logging.staff.channel) return;
     const [loose, strict] = [guildData.filters.wordFilter.words.loose, guildData.filters.wordFilter.words.strict];
-    console.log(1, loose, strict)
+    console.log(1, loose, strict);
     // Does the username contain filtered words
     const usernameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
-    console.log(2, usernameCheck)
+    console.log(2, usernameCheck);
     // Does the nickname contain filtered words
     const nicknameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
-    console.log(3, nicknameCheck)
+    console.log(3, nicknameCheck);
     // Does the profile picture contain filtered words
     const avatarTextCheck = TestString(
         (await TestImage(member.user.displayAvatarURL({ forceStatic: true }))) ?? "",
@@ -230,19 +234,18 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
         strict,
         guildData.filters.wordFilter.enabled
     );
-    console.log(4, avatarTextCheck)
+    console.log(4, avatarTextCheck);
     // Is the profile picture NSFW
     const avatar = member.displayAvatarURL({ extension: "png", size: 1024, forceStatic: true });
-    const avatarCheck =
-        guildData.filters.images.NSFW && (await NSFWCheck({url: avatar, height: 1024, width: 1024}));
-    console.log(5, avatarCheck)
+    const avatarCheck = guildData.filters.images.NSFW && (await NSFWCheck({ url: avatar, height: 1024, width: 1024 }));
+    console.log(5, avatarCheck);
     // Does the username contain an invite
     const inviteCheck = guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.user.username);
-    console.log(6, inviteCheck)
+    console.log(6, inviteCheck);
     // Does the nickname contain an invite
     const nicknameInviteCheck =
         guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.nickname ?? "");
-    console.log(7, nicknameInviteCheck)
+    console.log(7, nicknameInviteCheck);
     if (
         usernameCheck !== null ||
         nicknameCheck !== null ||
