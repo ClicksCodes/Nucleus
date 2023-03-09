@@ -153,7 +153,7 @@ const callback = async (
     let before: string | null;
     try {
         before = member.nickname;
-        member.setNickname(newNickname ?? null, "Nucleus Nickname command");
+        await member.setNickname(newNickname ?? null, "Nucleus Nickname command");
         await client.database.history.create(
             "nickname",
             interaction.guild!.id,
@@ -202,7 +202,7 @@ const callback = async (
             guild: interaction.guild!.id
         }
     };
-    log(data);
+    await log(data);
     const failed = !dmSent && notify;
     await interaction.editReply({
         embeds: [

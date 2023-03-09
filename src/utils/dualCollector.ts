@@ -32,11 +32,7 @@ export default async function (
                     time: 300000
                 })
                 .on("collect", (m) => {
-                    try {
-                        m.delete();
-                    } catch (e) {
-                        client.emit("error", e as Error);
-                    }
+                    void m.delete().catch();
                     resolve(m);
                 });
             mes.on("end", () => {

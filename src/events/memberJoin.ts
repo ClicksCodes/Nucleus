@@ -7,9 +7,9 @@ import { doMemberChecks } from "../reflex/scanners.js";
 export const event = "guildMemberAdd";
 
 export async function callback(client: NucleusClient, member: GuildMember) {
-    welcome(member);
-    statsChannelAdd(member.user, member.guild);
-    doMemberChecks(member, member.guild);
+    await welcome(member);
+    await statsChannelAdd(member.user, member.guild);
+    await doMemberChecks(member);
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta } = client.logger;
     if (!(await isLogging(member.guild.id, "guildMemberUpdate"))) return;
     await client.database.history.create("join", member.guild.id, member.user, null, null);
@@ -33,5 +33,5 @@ export async function callback(client: NucleusClient, member: GuildMember) {
             guild: member.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

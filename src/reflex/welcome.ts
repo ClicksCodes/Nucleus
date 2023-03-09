@@ -45,7 +45,7 @@ export async function callback(member: GuildMember) {
                         content: (config.welcome.ping ? `<@&${config.welcome.ping}>` : "") + `<@${member.id}>`
                     });
                 } catch (err) {
-                    singleNotify(
+                    await singleNotify(
                         "welcomeChannelDeleted",
                         member.guild.id,
                         `The welcome channel has been deleted or is no longer accessible. Use ${getCommandMentionByName(

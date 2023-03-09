@@ -1,0 +1,4 @@
+[submodule "src/reflex/nsfwjs"]
+	path = src/reflex/nsfwjs
+	url = https://github.com/infinitered/nsfwjs
+	shallow = true

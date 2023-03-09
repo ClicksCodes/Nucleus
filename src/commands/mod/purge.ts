@@ -100,7 +100,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             })) as Discord.Message;
             let component;
             try {
-                component = m.awaitMessageComponent({
+                component = await m.awaitMessageComponent({
                     filter: (i) => i.user.id === interaction.user.id && i.channel!.id === interaction.channel!.id,
                     time: 300000
                 });
@@ -108,12 +108,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 timedOut = true;
                 continue;
             }
-            (await component).deferUpdate();
-            if ((await component).customId === "done") {
+            await component.deferUpdate();
+            if (component.customId === "done") {
                 amountSelected = true;
                 continue;
             }
-            const amount = parseInt((await component).customId);
+            const amount = parseInt(component.customId);
 
             let messages: Discord.Message[] = [];
             await (interaction.channel as TextChannel).messages.fetch({ limit: amount }).then(async (ms) => {
@@ -167,7 +167,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 guild: interaction.guild.id
             }
         };
-        log(data);
+        await log(data);
         const newOut = await client.database.transcripts.createTranscript(
             "purge",
             deleted,
@@ -209,7 +209,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             return;
         }
         if (component.customId === "download") {
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.PURGE.GREEN")
@@ -221,7 +221,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 files: [attachmentObject]
             });
         } else {
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("CHANNEL.PURGE.GREEN")
@@ -261,12 +261,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 messages = await (channel as TextChannel).bulkDelete(toDelete, true);
             } else {
                 const toDelete = (
-                    await (
-                        await (interaction.channel as TextChannel).messages.fetch({
-                            limit: 100
-                        })
-                    ).filter((m) => m.author.id === user.id)
-                ).first(interaction.options.get("amount")?.value as number);
+                    await (interaction.channel as TextChannel).messages.fetch({
+                        limit: 100
+                    })
+                )
+                    .filter((m) => m.author.id === user.id)
+                    .first(interaction.options.get("amount")?.value as number);
                 messages = await (channel as TextChannel).bulkDelete(toDelete, true);
             }
         } catch (e) {
@@ -326,7 +326,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 guild: interaction.guild.id
             }
         };
-        log(data);
+        await log(data);
         const messageArray: Message[] = messages
             .filter(
                 (message) =>

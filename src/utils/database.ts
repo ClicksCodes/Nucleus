@@ -268,7 +268,7 @@ export class Transcript {
 
         const doc = await this.transcripts.insertOne(Object.assign(transcript, { code: code }), collectionOptions);
         if (doc.acknowledged) {
-            client.database.eventScheduler.schedule(
+            await client.database.eventScheduler.schedule(
                 "deleteTranscript",
                 (Date.now() + 1000 * 60 * 60 * 24 * 7).toString(),
                 { guild: transcript.guild, code: code, iv: iv, key: key }
@@ -591,7 +591,7 @@ interface ScanCacheSchema {
     nsfw?: boolean;
     malware?: boolean;
     bad_link?: boolean;
-    tags: string[];
+    tags?: string[];
 }
 
 export class ScanCache {
@@ -606,9 +606,30 @@ export class ScanCache {
     }
 
     async write(hash: string, type: "nsfw" | "malware" | "bad_link", data: boolean, tags?: string[]) {
-        await this.scanCache.insertOne(
-            { hash: hash, [type]: data, tags: tags ?? [], addedAt: new Date() },
-            collectionOptions
+        await this.scanCache.updateOne(
+            { hash: hash },
+            {
+                $set: (() => {
+                    switch (type) {
+                        case "nsfw": {
+                            return { nsfw: data, addedAt: new Date() };
+                        }
+                        case "malware": {
+                            return { malware: data, addedAt: new Date() };
+                        }
+                        case "bad_link": {
+                            return { bad_link: data, tags: tags ?? [], addedAt: new Date() };
+                        }
+                        default: {
+                            throw new Error("Invalid type");
+                        }
+                    }
+                })()
+                // No you can't just do { [type]: data }, yes it's a typescript error, no I don't know how to fix it
+                // cleanly, yes it would be marginally more elegant, no it's not essential, yes I'd be happy to review
+                // PRs that did improve this snippet
+            },
+            Object.assign({ upsert: true }, collectionOptions)
         );
     }
 

@@ -68,5 +68,5 @@ export async function callback(client: NucleusClient, message: Message) {
             guild: message.guild!.id
         }
     };
-    log(data);
+    await log(data);
 }

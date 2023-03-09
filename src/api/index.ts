@@ -35,7 +35,7 @@ const runServer = (client: NucleusClient) => {
             await member.roles.add(client.verify[code]!.rID);
 
             const interaction = client.verify[code]!.interaction;
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setTitle("Verify")
@@ -70,7 +70,7 @@ const runServer = (client: NucleusClient) => {
                         guild: guild.id
                     }
                 };
-                log(data);
+                await log(data);
             } catch {
                 res.sendStatus(500);
             }
@@ -80,12 +80,12 @@ const runServer = (client: NucleusClient) => {
         }
     });
 
-    app.get("/verify/:code", jsonParser, function (req: express.Request, res: express.Response) {
+    app.get("/verify/:code", jsonParser, async function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         if (client.verify[code]) {
             try {
                 const interaction = client.verify[code]!.interaction;
-                interaction.editReply({
+                await interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Verify")
@@ -124,12 +124,12 @@ const runServer = (client: NucleusClient) => {
         }
     });
 
-    app.get("/rolemenu/:code", jsonParser, function (req: express.Request, res: express.Response) {
+    app.get("/rolemenu/:code", jsonParser, async function (req: express.Request, res: express.Response) {
         const code = req.params.code;
         if (client.roleMenu[code] !== undefined) {
             try {
                 const interaction = client.roleMenu[code]!.interaction;
-                interaction.editReply({
+                await interaction.editReply({
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Roles")

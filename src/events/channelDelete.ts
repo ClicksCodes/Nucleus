@@ -123,5 +123,5 @@ export async function callback(client: NucleusClient, channel: GuildBasedChannel
             guild: channel.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

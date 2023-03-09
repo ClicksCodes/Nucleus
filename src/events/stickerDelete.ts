@@ -30,5 +30,5 @@ export async function callback(client: NucleusClient, sticker: Sticker) {
             guild: sticker.guild!.id
         }
     };
-    log(data);
+    await log(data);
 }

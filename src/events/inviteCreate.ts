@@ -33,5 +33,5 @@ export async function callback(client: NucleusClient, invite: Invite) {
             guild: invite.guild!.id
         }
     };
-    log(data);
+    await log(data);
 }

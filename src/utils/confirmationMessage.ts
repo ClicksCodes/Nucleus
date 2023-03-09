@@ -228,7 +228,7 @@ class confirmationMessage {
                 break;
             }
             if (component.customId === "yes") {
-                component.deferUpdate();
+                await component.deferUpdate();
                 for (const v of Object.values(this.customButtons)) {
                     if (!v.active) continue;
                     try {
@@ -241,7 +241,7 @@ class confirmationMessage {
                 returnComponents = true;
                 continue;
             } else if (component.customId === "no") {
-                component.deferUpdate();
+                await component.deferUpdate();
                 success = false;
                 returnComponents = true;
                 continue;
@@ -291,8 +291,11 @@ class confirmationMessage {
                     cancelled = true;
                     continue;
                 }
-                if (out === null || out.isButton()) {
+                if (out === null) {
                     cancelled = true;
+                    continue;
+                }
+                if (out.isButton()) {
                     continue;
                 }
                 if (out instanceof ModalSubmitInteraction) {
@@ -339,7 +342,11 @@ class confirmationMessage {
                     cancelled = true;
                     continue;
                 }
-                if (out === null || out.isButton()) {
+                if (out === null) {
+                    cancelled = true;
+                    continue;
+                }
+                if (out.isButton()) {
                     continue;
                 }
                 if (out instanceof ModalSubmitInteraction) {
@@ -348,7 +355,7 @@ class confirmationMessage {
                 returnComponents = true;
                 continue;
             } else {
-                component.deferUpdate();
+                await component.deferUpdate();
                 this.customButtons[component.customId]!.active = !this.customButtons[component.customId]!.active;
                 returnComponents = true;
                 continue;

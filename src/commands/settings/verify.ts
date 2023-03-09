@@ -82,7 +82,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         if (i.isButton()) {
             switch (i.customId) {
                 case "save": {
-                    client.database.guilds.write(interaction.guild.id, { verify: data });
+                    await client.database.guilds.write(interaction.guild.id, { verify: data });
                     config = await client.database.guilds.read(interaction.guild.id);
                     data = Object.assign({}, config.verify);
                     await client.memory.forceUpdate(interaction.guild.id);

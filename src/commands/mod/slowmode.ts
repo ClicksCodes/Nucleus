@@ -51,7 +51,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         .send();
     if (confirmation.cancelled || !confirmation.success) return;
     try {
-        (interaction.channel as TextChannel).setRateLimitPerUser(time);
+        await (interaction.channel as TextChannel).setRateLimitPerUser(time);
     } catch (e) {
         await interaction.editReply({
             embeds: [

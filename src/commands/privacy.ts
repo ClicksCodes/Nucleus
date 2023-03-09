@@ -214,7 +214,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             const em = new Discord.EmbedBuilder(pages[page]!.embed);
             em.setDescription(em.data.description + "\n\n" + createPageIndicator(pages.length, page));
             em.setFooter({ text: "Message closed" });
-            interaction.editReply({ embeds: [em], components: [] });
+            await interaction.editReply({ embeds: [em], components: [] });
             return;
         }
     }

@@ -7,7 +7,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("invite").setDescription("Invites Nucleus to your server");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    interaction.reply({
+    await interaction.reply({
         embeds: [
             new EmojiEmbed()
                 .setTitle("Invite")

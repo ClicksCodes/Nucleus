@@ -36,7 +36,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
     if (await client.database.premium.hasPremium(message.guild.id)) {
         const channel = (await client.database.guilds.read(message.guild.id)).logging.attachments.channel;
         if (!channel) {
-            singleNotify(
+            await singleNotify(
                 "noAttachmentLogChannel",
                 message.guild.id,
                 `No channel set for attachment logging. You can set one with ${getCommandMentionByName(
@@ -48,7 +48,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
         }
         const channelObj = await message.guild.channels.fetch(channel);
         if (!channelObj) {
-            singleNotify(
+            await singleNotify(
                 "attachmentLogChannelDeleted",
                 message.guild.id,
                 `Your attachment history channel was deleted or is not longer accessible. You can set a new one with ${getCommandMentionByName(
@@ -75,7 +75,7 @@ export default async function logAttachment(message: Message): Promise<Attachmen
             ],
             files: attachments.map((file) => file.local)
         });
-        client.database.guilds.write(message.guild.id, {
+        await client.database.guilds.write(message.guild.id, {
             [`logging.attachments.saved.${message.channel.id}${message.id}`]: m.url
         });
         return { files: attachments, jump: m.url };

@@ -14,7 +14,7 @@ const databaseReadTime = async () => {
     const user = guild.ownerId;
     const currentYear = new Date().getFullYear();
     const start = Date.now();
-    client.database.history.read(guild.id, user, currentYear - 1);
+    await client.database.history.read(guild.id, user, currentYear - 1);
     const end = Date.now();
     return end - start;
 };
@@ -35,7 +35,7 @@ const record = async () => {
         resources: await resources()
     };
     if (results.discord > 1000 || results.databaseRead > 500 || results.resources.cpu > 100) {
-        singleNotify(
+        await singleNotify(
             "performanceTest",
             config.developmentGuildID,
             `Discord ping time: \`${results.discord}ms\`\nDatabase read time: \`${
@@ -47,12 +47,12 @@ const record = async () => {
             config.owners
         );
     } else {
-        singleNotify("performanceTest", config.developmentGuildID, true);
+        await singleNotify("performanceTest", config.developmentGuildID, true);
     }
 
-    client.database.performanceTest.record(results);
-    setTimeout(async () => {
-        await record();
+    await client.database.performanceTest.record(results);
+    setTimeout(() => {
+        void record();
     }, 60 * 1000);
 };
 

@@ -126,7 +126,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
         dmSent = false;
     }
     try {
-        member.ban({
+        await member.ban({
             deleteMessageSeconds: deleteDays * 24 * 60 * 60,
             reason: reason ?? "*No reason provided*"
         });
@@ -159,7 +159,7 @@ const callback = async (interaction: CommandInteraction | ButtonInteraction, mem
                 guild: interaction.guild.id
             }
         };
-        log(data);
+        await log(data);
     } catch {
         await interaction.editReply({
             embeds: [

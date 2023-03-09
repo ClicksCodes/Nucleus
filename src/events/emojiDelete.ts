@@ -31,5 +31,5 @@ export async function callback(client: NucleusClient, emoji: GuildEmoji) {
             guild: emoji.guild.id
         }
     };
-    log(data);
+    await log(data);
 }

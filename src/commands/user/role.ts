@@ -129,7 +129,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             continue;
         }
 
-        i.deferUpdate();
+        await i.deferUpdate();
         if (i.isButton()) {
             switch (i.customId) {
                 case "roleSave": {

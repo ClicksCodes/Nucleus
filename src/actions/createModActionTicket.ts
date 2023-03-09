@@ -115,8 +115,8 @@ export async function create(
             type: Discord.ChannelType.PrivateThread,
             reason: "Creating ticket"
         })) as Discord.PrivateThreadChannel;
-        c.members.add(user.id);
-        c.members.add(createdBy.id);
+        await c.members.add(user.id);
+        await c.members.add(createdBy.id);
         try {
             await c.send({
                 content:
@@ -174,7 +174,7 @@ export async function create(
             guild: guild.id
         }
     };
-    log(data);
+    await log(data);
     return c.id;
 }
 

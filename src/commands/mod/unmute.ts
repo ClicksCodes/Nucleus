@@ -76,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     }
     const member = interaction.options.getMember("user") as GuildMember;
     try {
-        member.timeout(0, reason ?? "*No reason provided*");
+        await member.timeout(0, reason ?? "*No reason provided*");
     } catch {
         await interaction.editReply({
             embeds: [
@@ -122,7 +122,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             guild: interaction.guild.id
         }
     };
-    log(data);
+    await log(data);
     const failed = !dmSent && notify;
     await interaction.editReply({
         embeds: [

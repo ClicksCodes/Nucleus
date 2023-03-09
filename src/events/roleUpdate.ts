@@ -74,5 +74,5 @@ export async function callback(client: NucleusClient, oldRole: Role, newRole: Ro
             guild: newRole.guild.id
         }
     }; // TODO: make our own page for this
-    log(data);
+    await log(data);
 }

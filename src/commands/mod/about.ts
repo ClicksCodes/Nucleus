@@ -266,7 +266,7 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
                 }
             });
         } catch (e) {
-            interaction.editReply({
+            await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
                         .setEmoji("MEMBER.JOIN")

@@ -44,7 +44,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
                         renderChannel(newMessage.channel as Discord.GuildBasedChannel)
                     ),
                     sent: entry(newMessage.createdTimestamp, renderDelta(newMessage.createdTimestamp)),
-                    published: entry(newMessage.editedTimestamp!, renderDelta(newMessage.editedTimestamp!)),
+                    published: entry(Date.now(), renderDelta(Date.now())),
                     mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
                     attachments: entry(
                         renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
@@ -103,5 +103,5 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             guild: newMessage.guild.id
         }
     };
-    log(data);
+    await log(data);
 }
