@@ -178,7 +178,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             timedOut = true;
             continue;
         }
-        component.deferUpdate();
+        await component.deferUpdate();
         if (component.customId === "conflict") {
             const rolesToRemove = selected.filter(
                 (role) => role !== (component as StringSelectMenuInteraction).values[0]

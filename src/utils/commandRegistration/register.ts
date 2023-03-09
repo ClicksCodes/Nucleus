@@ -181,11 +181,19 @@ async function registerCommandHandler() {
     client.on("interactionCreate", async (interaction: Interaction) => {
         if (interaction.isUserContextMenuCommand()) {
             const commandName = "contextCommands/user/" + interaction.commandName;
-            execute(client.commands[commandName]![0]?.check, client.commands[commandName]![0]?.callback, interaction);
+            await execute(
+                client.commands[commandName]![0]?.check,
+                client.commands[commandName]![0]?.callback,
+                interaction
+            );
             return;
         } else if (interaction.isMessageContextMenuCommand()) {
             const commandName = "contextCommands/message/" + interaction.commandName;
-            execute(client.commands[commandName]![0]?.check, client.commands[commandName]![0]?.callback, interaction);
+            await execute(
+                client.commands[commandName]![0]?.check,
+                client.commands[commandName]![0]?.callback,
+                interaction
+            );
             return;
         } else if (interaction.isAutocomplete()) {
             const commandName = interaction.commandName;
@@ -203,7 +211,7 @@ async function registerCommandHandler() {
             const formatted = (choices ?? []).map((choice) => {
                 return { name: choice, value: choice };
             });
-            interaction.respond(formatted);
+            await interaction.respond(formatted);
         } else if (interaction.isChatInputCommand()) {
             const commandName = interaction.commandName;
             const subcommandGroupName = interaction.options.getSubcommandGroup(false);
@@ -219,7 +227,7 @@ async function registerCommandHandler() {
             const command = client.commands[fullCommandName]![0];
             const callback = command?.callback;
             const check = command?.check;
-            execute(check, callback, interaction);
+            await execute(check, callback, interaction);
         }
     });
 }

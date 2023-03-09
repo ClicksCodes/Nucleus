@@ -76,7 +76,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                     guild: interaction.guild.id
                 }
             };
-            log(data);
+            await log(data);
         } catch {
             await interaction.editReply({
                 embeds: [

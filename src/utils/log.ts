@@ -127,7 +127,7 @@ export const Logger = {
                     )
                     .setTimestamp(log.meta.timestamp)
                     .setColor(log.meta.color);
-                channel.send({ embeds: [embed] });
+                await channel.send({ embeds: [embed] });
             }
         }
     },

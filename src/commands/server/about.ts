@@ -32,7 +32,7 @@ const filterLevels = {
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const guild = interaction.guild!;
     const { renderUser, renderDelta } = client.logger;
-    interaction.reply({
+    await interaction.reply({
         embeds: [
             new EmojiEmbed()
                 .setTitle("Server Info")

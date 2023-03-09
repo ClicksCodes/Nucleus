@@ -22,6 +22,8 @@ jobs:
               with:
                   node-version: 19.x
             - run: yarn install --immutable
+            - name: Show versions
+              run: yarn run versions
             - name: Compile
               run: yarn build
             - name: Run prettier and eslint

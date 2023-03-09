@@ -23,7 +23,11 @@ export async function callback(_client: NucleusClient, message: Message) {
         if (message.channel.permissionsFor(message.guild.members.me!)!.has("ManageMessages")) {
             await message.crosspost();
         } else {
-            singleNotify(`Nucleus does not have Manage Messages in <#${message.channel.id}>`, message.guild.id, true);
+            await singleNotify(
+                `Nucleus does not have Manage Messages in <#${message.channel.id}>`,
+                message.guild.id,
+                true
+            );
         }
     }
 
@@ -71,7 +75,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         if (!config.filters.invite.allowed.channels.includes(message.channel.id)) {
             if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(content)) {
                 messageException(message.guild.id, message.channel.id, message.id);
-                message.delete();
+                await message.delete();
                 const data = {
                     meta: {
                         type: "messageDelete",
@@ -101,42 +105,42 @@ export async function callback(_client: NucleusClient, message: Message) {
         for (const element of fileNames.files) {
             const url = element.url ? element.url : element.local;
             if (
-                /\.(j(pe?g|fif)|a?png|gifv?|w(eb[mp]|av)|mp([34]|eg-\d)|ogg|avi|h\.26(4|5)|cda)$/.test(
+                /\.(jpg|jpeg|png|apng|gif|gifv|webm|webp|mp4|wav|mp3|ogg|jfif|mpeg-\d|avi|h\.264|h\.265)$/.test(
                     url.toLowerCase()
                 )
             ) {
-                // jpg|jpeg|png|apng|gif|gifv|webm|webp|mp4|wav|mp3|ogg|jfif|MPEG-#|avi|h.264|h.265
+                // j(pe?g|fif)|a?png|gifv?|w(eb[mp]|av)|mp([34]|eg-\d)|ogg|avi|h\.26(4|5)
+                // ^no
                 if (
                     config.filters.images.NSFW &&
-                    !(message.channel instanceof ThreadChannel ? message.channel.parent?.nsfw : message.channel.nsfw)
+                    !(message.channel instanceof ThreadChannel ? message.channel.parent?.nsfw : message.channel.nsfw) &&
+                    (await NSFWCheck(element.url))
                 ) {
-                    if (await NSFWCheck(url)) {
-                        messageException(message.guild.id, message.channel.id, message.id);
-                        await message.delete();
-                        const data = {
-                            meta: {
-                                type: "messageDelete",
-                                displayName: "Message Deleted",
-                                calculateType: "autoModeratorDeleted",
-                                color: NucleusColors.red,
-                                emoji: "MESSAGE.DELETE",
-                                timestamp: Date.now()
-                            },
-                            separate: {
-                                start:
-                                    filter +
-                                    " Image detected as NSFW\n\n" +
-                                    (content
-                                        ? `**Message:**\n\`\`\`${content}\`\`\``
-                                        : "**Message:** *Message had no content*")
-                            },
-                            list: list,
-                            hidden: {
-                                guild: message.channel.guild.id
-                            }
-                        };
-                        return log(data);
-                    }
+                    messageException(message.guild.id, message.channel.id, message.id);
+                    await message.delete();
+                    const data = {
+                        meta: {
+                            type: "messageDelete",
+                            displayName: "Message Deleted",
+                            calculateType: "autoModeratorDeleted",
+                            color: NucleusColors.red,
+                            emoji: "MESSAGE.DELETE",
+                            timestamp: Date.now()
+                        },
+                        separate: {
+                            start:
+                                filter +
+                                " Image detected as NSFW\n\n" +
+                                (content
+                                    ? `**Message:**\n\`\`\`${content}\`\`\``
+                                    : "**Message:** *Message had no content*")
+                        },
+                        list: list,
+                        hidden: {
+                            guild: message.channel.guild.id
+                        }
+                    };
+                    return log(data);
                 }
                 if (config.filters.wordFilter.enabled) {
                     const text = await TestImage(url);
@@ -205,34 +209,30 @@ export async function callback(_client: NucleusClient, message: Message) {
                     }
                 }
             }
-            if (config.filters.malware) {
-                if (!(await MalwareCheck(url))) {
-                    messageException(message.guild.id, message.channel.id, message.id);
-                    await message.delete();
-                    const data = {
-                        meta: {
-                            type: "messageDelete",
-                            displayName: "Message Deleted",
-                            calculateType: "autoModeratorDeleted",
-                            color: NucleusColors.red,
-                            emoji: "MESSAGE.DELETE",
-                            timestamp: Date.now()
-                        },
-                        separate: {
-                            start:
-                                filter +
-                                " File detected as malware\n\n" +
-                                (content
-                                    ? `**Message:**\n\`\`\`${content}\`\`\``
-                                    : "**Message:** *Message had no content*")
-                        },
-                        list: list,
-                        hidden: {
-                            guild: message.channel.guild.id
-                        }
-                    };
-                    return log(data);
-                }
+            if (config.filters.malware && (await MalwareCheck(url))) {
+                messageException(message.guild.id, message.channel.id, message.id);
+                await message.delete();
+                const data = {
+                    meta: {
+                        type: "messageDelete",
+                        displayName: "Message Deleted",
+                        calculateType: "autoModeratorDeleted",
+                        color: NucleusColors.red,
+                        emoji: "MESSAGE.DELETE",
+                        timestamp: Date.now()
+                    },
+                    separate: {
+                        start:
+                            filter +
+                            " File detected as malware\n\n" +
+                            (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                    },
+                    list: list,
+                    hidden: {
+                        guild: message.channel.guild.id
+                    }
+                };
+                return log(data);
             }
         }
     }

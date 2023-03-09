@@ -78,7 +78,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 guild: interaction.guild.id
             }
         };
-        log(data);
+        await log(data);
 
         await channel.delete();
     } else if (status === "Active") {
@@ -86,12 +86,12 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
         // Archive the ticket
         await interaction.channel.fetch();
         if (channel.isThread()) {
-            channel.setName(`${channel.name.replace("Active", "Archived")}`);
-            channel.members.remove(channel.name.split(" - ")[1]!);
+            await channel.setName(`${channel.name.replace("Active", "Archived")}`);
+            await channel.members.remove(channel.name.split(" - ")[1]!);
         } else {
-            channel.setTopic(`${(channel.topic ?? "").replace("Active", "Archived")}`);
+            await channel.setTopic(`${(channel.topic ?? "").replace("Active", "Archived")}`);
             if (!channel.topic!.includes("Archived")) {
-                channel.setTopic("0 Archived");
+                await channel.setTopic("0 Archived");
             }
             await channel.permissionOverwrites.delete(channel.topic!.split(" ")[0]!);
         }
@@ -153,7 +153,7 @@ export default async function (interaction: Discord.CommandInteraction | ButtonI
                 guild: interaction.guild.id
             }
         };
-        log(data);
+        await log(data);
     }
     return;
 }
@@ -170,28 +170,28 @@ async function purgeByUser(member: string, guild: string) {
     if (tickets.type === Discord.ChannelType.GuildCategory) {
         // For channels, the topic is the user ID, then the word Active
         const category = tickets as Discord.CategoryChannel;
-        category.children.cache.forEach((element) => {
+        for (const [_id, element] of category.children.cache) {
             if (!(element.type === Discord.ChannelType.GuildText)) return;
             if (!((element as Discord.TextChannel).topic ?? "").includes(member)) return;
             try {
-                element.delete();
+                await element.delete();
                 deleted++;
             } catch (e) {
                 console.error(e);
             }
-        });
+        }
     } else {
         // For threads, the name is the users name, id, then the word Active
         const channel = tickets as Discord.TextChannel;
-        channel.threads.cache.forEach((element: Discord.ThreadChannel) => {
+        for (const [_id, element] of channel.threads.cache) {
             if (!element.name.includes(member)) return;
             try {
-                element.delete();
+                await element.delete();
                 deleted++;
             } catch (e) {
                 console.error(e);
             }
-        });
+        }
     }
     if (!deleted) return;
     const { log, NucleusColors, entry, renderUser, renderDelta } = client.logger;
@@ -214,7 +214,7 @@ async function purgeByUser(member: string, guild: string) {
             guild: guild
         }
     };
-    log(data);
+    await log(data);
 }
 
 export { purgeByUser };

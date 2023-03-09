@@ -79,13 +79,13 @@ class EventScheduler {
                     guild: guild.id
                 }
             };
-            log(data);
+            await log(data);
         });
     }
 
     async start() {
         await new Promise((resolve) => this.agenda.once("ready", resolve));
-        this.agenda.start();
+        await this.agenda.start();
         return this;
     }
 
@@ -95,8 +95,8 @@ class EventScheduler {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    cancel(name: string, data: any) {
-        this.agenda.cancel({ name, data });
+    async cancel(name: string, data: any) {
+        await this.agenda.cancel({ name, data });
     }
 }
 

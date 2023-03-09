@@ -208,7 +208,7 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
                     .setEmoji("CONTROL.BLOCKCROSS")
             ]
         });
-        singleNotify(
+        await singleNotify(
             "verifyRoleDeleted",
             interaction.guild!.id,
             `The role given when a member is verified has been deleted. Use ${getCommandMentionByName(

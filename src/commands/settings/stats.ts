@@ -198,7 +198,7 @@ const addStatsChannel = async (
                             )
                         ]
                     });
-                    showModal(i, { name: newChannelName, enabled: newChannelEnabled });
+                    await showModal(i, { name: newChannelName, enabled: newChannelEnabled });
 
                     const out: Discord.ModalSubmitInteraction | ButtonInteraction | null =
                         await modalInteractionCollector(m, interaction.user);
@@ -336,7 +336,7 @@ const callback = async (interaction: CommandInteraction) => {
             }
         }
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [embed],
             components: [
                 new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(pageSelect),
@@ -367,7 +367,7 @@ const callback = async (interaction: CommandInteraction) => {
                     modified = true;
                     switch (i.values[0]!) {
                         case "edit": {
-                            showModal(i, current!);
+                            await showModal(i, current!);
                             await interaction.editReply({
                                 embeds: [
                                     new EmojiEmbed()
@@ -439,7 +439,7 @@ const callback = async (interaction: CommandInteraction) => {
                 }
                 case "save": {
                     await client.database.guilds.write(interaction.guild.id, { stats: currentObject });
-                    singleNotify("statsChannelDeleted", interaction.guild.id, true);
+                    await singleNotify("statsChannelDeleted", interaction.guild.id, true);
                     modified = false;
                     await client.memory.forceUpdate(interaction.guild.id);
                     break;

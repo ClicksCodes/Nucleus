@@ -153,7 +153,7 @@ const callback = async (
         }
     };
     await client.database.history.create("warn", interaction.guild.id, member.user, interaction.user, reason);
-    log(data);
+    await log(data);
     const failed = !dmSent && notify;
     if (!failed) {
         await interaction.editReply({

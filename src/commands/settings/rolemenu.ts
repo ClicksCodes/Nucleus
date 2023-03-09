@@ -89,7 +89,7 @@ const reorderRoleMenuPages = async (interaction: CommandInteraction, m: Message,
         out = null;
     }
     if (!out) return;
-    out.deferUpdate();
+    await out.deferUpdate();
     if (out.isButton()) return;
     const values = out.values;
 
@@ -218,7 +218,7 @@ const editRoleMenuPage = async (
                     `**Max:** ${data.max}\n`
             );
 
-        interaction.editReply({ embeds: [embed], components: [previewSelect, buttons] });
+        await interaction.editReply({ embeds: [embed], components: [previewSelect, buttons] });
         let i: StringSelectMenuInteraction | ButtonInteraction;
         try {
             i = (await m.awaitMessageComponent({
@@ -304,7 +304,7 @@ const createRoleMenuOptionPage = async (
                     }\n`
             );
 
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [embed],
             components: [new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(roleSelect), buttons]
         });

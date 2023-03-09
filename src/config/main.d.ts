@@ -19,6 +19,7 @@ declare const config: {
     };
     baseUrl: string;
     rapidApiKey: string;
+    clamavSocket: string;
 };
 
 export default config;

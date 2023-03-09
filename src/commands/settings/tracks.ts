@@ -142,7 +142,7 @@ const reorderTracks = async (
         out = null;
     }
     if (!out) return;
-    out.deferUpdate();
+    await out.deferUpdate();
     if (out.isButton()) return;
     const values = out.values;
 
@@ -268,7 +268,7 @@ const editTrack = async (
         ];
         if (current.track.length >= 1) comps.splice(1, 0, selectMenu);
 
-        interaction.editReply({ embeds: [embed], components: comps });
+        await interaction.editReply({ embeds: [embed], components: comps });
 
         let out: ButtonInteraction | RoleSelectMenuInteraction | StringSelectMenuInteraction | null;
 
@@ -286,7 +286,7 @@ const editTrack = async (
         if (out.isButton()) {
             switch (out.customId) {
                 case "back": {
-                    out.deferUpdate();
+                    await out.deferUpdate();
                     closed = true;
                     break;
                 }
@@ -295,23 +295,23 @@ const editTrack = async (
                     break;
                 }
                 case "reorder": {
-                    out.deferUpdate();
+                    await out.deferUpdate();
                     current.track = (await reorderTracks(interaction, out, message, roles, current.track))!;
                     break;
                 }
                 case "retainPrevious": {
-                    out.deferUpdate();
+                    await out.deferUpdate();
                     current.retainPrevious = !current.retainPrevious;
                     break;
                 }
                 case "nullable": {
-                    out.deferUpdate();
+                    await out.deferUpdate();
                     current.nullable = !current.nullable;
                     break;
                 }
             }
         } else if (out.isStringSelectMenu()) {
-            out.deferUpdate();
+            await out.deferUpdate();
             switch (out.customId) {
                 case "removeRole": {
                     const index = current.track.findIndex(
@@ -322,7 +322,7 @@ const editTrack = async (
                 }
             }
         } else {
-            out.deferUpdate();
+            await out.deferUpdate();
             switch (out.customId) {
                 case "addRole": {
                     const role = out.values![0]!;
@@ -476,7 +476,7 @@ const callback = async (interaction: CommandInteraction) => {
                     break;
                 }
                 case "save": {
-                    client.database.guilds.write(interaction.guild!.id, { tracks: tracks });
+                    await client.database.guilds.write(interaction.guild!.id, { tracks: tracks });
                     modified = false;
                     await client.memory.forceUpdate(interaction.guild!.id);
                     break;

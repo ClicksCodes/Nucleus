@@ -35,7 +35,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         fetchReply: true
     });
     if (config.owners.includes(interaction.user.id)) {
-        interaction.editReply({
+        await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
                     .setTitle("Admin")
@@ -96,7 +96,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } catch {
             return;
         }
-        out.deferUpdate();
+        await out.deferUpdate();
         const GuildID = out.fields.getTextInputValue("guildID");
         if (!client.guilds.cache.has(GuildID)) {
             await interaction.editReply({
@@ -126,7 +126,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } catch {
             return;
         }
-        i.deferUpdate();
+        await i.deferUpdate();
         const guild = (await client.guilds.fetch(GuildID)) as Guild | null;
         if (!guild) {
             await interaction.editReply({

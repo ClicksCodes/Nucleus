@@ -6,99 +6,97 @@ import type Discord from "discord.js";
 import client from "../utils/client.js";
 import { createHash } from "crypto";
 import * as nsfwjs from "nsfwjs";
-// import * as clamscan from "clamscan";
-import * as tf from "@tensorflow/tfjs";
+import ClamScan from "clamscan";
+import * as tf from "@tensorflow/tfjs-node";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import config from "../config/main.js";
+import gm from "gm";
 
 interface NSFWSchema {
     nsfw: boolean;
     errored?: boolean;
 }
 interface MalwareSchema {
-    safe: boolean;
+    malware: boolean;
     errored?: boolean;
 }
 
-const nsfw_model = await nsfwjs.load();
+const nsfw_model = await nsfwjs.load("file://dist/reflex/nsfwjs/example/nsfw_demo/public/model/", { size: 299 });
+const clamscanner = await new ClamScan().init({
+    clamdscan: {
+        socket: config.clamavSocket
+    }
+});
 
-export async function testNSFW(link: string): Promise<NSFWSchema> {
-    const [fileStream, hash] = await streamAttachment(link);
+export async function testNSFW(url: string): Promise<NSFWSchema> {
+    const [fileStream, hash] = await streamAttachment(url);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck?.nsfw) return { nsfw: alreadyHaveCheck.nsfw };
+    if (alreadyHaveCheck && "nsfw" in alreadyHaveCheck!) {
+        return { nsfw: alreadyHaveCheck.nsfw };
+    }
 
-    const image = tf.tensor3d(new Uint8Array(fileStream));
+    const converted = (await new Promise((resolve, reject) =>
+        gm(fileStream)
+            .command("convert")
+            .toBuffer("PNG", (err, buf) => {
+                if (err) return reject(err);
+                resolve(buf);
+            })
+    )) as Buffer;
 
-    const predictions = (await nsfw_model.classify(image, 1))[0]!;
-    image.dispose();
+    const img = tf.node.decodeImage(converted, 3, undefined, false) as tf.Tensor3D;
 
-    return { nsfw: predictions.className === "Hentai" || predictions.className === "Porn" };
+    const predictions = (await nsfw_model.classify(img, 1))[0]!;
+    img.dispose();
+    console.log(2, predictions);
+
+    const nsfw = predictions.className === "Hentai" || predictions.className === "Porn";
+    await client.database.scanCache.write(hash, "nsfw", nsfw);
+
+    return { nsfw };
 }
 
 export async function testMalware(link: string): Promise<MalwareSchema> {
-    const [_, hash] = await saveAttachment(link);
+    const [fileName, hash] = await saveAttachment(link);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
-    if (alreadyHaveCheck?.malware) return { safe: alreadyHaveCheck.malware };
-    return { safe: true };
-    // const data = new URLSearchParams();
-    // // const f = createReadStream(p);
-    // data.append("file", f.read(fs.statSync(p).size));
-    // const result = await fetch("https://unscan.p.rapidapi.com/malware", {
-    //     method: "POST",
-    //     headers: {
-    //         "X-RapidAPI-Key": client.config.rapidApiKey,
-    //         "X-RapidAPI-Host": "unscan.p.rapidapi.com"
-    //     },
-    //     body: data
-    // })
-    //     .then((response) =>
-    //         response.status === 200 ? (response.json() as Promise<MalwareSchema>) : { safe: true, errored: true }
-    //     )
-    //     .catch((err) => {
-    //         console.error(err);
-    //         return { safe: true, errored: true };
-    //     });
-    // if (!result.errored) {
-    //     client.database.scanCache.write(hash, "malware", result.safe);
-    // }
-    // return { safe: result.safe };
+    if (alreadyHaveCheck?.malware !== undefined) return { malware: alreadyHaveCheck.malware };
+    let malware;
+    try {
+        malware = (await clamscanner.scanFile(fileName)).isInfected;
+    } catch (e) {
+        return { malware: true };
+    }
+    await client.database.scanCache.write(hash, "malware", malware);
+    return { malware };
 }
 
 export async function testLink(link: string): Promise<{ safe: boolean; tags: string[] }> {
     const alreadyHaveCheck = await client.database.scanCache.read(link);
-    if (alreadyHaveCheck?.bad_link) return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags };
-    const scanned: { safe?: boolean; tags?: string[] } = await fetch("https://unscan.p.rapidapi.com/link", {
-        method: "POST",
-        headers: {
-            "X-RapidAPI-Key": client.config.rapidApiKey,
-            "X-RapidAPI-Host": "unscan.p.rapidapi.com"
-        },
-        body: `{"link":"${link}"}`
-    })
-        .then((response) => response.json() as Promise<MalwareSchema>)
-        .catch((err) => {
-            console.error(err);
-            return { safe: true, tags: [] };
-        });
-    client.database.scanCache.write(link, "bad_link", scanned.safe ?? true, scanned.tags ?? []);
-    return {
-        safe: scanned.safe ?? true,
-        tags: scanned.tags ?? []
-    };
+    if (alreadyHaveCheck?.bad_link !== undefined)
+        return { safe: alreadyHaveCheck.bad_link, tags: alreadyHaveCheck.tags ?? [] };
+    return { safe: true, tags: [] };
+    // const scanned: { safe?: boolean; tags?: string[] } = {}
+    // await client.database.scanCache.write(link, "bad_link", scanned.safe ?? true, scanned.tags ?? []);
+    // return {
+    //     safe: scanned.safe ?? true,
+    //     tags: scanned.tags ?? []
+    // };
 }
 
-export async function streamAttachment(link: string): Promise<[ArrayBuffer, string]> {
+export async function streamAttachment(link: string): Promise<[Buffer, string]> {
     const image = await (await fetch(link)).arrayBuffer();
     const enc = new TextDecoder("utf-8");
-    return [image, createHash("sha512").update(enc.decode(image), "base64").digest("base64")];
+    const buf = Buffer.from(image);
+    return [buf, createHash("sha512").update(enc.decode(image), "base64").digest("base64")];
 }
 
 export async function saveAttachment(link: string): Promise<[string, string]> {
     const image = await (await fetch(link)).arrayBuffer();
-    const fileName = generateFileName(link.split("/").pop()!.split(".").pop()!);
+    const fileName = await generateFileName(link.split("/").pop()!.split(".").pop()!);
     const enc = new TextDecoder("utf-8");
-    writeFileSync(fileName, new DataView(image), "base64");
+    writeFileSync(fileName, new DataView(image));
     return [fileName, createHash("sha512").update(enc.decode(image), "base64").digest("base64")];
 }
 
@@ -153,10 +151,11 @@ export async function LinkCheck(message: Discord.Message): Promise<string[]> {
     return detectionsTypes as string[];
 }
 
-export async function NSFWCheck(element: string): Promise<boolean> {
+export async function NSFWCheck(url: string): Promise<boolean> {
     try {
-        return (await testNSFW(element)).nsfw;
-    } catch {
+        return (await testNSFW(url)).nsfw;
+    } catch (e) {
+        console.log(e);
         return false;
     }
 }
@@ -169,7 +168,7 @@ export async function SizeCheck(element: { height: number | null; width: number 
 
 export async function MalwareCheck(element: string): Promise<boolean> {
     try {
-        return (await testMalware(element)).safe;
+        return (await testMalware(element)).malware;
     } catch {
         return true;
     }
@@ -203,34 +202,43 @@ export async function TestImage(url: string): Promise<string | null> {
         oem: 1,
         psm: 3
     });
+    console.log(text);
     return text;
 }
 
-export async function doMemberChecks(member: Discord.GuildMember, guild: Discord.Guild): Promise<void> {
+export async function doMemberChecks(member: Discord.GuildMember): Promise<void> {
     if (member.user.bot) return;
+    console.log("Checking member " + member.user.tag);
+    const guild = member.guild;
     const guildData = await client.database.guilds.read(guild.id);
     if (!guildData.logging.staff.channel) return;
     const [loose, strict] = [guildData.filters.wordFilter.words.loose, guildData.filters.wordFilter.words.strict];
+    console.log(1, loose, strict);
     // Does the username contain filtered words
     const usernameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
+    console.log(2, usernameCheck);
     // Does the nickname contain filtered words
     const nicknameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+    console.log(3, nicknameCheck);
     // Does the profile picture contain filtered words
     const avatarTextCheck = TestString(
-        (await TestImage(member.user.displayAvatarURL({ forceStatic: true }))) ?? "",
+        (await TestImage(member.displayAvatarURL({ forceStatic: true }))) ?? "",
         loose,
         strict,
         guildData.filters.wordFilter.enabled
     );
+    console.log(4, avatarTextCheck);
     // Is the profile picture NSFW
-    const avatarCheck =
-        guildData.filters.images.NSFW && (await NSFWCheck(member.user.displayAvatarURL({ forceStatic: true })));
+    const avatar = member.displayAvatarURL({ extension: "png", size: 1024, forceStatic: true });
+    const avatarCheck = guildData.filters.images.NSFW && (await NSFWCheck(avatar));
+    console.log(5, avatarCheck);
     // Does the username contain an invite
     const inviteCheck = guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.user.username);
+    console.log(6, inviteCheck);
     // Does the nickname contain an invite
     const nicknameInviteCheck =
         guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.nickname ?? "");
-
+    console.log(7, nicknameInviteCheck);
     if (
         usernameCheck !== null ||
         nicknameCheck !== null ||
@@ -257,7 +265,7 @@ export async function doMemberChecks(member: Discord.GuildMember, guild: Discord
         }
         if (avatarTextCheck !== null) {
             infractions.push(
-                `Profile picture contains a ${avatarTextCheck.type}ly filtered word: ${avatarTextCheck.word}`
+                `Profile picture contains a ${avatarTextCheck.type}ly filtered word (${avatarTextCheck.word})`
             );
         }
         if (infractions.length === 0) return;
@@ -294,7 +302,7 @@ export async function doMemberChecks(member: Discord.GuildMember, guild: Discord
                             .setLabel("Ban")
                             .setStyle(ButtonStyle.Danger)
                     ].concat(
-                        usernameCheck !== null || nicknameCheck !== null || avatarTextCheck !== null
+                        usernameCheck !== null || nicknameCheck !== null
                             ? [
                                   new ButtonBuilder()
                                       .setCustomId(`mod:nickname:${member.user.id}`)

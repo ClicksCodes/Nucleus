@@ -5,5 +5,5 @@ import guide from "../reflex/guide.js";
 export const event = "guildCreate";
 
 export async function callback(_client: NucleusClient, guild: Guild) {
-    guide(guild);
+    await guide(guild);
 }
