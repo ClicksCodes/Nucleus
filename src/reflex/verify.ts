@@ -121,9 +121,11 @@ export default async function (interaction: CommandInteraction | ButtonInteracti
             ]
         });
         if (
-            await NSFWCheck(
-                (interaction.member as GuildMember).user.displayAvatarURL({ extension: "png", forceStatic: true })
-            )
+            await NSFWCheck({
+                url: (interaction.member as GuildMember).user.displayAvatarURL({ extension: "png", forceStatic: true }),
+                height: 1024,
+                width: 1024,
+            })
         ) {
             return await interaction.editReply({
                 embeds: [

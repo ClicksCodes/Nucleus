@@ -87,6 +87,7 @@ export async function callback(client: NucleusClient, before: GuildMember, after
             await log(data);
         }
     }
+    if (before.displayAvatarURL !== after.displayAvatarURL) await doMemberChecks(after);
     const auditLog = (await getAuditLog(after.guild, AuditLogEvent.MemberUpdate)).filter(
         (entry: GuildAuditLogsEntry) => (entry.target as GuildMember)!.id === after.id
     )[0];
@@ -125,7 +126,6 @@ export async function callback(client: NucleusClient, before: GuildMember, after
         };
         await log(data);
     }
-    if (before.displayAvatarURL !== after.displayAvatarURL) await doMemberChecks(after);
     if (
         (before.communicationDisabledUntilTimestamp ?? 0) < Date.now() &&
         new Date(after.communicationDisabledUntil ?? 0).getTime() > Date.now()

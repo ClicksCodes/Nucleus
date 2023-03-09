@@ -12,9 +12,7 @@ import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import config from "../config/main.js";
-import GIFEncoder from "gifencoder";
-import gm_var from 'gm';
-const gm = gm_var.subClass({ imageMagick: '7+' });
+import gm from 'gm';
 
 interface NSFWSchema {
     nsfw: boolean;
@@ -34,7 +32,6 @@ const clamscanner = await new ClamScan().init({
 
 export async function testNSFW(attachment: {
     url: string;
-    local: string;
     height: number | null;
     width: number | null;
 }): Promise<NSFWSchema> {
@@ -44,12 +41,12 @@ export async function testNSFW(attachment: {
         return { nsfw: alreadyHaveCheck.nsfw }
     };
 
-    const image = gm(fileStream).command('convert').in('-')
+    const converted = await new Promise((resolve, reject) => gm(fileStream).command("convert").toBuffer("PNG", (err, buf) => {
+        if (err) return reject(err);
+        resolve(buf);
+    })) as Buffer;
+    const array = new Uint8Array(converted);
 
-    const encoder = new GIFEncoder(attachment.width ?? 1024, attachment.height ?? 1024);
-
-
-    // const array = new Uint8Array(fileStream);
     const img = tf.node.decodeImage(array) as tf.Tensor3D;
 
     const predictions = (await nsfw_model.classify(img, 1))[0]!;
@@ -156,7 +153,6 @@ export async function LinkCheck(message: Discord.Message): Promise<string[]> {
 
 export async function NSFWCheck(element: {
     url: string;
-    local: string;
     height: number | null;
     width: number | null;
 }): Promise<boolean> {
@@ -238,7 +234,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     // Is the profile picture NSFW
     const avatar = member.displayAvatarURL({ extension: "png", size: 1024, forceStatic: true });
     const avatarCheck =
-        guildData.filters.images.NSFW && (await NSFWCheck({url: avatar, local: "", height: 1024, width: 1024}));
+        guildData.filters.images.NSFW && (await NSFWCheck({url: avatar, height: 1024, width: 1024}));
     console.log(5, avatarCheck)
     // Does the username contain an invite
     const inviteCheck = guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.user.username);
