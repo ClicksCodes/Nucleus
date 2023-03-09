@@ -202,6 +202,7 @@ export async function TestImage(url: string): Promise<string | null> {
         oem: 1,
         psm: 3
     });
+    console.log(text);
     return text;
 }
 
@@ -221,7 +222,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     console.log(3, nicknameCheck);
     // Does the profile picture contain filtered words
     const avatarTextCheck = TestString(
-        (await TestImage(member.user.displayAvatarURL({ forceStatic: true }))) ?? "",
+        (await TestImage(member.displayAvatarURL({ forceStatic: true }))) ?? "",
         loose,
         strict,
         guildData.filters.wordFilter.enabled
@@ -264,7 +265,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
         }
         if (avatarTextCheck !== null) {
             infractions.push(
-                `Profile picture contains a ${avatarTextCheck.type}ly filtered word: ${avatarTextCheck.word}`
+                `Profile picture contains a ${avatarTextCheck.type}ly filtered word (${avatarTextCheck.word})`
             );
         }
         if (infractions.length === 0) return;
@@ -301,7 +302,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
                             .setLabel("Ban")
                             .setStyle(ButtonStyle.Danger)
                     ].concat(
-                        usernameCheck !== null || nicknameCheck !== null || avatarTextCheck !== null
+                        usernameCheck !== null || nicknameCheck !== null
                             ? [
                                   new ButtonBuilder()
                                       .setCustomId(`mod:nickname:${member.user.id}`)
