@@ -114,7 +114,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 if (
                     config.filters.images.NSFW &&
                     !(message.channel instanceof ThreadChannel ? message.channel.parent?.nsfw : message.channel.nsfw) &&
-                    (await NSFWCheck(element))
+                    (await NSFWCheck(element.url))
                 ) {
                     messageException(message.guild.id, message.channel.id, message.id);
                     await message.delete();

@@ -30,12 +30,8 @@ const clamscanner = await new ClamScan().init({
     }
 });
 
-export async function testNSFW(attachment: {
-    url: string;
-    height: number | null;
-    width: number | null;
-}): Promise<NSFWSchema> {
-    const [fileStream, hash] = await streamAttachment(attachment.url);
+export async function testNSFW(url: string): Promise<NSFWSchema> {
+    const [fileStream, hash] = await streamAttachment(url);
     const alreadyHaveCheck = await client.database.scanCache.read(hash);
     if (alreadyHaveCheck && "nsfw" in alreadyHaveCheck!) {
         return { nsfw: alreadyHaveCheck.nsfw };
@@ -49,11 +45,11 @@ export async function testNSFW(attachment: {
                 resolve(buf);
             })
     )) as Buffer;
-    const array = new Uint8Array(converted);
 
-    const img = tf.node.decodeImage(array) as tf.Tensor3D;
+    const img = tf.node.decodeImage(converted, 3, undefined, false) as tf.Tensor3D;
 
     const predictions = (await nsfw_model.classify(img, 1))[0]!;
+    img.dispose();
     console.log(2, predictions);
 
     const nsfw = predictions.className === "Hentai" || predictions.className === "Porn";
@@ -155,13 +151,9 @@ export async function LinkCheck(message: Discord.Message): Promise<string[]> {
     return detectionsTypes as string[];
 }
 
-export async function NSFWCheck(element: {
-    url: string;
-    height: number | null;
-    width: number | null;
-}): Promise<boolean> {
+export async function NSFWCheck(url: string): Promise<boolean> {
     try {
-        return (await testNSFW(element)).nsfw;
+        return (await testNSFW(url)).nsfw;
     } catch (e) {
         console.log(e);
         return false;
@@ -237,7 +229,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     console.log(4, avatarTextCheck);
     // Is the profile picture NSFW
     const avatar = member.displayAvatarURL({ extension: "png", size: 1024, forceStatic: true });
-    const avatarCheck = guildData.filters.images.NSFW && (await NSFWCheck({ url: avatar, height: 1024, width: 1024 }));
+    const avatarCheck = guildData.filters.images.NSFW && (await NSFWCheck(avatar));
     console.log(5, avatarCheck);
     // Does the username contain an invite
     const inviteCheck = guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.user.username);
