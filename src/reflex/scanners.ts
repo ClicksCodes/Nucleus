@@ -23,7 +23,7 @@ interface MalwareSchema {
     errored?: boolean;
 }
 
-const nsfw_model = await nsfwjs.load();
+const nsfw_model = await nsfwjs.load("file://dist/reflex/nsfwjs/example/nsfw_demo/public/model/", { size: 299 });
 const clamscanner = await new ClamScan().init({
     clamdscan: {
         socket: config.clamavSocket
