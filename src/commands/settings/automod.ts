@@ -718,7 +718,7 @@ const mentionMenu = async (
             .setEmoji("GUILD.SETTINGS.GREEN")
             .setFooter({
                 text: unsavedChanges ? "No changes made" : "Changes not saved"
-            });;
+            });
 
         await interaction.editReply({ embeds: [embed], components: [menu, allowedMenu, buttons] });
 
@@ -1047,11 +1047,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
 
     let closed = false;
 
-
     let current = _.cloneDeep(config);
     do {
         const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder().setCustomId("save").setLabel("Save").setStyle(ButtonStyle.Success).setDisabled(_.isEqual(config, current))
+            new ButtonBuilder()
+                .setCustomId("save")
+                .setLabel("Save")
+                .setStyle(ButtonStyle.Success)
+                .setDisabled(_.isEqual(config, current))
         );
         const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             new StringSelectMenuBuilder()
@@ -1116,7 +1119,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             continue;
         }
         await i.deferUpdate();
-        if(i.isButton()) {
+        if (i.isButton()) {
             await client.database.guilds.write(interaction.guild.id, { filters: current });
             await client.memory.forceUpdate(interaction.guild.id);
             config = current;

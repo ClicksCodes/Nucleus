@@ -131,7 +131,7 @@ export default async function (walkthrough = false) {
     }
     if (walkthrough && !(json["mongoUrl"] ?? false)) json["mongoUrl"] = "mongodb://127.0.0.1:27017";
     if (!((json["baseUrl"] as string | undefined) ?? "").endsWith("/")) (json["baseUrl"] as string) += "/";
-    const localhost = "127.0.0.1"
+    const localhost = "127.0.0.1";
     json["mongoUrl"] = (json["mongoUrl"]! as string).replace("localhost", localhost);
     json["baseUrl"] = (json["baseUrl"]! as string).replace("localhost", localhost);
     json["mongoOptions"] = {
@@ -145,7 +145,7 @@ export default async function (walkthrough = false) {
         socket: json["clamAVSocket"] as string | undefined,
         host: json["clamAVHost"] as string | undefined,
         port: json["clamAVPort"] as number | undefined
-    }
+    };
 
     fs.writeFileSync("./src/config/main.ts", "export default " + JSON.stringify(json, null, 4) + ";");
 

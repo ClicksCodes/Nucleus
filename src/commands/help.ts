@@ -22,7 +22,10 @@ import { capitalize } from "../utils/generateKeyValueList.js";
 import { getCommandByName, getCommandMentionByName } from "../utils/getCommandDataByName.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-const command = new SlashCommandBuilder().setName("help").setDescription("Shows help for commands").setDMPermission(true);
+const command = new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("Shows help for commands")
+    .setDMPermission(true);
 
 const styles: Record<string, { emoji: string }> = {
     help: { emoji: "NUCLEUS.LOGO" },
@@ -127,9 +130,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 );
             }
             for (const option of options) {
-                optionString += ` - \`${option.name}\` (${ApplicationCommandOptionType[option.type].replace("Integer", "Number").replace("String", "Text")}) - ${
-                    option.description
-                }\n`;
+                optionString += ` - \`${option.name}\` (${ApplicationCommandOptionType[option.type]
+                    .replace("Integer", "Number")
+                    .replace("String", "Text")}) - ${option.description}\n`;
             }
             const APICommand =
                 client.commands[
@@ -140,7 +143,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 allowedToRun = await APICommand.check(interaction as Interaction, true);
             }
             embed.setDescription(
-                `${getEmojiByName(styles[currentPath[0]]!.emoji)} **${capitalize(currentData.name)}** | ${currentData.mention}\n\n` +
+                `${getEmojiByName(styles[currentPath[0]]!.emoji)} **${capitalize(currentData.name)}** | ${
+                    currentData.mention
+                }\n\n` +
                     `${currentData.description}\n\n` +
                     (APICommand
                         ? `${getEmojiByName(allowedToRun ? "CONTROL.TICK" : "CONTROL.CROSS")} You ${

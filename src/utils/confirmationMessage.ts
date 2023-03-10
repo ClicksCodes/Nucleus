@@ -106,7 +106,13 @@ class confirmationMessage {
         this.reason = reason;
         return this;
     }
-    addModal(buttonText: string, emoji: string, customId: string, current: Record<string, string>, modal: Discord.ModalBuilder) {
+    addModal(
+        buttonText: string,
+        emoji: string,
+        customId: string,
+        current: Record<string, string>,
+        modal: Discord.ModalBuilder
+    ) {
         modal.setCustomId(customId);
         this.modals.push({ buttonText, emoji, customId, modal, values: current });
         return this;

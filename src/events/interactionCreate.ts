@@ -4,7 +4,18 @@ import create from "../actions/tickets/create.js";
 import close from "../actions/tickets/delete.js";
 import createTranscript from "../premium/createTranscript.js";
 
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, Interaction, InteractionEditReplyOptions, ModalBuilder, ModalSubmitInteraction, TextInputBuilder, TextInputStyle } from "discord.js";
+import {
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonInteraction,
+    ButtonStyle,
+    Interaction,
+    InteractionEditReplyOptions,
+    ModalBuilder,
+    ModalSubmitInteraction,
+    TextInputBuilder,
+    TextInputStyle
+} from "discord.js";
 import type { NucleusClient } from "../utils/client.js";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";
 
@@ -28,7 +39,10 @@ async function errorMessage(interaction: ButtonInteraction, message: string) {
 async function interactionCreate(interaction: Interaction) {
     if (interaction.isButton()) {
         if (interaction.customId.endsWith(":Suggestion")) {
-            const value = interaction.customId.startsWith("accept") || interaction.customId.startsWith("implement") ? true : false
+            const value =
+                interaction.customId.startsWith("accept") || interaction.customId.startsWith("implement")
+                    ? true
+                    : false;
             return await modifySuggestion(interaction, value);
         }
         switch (interaction.customId) {
@@ -88,10 +102,7 @@ const getReason = async (buttonInteraction: ButtonInteraction, prompt: string) =
     const modal = new ModalBuilder()
         .addComponents(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
-                new TextInputBuilder()
-                    .setStyle(TextInputStyle.Paragraph)
-                    .setLabel(prompt)
-                    .setCustomId("typed")
+                new TextInputBuilder().setStyle(TextInputStyle.Paragraph).setLabel(prompt).setCustomId("typed")
             )
         )
         .setTitle("Reason")
@@ -108,74 +119,95 @@ const getReason = async (buttonInteraction: ButtonInteraction, prompt: string) =
     }
     await out.deferUpdate();
     return out.fields.getTextInputValue("typed");
-}
+};
 
 async function modifySuggestion(interaction: ButtonInteraction, accept: boolean) {
     const message = interaction.message;
     await message.fetch();
     if (message.embeds.length === 0) return;
     const embed = message.embeds[0]!;
-    const issueNum = embed.footer!.text
-    if(!issueNum) return;
+    const issueNum = embed.footer!.text;
+    if (!issueNum) return;
     const issue = {
         owner: "ClicksMinutePer",
         repo: "Nucleus",
         issue_number: parseInt(issueNum)
-    }
+    };
     let name = "Unknown";
     const components: InteractionEditReplyOptions["components"] = [];
-    switch(interaction.customId) {
+    switch (interaction.customId) {
         case "accept:Suggestion": {
             name = "Accepted";
             await interaction.deferUpdate();
-            await client.GitHub.rest.issues.createComment({...issue, body: "Suggestion accepted by " + interaction.user.tag});
-            components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("close:Suggestion").setLabel("Close").setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder().setCustomId("implemented:Suggestion").setLabel("Implemented").setStyle(ButtonStyle.Secondary)
-            ))
+            await client.GitHub.rest.issues.createComment({
+                ...issue,
+                body: "Suggestion accepted by " + interaction.user.tag
+            });
+            components.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId("close:Suggestion")
+                        .setLabel("Close")
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId("implemented:Suggestion")
+                        .setLabel("Implemented")
+                        .setStyle(ButtonStyle.Secondary)
+                )
+            );
             break;
         }
         case "deny:Suggestion": {
             name = "Denied";
             const reason = await getReason(interaction, "Reason for denial");
-            await client.GitHub.rest.issues.createComment({...issue, body: "Suggestion denied by " + interaction.user.tag + " for reason:\n>" + reason});
-            await client.GitHub.rest.issues.update({...issue, state: "closed", state_reason: "not_planned"});
+            await client.GitHub.rest.issues.createComment({
+                ...issue,
+                body: "Suggestion denied by " + interaction.user.tag + " for reason:\n>" + reason
+            });
+            await client.GitHub.rest.issues.update({ ...issue, state: "closed", state_reason: "not_planned" });
             // await client.GitHub.rest.issues.lock({...issue, lock_reason: "resolved"})
-            components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("lock:Suggestion").setLabel("Lock").setStyle(ButtonStyle.Danger)
-            ))
+            components.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder().setCustomId("lock:Suggestion").setLabel("Lock").setStyle(ButtonStyle.Danger)
+                )
+            );
             break;
         }
         case "close:Suggestion": {
             name = "Closed";
             const reason = await getReason(interaction, "Reason for closing");
-            await client.GitHub.rest.issues.createComment({...issue, body: "Suggestion closed by " + interaction.user.tag + " for reason:\n>" + reason});
-            await client.GitHub.rest.issues.update({...issue, state: "closed"});
+            await client.GitHub.rest.issues.createComment({
+                ...issue,
+                body: "Suggestion closed by " + interaction.user.tag + " for reason:\n>" + reason
+            });
+            await client.GitHub.rest.issues.update({ ...issue, state: "closed" });
             // await client.GitHub.rest.issues.lock({...issue})
-            components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("lock:Suggestion").setLabel("Lock").setStyle(ButtonStyle.Danger)
-            ))
+            components.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder().setCustomId("lock:Suggestion").setLabel("Lock").setStyle(ButtonStyle.Danger)
+                )
+            );
             break;
         }
         case "implement:Suggestion": {
             name = "Implemented";
             await interaction.deferUpdate();
-            await client.GitHub.rest.issues.createComment({...issue, body: "Suggestion implemented"});
-            await client.GitHub.rest.issues.update({...issue, state: "closed", state_reason: "completed"});
-            await client.GitHub.rest.issues.lock({...issue, lock_reason: "resolved"})
+            await client.GitHub.rest.issues.createComment({ ...issue, body: "Suggestion implemented" });
+            await client.GitHub.rest.issues.update({ ...issue, state: "closed", state_reason: "completed" });
+            await client.GitHub.rest.issues.lock({ ...issue, lock_reason: "resolved" });
             break;
         }
         case "lock:Suggestion": {
             name = "Locked";
             await interaction.deferUpdate();
-            await client.GitHub.rest.issues.lock({...issue});
+            await client.GitHub.rest.issues.lock({ ...issue });
             break;
         }
         case "spam:Suggestion": {
             name = "Marked as Spam";
             await interaction.deferUpdate();
-            await client.GitHub.rest.issues.update({...issue, state: "closed", state_reason: "not_planned"});
-            await client.GitHub.rest.issues.lock({...issue, lock_reason: "spam"})
+            await client.GitHub.rest.issues.update({ ...issue, state: "closed", state_reason: "not_planned" });
+            await client.GitHub.rest.issues.lock({ ...issue, lock_reason: "spam" });
             break;
         }
     }
@@ -189,7 +221,7 @@ async function modifySuggestion(interaction: ButtonInteraction, accept: boolean)
         .setDescription(embed!.description!)
         .setFields({
             name: name + " by",
-            value: interaction.user.tag,
+            value: interaction.user.tag
         })
         .setStatus(newcolor)
         .setFooter(embed!.footer);

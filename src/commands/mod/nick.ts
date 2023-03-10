@@ -81,7 +81,7 @@ const callback = async (
                 "Change nickname",
                 "ICONS.EDIT",
                 "modal",
-                {default: newNickname ?? ""},
+                { default: newNickname ?? "" },
                 new ModalBuilder().setTitle("Editing nickname").addComponents(
                     new ActionRowBuilder<TextInputBuilder>().addComponents(
                         new TextInputBuilder()
