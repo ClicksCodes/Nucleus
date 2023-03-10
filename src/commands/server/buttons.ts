@@ -67,7 +67,11 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
     };
     do {
         const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder().setCustomId("edit").setLabel("Edit Embed").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+                .setCustomId("edit")
+                .setLabel("Edit Embed")
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji(getEmojiByName("ICONS.EDIT") as APIMessageComponentEmoji),
             new ButtonBuilder()
                 .setCustomId("send")
                 .setLabel("Send")
@@ -143,7 +147,8 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
         let i: Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction | Discord.StringSelectMenuInteraction;
         try {
             i = (await interaction.channel!.awaitMessageComponent({
-                filter: (i: Discord.Interaction) => i.user.id === interaction.user.id,
+                filter: (i: Discord.Interaction) =>
+                    i.user.id === interaction.user.id && i.isMessageComponent() && i.message.id === m.id,
                 time: 300000
             })) as
                 | Discord.ButtonInteraction
@@ -223,17 +228,18 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 case "send": {
                     await i.deferUpdate();
                     const channel = interaction.guild!.channels.cache.get(data.channel!) as Discord.TextChannel;
-                    const components = new ActionRowBuilder<ButtonBuilder>();
+                    const messageData: MessageCreateOptions = {};
                     for (const button of data.buttons) {
-                        components.addComponents(
-                            new ButtonBuilder()
-                                .setCustomId(button)
-                                .setLabel(buttonNames[button]!)
-                                .setStyle(ButtonStyle.Primary)
-                        );
+                        messageData.components = [
+                            new ActionRowBuilder<ButtonBuilder>().addComponents(
+                                new ButtonBuilder()
+                                    .setCustomId(button)
+                                    .setLabel(buttonNames[button]!)
+                                    .setStyle(ButtonStyle.Primary)
+                            )
+                        ];
                     }
-                    const messageData: MessageCreateOptions = { components: [components] };
-                    if (data.title || data.description) {
+                    if (data.title || data.description || data.color) {
                         const e = new EmojiEmbed();
                         if (data.title) e.setTitle(data.title);
                         if (data.description) e.setDescription(data.description);
