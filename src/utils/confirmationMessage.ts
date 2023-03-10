@@ -42,7 +42,7 @@ class confirmationMessage {
         emoji: string;
         customId: string;
         modal: Discord.ModalBuilder;
-        value: string | undefined;
+        values: Record<string, string>;
     }[] = [];
 
     constructor(interaction: CommandInteraction | ButtonInteraction) {
@@ -106,9 +106,9 @@ class confirmationMessage {
         this.reason = reason;
         return this;
     }
-    addModal(buttonText: string, emoji: string, customId: string, current: string, modal: Discord.ModalBuilder) {
+    addModal(buttonText: string, emoji: string, customId: string, current: Record<string, string>, modal: Discord.ModalBuilder) {
         modal.setCustomId(customId);
-        this.modals.push({ buttonText, emoji, customId, modal, value: current });
+        this.modals.push({ buttonText, emoji, customId, modal, values: current });
         return this;
     }
     async send(editOnly?: boolean): Promise<{
@@ -121,7 +121,7 @@ class confirmationMessage {
             emoji: string;
             customId: string;
             modal: Discord.ModalBuilder;
-            value: string | undefined;
+            values: Record<string, string>;
         }[];
     }> {
         let cancelled = false;
@@ -131,19 +131,19 @@ class confirmationMessage {
 
         while (!cancelled && success === undefined && !returnComponents && !newReason) {
             const fullComponents = [
-                new Discord.ButtonBuilder()
+                new ButtonBuilder()
                     .setCustomId("yes")
                     .setLabel("Confirm")
                     .setStyle(this.inverted ? ButtonStyle.Success : ButtonStyle.Danger)
                     .setEmoji(getEmojiByName("CONTROL.TICK", "id")),
-                new Discord.ButtonBuilder()
+                new ButtonBuilder()
                     .setCustomId("no")
                     .setLabel("Cancel")
-                    .setStyle(ButtonStyle.Secondary)
+                    .setStyle(ButtonStyle.Danger)
                     .setEmoji(getEmojiByName("CONTROL.CROSS", "id"))
             ];
             Object.entries(this.customButtons).forEach(([k, v]) => {
-                const button = new Discord.ButtonBuilder()
+                const button = new ButtonBuilder()
                     .setCustomId(k)
                     .setLabel(v.title)
                     .setStyle(v.active ? ButtonStyle.Success : ButtonStyle.Primary)
@@ -153,7 +153,7 @@ class confirmationMessage {
             });
             for (const modal of this.modals) {
                 fullComponents.push(
-                    new Discord.ButtonBuilder()
+                    new ButtonBuilder()
                         .setCustomId(modal.customId)
                         .setLabel(modal.buttonText)
                         .setStyle(ButtonStyle.Primary)
@@ -163,7 +163,7 @@ class confirmationMessage {
             }
             if (this.reason !== null)
                 fullComponents.push(
-                    new Discord.ButtonBuilder()
+                    new ButtonBuilder()
                         .setCustomId("reason")
                         .setLabel("Edit Reason")
                         .setStyle(ButtonStyle.Primary)
@@ -174,7 +174,7 @@ class confirmationMessage {
             for (let i = 0; i < fullComponents.length; i += 5) {
                 components.push(
                     new ActionRowBuilder<
-                        | Discord.ButtonBuilder
+                        | ButtonBuilder
                         | Discord.StringSelectMenuBuilder
                         | Discord.RoleSelectMenuBuilder
                         | Discord.UserSelectMenuBuilder
@@ -272,7 +272,7 @@ class confirmationMessage {
                             .setEmoji(this.emoji)
                     ],
                     components: [
-                        new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                        new ActionRowBuilder<ButtonBuilder>().addComponents(
                             new ButtonBuilder()
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -322,7 +322,7 @@ class confirmationMessage {
                             .setEmoji(this.emoji)
                     ],
                     components: [
-                        new ActionRowBuilder<Discord.ButtonBuilder>().addComponents(
+                        new ActionRowBuilder<ButtonBuilder>().addComponents(
                             new ButtonBuilder()
                                 .setLabel("Back")
                                 .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
@@ -350,7 +350,9 @@ class confirmationMessage {
                     continue;
                 }
                 if (out instanceof ModalSubmitInteraction) {
-                    chosenModal!.value = out.fields.getTextInputValue("default");
+                    out.fields.fields.forEach((f, k) => {
+                        chosenModal!.values[k] = f.value;
+                    });
                 }
                 returnComponents = true;
                 continue;

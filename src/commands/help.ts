@@ -22,7 +22,7 @@ import { capitalize } from "../utils/generateKeyValueList.js";
 import { getCommandByName, getCommandMentionByName } from "../utils/getCommandDataByName.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-const command = new SlashCommandBuilder().setName("help").setDescription("Shows help for commands");
+const command = new SlashCommandBuilder().setName("help").setDescription("Shows help for commands").setDMPermission(true);
 
 const styles: Record<string, { emoji: string }> = {
     help: { emoji: "NUCLEUS.LOGO" },
@@ -127,7 +127,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 );
             }
             for (const option of options) {
-                optionString += `> \`${option.name}\` (${ApplicationCommandOptionType[option.type]}) - ${
+                optionString += ` - \`${option.name}\` (${ApplicationCommandOptionType[option.type].replace("Integer", "Number").replace("String", "Text")}) - ${
                     option.description
                 }\n`;
             }
@@ -136,14 +136,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     "commands/" + currentPath.filter((value) => value !== "" && value !== "none").join("/")
                 ]![0];
             let allowedToRun = true;
-            if (APICommand?.check) {
+            if (interaction.guild && APICommand?.check) {
                 allowedToRun = await APICommand.check(interaction as Interaction, true);
             }
             embed.setDescription(
-                `${getEmojiByName(styles[currentPath[0]]!.emoji)} **${capitalize(currentData.name)}**\n> ${
-                    currentData.mention
-                }\n\n` +
-                    `> ${currentData.description}\n\n` +
+                `${getEmojiByName(styles[currentPath[0]]!.emoji)} **${capitalize(currentData.name)}** | ${currentData.mention}\n\n` +
+                    `${currentData.description}\n\n` +
                     (APICommand
                         ? `${getEmojiByName(allowedToRun ? "CONTROL.TICK" : "CONTROL.CROSS")} You ${
                               allowedToRun ? "" : "don't "

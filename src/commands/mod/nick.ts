@@ -81,7 +81,7 @@ const callback = async (
                 "Change nickname",
                 "ICONS.EDIT",
                 "modal",
-                newNickname ?? "",
+                {default: newNickname ?? ""},
                 new ModalBuilder().setTitle("Editing nickname").addComponents(
                     new ActionRowBuilder<TextInputBuilder>().addComponents(
                         new TextInputBuilder()
@@ -103,7 +103,7 @@ const callback = async (
             notify = confirmation.components["notify"]!.active;
             createAppealTicket = confirmation.components["appeal"]!.active;
         }
-        if (confirmation.modals) newNickname = confirmation.modals![0]!.value;
+        if (confirmation.modals) newNickname = confirmation.modals![0]!.values["default"];
     } while (!timedOut && !success);
     if (timedOut || !success) return;
     let dmSent = false;
@@ -222,7 +222,7 @@ const callback = async (
     });
 };
 
-const check = async (interaction: CommandInteraction | ButtonInteraction, partial: boolean, target?: GuildMember) => {
+const check = (interaction: CommandInteraction | ButtonInteraction, partial: boolean, target?: GuildMember) => {
     const member = interaction.member as GuildMember;
     // Check if the user has manage_nicknames permission
     if (!member.permissions.has("ManageNicknames")) return "You do not have the *Manage Nicknames* permission";

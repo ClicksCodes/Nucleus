@@ -18,12 +18,13 @@ declare const config: {
         authSource: string;
     };
     baseUrl: string;
-    rapidApiKey: string;
     clamav: {
         socket?: string;
         host?: string;
         port?: number;
     };
+    githubPAT: string;
+    suggestionChannel: string;
 };
 
 export default config;

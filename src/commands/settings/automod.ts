@@ -28,6 +28,7 @@ import client from "../../utils/client.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import listToAndMore from "../../utils/listToAndMore.js";
+import _ from "lodash";
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("automod").setDescription("Setting for automatic moderation features");
@@ -157,6 +158,7 @@ const toSelectMenu = async (
 const imageMenu = async (
     interaction: StringSelectMenuInteraction,
     m: Message,
+    unsavedChanges: boolean,
     current: {
         NSFW: boolean;
         size: boolean;
@@ -186,7 +188,10 @@ const imageMenu = async (
             .setTitle("Image Settings")
             .setDescription(
                 `${emojiFromBoolean(current.NSFW)} **NSFW**\n` + `${emojiFromBoolean(current.size)} **Size**\n`
-            );
+            )
+            .setFooter({
+                text: unsavedChanges ? "No changes made" : "Changes not saved"
+            });
 
         await interaction.editReply({ embeds: [embed], components: [options] });
 
@@ -207,10 +212,12 @@ const imageMenu = async (
             }
             case "nsfw": {
                 current.NSFW = !current.NSFW;
+                unsavedChanges = true;
                 break;
             }
             case "size": {
                 current.size = !current.size;
+                unsavedChanges = true;
                 break;
             }
         }
@@ -221,6 +228,7 @@ const imageMenu = async (
 const wordMenu = async (
     interaction: StringSelectMenuInteraction,
     m: Message,
+    unsavedChanges: boolean,
     current: {
         enabled: boolean;
         words: { strict: string[]; loose: string[] };
@@ -296,7 +304,10 @@ const wordMenu = async (
                     )
             )
             .setStatus("Success")
-            .setEmoji("GUILD.SETTINGS.GREEN");
+            .setEmoji("GUILD.SETTINGS.GREEN")
+            .setFooter({
+                text: unsavedChanges ? "No changes made" : "Changes not saved"
+            });
 
         await interaction.editReply({ embeds: [embed], components: [selectMenu, buttons] });
 
@@ -320,6 +331,7 @@ const wordMenu = async (
                 }
                 case "enabled": {
                     current.enabled = !current.enabled;
+                    unsavedChanges = true;
                     break;
                 }
             }
@@ -391,6 +403,7 @@ const wordMenu = async (
                         .split(",")
                         .map((s) => s.trim())
                         .filter((s) => s.length > 0);
+                    unsavedChanges = true;
                     break;
                 }
                 case "allowedUsers": {
@@ -402,6 +415,7 @@ const wordMenu = async (
                         "member",
                         "Word Filter"
                     );
+                    unsavedChanges = true;
                     break;
                 }
                 case "allowedRoles": {
@@ -413,6 +427,7 @@ const wordMenu = async (
                         "role",
                         "Word Filter"
                     );
+                    unsavedChanges = true;
                     break;
                 }
                 case "allowedChannels": {
@@ -424,6 +439,7 @@ const wordMenu = async (
                         "channel",
                         "Word Filter"
                     );
+                    unsavedChanges = true;
                     break;
                 }
             }
@@ -435,6 +451,7 @@ const wordMenu = async (
 const inviteMenu = async (
     interaction: StringSelectMenuInteraction,
     m: Message,
+    unsavedChanges: boolean,
     current: {
         enabled: boolean;
         allowed: { users: string[]; roles: string[]; channels: string[] };
@@ -503,7 +520,10 @@ const inviteMenu = async (
                     )
             )
             .setStatus("Success")
-            .setEmoji("GUILD.SETTINGS.GREEN");
+            .setEmoji("GUILD.SETTINGS.GREEN")
+            .setFooter({
+                text: unsavedChanges ? "No changes made" : "Changes not saved"
+            });
 
         await interaction.editReply({ embeds: [embed], components: [menu, buttons] });
 
@@ -526,6 +546,7 @@ const inviteMenu = async (
                 }
                 case "enabled": {
                     current.enabled = !current.enabled;
+                    unsavedChanges = true;
                     break;
                 }
             }
@@ -540,6 +561,7 @@ const inviteMenu = async (
                         "member",
                         "Invite Settings"
                     );
+                    unsavedChanges = true;
                     break;
                 }
                 case "roles": {
@@ -550,6 +572,7 @@ const inviteMenu = async (
                         "role",
                         "Invite Settings"
                     );
+                    unsavedChanges = true;
                     break;
                 }
                 case "channels": {
@@ -560,6 +583,7 @@ const inviteMenu = async (
                         "channel",
                         "Invite Settings"
                     );
+                    unsavedChanges = true;
                     break;
                 }
             }
@@ -571,6 +595,7 @@ const inviteMenu = async (
 const mentionMenu = async (
     interaction: StringSelectMenuInteraction,
     m: Message,
+    unsavedChanges: boolean,
     current: {
         mass: number;
         everyone: boolean;
@@ -690,7 +715,10 @@ const mentionMenu = async (
                     }`
             )
             .setStatus("Success")
-            .setEmoji("GUILD.SETTINGS.GREEN");
+            .setEmoji("GUILD.SETTINGS.GREEN")
+            .setFooter({
+                text: unsavedChanges ? "No changes made" : "Changes not saved"
+            });;
 
         await interaction.editReply({ embeds: [embed], components: [menu, allowedMenu, buttons] });
 
@@ -714,10 +742,12 @@ const mentionMenu = async (
                 }
                 case "everyone": {
                     current.everyone = !current.everyone;
+                    unsavedChanges = true;
                     break;
                 }
                 case "roles": {
                     current.roles = !current.roles;
+                    unsavedChanges = true;
                     break;
                 }
             }
@@ -767,6 +797,7 @@ const mentionMenu = async (
                             if (!out) break;
                             if (out.isButton()) break;
                             current.mass = parseInt(out.fields.getTextInputValue("mass"));
+                            unsavedChanges = true;
                             break;
                         }
                         case "roles": {
@@ -778,6 +809,7 @@ const mentionMenu = async (
                                 "role",
                                 "Mention Settings"
                             );
+                            unsavedChanges = true;
                             break;
                         }
                     }
@@ -794,6 +826,7 @@ const mentionMenu = async (
                                 "member",
                                 "Mention Settings"
                             );
+                            unsavedChanges = true;
                             break;
                         }
                         case "roles": {
@@ -804,6 +837,7 @@ const mentionMenu = async (
                                 "role",
                                 "Mention Settings"
                             );
+                            unsavedChanges = true;
                             break;
                         }
                         case "channels": {
@@ -814,6 +848,7 @@ const mentionMenu = async (
                                 "channel",
                                 "Mention Settings"
                             );
+                            unsavedChanges = true;
                             break;
                         }
                     }
@@ -828,6 +863,7 @@ const mentionMenu = async (
 const cleanMenu = async (
     interaction: StringSelectMenuInteraction,
     m: Message,
+    unsavedChanges: boolean,
     current?: {
         channels?: string[];
         allowed?: {
@@ -890,7 +926,10 @@ const cleanMenu = async (
                             : "None"
                     }\n\n`
             )
-            .setStatus("Success");
+            .setStatus("Success")
+            .setFooter({
+                text: unsavedChanges ? "No changes made" : "Changes not saved"
+            });
 
         await interaction.editReply({ embeds: [embed], components: [channelMenu, allowedMenu, buttons] });
 
@@ -958,6 +997,7 @@ const cleanMenu = async (
                             }
                         }
                     }
+                    unsavedChanges = true;
                     break;
                 }
                 case "allowed": {
@@ -970,6 +1010,7 @@ const cleanMenu = async (
                                 "member",
                                 "Mention Settings"
                             );
+                            unsavedChanges = true;
                             break;
                         }
                         case "roles": {
@@ -980,6 +1021,7 @@ const cleanMenu = async (
                                 "role",
                                 "Mention Settings"
                             );
+                            unsavedChanges = true;
                             break;
                         }
                     }
@@ -1001,15 +1043,16 @@ const cleanMenu = async (
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     if (!interaction.guild) return;
     const m = await interaction.reply({ embeds: LoadingEmbed, fetchReply: true, ephemeral: true });
-    const config = (await client.database.guilds.read(interaction.guild.id)).filters;
+    let config = (await client.database.guilds.read(interaction.guild.id)).filters;
 
     let closed = false;
 
-    const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder().setCustomId("save").setLabel("Save").setStyle(ButtonStyle.Success)
-    );
 
+    let current = _.cloneDeep(config);
     do {
+        const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder().setCustomId("save").setLabel("Save").setStyle(ButtonStyle.Success).setDisabled(_.isEqual(config, current))
+        );
         const selectMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId("filter")
@@ -1055,7 +1098,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     `${emojiFromBoolean(config.clean.channels.length > 0)} **Clean**\n`
             )
             .setStatus("Success")
-            .setEmoji("GUILD.SETTINGS.GREEN");
+            .setEmoji("GUILD.SETTINGS.GREEN")
+            .setFooter({
+                text: _.isEqual(config, current) ? "No changes made" : "Changes not saved"
+            });
 
         await interaction.editReply({ embeds: [embed], components: [selectMenu, button] });
 
@@ -1069,41 +1115,37 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             closed = true;
             continue;
         }
-        if (i.isButton()) {
-            await i.deferUpdate();
-            await client.database.guilds.write(interaction.guild.id, { filters: config });
+        await i.deferUpdate();
+        if(i.isButton()) {
+            await client.database.guilds.write(interaction.guild.id, { filters: current });
             await client.memory.forceUpdate(interaction.guild.id);
+            config = current;
+            current = _.cloneDeep(config);
         } else {
             switch (i.values[0]) {
                 case "invites": {
-                    await i.deferUpdate();
-                    config.invite = await inviteMenu(i, m, config.invite);
+                    config.invite = await inviteMenu(i, m, _.isEqual(config, current), config.invite);
                     break;
                 }
                 case "mentions": {
-                    await i.deferUpdate();
-                    config.pings = await mentionMenu(i, m, config.pings);
+                    config.pings = await mentionMenu(i, m, _.isEqual(config, current), config.pings);
                     break;
                 }
                 case "words": {
-                    await i.deferUpdate();
-                    config.wordFilter = await wordMenu(i, m, config.wordFilter);
+                    config.wordFilter = await wordMenu(i, m, _.isEqual(config, current), config.wordFilter);
                     break;
                 }
                 case "malware": {
-                    await i.deferUpdate();
                     config.malware = !config.malware;
                     break;
                 }
                 case "images": {
-                    await i.deferUpdate();
-                    const next = await imageMenu(i, m, config.images);
+                    const next = await imageMenu(i, m, _.isEqual(config, current), config.images);
                     config.images = next;
                     break;
                 }
                 case "clean": {
-                    await i.deferUpdate();
-                    const next = await cleanMenu(i, m, config.clean);
+                    const next = await cleanMenu(i, m, _.isEqual(config, current), config.clean);
                     config.clean = next;
                     break;
                 }

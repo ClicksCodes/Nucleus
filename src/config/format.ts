@@ -1,7 +1,7 @@
 import fs from "fs";
 import * as readLine from "node:readline/promises";
 
-const defaultDict: Record<string, string | string[] | boolean | Record<string, string | number>> = {
+const defaultDict: Record<string, string | string[] | boolean | Record<string, string | number | undefined>> = {
     developmentToken: "Your development bot token (Used for testing in one server, rather than production)",
     developmentGuildID: "Your development guild ID",
     enableDevelopment: true,
@@ -26,15 +26,16 @@ const defaultDict: Record<string, string | string[] | boolean | Record<string, s
         authSource: ""
     },
     baseUrl: "Your website where buttons such as Verify and Role menu will link to, e.g. https://example.com/",
-    pastebinApiKey: "An API key for pastebin (optional)",
-    pastebinUsername: "Your pastebin username (optional)",
-    pastebinPassword: "Your pastebin password (optional)",
-    rapidApiKey: "Your RapidAPI key (optional), used for Unscan",
+    clamAVSocket: "Your ClamAV socket file (optional)",
+    clamAVHost: "Your ClamAV host (optional)",
+    clamAVPort: "Your ClamAV port (optional)",
     clamav: {
-        socket: "Your ClamAV socket file (optional)",
-        host: "Your ClamAV host (optional)",
-        port: "Your ClamAV port (optional)"
-    }
+        socket: "",
+        host: "",
+        port: 0
+    },
+    githubPAT: "Your GitHub Personal Access Token (optional)",
+    suggestionChannel: "Your suggestion channel ID (optional)"
 };
 
 const readline = readLine.createInterface({
@@ -116,6 +117,9 @@ export default async function (walkthrough = false) {
                     case "mongoOptions": {
                         break;
                     }
+                    case "clamav": {
+                        break;
+                    }
                     default: {
                         json[key] = await getInput(`\x1b[36m${key} \x1b[0m(\x1b[35m${defaultDict[key]}\x1b[0m) > `);
                     }
@@ -127,22 +131,9 @@ export default async function (walkthrough = false) {
     }
     if (walkthrough && !(json["mongoUrl"] ?? false)) json["mongoUrl"] = "mongodb://127.0.0.1:27017";
     if (!((json["baseUrl"] as string | undefined) ?? "").endsWith("/")) (json["baseUrl"] as string) += "/";
-    let hosts;
-    try {
-        hosts = fs.readFileSync("/etc/hosts", "utf8").toString().split("\n");
-    } catch (e) {
-        return console.log(
-            "\x1b[31m⚠ No /etc/hosts found. Please ensure the file exists and is readable. (Windows is not supported, Mac and Linux users should not experience this error)"
-        );
-    }
-    let localhost: string | undefined = hosts.find((line) => line.split(" ")[1] === "localhost");
-    if (localhost) {
-        localhost = localhost.split(" ")[0];
-    } else {
-        localhost = "127.0.0.1";
-    }
-    json["mongoUrl"] = (json["mongoUrl"]! as string).replace("localhost", localhost!);
-    json["baseUrl"] = (json["baseUrl"]! as string).replace("localhost", localhost!);
+    const localhost = "127.0.0.1"
+    json["mongoUrl"] = (json["mongoUrl"]! as string).replace("localhost", localhost);
+    json["baseUrl"] = (json["baseUrl"]! as string).replace("localhost", localhost);
     json["mongoOptions"] = {
         username: json["username"] as string,
         password: json["password"] as string,
@@ -150,6 +141,11 @@ export default async function (walkthrough = false) {
         host: json["host"] as string,
         authSource: json["authSource"] as string
     };
+    json["clamav"] = {
+        socket: json["clamAVSocket"] as string | undefined,
+        host: json["clamAVHost"] as string | undefined,
+        port: json["clamAVPort"] as number | undefined
+    }
 
     fs.writeFileSync("./src/config/main.ts", "export default " + JSON.stringify(json, null, 4) + ";");
 

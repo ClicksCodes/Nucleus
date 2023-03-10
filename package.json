@@ -1,6 +1,7 @@
 {
     "dependencies": {
         "@hokify/agenda": "^6.2.12",
+        "@octokit/graphql": "^5.0.5",
         "@tensorflow/tfjs": "^3.18.0",
         "@tensorflow/tfjs-node": "^3.18.0",
         "@total-typescript/ts-reset": "^0.3.7",
@@ -25,6 +26,7 @@
         "node-fetch": "^3.3.0",
         "node-tesseract-ocr": "^2.2.1",
         "nsfwjs": "^2.4.2",
+        "octokit": "^2.0.14",
         "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
         "systeminformation": "^5.17.3"
@@ -48,7 +50,7 @@
         "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To view errors in more detail, please run `yarn lint`'; true",
         "lint-ci": "echo 'Style checking...' && prettier --check . && echo 'Linting...' && eslint src",
         "setup": "node Installer.js",
-        "win-force-build": "clear | rm -r dist | tsc-suppress",
+        "win-force-build": "clear | rm -r dist | tsc-suppress | yarn copy-files",
         "audit-fix": "yarn-audit-fix",
         "versions": "yarn versions && yarn list && node --version"
     },
