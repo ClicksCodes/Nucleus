@@ -21,6 +21,52 @@ import config from "../../config/main.js";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("stats").setDescription("Gets the bot's stats");
 
+const confirm = async (interaction: CommandInteraction) => {
+    const requiredTexts = [
+        "just do it",
+        "yes, do as i say!",
+        "clicksminuteper/nucleus",
+        "i've said it once i'll say it again",
+        "no, i've changed my mind",
+        "this incident will be reported",
+        "coded told me to",
+        "mini told me to",
+        "pinea told me to",
+        "what's a java script",
+        "it's a feature not a bug",
+        "that never happened during testing"
+    ];
+    const chosen = requiredTexts[Math.floor(Math.random() * (requiredTexts.length - 1))]!;
+
+    const modal = new ModalBuilder()
+        .addComponents(
+            new ActionRowBuilder<TextInputBuilder>().addComponents(
+                new TextInputBuilder()
+                    .setStyle(TextInputStyle.Short)
+                    .setLabel(`Type "${chosen}" below`)
+                    .setCustomId("confirm")
+                    .setPlaceholder("Guild ID")
+                    .setMinLength(chosen.length)
+                    .setMaxLength(chosen.length)
+            )
+        )
+        .setTitle("Admin Panel")
+        .setCustomId("adminPanel");
+    await interaction.showModal(modal);
+    let out: ModalSubmitInteraction;
+    try {
+        out = await interaction.awaitModalSubmit({
+            filter: (i) => i.customId === "adminPanel" && i.user.id === interaction.user.id,
+            time: 300000
+        });
+    } catch {
+        return;
+    }
+    await out.deferUpdate();
+    const typed = out.fields.getTextInputValue("confirm");
+    return typed.toLowerCase() === chosen.toLowerCase();
+};
+
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const description = `**Servers:** ${client.guilds.cache.size}\n` + `**Ping:** \`${client.ws.ping * 2}ms\``;
     const m = await interaction.reply({
@@ -45,11 +91,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             ],
             components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents(
-                    new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder()
-                        .setCustomId("mod:nickname:599498449733550102")
-                        .setLabel("Testing")
-                        .setStyle(ButtonStyle.Primary)
+                    new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary)
                 )
             ]
         });
@@ -77,28 +119,30 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             return;
         // console.log(interaction)
         if (!("awaitMessageComponent" in channel)) return;
-        try {
-            i1 = await channel!.awaitMessageComponent<ComponentType.Button>({
-                filter: (i) => i.customId === "admin" && i.user.id === interaction.user.id && i.message.id === m.id,
-                time: 300000
-            });
-        } catch (e) {
-            console.log(e);
-            return;
-        }
-        await i1.showModal(modal);
-        let out: ModalSubmitInteraction;
-        try {
-            out = await i1.awaitModalSubmit({
-                filter: (i) => i.customId === "adminPanel" && i.user.id === interaction.user.id,
-                time: 300000
-            });
-        } catch {
-            return;
-        }
-        await out.deferUpdate();
-        const GuildID = out.fields.getTextInputValue("guildID");
-        if (!client.guilds.cache.has(GuildID)) {
+        let GuildID = interaction.guildId;
+        if (!GuildID) {
+            try {
+                i1 = await channel!.awaitMessageComponent<ComponentType.Button>({
+                    filter: (i) => i.customId === "admin" && i.user.id === interaction.user.id && i.message.id === m.id,
+                    time: 300000
+                });
+            } catch (e) {
+                console.log(e);
+                return;
+            }
+            await i1.showModal(modal);
+            let out: ModalSubmitInteraction;
+            try {
+                out = await i1.awaitModalSubmit({
+                    filter: (i) => i.customId === "adminPanel" && i.user.id === interaction.user.id,
+                    time: 300000
+                });
+            } catch {
+                return;
+            }
+            await out.deferUpdate();
+            GuildID = out.fields.getTextInputValue("guildID");
+        } else if (!client.guilds.cache.has(GuildID)) {
             await interaction.editReply({
                 embeds: [new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")],
                 components: []
@@ -110,10 +154,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents(
                     new ButtonBuilder().setCustomId("stats").setLabel("Stats").setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId("leave").setLabel("Leave").setStyle(ButtonStyle.Danger),
                     new ButtonBuilder().setCustomId("data").setLabel("Guild data").setStyle(ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId("purge").setLabel("Delete data").setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder().setCustomId("cache").setLabel("Reset cache").setStyle(ButtonStyle.Success)
+                    new ButtonBuilder().setCustomId("cache").setLabel("Reset cache").setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId("leave").setLabel("Leave").setStyle(ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId("purge").setLabel("Delete data").setStyle(ButtonStyle.Danger)
                 )
             ]
         });
@@ -126,9 +170,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } catch {
             return;
         }
-        await i.deferUpdate();
         const guild = (await client.guilds.fetch(GuildID)) as Guild | null;
         if (!guild) {
+            await i.deferUpdate();
             await interaction.editReply({
                 embeds: [new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")],
                 components: []
@@ -136,6 +180,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             return;
         }
         if (i.customId === "stats") {
+            await i.deferUpdate();
             await interaction.editReply({
                 embeds: [
                     new EmojiEmbed()
@@ -154,6 +199,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 ]
             });
         } else if (i.customId === "leave") {
+            if (!(await confirm(interaction))) {
+                await interaction.editReply({
+                    embeds: [new EmojiEmbed().setTitle("No changes were made").setStatus("Danger")],
+                    components: []
+                });
+                return;
+            }
             await guild.leave();
             await interaction.editReply({
                 embeds: [
@@ -166,6 +218,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 components: []
             });
         } else if (i.customId === "data") {
+            await i.deferUpdate();
             // Get all the data and convert to a string
             const data = await client.database.guilds.read(guild.id);
             const stringified = JSON.stringify(data, null, 2);
@@ -179,6 +232,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 files: [attachment]
             });
         } else if (i.customId === "purge") {
+            if (!(await confirm(interaction))) {
+                await interaction.editReply({
+                    embeds: [new EmojiEmbed().setTitle("No changes were made").setStatus("Danger")],
+                    components: []
+                });
+                return;
+            }
             await client.database.guilds.delete(GuildID);
             await client.database.history.delete(GuildID);
             await client.database.notes.delete(GuildID);
@@ -194,6 +254,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 components: []
             });
         } else if (i.customId === "cache") {
+            await i.deferUpdate();
             await client.memory.forceUpdate(guild.id);
             await interaction.editReply({
                 embeds: [

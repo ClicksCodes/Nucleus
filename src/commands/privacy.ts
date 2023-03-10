@@ -29,11 +29,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDescription(
                         "Nucleus is a bot that naturally needs to store data about servers.\n" +
                             "We are entirely [open source](https://github.com/ClicksMinutePer/Nucleus), so you can check exactly what we store, and how it works.\n\n" +
-                            "Any questions about Nucleus, how it works, and what data is stored can be asked in [our server](https://discord.gg/bPaNnxe)."
+                            "Any questions about Nucleus, how it works, and what data is stored can be asked in [our server](https://discord.gg/bPaNnxe)." +
+                            "\n\n[[Privacy Policy]](https://clicksminuteper.github.io/policies/nucleus) | [[Terms of Service]](https://clicksminuteper.github.io/policies/nucleustos)"
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
-                    .setFooter({ text: "https://clicksminuteper.github.io/policies/nucleus" })
             )
             .setTitle("Welcome")
             .setDescription("General privacy information")
@@ -43,15 +43,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 new EmojiEmbed()
                     .setTitle("Scanners")
                     .setDescription(
-                        "Nucleus uses [unscan](https://rapidapi.com/abcdan/api/unscan/) to scan links, images and files for malware and other threats.\n" +
-                            'This service\'s [privacy policy](https://unscan.co/policies) is public, and they "do not store or sell your data."'
+                        "Nucleus scans content sent by users for malware and NSFW content\n" +
+                            'Malware is detected using [ClamAV](https://clamav.net/), and the standard ClamAV database."\n' +
+                            "NSFW detection is provided by [NsfwJS](https://nsfwjs.com/), with a model provided by [GantMan](https://github.com/GantMan/nsfw_model/releases/tag/1.1.0)\n\n" +
+                            "All data is processed on our servers and is not processed by a 3rd party."
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
-                    .setFooter({ text: "https://clicksminuteper.github.io/policies/nucleus" })
             )
             .setTitle("Scanners")
-            .setDescription("About Unscan")
+            .setDescription("About Scanners")
             .setPageId(1),
         new Embed()
             .setEmbed(
@@ -62,13 +63,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     )
                     .setEmoji("NUCLEUS.LOGO")
                     .setStatus("Danger")
-                    .setFooter({ text: "https://clicksminuteper.github.io/policies/nucleus" })
             )
             .setTitle("Link scanning and Transcripts")
             .setDescription("Information about how links and images are scanned, and transcripts are stored")
             .setPageId(2)
     ].concat(
-        (interaction.member as Discord.GuildMember).permissions.has("Administrator")
+        (interaction.member as Discord.GuildMember).id === interaction.guild!.ownerId
             ? [
                   new Embed()
                       .setEmbed(
@@ -77,7 +77,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                               .setDescription("Below are buttons for controlling this servers privacy settings")
                               .setEmoji("NUCLEUS.LOGO")
                               .setStatus("Danger")
-                              .setFooter({ text: "https://clicksminuteper.github.io/policies/nucleus" })
                       )
                       .setTitle("Options")
                       .setDescription("Options")
@@ -88,7 +87,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                                   .setLabel("Clear all data")
                                   .setCustomId("clear-all-data")
                                   .setStyle(ButtonStyle.Danger)
-                                  .setDisabled(!(interaction.user.id === interaction.guild!.ownerId))
                           ])
                       ])
               ]

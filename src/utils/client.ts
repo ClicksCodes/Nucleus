@@ -6,6 +6,7 @@ import { Guilds, History, ModNotes, Premium, PerformanceTest, ScanCache, Transcr
 import EventScheduler from "../utils/eventScheduler.js";
 import type { RoleMenuSchema } from "../actions/roleMenu.js";
 import config from "../config/main.js";
+import { Octokit } from "octokit";
 
 class NucleusClient extends Client {
     logger = Logger;
@@ -24,6 +25,7 @@ class NucleusClient extends Client {
         scanCache: ScanCache;
         transcripts: Transcript;
     };
+    GitHub = new Octokit({ auth: config.githubPAT });
     preloadPage: Record<string, { command: string; argument: string }> = {}; // e.g. { channelID: { command: privacy, page: 3}}
     commands: Record<
         string,
