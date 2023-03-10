@@ -122,7 +122,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         let i: ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         try {
             i = (await m.awaitMessageComponent({
-                filter: (i) => i.user.id === interaction.user.id,
+                filter: (i) => i.user.id === interaction.user.id && i.isMessageComponent() && i.message.id === m.id,
                 time: 300000
             })) as ButtonInteraction | StringSelectMenuInteraction | ChannelSelectMenuInteraction;
         } catch (e) {

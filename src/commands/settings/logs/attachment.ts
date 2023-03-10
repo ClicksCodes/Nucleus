@@ -18,7 +18,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
 
 const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     if (interaction.guild) client.database.premium.hasPremium(interaction.guild.id).finally(() => {});
-    await interaction.reply({
+    const m = await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
@@ -79,7 +79,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
         let i: Discord.ButtonInteraction | Discord.SelectMenuInteraction;
         try {
-            i = (await interaction.channel!.awaitMessageComponent({
+            i = (await m.awaitMessageComponent({
                 filter: (i: Discord.Interaction) => i.user.id === interaction.user.id,
                 time: 300000
             })) as Discord.ButtonInteraction | Discord.SelectMenuInteraction;

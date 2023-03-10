@@ -79,7 +79,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         if (!("awaitMessageComponent" in channel)) return;
         try {
             i1 = await channel!.awaitMessageComponent<ComponentType.Button>({
-                filter: (i) => i.customId === "admin" && i.user.id === interaction.user.id,
+                filter: (i) => i.customId === "admin" && i.user.id === interaction.user.id && i.message.id === m.id,
                 time: 300000
             });
         } catch (e) {
@@ -120,7 +120,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         let i;
         try {
             i = await m.awaitMessageComponent<ComponentType.Button>({
-                filter: (i) => i.user.id === interaction.user.id,
+                filter: (i) => i.user.id === interaction.user.id && i.message.id === m.id,
                 time: 300000
             });
         } catch {

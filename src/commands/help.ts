@@ -127,7 +127,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 );
             }
             for (const option of options) {
-                optionString += `> ${option.name} (${ApplicationCommandOptionType[option.type]})- ${
+                optionString += `> \`${option.name}\` (${ApplicationCommandOptionType[option.type]}) - ${
                     option.description
                 }\n`;
             }

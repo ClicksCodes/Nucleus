@@ -1,7 +1,7 @@
 import fs from "fs";
 import * as readLine from "node:readline/promises";
 
-const defaultDict: Record<string, string | string[] | boolean | Record<string, string>> = {
+const defaultDict: Record<string, string | string[] | boolean | Record<string, string | number>> = {
     developmentToken: "Your development bot token (Used for testing in one server, rather than production)",
     developmentGuildID: "Your development guild ID",
     enableDevelopment: true,
@@ -29,7 +29,12 @@ const defaultDict: Record<string, string | string[] | boolean | Record<string, s
     pastebinApiKey: "An API key for pastebin (optional)",
     pastebinUsername: "Your pastebin username (optional)",
     pastebinPassword: "Your pastebin password (optional)",
-    rapidApiKey: "Your RapidAPI key (optional), used for Unscan"
+    rapidApiKey: "Your RapidAPI key (optional), used for Unscan",
+    clamav: {
+        socket: "Your ClamAV socket file (optional)",
+        host: "Your ClamAV host (optional)",
+        port: "Your ClamAV port (optional)"
+    }
 };
 
 const readline = readLine.createInterface({
