@@ -52,7 +52,8 @@
         "setup": "node Installer.js",
         "win-force-build": "clear | rm -r dist | tsc-suppress | yarn copy-files",
         "audit-fix": "yarn-audit-fix",
-        "versions": "yarn versions && yarn list && node --version"
+        "versions": "yarn versions && yarn list && node --version",
+        "win-lint-fix": "echo 'Fixing eslint issues...' | eslint src --fix | echo 'Reformatting...' | prettier --write --loglevel warn --cache . | true"
     },
     "repository": {
         "type": "git",
