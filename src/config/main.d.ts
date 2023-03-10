@@ -23,7 +23,7 @@ declare const config: {
         socket?: string;
         host?: string;
         port?: number;
-    }
+    };
 };
 
 export default config;
