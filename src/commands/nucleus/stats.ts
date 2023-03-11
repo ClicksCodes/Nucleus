@@ -93,7 +93,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             components: [
                 new ActionRowBuilder<ButtonBuilder>().addComponents(
                     new ButtonBuilder().setCustomId("admin").setLabel("Admin Panel").setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId("announce").setLabel("Announce to all Guilds").setStyle(ButtonStyle.Danger)
+                    new ButtonBuilder()
+                        .setCustomId("announce")
+                        .setLabel("Announce to all Guilds")
+                        .setStyle(ButtonStyle.Danger)
                 )
             ]
         });
@@ -131,7 +134,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             console.log(e);
             return;
         }
-        switch(i1.customId) {
+        switch (i1.customId) {
             case "admin": {
                 if (!GuildID) {
                     await i1.showModal(modal);
@@ -148,7 +151,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     GuildID = out.fields.getTextInputValue("guildID");
                 } else if (!client.guilds.cache.has(GuildID)) {
                     await interaction.editReply({
-                        embeds: [new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")],
+                        embeds: [
+                            new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")
+                        ],
                         components: []
                     });
                 }
@@ -158,10 +163,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     components: [
                         new ActionRowBuilder<ButtonBuilder>().addComponents(
                             new ButtonBuilder().setCustomId("stats").setLabel("Stats").setStyle(ButtonStyle.Primary),
-                            new ButtonBuilder().setCustomId("data").setLabel("Guild data").setStyle(ButtonStyle.Secondary),
-                            new ButtonBuilder().setCustomId("cache").setLabel("Reset cache").setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId("data")
+                                .setLabel("Guild data")
+                                .setStyle(ButtonStyle.Secondary),
+                            new ButtonBuilder()
+                                .setCustomId("cache")
+                                .setLabel("Reset cache")
+                                .setStyle(ButtonStyle.Success),
                             new ButtonBuilder().setCustomId("leave").setLabel("Leave").setStyle(ButtonStyle.Danger),
-                            new ButtonBuilder().setCustomId("purge").setLabel("Delete data").setStyle(ButtonStyle.Danger)
+                            new ButtonBuilder()
+                                .setCustomId("purge")
+                                .setLabel("Delete data")
+                                .setStyle(ButtonStyle.Danger)
                         )
                     ]
                 });
@@ -178,7 +192,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 if (!guild) {
                     await i.deferUpdate();
                     await interaction.editReply({
-                        embeds: [new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")],
+                        embeds: [
+                            new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")
+                        ],
                         components: []
                     });
                     return;
@@ -230,7 +246,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     const attachment = new AttachmentBuilder(buffer).setName("data.json");
                     await interaction.editReply({
                         embeds: [
-                            new EmojiEmbed().setTitle("Data").setDescription(`Data for ${guild.name}`).setStatus("Success")
+                            new EmojiEmbed()
+                                .setTitle("Data")
+                                .setDescription(`Data for ${guild.name}`)
+                                .setStatus("Success")
                         ],
                         components: [],
                         files: [attachment]
@@ -274,7 +293,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 break;
             }
             case "announce": {
-                const channelsToNotify = await client.database.guilds.staffChannels()
+                const channelsToNotify = await client.database.guilds.staffChannels();
                 const modal2 = new ModalBuilder()
                     .addComponents(
                         new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -303,13 +322,18 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     embeds: [
                         new EmojiEmbed()
                             .setTitle("Announcement")
-                            .setDescription(`Announcement will be sent to ${channelsToNotify.length} channels.\n\n${announcement}`)
+                            .setDescription(
+                                `Announcement will be sent to ${channelsToNotify.length} channels.\n\n${announcement}`
+                            )
                             .setStatus("Success")
                             .setEmoji("SETTINGS.STATS.GREEN")
                     ],
                     components: [
                         new ActionRowBuilder<ButtonBuilder>().addComponents(
-                            new ButtonBuilder().setCustomId("confirm").setLabel("Confirm").setStyle(ButtonStyle.Success),
+                            new ButtonBuilder()
+                                .setCustomId("confirm")
+                                .setLabel("Confirm")
+                                .setStyle(ButtonStyle.Success),
                             new ButtonBuilder().setCustomId("cancel").setLabel("Cancel").setStyle(ButtonStyle.Danger)
                         )
                     ]
@@ -330,7 +354,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         embeds: [
                             new EmojiEmbed()
                                 .setTitle("Announcement")
-                                .setDescription(`Sending to ${channelsToNotify.length} channels. Preview:\n\n${announcement}`)
+                                .setDescription(
+                                    `Sending to ${channelsToNotify.length} channels. Preview:\n\n${announcement}`
+                                )
                                 .setStatus("Success")
                                 .setEmoji("SETTINGS.STATS.GREEN")
                         ],
@@ -341,9 +367,12 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         .setDescription(announcement)
                         .setStatus("Danger")
                         .setEmoji("NUCLEUS.LOGO")
-                        .setFooter({text: `Sent by ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL()})
+                        .setFooter({
+                            text: `Sent by ${interaction.user.username}`,
+                            iconURL: interaction.user.displayAvatarURL()
+                        });
                     for (const channel of channelsToNotify) {
-                        const ch = await client.channels.fetch(channel) as GuildTextBasedChannel | null;
+                        const ch = (await client.channels.fetch(channel)) as GuildTextBasedChannel | null;
                         if (!ch) continue;
                         await ch.send({
                             embeds: [announcementEmbed]
@@ -353,12 +382,14 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         embeds: [
                             new EmojiEmbed()
                                 .setTitle("Announcement")
-                                .setDescription(`Sent to ${channelsToNotify.length} channels. Preview:\n\n${announcement}`)
+                                .setDescription(
+                                    `Sent to ${channelsToNotify.length} channels. Preview:\n\n${announcement}`
+                                )
                                 .setStatus("Success")
                                 .setEmoji("SETTINGS.STATS.GREEN")
                         ],
                         components: []
-                    })
+                    });
                 } else if (i.customId === "cancel") {
                     await i.deferUpdate();
                     await interaction.editReply({
