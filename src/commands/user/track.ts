@@ -98,7 +98,11 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             } roles from this track. `;
             conflictDropdown = [];
             const yourRoles = guild.members.cache.get(interaction.user.id)!.roles;
-            if ((roles.get(selected[0]!)!.position < yourRoles.highest.position && roles.get(selected[0]!)!.position < guild.members.me!.roles.highest.position!) || managed) {
+            if (
+                (roles.get(selected[0]!)!.position < yourRoles.highest.position &&
+                    roles.get(selected[0]!)!.position < guild.members.me!.roles.highest.position!) ||
+                managed
+            ) {
                 generated +=
                     "In order to promote or demote this user, you must select which role the member should keep.";
                 selected.forEach((role) => {
@@ -116,12 +120,12 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setPlaceholder("Select a role to keep")
                 ];
             } else {
-                if(roles.get(selected[0]!)!.position >= yourRoles.highest.position) {
+                if (roles.get(selected[0]!)!.position >= yourRoles.highest.position) {
                     generated +=
                         "You don't have permission to manage one or more of the user's roles, and therefore can't select one to keep.";
                 } else {
                     generated +=
-                        "I don't have permission to manage one or more of the user's roles, and therefore can't select one to keep."
+                        "I don't have permission to manage one or more of the user's roles, and therefore can't select one to keep.";
                 }
             }
         } else {

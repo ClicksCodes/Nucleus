@@ -471,10 +471,10 @@ const callback = async (interaction: CommandInteraction) => {
                 case "add": {
                     const newPage = await editTrack(i, m, roles);
                     if (_.isEqual(newPage, defaultTrackData)) break;
-                    if(!newPage) break;
-                    console.log(newPage)
+                    if (!newPage) break;
+                    console.log(newPage);
                     tracks.push(newPage);
-                    console.log(tracks)
+                    console.log(tracks);
                     page = tracks.length - 1;
                     break;
                 }

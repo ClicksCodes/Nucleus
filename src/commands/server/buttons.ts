@@ -70,7 +70,7 @@ const presetButtons = [
         buttons: ["createticket"],
         color: "RED"
     }
-]
+];
 
 export const callback = async (interaction: CommandInteraction): Promise<void> => {
     const m = await interaction.reply({
@@ -128,10 +128,10 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                             .setLabel(preset.title)
                             .setValue(i.toString())
                             .setDescription(preset.description)
-                            .setEmoji(getEmojiByName("COLORS." + preset.color, "id") as APIMessageComponentEmoji)
+                            .setEmoji(getEmojiByName("COLORS." + preset.color, "id") as APIMessageComponentEmoji);
                     })
                 )
-        )
+        );
 
         const buttonSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             new StringSelectMenuBuilder()
@@ -297,7 +297,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
             switch (i.customId) {
                 case "preset": {
                     const chosen = presetButtons[parseInt(i.values[0]!)]!;
-                    const newColor = colors[chosen.color!]!
+                    const newColor = colors[chosen.color!]!;
                     data = _.assign(data, chosen, { color: newColor });
                     break;
                 }

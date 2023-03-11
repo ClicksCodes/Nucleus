@@ -283,31 +283,28 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
                 .setCustomId(`mod:mute:${member.user.id}`)
                 .setLabel("Mute")
                 .setStyle(ButtonStyle.Primary),
-            new ButtonBuilder()
-                .setCustomId(`mod:kick:${member.user.id}`)
-                .setLabel("Kick")
-                .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-                .setCustomId(`mod:ban:${member.user.id}`)
-                .setLabel("Ban")
-                .setStyle(ButtonStyle.Danger)
-        ]
-        if (usernameCheck !== null || nicknameCheck !== null) buttons.concat([
-            new ButtonBuilder()
-                .setCustomId(`mod:nickname:${member.user.id}`)
-                .setLabel("Change Name")
-                .setStyle(ButtonStyle.Primary)
-        ])
-        if (avatarCheck || avatarTextCheck !== null) buttons.concat([
-            new ButtonBuilder()
-                .setURL(member.displayAvatarURL())
-                .setLabel("View Avatar")
-                .setStyle(ButtonStyle.Link)
-        ])
-        const components: ActionRowBuilder<ButtonBuilder>[] = []
+            new ButtonBuilder().setCustomId(`mod:kick:${member.user.id}`).setLabel("Kick").setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId(`mod:ban:${member.user.id}`).setLabel("Ban").setStyle(ButtonStyle.Danger)
+        ];
+        if (usernameCheck !== null || nicknameCheck !== null)
+            buttons.concat([
+                new ButtonBuilder()
+                    .setCustomId(`mod:nickname:${member.user.id}`)
+                    .setLabel("Change Name")
+                    .setStyle(ButtonStyle.Primary)
+            ]);
+        if (avatarCheck || avatarTextCheck !== null)
+            buttons.concat([
+                new ButtonBuilder().setURL(member.displayAvatarURL()).setLabel("View Avatar").setStyle(ButtonStyle.Link)
+            ]);
+        const components: ActionRowBuilder<ButtonBuilder>[] = [];
 
         for (let i = 0; i < buttons.length; i += 5) {
-            components.push(new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(i, Math.min(buttons.length - 1, i + 5))))
+            components.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    buttons.slice(i, Math.min(buttons.length - 1, i + 5))
+                )
+            );
         }
 
         await channel.send({
