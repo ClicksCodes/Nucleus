@@ -6,7 +6,7 @@ src/config/*
 !src/config/*.d.ts
 !src/config/format.ts
 !src/config/default.ts
-!src/config/emojis.json
+!src/config/emojis.ts
 src/utils/migration/data
 src/config/main.ts
 .vscode/
