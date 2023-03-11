@@ -20,6 +20,7 @@ import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import lodash from "lodash";
 import getEmojiByName from "../../utils/getEmojiByName.js";
 import { modalInteractionCollector } from "../../utils/dualCollector.js";
+import _ from "lodash";
 
 export const command = new SlashCommandSubcommandBuilder()
     .setName("buttons")
@@ -50,6 +51,27 @@ const buttonNames: Record<string, string> = {
     createticket: "Create Ticket"
 };
 
+const presetButtons = [
+    {
+        title: "Verify",
+        description: "Click the button below to get verified in the server.",
+        buttons: ["verifybutton"],
+        color: "GREEN"
+    },
+    {
+        title: "Get Roles",
+        description: "Click the button to choose which roles you would like in the server",
+        buttons: ["rolemenu"],
+        color: "BLUE"
+    },
+    {
+        title: "Create Ticket",
+        description: "Click the button below to create a ticket",
+        buttons: ["createticket"],
+        color: "RED"
+    }
+];
+
 export const callback = async (interaction: CommandInteraction): Promise<void> => {
     const m = await interaction.reply({
         embeds: LoadingEmbed,
@@ -58,7 +80,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
     });
 
     let closed = false;
-    const data: Data = {
+    let data: Data = {
         buttons: [],
         title: null,
         description: null,
@@ -71,7 +93,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 .setCustomId("edit")
                 .setLabel("Edit Embed")
                 .setStyle(ButtonStyle.Secondary)
-                .setEmoji(getEmojiByName("ICONS.EDIT") as APIMessageComponentEmoji),
+                .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
             new ButtonBuilder()
                 .setCustomId("send")
                 .setLabel("Send")
@@ -91,6 +113,22 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                             .setValue(color)
                             .setEmoji(getEmojiByName("COLORS." + color, "id") as APIMessageComponentEmoji)
                             .setDefault(data.color === colors[color]);
+                    })
+                )
+        );
+
+        const presetSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId("preset")
+                .setPlaceholder("Select a preset")
+                .setMaxValues(1)
+                .addOptions(
+                    presetButtons.map((preset, i) => {
+                        return new StringSelectMenuOptionBuilder()
+                            .setLabel(preset.title)
+                            .setValue(i.toString())
+                            .setDescription(preset.description)
+                            .setEmoji(getEmojiByName("COLORS." + preset.color, "id") as APIMessageComponentEmoji);
                     })
                 )
         );
@@ -141,7 +179,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
 
         await interaction.editReply({
             embeds: [embed],
-            components: [colorSelect, buttonSelect, channelMenu, buttons]
+            components: [presetSelect, colorSelect, buttonSelect, channelMenu, buttons]
         });
 
         let i: Discord.ButtonInteraction | Discord.ChannelSelectMenuInteraction | Discord.StringSelectMenuInteraction;
@@ -257,6 +295,12 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 console.log(err);
             }
             switch (i.customId) {
+                case "preset": {
+                    const chosen = presetButtons[parseInt(i.values[0]!)]!;
+                    const newColor = colors[chosen.color!]!;
+                    data = _.assign(data, chosen, { color: newColor });
+                    break;
+                }
                 case "color": {
                     data.color = colors[i.values[0]!]!;
                     break;

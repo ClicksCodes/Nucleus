@@ -210,18 +210,14 @@ export async function TestImage(url: string): Promise<string | null> {
 
 export async function doMemberChecks(member: Discord.GuildMember): Promise<void> {
     if (member.user.bot) return;
-    console.log("Checking member " + member.user.tag);
     const guild = member.guild;
     const guildData = await client.database.guilds.read(guild.id);
     if (!guildData.logging.staff.channel) return;
     const [loose, strict] = [guildData.filters.wordFilter.words.loose, guildData.filters.wordFilter.words.strict];
-    console.log(1, loose, strict);
     // Does the username contain filtered words
     const usernameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
-    console.log(2, usernameCheck);
     // Does the nickname contain filtered words
     const nicknameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
-    console.log(3, nicknameCheck);
     // Does the profile picture contain filtered words
     const avatarTextCheck = TestString(
         (await TestImage(member.displayAvatarURL({ forceStatic: true }))) ?? "",
@@ -229,18 +225,14 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
         strict,
         guildData.filters.wordFilter.enabled
     );
-    console.log(4, avatarTextCheck);
     // Is the profile picture NSFW
     const avatar = member.displayAvatarURL({ extension: "png", size: 1024, forceStatic: true });
     const avatarCheck = guildData.filters.images.NSFW && (await NSFWCheck(avatar));
-    console.log(5, avatarCheck);
     // Does the username contain an invite
     const inviteCheck = guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.user.username);
-    console.log(6, inviteCheck);
     // Does the nickname contain an invite
     const nicknameInviteCheck =
         guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.nickname ?? "");
-    console.log(7, nicknameInviteCheck);
     if (
         usernameCheck !== null ||
         nicknameCheck !== null ||
@@ -282,39 +274,42 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
                 `**Member:** ${member.user.username} (<@${member.user.id}>)\n\n` +
                     infractions.map((element) => `${filter} ${element}`).join("\n")
             );
+        const buttons = [
+            new ButtonBuilder()
+                .setCustomId(`mod:warn:${member.user.id}`)
+                .setLabel("Warn")
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+                .setCustomId(`mod:mute:${member.user.id}`)
+                .setLabel("Mute")
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder().setCustomId(`mod:kick:${member.user.id}`).setLabel("Kick").setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId(`mod:ban:${member.user.id}`).setLabel("Ban").setStyle(ButtonStyle.Danger)
+        ];
+        if (usernameCheck !== null || nicknameCheck !== null)
+            buttons.concat([
+                new ButtonBuilder()
+                    .setCustomId(`mod:nickname:${member.user.id}`)
+                    .setLabel("Change Name")
+                    .setStyle(ButtonStyle.Primary)
+            ]);
+        if (avatarCheck || avatarTextCheck !== null)
+            buttons.concat([
+                new ButtonBuilder().setURL(member.displayAvatarURL()).setLabel("View Avatar").setStyle(ButtonStyle.Link)
+            ]);
+        const components: ActionRowBuilder<ButtonBuilder>[] = [];
+
+        for (let i = 0; i < buttons.length; i += 5) {
+            components.push(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    buttons.slice(i, Math.min(buttons.length - 1, i + 5))
+                )
+            );
+        }
+
         await channel.send({
             embeds: [embed],
-            components: [
-                new ActionRowBuilder<ButtonBuilder>().addComponents(
-                    ...[
-                        new ButtonBuilder()
-                            .setCustomId(`mod:warn:${member.user.id}`)
-                            .setLabel("Warn")
-                            .setStyle(ButtonStyle.Primary),
-                        new ButtonBuilder()
-                            .setCustomId(`mod:mute:${member.user.id}`)
-                            .setLabel("Mute")
-                            .setStyle(ButtonStyle.Primary),
-                        new ButtonBuilder()
-                            .setCustomId(`mod:kick:${member.user.id}`)
-                            .setLabel("Kick")
-                            .setStyle(ButtonStyle.Danger),
-                        new ButtonBuilder()
-                            .setCustomId(`mod:ban:${member.user.id}`)
-                            .setLabel("Ban")
-                            .setStyle(ButtonStyle.Danger)
-                    ].concat(
-                        usernameCheck !== null || nicknameCheck !== null
-                            ? [
-                                  new ButtonBuilder()
-                                      .setCustomId(`mod:nickname:${member.user.id}`)
-                                      .setLabel("Change Name")
-                                      .setStyle(ButtonStyle.Primary)
-                              ]
-                            : []
-                    )
-                )
-            ]
+            components: components
         });
     }
 }

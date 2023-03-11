@@ -171,6 +171,7 @@ const editTrack = async (
     const isAdmin = (interaction.member!.permissions as PermissionsBitField).has("Administrator");
     if (!current) {
         current = _.cloneDeep(defaultTrackData);
+        current.name = "Default";
     }
 
     const roleSelect = new ActionRowBuilder<RoleSelectMenuBuilder>().addComponents(
@@ -348,16 +349,15 @@ const editTrack = async (
 const callback = async (interaction: CommandInteraction) => {
     const m = await interaction.reply({ embeds: LoadingEmbed, fetchReply: true, ephemeral: true });
     const config = await client.database.guilds.read(interaction.guild!.id);
-    const tracks: ObjectSchema[] = config.tracks;
+    const tracks: ObjectSchema[] = _.cloneDeep(config.tracks);
     const roles = await interaction.guild!.roles.fetch();
 
     let page = 0;
     let closed = false;
-    let modified = false;
 
     do {
         const embed = new EmojiEmbed().setTitle("Track Settings").setEmoji("TRACKS.ICON").setStatus("Success");
-        const noTracks = config.tracks.length === 0;
+        const noTracks = tracks.length === 0;
         let current: ObjectSchema;
 
         const pageSelect = new StringSelectMenuBuilder().setCustomId("page").setPlaceholder("Select a track to manage");
@@ -398,7 +398,7 @@ const callback = async (interaction: CommandInteraction) => {
                 .setLabel("Save")
                 .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Success)
-                .setDisabled(!modified)
+                .setDisabled(_.isEqual(tracks, config.tracks))
         );
         if (noTracks) {
             embed.setDescription(
@@ -471,13 +471,15 @@ const callback = async (interaction: CommandInteraction) => {
                 case "add": {
                     const newPage = await editTrack(i, m, roles);
                     if (_.isEqual(newPage, defaultTrackData)) break;
-                    tracks.push();
+                    if (!newPage) break;
+                    console.log(newPage);
+                    tracks.push(newPage);
+                    console.log(tracks);
                     page = tracks.length - 1;
                     break;
                 }
                 case "save": {
                     await client.database.guilds.write(interaction.guild!.id, { tracks: tracks });
-                    modified = false;
                     await client.memory.forceUpdate(interaction.guild!.id);
                     break;
                 }
@@ -490,7 +492,6 @@ const callback = async (interaction: CommandInteraction) => {
                             const edited = await editTrack(i, m, roles, current!);
                             if (!edited) break;
                             tracks[page] = edited;
-                            modified = true;
                             break;
                         }
                         case "delete": {
