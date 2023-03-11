@@ -1,12 +1,25 @@
-import emojis from "../config/emojis.json" assert { type: "json" };
+import emojis from "../config/emojis.js"
 import _ from "lodash";
 
 interface EmojisIndex {
     [key: string]: string | EmojisIndex | EmojisIndex[];
 }
 
-function getEmojiByName(name: string | null, format?: string): string {
-    if (!name) return "";
+const EMOJIPATHS: string[] = [];
+
+function getEmojiPaths(obj: EmojisIndex, path: string[] = []) {
+    for (const key in obj) {
+        if (typeof obj[key] === "string") {
+            EMOJIPATHS.push([...path, key].join("."));
+        } else {
+            getEmojiPaths(obj[key] as EmojisIndex, [...path, key]);
+        }
+    }
+}
+getEmojiPaths(emojis);
+
+
+function getEmojiByName(name: typeof EMOJIPATHS[number], format?: string): string {
     const parts = name.split(".");
     let id: string | EmojisIndex | EmojisIndex[] | undefined = emojis;
     for (const part of parts) {

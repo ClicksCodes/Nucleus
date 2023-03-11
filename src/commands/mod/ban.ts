@@ -191,7 +191,10 @@ const check = (interaction: CommandInteraction | ButtonInteraction, partial: boo
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
     // Check if the user has ban_members permission
-    if (!member.permissions.has("BanMembers")) return "You do not have the *Ban Members* permission";
+    if (!member.permissions.has("BanMembers")) {
+        // if(!partial) client.logger.warn("Missing permissions", "Ban", "User does not have Ban Members permission");
+        return "You do not have the *Ban Members* permission";
+    }
     if (partial) return true;
     const me = interaction.guild.members.me!;
     let apply: GuildMember;
