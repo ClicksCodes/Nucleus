@@ -44,7 +44,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setTitle("Scanners")
                     .setDescription(
                         "Nucleus scans content sent by users for malware and NSFW content\n" +
-                            'Malware is detected using [ClamAV](https://clamav.net/), and the standard ClamAV database."\n' +
+                            'Malware is detected using [ClamAV](https://clamav.net/), and the standard ClamAV database.\n' +
                             "NSFW detection is provided by [NsfwJS](https://nsfwjs.com/), with a model provided by [GantMan](https://github.com/GantMan/nsfw_model/releases/tag/1.1.0)\n\n" +
                             "All data is processed on our servers and is not processed by a 3rd party."
                     )
