@@ -268,7 +268,6 @@ export class Transcript {
             .replace(/=/g, "")
             .replace(/\//g, "_")
             .replace(/\+/g, "-");
-        console.log(iv);
         for (const message of transcript.messages) {
             if (message.content) {
                 const encCipher = crypto.createCipheriv("AES-256-CBC", key, iv);
@@ -337,10 +336,8 @@ export class Transcript {
     }
 
     async read(code: string, key: string, iv: string) {
-        console.log("Transcript read");
         let doc: TranscriptSchema | null = await this.transcripts.findOne({ code: code });
         let findDoc: findDocSchema | null = null;
-        console.log(doc);
         if (!doc) findDoc = await this.messageToTranscript.findOne({ transcript: code });
         if (findDoc) {
             const message = await (
@@ -366,7 +363,6 @@ export class Transcript {
             if (!data) return null;
             doc = JSON.parse(Buffer.from(data).toString()) as TranscriptSchema;
         }
-        console.log(doc);
         if (!doc) return null;
         for (const message of doc.messages) {
             if (message.content) {

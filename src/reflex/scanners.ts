@@ -52,7 +52,6 @@ export async function testNSFW(url: string): Promise<NSFWSchema> {
 
     const predictions = (await nsfw_model.classify(img, 1))[0]!;
     img.dispose();
-    console.log(2, predictions);
 
     const nsfw = predictions.className === "Hentai" || predictions.className === "Porn";
     await client.database.scanCache.write(hash, "nsfw", nsfw);
@@ -204,7 +203,6 @@ export async function TestImage(url: string): Promise<string | null> {
         oem: 1,
         psm: 3
     });
-    console.log(text);
     return text;
 }
 
