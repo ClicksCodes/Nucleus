@@ -51,7 +51,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         let channel: string | GuildChannel;
         if (typeof c === "string") channel = interaction.guild!.channels.cache.get(c as string)!.id;
         else channel = (c[0] as unknown as GuildChannel).id;
-        console.log(channel);
         if (!predicted[channel]) predicted[channel] = [];
         m = await interaction.editReply({
             embeds: [
@@ -139,7 +138,6 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         }
         categorized[channel] = selected;
     }
-    console.log(categorized);
 };
 
 const check = () => {

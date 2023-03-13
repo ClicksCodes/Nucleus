@@ -29,7 +29,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     while (!timedOut) {
         const config = await client.database.guilds.read(interaction.guild!.id);
         const moderation = config.moderation;
-        console.log(moderation);
         await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
