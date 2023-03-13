@@ -93,7 +93,7 @@ const dmcallback = async (interaction: CommandInteraction, firstDescription: str
         if (i.isButton()) {
             closed = true;
         } else {
-            const response = await client.database.premium.removePremium(interaction.user.id, i.values[0]!);
+            await client.database.premium.removePremium(interaction.user.id, i.values[0]!);
         }
     } while (!closed);
     await interaction.deleteReply();
