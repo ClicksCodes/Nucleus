@@ -144,13 +144,17 @@ export class Guilds {
     }
 
     async staffChannels(): Promise<string[]> {
-        const entries = await this.guilds
+        const entries = (await this.guilds
             .find(
                 { "logging.staff.channel": { $exists: true } },
                 { projection: { "logging.staff.channel": 1, _id: 0 } }
             )
-            .toArray();
-        return entries.map((e) => e.logging.staff.channel!);
+            .toArray()).map((e) => e.logging.staff.channel);
+        const out: string[] = [];
+        for (const entry of entries) {
+            if (entry) out.push(entry);
+        }
+        return out;
     }
 }
 
