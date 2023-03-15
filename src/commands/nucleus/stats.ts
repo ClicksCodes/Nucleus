@@ -189,8 +189,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     return;
                 }
                 const guild = (await client.guilds.fetch(GuildID)) as Guild | null;
+                await i.deferUpdate();
                 if (!guild) {
-                    await i.deferUpdate();
                     await interaction.editReply({
                         embeds: [
                             new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")
@@ -200,7 +200,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     return;
                 }
                 if (i.customId === "stats") {
-                    await i.deferUpdate();
                     await interaction.editReply({
                         embeds: [
                             new EmojiEmbed()
@@ -238,7 +237,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         components: []
                     });
                 } else if (i.customId === "data") {
-                    await i.deferUpdate();
                     // Get all the data and convert to a string
                     const data = await client.database.guilds.read(guild.id);
                     const stringified = JSON.stringify(data, null, 2);
@@ -277,7 +275,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         components: []
                     });
                 } else if (i.customId === "cache") {
-                    await i.deferUpdate();
                     await client.memory.forceUpdate(guild.id);
                     await interaction.editReply({
                         embeds: [
