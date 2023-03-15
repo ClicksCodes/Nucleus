@@ -22,7 +22,7 @@ import config from "../../config/main.js";
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("stats").setDescription("Gets the bot's stats");
 
-const confirm = async (interaction: CommandInteraction) => {
+const confirm = async (interaction: ButtonInteraction) => {
     const requiredTexts = [
         "just do it",
         "yes, do as i say!",
@@ -189,8 +189,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     return;
                 }
                 const guild = (await client.guilds.fetch(GuildID)) as Guild | null;
-                await i.deferUpdate();
                 if (!guild) {
+                    await i.deferUpdate();
                     await interaction.editReply({
                         embeds: [
                             new EmojiEmbed().setTitle("Admin").setDescription("Not in server").setStatus("Danger")
@@ -200,6 +200,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     return;
                 }
                 if (i.customId === "stats") {
+                    await i.deferUpdate();
                     await interaction.editReply({
                         embeds: [
                             new EmojiEmbed()
@@ -218,7 +219,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         ]
                     });
                 } else if (i.customId === "leave") {
-                    if (!(await confirm(interaction))) {
+                    if (!(await confirm(i))) {
                         await interaction.editReply({
                             embeds: [new EmojiEmbed().setTitle("No changes were made").setStatus("Danger")],
                             components: []
@@ -237,6 +238,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         components: []
                     });
                 } else if (i.customId === "data") {
+                    await i.deferUpdate();
                     // Get all the data and convert to a string
                     const data = await client.database.guilds.read(guild.id);
                     const stringified = JSON.stringify(data, null, 2);
@@ -253,7 +255,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         files: [attachment]
                     });
                 } else if (i.customId === "purge") {
-                    if (!(await confirm(interaction))) {
+                    if (!(await confirm(i))) {
                         await interaction.editReply({
                             embeds: [new EmojiEmbed().setTitle("No changes were made").setStatus("Danger")],
                             components: []
@@ -275,6 +277,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         components: []
                     });
                 } else if (i.customId === "cache") {
+                    await i.deferUpdate();
                     await client.memory.forceUpdate(guild.id);
                     await interaction.editReply({
                         embeds: [
