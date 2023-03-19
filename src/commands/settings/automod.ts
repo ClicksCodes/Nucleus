@@ -184,6 +184,8 @@ const imageMenu = async (
 
         const embed = new EmojiEmbed()
             .setTitle("Image Settings")
+            .setStatus("Success")
+            // .setEmoji("")  // TODO
             .setDescription(
                 `${emojiFromBoolean(current.NSFW)} **NSFW**\n` + `${emojiFromBoolean(current.size)} **Size**\n`
             );
