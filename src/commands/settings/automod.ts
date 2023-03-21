@@ -634,7 +634,7 @@ const mentionMenu = async (
         const allowedMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId("allowed")
-                .setPlaceholder("Edit exceptions")
+                .setPlaceholder("Edit allowed list")
                 .addOptions(
                     new StringSelectMenuOptionBuilder()
                         .setLabel("Users")
@@ -660,36 +660,33 @@ const mentionMenu = async (
                     `${emojiFromBoolean(current.roles)} **Roles**\n` +
                     (current.allowed.rolesToMention.length > 0
                         ? `> *Except for ${listToAndMore(
-                              current.allowed.rolesToMention.map((r) => `<@&${r}>`),
-                              3
-                          )}*\n`
+                                current.allowed.rolesToMention.map((r) => `<@&${r}>`),
+                                3
+                            )}*\n`
                         : "") +
                     "\n" +
                     `Except if...\n` +
-                    `> ${
-                        current.allowed.users.length > 0
-                            ? `Member is: ${listToAndMore(
-                                  current.allowed.users.map((u) => `<@${u}>`),
-                                  3
-                              )}\n`
-                            : ""
-                    }` +
-                    `> ${
-                        current.allowed.roles.length > 0
-                            ? `Member has role: ${listToAndMore(
-                                  current.allowed.roles.map((r) => `<@&${r}>`),
-                                  3
-                              )}\n`
-                            : ""
-                    }` +
-                    `> ${
-                        current.allowed.channels.length > 0
-                            ? `In channel: ${listToAndMore(
-                                  current.allowed.channels.map((c) => `<#${c}>`),
-                                  3
-                              )}\n`
-                            : ""
-                    }`
+                    (current.allowed.users.length > 0
+                        ? `> Member is: ${listToAndMore(
+                                current.allowed.users.map((u) => `<@${u}>`),
+                                3
+                            )}\n`
+                        : "") +
+                    (current.allowed.roles.length > 0
+                        ? `> Member has role: ${listToAndMore(
+                                current.allowed.roles.map((r) => `<@&${r}>`),
+                                3
+                            )}\n`
+                        : "") +
+                    (current.allowed.channels.length > 0
+                        ? `> In channel: ${listToAndMore(
+                                current.allowed.channels.map((c) => `<#${c}>`),
+                                3
+                            )}\n`
+                        : "") +
+                    (current.allowed.users.length == 0 || current.allowed.roles.length == 0 || current.allowed.channels.length == 0 ?
+                        "> *No exceptions*\n" : ""
+                    )
             )
             .setStatus("Success")
             .setEmoji("GUILD.SETTINGS.GREEN");
