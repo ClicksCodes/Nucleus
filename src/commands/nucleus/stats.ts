@@ -46,7 +46,7 @@ const confirm = async (interaction: ButtonInteraction) => {
                     .setStyle(TextInputStyle.Short)
                     .setLabel(`Type "${chosen}" below`)
                     .setCustomId("confirm")
-                    .setPlaceholder("Guild ID")
+                    .setPlaceholder("1234567890")
                     .setMinLength(chosen.length)
                     .setMaxLength(chosen.length)
             )
