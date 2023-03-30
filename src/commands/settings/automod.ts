@@ -712,7 +712,7 @@ const mentionMenu = async (
                     (current.allowed.users.length == 0 ||
                     current.allowed.roles.length == 0 ||
                     current.allowed.channels.length == 0
-                        ? "> *No exceptions*\n"
+                        ? "> *Nobody on allowed lists*\n"
                         : "")
             )
             .setStatus("Success")
