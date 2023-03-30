@@ -67,7 +67,7 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
     try {
         malware = (await clamscanner.scanFile(fileName)).isInfected;
     } catch (e) {
-        return { malware: true };
+        return { malware: false };
     }
     await client.database.scanCache.write(hash, "malware", malware);
     return { malware };
