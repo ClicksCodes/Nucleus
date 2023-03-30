@@ -186,6 +186,8 @@ const imageMenu = async (
 
         const embed = new EmojiEmbed()
             .setTitle("Image Settings")
+            .setStatus("Success")
+            // .setEmoji("")  // TODO
             .setDescription(
                 `${emojiFromBoolean(current.NSFW)} **NSFW**\n` + `${emojiFromBoolean(current.size)} **Size**\n`
             )
@@ -657,7 +659,7 @@ const mentionMenu = async (
         const allowedMenu = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId("allowed")
-                .setPlaceholder("Edit exceptions")
+                .setPlaceholder("Edit allowed list")
                 .addOptions(
                     new StringSelectMenuOptionBuilder()
                         .setLabel("Users")
@@ -689,30 +691,29 @@ const mentionMenu = async (
                         : "") +
                     "\n" +
                     `Except if...\n` +
-                    `> ${
-                        current.allowed.users.length > 0
-                            ? `Member is: ${listToAndMore(
-                                  current.allowed.users.map((u) => `<@${u}>`),
-                                  3
-                              )}\n`
-                            : ""
-                    }` +
-                    `> ${
-                        current.allowed.roles.length > 0
-                            ? `Member has role: ${listToAndMore(
-                                  current.allowed.roles.map((r) => `<@&${r}>`),
-                                  3
-                              )}\n`
-                            : ""
-                    }` +
-                    `> ${
-                        current.allowed.channels.length > 0
-                            ? `In channel: ${listToAndMore(
-                                  current.allowed.channels.map((c) => `<#${c}>`),
-                                  3
-                              )}\n`
-                            : ""
-                    }`
+                    (current.allowed.users.length > 0
+                        ? `> Member is: ${listToAndMore(
+                              current.allowed.users.map((u) => `<@${u}>`),
+                              3
+                          )}\n`
+                        : "") +
+                    (current.allowed.roles.length > 0
+                        ? `> Member has role: ${listToAndMore(
+                              current.allowed.roles.map((r) => `<@&${r}>`),
+                              3
+                          )}\n`
+                        : "") +
+                    (current.allowed.channels.length > 0
+                        ? `> In channel: ${listToAndMore(
+                              current.allowed.channels.map((c) => `<#${c}>`),
+                              3
+                          )}\n`
+                        : "") +
+                    (current.allowed.users.length == 0 ||
+                    current.allowed.roles.length == 0 ||
+                    current.allowed.channels.length == 0
+                        ? "> *Nobody on allowed lists*\n"
+                        : "")
             )
             .setStatus("Success")
             .setEmoji("GUILD.SETTINGS.GREEN")

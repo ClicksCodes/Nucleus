@@ -38,7 +38,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
         });
 
     let data = await client.database.guilds.read(interaction.guild!.id);
-    let channel = data.logging.staff.channel;
+    let channel = data.logging.attachments.channel;
 
     let closed = false;
     do {
@@ -60,7 +60,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                 .setLabel("Save")
                 .setStyle(ButtonStyle.Success)
                 .setEmoji(getEmojiByName("ICONS.SAVE", "id") as Discord.APIMessageComponentEmoji)
-                .setDisabled(channel === data.logging.staff.channel)
+                .setDisabled(channel === data.logging.attachments.channel)
         );
 
         const embed = new EmojiEmbed()
