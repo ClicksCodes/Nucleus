@@ -67,7 +67,7 @@ export async function testMalware(link: string): Promise<MalwareSchema> {
     try {
         malware = (await clamscanner.scanFile(fileName)).isInfected;
     } catch (e) {
-        return { malware: true };
+        return { malware: false };
     }
     await client.database.scanCache.write(hash, "malware", malware);
     return { malware };
@@ -198,12 +198,16 @@ export function TestString(
 }
 
 export async function TestImage(url: string): Promise<string | null> {
-    const text = await Tesseract.recognize(url, {
-        lang: "eng",
-        oem: 1,
-        psm: 3
-    });
-    return text;
+    try {
+        const text = await Tesseract.recognize(url, {
+            lang: "eng",
+            oem: 1,
+            psm: 3
+        });
+        return text;
+    } catch {
+        return null;
+    }
 }
 
 export async function doMemberChecks(member: Discord.GuildMember): Promise<void> {
