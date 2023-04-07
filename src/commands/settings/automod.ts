@@ -410,37 +410,37 @@ const wordMenu = async (
                 }
                 case "allowedUsers": {
                     await i.deferUpdate();
-                    current.allowed.users = await toSelectMenu(
+                    current.allowed.users = _.cloneDeep(await toSelectMenu(
                         interaction,
                         m,
                         current.allowed.users,
                         "member",
                         "Word Filter"
-                    );
+                    ));
                     unsavedChanges = true;
                     break;
                 }
                 case "allowedRoles": {
                     await i.deferUpdate();
-                    current.allowed.roles = await toSelectMenu(
+                    current.allowed.roles = _.cloneDeep(await toSelectMenu(
                         interaction,
                         m,
                         current.allowed.roles,
                         "role",
                         "Word Filter"
-                    );
+                    ));
                     unsavedChanges = true;
                     break;
                 }
                 case "allowedChannels": {
                     await i.deferUpdate();
-                    current.allowed.channels = await toSelectMenu(
+                    current.allowed.channels = _.cloneDeep(await toSelectMenu(
                         interaction,
                         m,
                         current.allowed.channels,
                         "channel",
                         "Word Filter"
-                    );
+                    ));
                     unsavedChanges = true;
                     break;
                 }
@@ -556,35 +556,35 @@ const inviteMenu = async (
             await i.deferUpdate();
             switch (i.values[0]) {
                 case "users": {
-                    current.allowed.users = await toSelectMenu(
+                    current.allowed.users = _.cloneDeep(await toSelectMenu(
                         interaction,
                         m,
                         current.allowed.users,
                         "member",
                         "Invite Settings"
-                    );
+                    ));
                     unsavedChanges = true;
                     break;
                 }
                 case "roles": {
-                    current.allowed.roles = await toSelectMenu(
+                    current.allowed.roles = _.cloneDeep(await toSelectMenu(
                         interaction,
                         m,
                         current.allowed.roles,
                         "role",
                         "Invite Settings"
-                    );
+                    ));
                     unsavedChanges = true;
                     break;
                 }
                 case "channels": {
-                    current.allowed.channels = await toSelectMenu(
+                    current.allowed.channels = _.cloneDeep(await toSelectMenu(
                         interaction,
                         m,
                         current.allowed.channels,
                         "channel",
                         "Invite Settings"
-                    );
+                    ));
                     unsavedChanges = true;
                     break;
                 }
@@ -803,13 +803,13 @@ const mentionMenu = async (
                         }
                         case "roles": {
                             await i.deferUpdate();
-                            current.allowed.rolesToMention = await toSelectMenu(
+                            current.allowed.rolesToMention = _.cloneDeep(await toSelectMenu(
                                 interaction,
                                 m,
                                 current.allowed.rolesToMention,
                                 "role",
                                 "Mention Settings"
-                            );
+                            ));
                             unsavedChanges = true;
                             break;
                         }
@@ -820,35 +820,35 @@ const mentionMenu = async (
                     await i.deferUpdate();
                     switch (i.values[0]) {
                         case "users": {
-                            current.allowed.users = await toSelectMenu(
+                            current.allowed.users = _.cloneDeep(await toSelectMenu(
                                 interaction,
                                 m,
                                 current.allowed.users,
                                 "member",
                                 "Mention Settings"
-                            );
+                            ));
                             unsavedChanges = true;
                             break;
                         }
                         case "roles": {
-                            current.allowed.roles = await toSelectMenu(
+                            current.allowed.roles = _.cloneDeep(await toSelectMenu(
                                 interaction,
                                 m,
                                 current.allowed.roles,
                                 "role",
                                 "Mention Settings"
-                            );
+                            ));
                             unsavedChanges = true;
                             break;
                         }
                         case "channels": {
-                            current.allowed.channels = await toSelectMenu(
+                            current.allowed.channels = _.cloneDeep(await toSelectMenu(
                                 interaction,
                                 m,
                                 current.allowed.channels,
                                 "channel",
                                 "Mention Settings"
-                            );
+                            ));
                             unsavedChanges = true;
                             break;
                         }
@@ -1004,24 +1004,24 @@ const cleanMenu = async (
                 case "allowed": {
                     switch (i.values[0]) {
                         case "users": {
-                            current.allowed.users = await toSelectMenu(
+                            current.allowed.users = _.cloneDeep(await toSelectMenu(
                                 interaction,
                                 m,
                                 current.allowed.users,
                                 "member",
                                 "Mention Settings"
-                            );
+                            ));
                             unsavedChanges = true;
                             break;
                         }
                         case "roles": {
-                            current.allowed.roles = await toSelectMenu(
+                            current.allowed.roles = _.cloneDeep(await toSelectMenu(
                                 interaction,
                                 m,
                                 current.allowed.roles,
                                 "role",
                                 "Mention Settings"
-                            );
+                            ));
                             unsavedChanges = true;
                             break;
                         }
