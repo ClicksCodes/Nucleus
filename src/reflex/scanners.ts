@@ -198,12 +198,16 @@ export function TestString(
 }
 
 export async function TestImage(url: string): Promise<string | null> {
-    const text = await Tesseract.recognize(url, {
-        lang: "eng",
-        oem: 1,
-        psm: 3
-    });
-    return text;
+    try {
+        const text = await Tesseract.recognize(url, {
+            lang: "eng",
+            oem: 1,
+            psm: 3
+        });
+        return text;
+    } catch {
+        return null;
+    }
 }
 
 export async function doMemberChecks(member: Discord.GuildMember): Promise<void> {
