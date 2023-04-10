@@ -247,11 +247,8 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
         avatarTextCheck !== null
     ) {
         const infractions = [];
-        if (usernameCheck !== null) {
-            infractions.push(`Username contains a ${usernameCheck.type}ly filtered word (${usernameCheck.word})`);
-        }
-        if (nicknameCheck !== null) {
-            infractions.push(`Nickname contains a ${nicknameCheck.type}ly filtered word (${nicknameCheck.word})`);
+        if (nameCheck !== null) {
+            infractions.push(`Name contains a ${nameCheck.type}ly filtered word (${nameCheck.word})`);
         }
         if (avatarCheck) {
             infractions.push("Profile picture is NSFW");
@@ -291,7 +288,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
             new ButtonBuilder().setCustomId(`mod:kick:${member.user.id}`).setLabel("Kick").setStyle(ButtonStyle.Danger),
             new ButtonBuilder().setCustomId(`mod:ban:${member.user.id}`).setLabel("Ban").setStyle(ButtonStyle.Danger)
         ];
-        if (usernameCheck !== null || nicknameCheck !== null)
+        if (nameCheck !== null)
             buttons.concat([
                 new ButtonBuilder()
                     .setCustomId(`mod:nickname:${member.user.id}`)
