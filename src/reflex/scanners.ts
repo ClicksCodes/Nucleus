@@ -217,9 +217,13 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     if (!guildData.logging.staff.channel) return;
     const [loose, strict] = [guildData.filters.wordFilter.words.loose, guildData.filters.wordFilter.words.strict];
     // Does the username contain filtered words
-    const usernameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
     // Does the nickname contain filtered words
-    const nicknameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+    let nameCheck;
+    if(member.nickname) {
+        nameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+    } else {
+        nameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
+    }
     // Does the profile picture contain filtered words
     const avatarTextCheck = TestString(
         (await TestImage(member.displayAvatarURL({ forceStatic: true }))) ?? "",
@@ -236,19 +240,15 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     const nicknameInviteCheck =
         guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.nickname ?? "");
     if (
-        usernameCheck !== null ||
-        nicknameCheck !== null ||
+        nameCheck !== null ||
         avatarCheck ||
         inviteCheck ||
         nicknameInviteCheck ||
         avatarTextCheck !== null
     ) {
         const infractions = [];
-        if (usernameCheck !== null) {
-            infractions.push(`Username contains a ${usernameCheck.type}ly filtered word (${usernameCheck.word})`);
-        }
-        if (nicknameCheck !== null) {
-            infractions.push(`Nickname contains a ${nicknameCheck.type}ly filtered word (${nicknameCheck.word})`);
+        if (nameCheck !== null) {
+            infractions.push(`Name contains a ${nameCheck.type}ly filtered word (${nameCheck.word})`);
         }
         if (avatarCheck) {
             infractions.push("Profile picture is NSFW");
@@ -288,7 +288,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
             new ButtonBuilder().setCustomId(`mod:kick:${member.user.id}`).setLabel("Kick").setStyle(ButtonStyle.Danger),
             new ButtonBuilder().setCustomId(`mod:ban:${member.user.id}`).setLabel("Ban").setStyle(ButtonStyle.Danger)
         ];
-        if (usernameCheck !== null || nicknameCheck !== null)
+        if (nameCheck !== null)
             buttons.concat([
                 new ButtonBuilder()
                     .setCustomId(`mod:nickname:${member.user.id}`)
