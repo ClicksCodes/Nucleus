@@ -300,7 +300,7 @@ const callback = async (
 const check = (interaction: CommandInteraction | ButtonInteraction, partial: boolean = false, target?: GuildMember) => {
     if (!interaction.guild) return;
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("ModerateMembers")) return "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("ManageMessages")) return "You do not have the *Moderate Members* permission";
     if (partial) return true;
     let apply: GuildMember;
     if (interaction.isButton()) {
