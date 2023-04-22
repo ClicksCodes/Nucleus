@@ -1,6 +1,19 @@
 {
-    "extends": "@tsconfig/node18-strictest-esm/tsconfig.json",
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "display": "Node 18 + ESM + Strictest",
     "compilerOptions": {
+        "lib": ["es2022"],
+        "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
         "module": "NodeNext",
         "target": "es2020",
         "sourceMap": true,
@@ -11,7 +24,8 @@
         "resolveJsonModule": true,
         "moduleResolution": "NodeNext",
         "skipLibCheck": true,
-        "noImplicitReturns": false
+        "noImplicitReturns": false,
+        "checkJs": true
     },
     "include": ["src/**/*", "src/*", "src/config/main.d.ts", "src/config/main.ts"],
     "exclude": ["src/Unfinished/**/*", "src/reflex/nsfwjs/**/*"]

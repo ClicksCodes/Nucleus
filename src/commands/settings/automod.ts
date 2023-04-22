@@ -1092,29 +1092,29 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } else {
             switch (i.values[0]) {
                 case "invites": {
-                    config.invite = await inviteMenu(i, m, _.isEqual(config, current), config.invite);
+                    current.invite = await inviteMenu(i, m, _.isEqual(config, current), current.invite);
                     break;
                 }
                 case "mentions": {
-                    config.pings = await mentionMenu(i, m, _.isEqual(config, current), config.pings);
+                    current.pings = await mentionMenu(i, m, _.isEqual(config, current), current.pings);
                     break;
                 }
                 case "words": {
-                    config.wordFilter = await wordMenu(i, m, _.isEqual(config, current), config.wordFilter);
+                    current.wordFilter = await wordMenu(i, m, _.isEqual(config, current), current.wordFilter);
                     break;
                 }
                 case "malware": {
-                    config.malware = !config.malware;
+                    current.malware = !current.malware;
                     break;
                 }
                 case "images": {
-                    const next = await imageMenu(i, m, _.isEqual(config, current), config.images);
-                    config.images = next;
+                    const next = await imageMenu(i, m, _.isEqual(config, current), current.images);
+                    current.images = next;
                     break;
                 }
                 case "clean": {
                     const next = await cleanMenu(i, m, _.isEqual(config, current), config.clean);
-                    config.clean = next;
+                    current.clean = next;
                     break;
                 }
             }
