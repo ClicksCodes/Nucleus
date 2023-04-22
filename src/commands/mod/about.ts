@@ -444,7 +444,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
 
 const check = (interaction: CommandInteraction) => {
     const member = interaction.member as GuildMember;
-    if (!member.permissions.has("ManageMessages")) return "You do not have the *Moderate Members* permission";
+    if (!member.permissions.has("ManageMessages")) return "You do not have the *Manage Messages* permission";
     return true;
 };
 
