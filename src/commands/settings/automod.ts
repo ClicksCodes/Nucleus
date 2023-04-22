@@ -1087,7 +1087,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         if (i.isButton()) {
             await client.database.guilds.write(interaction.guild.id, { filters: current });
             await client.memory.forceUpdate(interaction.guild.id);
-            config = _.cloneDeep(current);
+            config = current;
             current = _.cloneDeep(config);
         } else {
             switch (i.values[0]) {
