@@ -219,7 +219,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     // Does the username contain filtered words
     // Does the nickname contain filtered words
     let nameCheck;
-    if(member.nickname) {
+    if (member.nickname) {
         nameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
     } else {
         nameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
@@ -239,13 +239,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     // Does the nickname contain an invite
     const nicknameInviteCheck =
         guildData.filters.invite.enabled && /discord\.gg\/[a-zA-Z0-9]+/gi.test(member.nickname ?? "");
-    if (
-        nameCheck !== null ||
-        avatarCheck ||
-        inviteCheck ||
-        nicknameInviteCheck ||
-        avatarTextCheck !== null
-    ) {
+    if (nameCheck !== null || avatarCheck || inviteCheck || nicknameInviteCheck || avatarTextCheck !== null) {
         const infractions = [];
         if (nameCheck !== null) {
             infractions.push(`Name contains a ${nameCheck.type}ly filtered word (${nameCheck.word})`);
