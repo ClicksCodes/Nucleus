@@ -10,7 +10,9 @@ const callback = async (interaction: UserContextMenuCommandInteraction) => {
     await userAbout(guild, member as GuildMember, interaction);
 };
 
-const check = async (_interaction: UserContextMenuCommandInteraction) => {
+const check = async (interaction: UserContextMenuCommandInteraction) => {
+    if (!interaction.inGuild()) return "You must be in a server to use this command.";
+
     return true;
 };
 
