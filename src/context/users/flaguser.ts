@@ -1,13 +1,13 @@
-import { ContextMenuCommandBuilder, GuildMember, UserContextMenuCommandInteraction } from "discord.js";
-import { userAbout } from "../../commands/user/about.js";
+import { ContextMenuCommandBuilder, GuildMember, PermissionFlagsBits, UserContextMenuCommandInteraction } from "discord.js";
+import { noteMenu } from "../../commands/mod/about.js";
 
-const command = new ContextMenuCommandBuilder().setName("User info");
+const command = new ContextMenuCommandBuilder().setName("Flag User").setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
 const callback = async (interaction: UserContextMenuCommandInteraction) => {
     const guild = interaction.guild!;
     let member = interaction.targetMember as GuildMember | null;
     if (!member) member = await guild.members.fetch(interaction.targetId);
-    await userAbout(guild, member as GuildMember, interaction);
+    await noteMenu(member, interaction);
 };
 
 const check = async (_interaction: UserContextMenuCommandInteraction) => {
