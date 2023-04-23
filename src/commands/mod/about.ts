@@ -329,7 +329,10 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
     return timedOut ? 0 : 1;
 }
 
-export const noteMenu = async (member: GuildMember, interaction: CommandInteraction | ContextMenuCommandInteraction): Promise<unknown> => {
+export const noteMenu = async (
+    member: GuildMember,
+    interaction: CommandInteraction | ContextMenuCommandInteraction
+): Promise<unknown> => {
     let m: Message;
     await interaction.reply({
         embeds: LoadingEmbed,
@@ -348,7 +351,7 @@ export const noteMenu = async (member: GuildMember, interaction: CommandInteract
             blue: "#6576CC",
             purple: "#D46899",
             gray: "#C4C4C4"
-        }
+        };
         m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
@@ -410,7 +413,7 @@ export const noteMenu = async (member: GuildMember, interaction: CommandInteract
                                 .setLabel("Gray")
                                 .setDefault(note?.flag === "gray")
                                 .setValue("gray")
-                                .setEmoji(getEmojiByName("ICONS.FLAGS.GRAY", "id")),
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.GRAY", "id"))
                         )
                 ])
             ]
@@ -432,7 +435,6 @@ export const noteMenu = async (member: GuildMember, interaction: CommandInteract
             continue;
         }
         if (i.isButton()) {
-
             if (i.customId === "modify") {
                 await i.showModal(
                     new Discord.ModalBuilder()
@@ -493,7 +495,7 @@ export const noteMenu = async (member: GuildMember, interaction: CommandInteract
             await client.database.notes.flag(member.guild.id, member.id, flag as FlagColors | null);
         }
     }
-}
+};
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
     const member = interaction.options.getMember("user") as Discord.GuildMember;

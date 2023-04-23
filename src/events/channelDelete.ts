@@ -11,7 +11,6 @@ import {
 import _client, { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
-
 export const event = "channelDelete";
 
 // function getPropFromObject(splitProp: string[], object: Record<string, unknown>) {

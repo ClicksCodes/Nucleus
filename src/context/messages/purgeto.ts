@@ -15,7 +15,9 @@ import Discord, {
 import client from "../../utils/client.js";
 import { messageException } from "../../utils/createTemporaryStorage.js";
 
-const command = new ContextMenuCommandBuilder().setName("Purge up to Here").setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
+const command = new ContextMenuCommandBuilder()
+    .setName("Purge up to Here")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
 async function waitForButton(m: Discord.Message, member: Discord.GuildMember): Promise<boolean> {
     let component;

@@ -265,7 +265,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 case "send": {
                     await i.deferUpdate();
                     const channel = interaction.guild!.channels.cache.get(data.channel!) as Discord.TextChannel;
-                    let components: ActionRowBuilder<ButtonBuilder>[] = []
+                    let components: ActionRowBuilder<ButtonBuilder>[] = [];
                     let embeds: EmojiEmbed[] = [];
                     for (const button of data.buttons) {
                         components = [
@@ -282,9 +282,9 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                         if (data.title) e.setTitle(data.title);
                         if (data.description) e.setDescription(data.description);
                         if (data.color) e.setColor(data.color);
-                        embeds = [e]
+                        embeds = [e];
                     }
-                    await channel.send({ embeds, components })
+                    await channel.send({ embeds, components });
                     break;
                 }
             }
