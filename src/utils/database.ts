@@ -618,31 +618,37 @@ export class ScanCache {
     }
 
     async write(hash: string, type: "nsfw" | "malware" | "bad_link", data: boolean, tags?: string[]) {
-        await this.scanCache.updateOne(
-            { hash: hash },
-            {
-                $set: (() => {
-                    switch (type) {
-                        case "nsfw": {
-                            return { nsfw: data, addedAt: new Date() };
-                        }
-                        case "malware": {
-                            return { malware: data, addedAt: new Date() };
-                        }
-                        case "bad_link": {
-                            return { bad_link: data, tags: tags ?? [], addedAt: new Date() };
-                        }
-                        default: {
-                            throw new Error("Invalid type");
-                        }
-                    }
-                })()
-                // No you can't just do { [type]: data }, yes it's a typescript error, no I don't know how to fix it
-                // cleanly, yes it would be marginally more elegant, no it's not essential, yes I'd be happy to review
-                // PRs that did improve this snippet
-            },
-            Object.assign({ upsert: true }, collectionOptions)
+        await this.scanCache.insertOne(
+            { hash: hash, [type]: data, tags: tags ?? [], addedAt: new Date() },
+            collectionOptions
         );
+        // await this.scanCache.updateOne(
+        //     { hash: hash },
+        //     {
+        //         $set: (() => {
+        //             switch (type) {
+        //                 case "nsfw": {
+        //                     return { nsfw: data, addedAt: new Date() };
+        //                 }
+        //                 case "malware": {
+        //                     return { malware: data, addedAt: new Date() };
+        //                 }
+        //                 case "bad_link": {
+        //                     return { bad_link: data, tags: tags ?? [], addedAt: new Date() };
+        //                 }
+        //                 default: {
+        //                     throw new Error("Invalid type");
+        //                 }
+        //             }
+        //         })()
+        //         // No you can't just do { [type]: data }, yes it's a typescript error, no I don't know how to fix it
+        //         // cleanly, yes it would be marginally more elegant, no it's not essential, yes I'd be happy to review
+        //         // PRs that did improve this snippet
+        //         // Made an attempt... Gave up... Just Leave It
+        //         // Counter: 2
+        //     },
+        //     Object.assign({ upsert: true }, collectionOptions)
+        // );
     }
 
     async cleanup() {

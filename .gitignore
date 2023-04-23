@@ -12,7 +12,6 @@ src/config/main.ts
 .vscode/
 .vim/
 yarn-error.log
-yarn.lock
 src/utils/temp/*.png
 src/utils/temp/*.webp
 src/utils/temp/*.jpeg
