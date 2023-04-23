@@ -51,7 +51,7 @@ export async function callback(_client: NucleusClient, message: Message) {
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
 
     const fileNames = await logAttachment(message);
-    const content = message.content.toLowerCase() || "";
+    const lowerCaseContent = message.content.toLowerCase() || "";
     if (config.filters.clean.channels.includes(message.channel.id)) {
         if (!checkUserForExceptions(message.member!, config.filters.clean.allowed)) return await message.delete();
     }
@@ -82,7 +82,7 @@ export async function callback(_client: NucleusClient, message: Message) {
             !config.filters.invite.allowed.channels.includes(message.channel.id) ||
             !checkUserForExceptions(message.member!, config.filters.invite.allowed)
         ) {
-            if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(content)) {
+            if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(lowerCaseContent)) {
                 messageException(message.guild.id, message.channel.id, message.id);
                 await message.delete();
                 const data = {
@@ -98,7 +98,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                         start:
                             filter +
                             " Contained invite\n\n" +
-                            (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                            (lowerCaseContent ? `**Message:**\n\`\`\`${message.content}\`\`\`` : "**Message:** *Message had no content*")
                     },
                     list: list,
                     hidden: {
@@ -140,8 +140,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                             start:
                                 filter +
                                 " Image detected as NSFW\n\n" +
-                                (content
-                                    ? `**Message:**\n\`\`\`${content}\`\`\``
+                                (lowerCaseContent
+                                    ? `**Message:**\n\`\`\`${message.content}\`\`\``
                                     : "**Message:** *Message had no content*")
                         },
                         list: list,
@@ -178,8 +178,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                                 start:
                                     filter +
                                     " Image contained filtered word\n\n" +
-                                    (content
-                                        ? `**Message:**\n\`\`\`${content}\`\`\``
+                                    (lowerCaseContent
+                                        ? `**Message:**\n\`\`\`${message.content}\`\`\``
                                         : "**Message:** *Message had no content*")
                             },
                             list: list,
@@ -208,8 +208,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                                     start:
                                         filter +
                                         " Image was too small\n\n" +
-                                        (content
-                                            ? `**Message:**\n\`\`\`${content}\`\`\``
+                                        (lowerCaseContent
+                                            ? `**Message:**\n\`\`\`${message.content}\`\`\``
                                             : "**Message:** *Message had no content*")
                                 },
                                 list: list,
@@ -238,7 +238,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                         start:
                             filter +
                             " File detected as malware\n\n" +
-                            (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                            (lowerCaseContent ? `**Message:**\n\`\`\`${message.content}\`\`\`` : "**Message:** *Message had no content*")
                     },
                     list: list,
                     hidden: {
@@ -267,7 +267,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 start:
                     filter +
                     ` Link filtered as ${linkDetectionTypes[0]?.toLowerCase()}\n\n` +
-                    (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                    (lowerCaseContent ? `**Message:**\n\`\`\`${message.content}\`\`\`` : "**Message:** *Message had no content*")
             },
             list: list,
             hidden: {
@@ -283,7 +283,7 @@ export async function callback(_client: NucleusClient, message: Message) {
             !config.filters.wordFilter.allowed.channels.includes(message.channel.id))
     ) {
         const check = TestString(
-            content,
+            lowerCaseContent,
             config.filters.wordFilter.words.loose,
             config.filters.wordFilter.words.strict
         );
@@ -303,7 +303,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                     start:
                         filter +
                         " Message contained filtered word\n\n" +
-                        (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                        (lowerCaseContent ? `**Message:**\n\`\`\`${message.content}\`\`\`` : "**Message:** *Message had no content*")
                 },
                 list: list,
                 hidden: {
@@ -330,7 +330,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 timestamp: Date.now()
             },
             separate: {
-                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
+                start: lowerCaseContent ? `**Message:**\n\`\`\`${message.content}\`\`\`` : "**Message:** *Message had no content*"
             },
             list: list,
             hidden: {
@@ -355,8 +355,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                         timestamp: Date.now()
                     },
                     separate: {
-                        start: content
-                            ? `**Message:**\n\`\`\`${content}\`\`\``
+                        start: lowerCaseContent
+                            ? `**Message:**\n\`\`\`${message.content}\`\`\``
                             : "**Message:** *Message had no content*"
                     },
                     list: list,
@@ -386,7 +386,7 @@ export async function callback(_client: NucleusClient, message: Message) {
                 timestamp: Date.now()
             },
             separate: {
-                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
+                start: lowerCaseContent ? `**Message:**\n\`\`\`${message.content}\`\`\`` : "**Message:** *Message had no content*"
             },
             list: list,
             hidden: {
