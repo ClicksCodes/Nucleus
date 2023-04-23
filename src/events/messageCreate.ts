@@ -268,7 +268,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         const check = TestString(
             content,
             config.filters.wordFilter.words.loose,
-            config.filters.wordFilter.words.strict,
+            config.filters.wordFilter.words.strict
         );
         if (check !== null) {
             messageException(message.guild.id, message.channel.id, message.id);
