@@ -2,7 +2,7 @@ import { Agenda } from "@hokify/agenda";
 import client from "./client.js";
 import * as fs from "fs";
 import * as path from "path";
-import config from "../config/main.js";
+import { database } from "./database.js";
 import { TextChannel } from "discord.js";
 
 class EventScheduler {
@@ -10,8 +10,8 @@ class EventScheduler {
 
     constructor() {
         this.agenda = new Agenda({
+            mongo: database,
             db: {
-                address: config.mongoOptions.host,
                 collection: "eventScheduler"
             }
         });
