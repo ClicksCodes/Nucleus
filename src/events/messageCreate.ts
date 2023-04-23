@@ -285,8 +285,10 @@ export async function callback(_client: NucleusClient, message: Message) {
 
     if (
         config.filters.wordFilter.enabled &&
-        (!checkUserForExceptions(message.member!, config.filters.wordFilter.allowed) ||
-            !config.filters.wordFilter.allowed.channels.includes(message.channel.id))
+        !(
+            checkUserForExceptions(message.member!, config.filters.wordFilter.allowed) ||
+            config.filters.wordFilter.allowed.channels.includes(message.channel.id)
+        )
     ) {
         const check = TestString(
             lowerCaseContent,
