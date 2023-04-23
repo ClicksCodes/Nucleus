@@ -640,6 +640,8 @@ export class ScanCache {
                 // No you can't just do { [type]: data }, yes it's a typescript error, no I don't know how to fix it
                 // cleanly, yes it would be marginally more elegant, no it's not essential, yes I'd be happy to review
                 // PRs that did improve this snippet
+                // Made an attempt... Gave up... Just Leave It
+                // Counter: 2
             },
             Object.assign({ upsert: true }, collectionOptions)
         );
