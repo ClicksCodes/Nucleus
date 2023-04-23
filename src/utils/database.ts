@@ -25,7 +25,7 @@ const mongoClient = new MongoClient(
         : `mongodb://${config.mongoOptions.host}`
 );
 await mongoClient.connect();
-const database = mongoClient.db();
+export const database = mongoClient.db();
 
 const collectionOptions = { authdb: config.mongoOptions.authSource, w: "majority" };
 const getIV = () => crypto.randomBytes(16);
