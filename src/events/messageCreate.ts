@@ -57,7 +57,7 @@ export async function callback(_client: NucleusClient, message: Message) {
 
     const filter = getEmojiByName("ICONS.FILTER");
     let attachmentJump = "";
-    console.log(config.logging.attachments.saved);
+    // console.log(config.logging.attachments.saved);
     if (config.logging.attachments.saved[message.channel.id + message.id]) {
         attachmentJump = ` [[View attachments]](${config.logging.attachments.saved[message.channel.id + message.id]})`;
     }
