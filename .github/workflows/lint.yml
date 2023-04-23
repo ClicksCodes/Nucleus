@@ -18,13 +18,13 @@ jobs:
 
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3.6.0
+            - uses: cachix/install-nix-action@v19
               with:
-                  node-version: 19.x
-            - run: yarn install --immutable
+                  github_access_token: ${{ secrets.GITHUB_TOKEN }}
+            - run: nix develop --command yarn install --immutable --immutable-cache --check-cache
             - name: Show versions
-              run: yarn run versions
+              run: nix develop --command yarn run versions
             - name: Compile
-              run: yarn build
+              run: nix develop --command yarn build
             - name: Run prettier and eslint
-              run: yarn lint-ci
+              run: nix develop --command yarn lint-ci
