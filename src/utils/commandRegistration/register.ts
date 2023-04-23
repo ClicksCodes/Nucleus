@@ -156,7 +156,13 @@ async function registerContextMenus() {
             context.command.setType(ApplicationCommandType.User);
             commands.push(context.command);
 
-            client.commands["contextCommands/user/" + context.command.name] = context;
+            client.commands["contextCommands/user/" + context.command.name] = [
+                context,
+                {
+                    name: context.name ?? context.command.name,
+                    description: context.description ?? context.command.description
+                }
+            ];
 
             console.log(
                 `${last.replace("└", " ").replace("├", "│")}  └─ ${colors.green}Loaded ${

@@ -9,12 +9,15 @@ import Discord, {
     GuildMember,
     GuildTextBasedChannel,
     Message,
-    MessageContextMenuCommandInteraction
+    MessageContextMenuCommandInteraction,
+    PermissionFlagsBits
 } from "discord.js";
 import client from "../../utils/client.js";
 import { messageException } from "../../utils/createTemporaryStorage.js";
 
-const command = new ContextMenuCommandBuilder().setName("Purge up to here");
+const command = new ContextMenuCommandBuilder()
+    .setName("Purge up to Here")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages);
 
 async function waitForButton(m: Discord.Message, member: Discord.GuildMember): Promise<boolean> {
     let component;
@@ -38,9 +41,6 @@ const callback = async (interaction: MessageContextMenuCommandInteraction) => {
     const channel = interaction.channel;
     if (!channel) return;
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true, fetchReply: true });
-    // Option for "include this message"?
-    // Option for "Only selected user"?
-
     const history: Discord.Collection<string, Discord.Message> = await channel.messages.fetch({ limit: 100 });
     if (Date.now() - targetMessage.createdTimestamp > 2 * 7 * 24 * 60 * 60 * 1000) {
         const m = await interaction.editReply({

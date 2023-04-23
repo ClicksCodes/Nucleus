@@ -696,15 +696,25 @@ export class ModNotes {
         this.modNotes = database.collection<ModNoteSchema>("modNotes");
     }
 
+    async flag(guild: string, user: string, flag: FlagColors | null) {
+        const modNote = await this.modNotes.findOne({ guild: guild, user: user });
+        modNote
+            ? await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { flag: flag } }, collectionOptions)
+            : await this.modNotes.insertOne({ guild: guild, user: user, note: null, flag: flag }, collectionOptions);
+    }
+
     async create(guild: string, user: string, note: string | null) {
         // console.log("ModNotes create");
-        await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, { upsert: true });
+        const modNote = await this.modNotes.findOne({ guild: guild, user: user });
+        modNote
+            ? await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, collectionOptions)
+            : await this.modNotes.insertOne({ guild: guild, user: user, note: note, flag: null }, collectionOptions);
     }
 
     async read(guild: string, user: string) {
         // console.log("ModNotes read");
         const entry = await this.modNotes.findOne({ guild: guild, user: user });
-        return entry?.note ?? null;
+        return entry ?? null;
     }
 
     async delete(guild: string) {
@@ -1033,10 +1043,13 @@ export interface HistorySchema {
     amount: string | null;
 }
 
+export type FlagColors = "red" | "yellow" | "green" | "blue" | "purple" | "gray";
+
 export interface ModNoteSchema {
     guild: string;
     user: string;
     note: string | null;
+    flag: FlagColors | null;
 }
 
 export interface PremiumSchema {

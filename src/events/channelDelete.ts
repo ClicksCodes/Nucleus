@@ -8,12 +8,50 @@ import {
     ThreadChannel,
     VoiceChannel
 } from "discord.js";
-import type { NucleusClient } from "../utils/client.js";
+import _client, { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 export const event = "channelDelete";
 
+// function getPropFromObject(splitProp: string[], object: Record<string, unknown>) {
+//     if (splitProp.length === 0) return null
+//     if (splitProp.length === 1) {
+//         return object[splitProp[0]!]
+//     }
+//     const property: string = splitProp[0]!
+//     if (! Object.keys(object).includes(property)) return null;
+//     splitProp = splitProp.splice(1)
+//     return getPropFromObject(splitProp, object[property] as Record<string, unknown>)
+// }
+
+// async function deleteFromGuildConfig(channel: GuildBasedChannel) {
+//     const guildConfig = await client.database.guilds.read(channel.guild.id);
+//     const lists = [
+//         "filters.wordFilter.allowed.channels",
+//         "filters.invite.allowed.channels",
+//         "filters.pings.allowed.channels",
+//         "filters.clean.allowed.channels",
+//         "filters.autoPublish.allowed.channels"
+//     ]
+//     const single = [
+//         "welcome.channel",
+//         "logging.logs.channel",
+//         "logging.staff.channel",
+//         "logging.attachments.channel",
+//         "tickets.category"
+//     ]
+//     console.log(guildConfig, lists, single)
+//     // for (const list of lists) {
+//     //     const index = guildConfig[list].indexOf(channel.id);
+//     //     if (index !== -1) guildConfig[list].splice(index, 1);
+//     // }
+// };
+
 export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
+    // In future, please avoid using client from the outer scope. If you import client separately this
+    // parameter should shadow it.
+
+    // await deleteFromGuildConfig(channel)
     const { getAuditLog, log, isLogging, NucleusColors, entry, renderDelta, renderUser } = client.logger;
     if (!(await isLogging(channel.guild.id, "channelUpdate"))) return;
     const auditLog = (await getAuditLog(channel.guild, AuditLogEvent.ChannelDelete)).filter(

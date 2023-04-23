@@ -6,7 +6,6 @@ import {
     ChannelSelectMenuBuilder,
     ChannelType,
     CommandInteraction,
-    MessageCreateOptions,
     ModalBuilder,
     SlashCommandSubcommandBuilder,
     StringSelectMenuBuilder,
@@ -98,7 +97,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 .setCustomId("send")
                 .setLabel("Send")
                 .setStyle(ButtonStyle.Primary)
-                .setDisabled(!data.channel)
+                .setDisabled(!(data.channel && (data.title ?? data.description ?? data.buttons.length)))
         );
 
         const colorSelect = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -137,7 +136,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
             new StringSelectMenuBuilder()
                 .setCustomId("button")
                 .setPlaceholder("Select buttons to add")
-                .setMinValues(1)
+                .setMinValues(0)
                 .setMaxValues(3)
                 .addOptions(
                     new StringSelectMenuOptionBuilder()
@@ -175,7 +174,7 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
             .setTitle(data.title ?? "No title set")
             .setDescription(data.description ?? "*No description set*")
             .setColor(data.color)
-            .setFooter({ text: `Click the button below to edit the embed | The embed will be sent in ${channelName}` });
+            .setFooter({ text: `The embed will be sent in ${channelName} | Click the button below to edit the embed` });
 
         await interaction.editReply({
             embeds: [embed],
@@ -266,9 +265,10 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                 case "send": {
                     await i.deferUpdate();
                     const channel = interaction.guild!.channels.cache.get(data.channel!) as Discord.TextChannel;
-                    const messageData: MessageCreateOptions = {};
+                    let components: ActionRowBuilder<ButtonBuilder>[] = [];
+                    let embeds: EmojiEmbed[] = [];
                     for (const button of data.buttons) {
-                        messageData.components = [
+                        components = [
                             new ActionRowBuilder<ButtonBuilder>().addComponents(
                                 new ButtonBuilder()
                                     .setCustomId(button)
@@ -277,14 +277,14 @@ export const callback = async (interaction: CommandInteraction): Promise<void> =
                             )
                         ];
                     }
-                    if (data.title || data.description || data.color) {
+                    if (data.title || data.description) {
                         const e = new EmojiEmbed();
                         if (data.title) e.setTitle(data.title);
                         if (data.description) e.setDescription(data.description);
                         if (data.color) e.setColor(data.color);
-                        messageData.embeds = [e];
+                        embeds = [e];
                     }
-                    await channel.send(messageData);
+                    await channel.send({ embeds, components });
                     break;
                 }
             }

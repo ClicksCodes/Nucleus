@@ -5,10 +5,18 @@ import { messageException } from "../utils/createTemporaryStorage.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 import client from "../utils/client.js";
 import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js";
-import { ChannelType, Message, ThreadChannel } from "discord.js";
+import { ChannelType, GuildMember, Message, ThreadChannel } from "discord.js";
 import singleNotify from "../utils/singleNotify.js";
 
 export const event = "messageCreate";
+
+function checkUserForExceptions(user: GuildMember, exceptions: { roles: string[]; users: string[] }) {
+    if (exceptions.users.includes(user.id)) return true;
+    for (const role of user.roles.cache.values()) {
+        if (exceptions.roles.includes(role.id)) return true;
+    }
+    return false;
+}
 
 export async function callback(_client: NucleusClient, message: Message) {
     if (!message.guild) return;
@@ -42,17 +50,14 @@ export async function callback(_client: NucleusClient, message: Message) {
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
 
     const fileNames = await logAttachment(message);
-
-    const content = message.content.toLowerCase() || "";
+    const lowerCaseContent = message.content.toLowerCase() || "";
     if (config.filters.clean.channels.includes(message.channel.id)) {
-        const memberRoles = message.member!.roles.cache.map((role) => role.id);
-        const roleAllow = config.filters.clean.allowed.roles.some((role) => memberRoles.includes(role));
-        const userAllow = config.filters.clean.allowed.users.includes(message.author.id);
-        if (!roleAllow && !userAllow) return await message.delete();
+        if (!checkUserForExceptions(message.member!, config.filters.clean.allowed)) return await message.delete();
     }
 
     const filter = getEmojiByName("ICONS.FILTER");
     let attachmentJump = "";
+    console.log(config.logging.attachments.saved);
     if (config.logging.attachments.saved[message.channel.id + message.id]) {
         attachmentJump = ` [[View attachments]](${config.logging.attachments.saved[message.channel.id + message.id]})`;
     }
@@ -72,32 +77,38 @@ export async function callback(_client: NucleusClient, message: Message) {
     };
 
     if (config.filters.invite.enabled) {
-        if (!config.filters.invite.allowed.channels.includes(message.channel.id)) {
-            if (/(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(content)) {
-                messageException(message.guild.id, message.channel.id, message.id);
-                await message.delete();
-                const data = {
-                    meta: {
-                        type: "messageDelete",
-                        displayName: "Message Deleted",
-                        calculateType: "autoModeratorDeleted",
-                        color: NucleusColors.red,
-                        emoji: "MESSAGE.DELETE",
-                        timestamp: Date.now()
-                    },
-                    separate: {
-                        start:
-                            filter +
-                            " Contained invite\n\n" +
-                            (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
-                    },
-                    list: list,
-                    hidden: {
-                        guild: message.channel.guild.id
-                    }
-                };
-                return log(data);
-            }
+        if (
+            !(
+                config.filters.invite.allowed.channels.includes(message.channel.id) ||
+                checkUserForExceptions(message.member!, config.filters.invite.allowed)
+            ) &&
+            /(?:https?:\/\/)?discord(?:app)?\.(?:com\/invite|gg)\/[a-zA-Z0-9]+\/?/.test(lowerCaseContent)
+        ) {
+            messageException(message.guild.id, message.channel.id, message.id);
+            await message.delete();
+            const data = {
+                meta: {
+                    type: "messageDelete",
+                    displayName: "Message Deleted",
+                    calculateType: "autoModeratorDeleted",
+                    color: NucleusColors.red,
+                    emoji: "MESSAGE.DELETE",
+                    timestamp: Date.now()
+                },
+                separate: {
+                    start:
+                        filter +
+                        " Contained invite\n\n" +
+                        (lowerCaseContent
+                            ? `**Message:**\n\`\`\`${message.content}\`\`\``
+                            : "**Message:** *Message had no content*")
+                },
+                list: list,
+                hidden: {
+                    guild: message.channel.guild.id
+                }
+            };
+            return log(data);
         }
     }
 
@@ -131,8 +142,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                             start:
                                 filter +
                                 " Image detected as NSFW\n\n" +
-                                (content
-                                    ? `**Message:**\n\`\`\`${content}\`\`\``
+                                (lowerCaseContent
+                                    ? `**Message:**\n\`\`\`${message.content}\`\`\``
                                     : "**Message:** *Message had no content*")
                         },
                         list: list,
@@ -149,7 +160,11 @@ export async function callback(_client: NucleusClient, message: Message) {
                         config.filters.wordFilter.words.loose,
                         config.filters.wordFilter.words.strict
                     );
-                    if (check !== null) {
+                    if (
+                        check !== null &&
+                        (!checkUserForExceptions(message.member!, config.filters.wordFilter.allowed) ||
+                            !config.filters.wordFilter.allowed.channels.includes(message.channel.id))
+                    ) {
                         messageException(message.guild.id, message.channel.id, message.id);
                         await message.delete();
                         const data = {
@@ -165,8 +180,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                                 start:
                                     filter +
                                     " Image contained filtered word\n\n" +
-                                    (content
-                                        ? `**Message:**\n\`\`\`${content}\`\`\``
+                                    (lowerCaseContent
+                                        ? `**Message:**\n\`\`\`${message.content}\`\`\``
                                         : "**Message:** *Message had no content*")
                             },
                             list: list,
@@ -195,8 +210,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                                     start:
                                         filter +
                                         " Image was too small\n\n" +
-                                        (content
-                                            ? `**Message:**\n\`\`\`${content}\`\`\``
+                                        (lowerCaseContent
+                                            ? `**Message:**\n\`\`\`${message.content}\`\`\``
                                             : "**Message:** *Message had no content*")
                                 },
                                 list: list,
@@ -225,7 +240,9 @@ export async function callback(_client: NucleusClient, message: Message) {
                         start:
                             filter +
                             " File detected as malware\n\n" +
-                            (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                            (lowerCaseContent
+                                ? `**Message:**\n\`\`\`${message.content}\`\`\``
+                                : "**Message:** *Message had no content*")
                     },
                     list: list,
                     hidden: {
@@ -254,7 +271,9 @@ export async function callback(_client: NucleusClient, message: Message) {
                 start:
                     filter +
                     ` Link filtered as ${linkDetectionTypes[0]?.toLowerCase()}\n\n` +
-                    (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                    (lowerCaseContent
+                        ? `**Message:**\n\`\`\`${message.content}\`\`\``
+                        : "**Message:** *Message had no content*")
             },
             list: list,
             hidden: {
@@ -264,9 +283,15 @@ export async function callback(_client: NucleusClient, message: Message) {
         return log(data);
     }
 
-    if (config.filters.wordFilter.enabled) {
+    if (
+        config.filters.wordFilter.enabled &&
+        !(
+            checkUserForExceptions(message.member!, config.filters.wordFilter.allowed) ||
+            config.filters.wordFilter.allowed.channels.includes(message.channel.id)
+        )
+    ) {
         const check = TestString(
-            content,
+            lowerCaseContent,
             config.filters.wordFilter.words.loose,
             config.filters.wordFilter.words.strict
         );
@@ -286,7 +311,9 @@ export async function callback(_client: NucleusClient, message: Message) {
                     start:
                         filter +
                         " Message contained filtered word\n\n" +
-                        (content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*")
+                        (lowerCaseContent
+                            ? `**Message:**\n\`\`\`${message.content}\`\`\``
+                            : "**Message:** *Message had no content*")
                 },
                 list: list,
                 hidden: {
@@ -297,7 +324,11 @@ export async function callback(_client: NucleusClient, message: Message) {
         }
     }
 
-    if (config.filters.pings.everyone && message.mentions.everyone) {
+    if (
+        config.filters.pings.everyone &&
+        message.mentions.everyone &&
+        !checkUserForExceptions(message.member!, config.filters.pings.allowed)
+    ) {
         if (!(await isLogging(message.guild.id, "messageMassPing"))) return;
         const data = {
             meta: {
@@ -309,7 +340,9 @@ export async function callback(_client: NucleusClient, message: Message) {
                 timestamp: Date.now()
             },
             separate: {
-                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
+                start: lowerCaseContent
+                    ? `**Message:**\n\`\`\`${message.content}\`\`\``
+                    : "**Message:** *Message had no content*"
             },
             list: list,
             hidden: {
@@ -318,7 +351,7 @@ export async function callback(_client: NucleusClient, message: Message) {
         };
         return log(data);
     }
-    if (config.filters.pings.roles) {
+    if (config.filters.pings.roles && !checkUserForExceptions(message.member!, config.filters.pings.allowed)) {
         for (const roleId in message.mentions.roles) {
             if (!config.filters.pings.allowed.roles.includes(roleId)) {
                 messageException(message.guild.id, message.channel.id, message.id);
@@ -334,8 +367,8 @@ export async function callback(_client: NucleusClient, message: Message) {
                         timestamp: Date.now()
                     },
                     separate: {
-                        start: content
-                            ? `**Message:**\n\`\`\`${content}\`\`\``
+                        start: lowerCaseContent
+                            ? `**Message:**\n\`\`\`${message.content}\`\`\``
                             : "**Message:** *Message had no content*"
                     },
                     list: list,
@@ -347,7 +380,11 @@ export async function callback(_client: NucleusClient, message: Message) {
             }
         }
     }
-    if (message.mentions.users.size >= config.filters.pings.mass && config.filters.pings.mass) {
+    if (
+        message.mentions.users.size >= config.filters.pings.mass &&
+        config.filters.pings.mass &&
+        !checkUserForExceptions(message.member!, config.filters.pings.allowed)
+    ) {
         messageException(message.guild.id, message.channel.id, message.id);
         await message.delete();
         if (!(await isLogging(message.guild.id, "messageMassPing"))) return;
@@ -361,7 +398,9 @@ export async function callback(_client: NucleusClient, message: Message) {
                 timestamp: Date.now()
             },
             separate: {
-                start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
+                start: lowerCaseContent
+                    ? `**Message:**\n\`\`\`${message.content}\`\`\``
+                    : "**Message:** *Message had no content*"
             },
             list: list,
             hidden: {

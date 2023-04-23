@@ -1,5 +1,5 @@
 import { LoadingEmbed } from "../../utils/defaults.js";
-import type { HistorySchema } from "../../utils/database.js";
+import type { HistorySchema, FlagColors } from "../../utils/database.js";
 import Discord, {
     CommandInteraction,
     GuildMember,
@@ -7,11 +7,13 @@ import Discord, {
     ActionRowBuilder,
     ButtonBuilder,
     MessageComponentInteraction,
-    ModalSubmitInteraction,
     ButtonStyle,
     TextInputStyle,
     APIMessageComponentEmoji,
-    SlashCommandSubcommandBuilder
+    SlashCommandSubcommandBuilder,
+    StringSelectMenuBuilder,
+    StringSelectMenuOptionBuilder,
+    ContextMenuCommandInteraction
 } from "discord.js";
 import EmojiEmbed from "../../utils/generateEmojiEmbed.js";
 import getEmojiByName from "../../utils/getEmojiByName.js";
@@ -327,35 +329,41 @@ async function showHistory(member: Discord.GuildMember, interaction: CommandInte
     return timedOut ? 0 : 1;
 }
 
-const callback = async (interaction: CommandInteraction): Promise<unknown> => {
+export const noteMenu = async (
+    member: GuildMember,
+    interaction: CommandInteraction | ContextMenuCommandInteraction
+): Promise<unknown> => {
     let m: Message;
-    const member = interaction.options.getMember("user") as Discord.GuildMember;
     await interaction.reply({
         embeds: LoadingEmbed,
         ephemeral: true,
         fetchReply: true
     });
     let note;
-    let firstLoad = true;
     let timedOut = false;
     while (!timedOut) {
         note = await client.database.notes.read(member.guild.id, member.id);
-        if (firstLoad && !note) {
-            await showHistory(member, interaction);
-        }
-        firstLoad = false;
+        const colors: Record<string, Discord.ColorResolvable> = {
+            none: "#424242",
+            red: "#F27878",
+            yellow: "#EDC575",
+            green: "#68D49E",
+            blue: "#6576CC",
+            purple: "#D46899",
+            gray: "#C4C4C4"
+        };
         m = (await interaction.editReply({
             embeds: [
                 new EmojiEmbed()
-                    .setEmoji("MEMBER.JOIN")
+                    .setEmoji(`ICONS.FLAGS.${(note?.flag ?? "none").toUpperCase()}`)
                     .setTitle("Mod notes for " + member.user.username)
-                    .setDescription(note ? note : "*No note set*")
-                    .setStatus("Success")
+                    .setDescription(note?.note ? note.note : "*No note set*")
+                    .setColor(colors[note?.flag ?? "none"]!)
             ],
             components: [
                 new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
                     new ButtonBuilder()
-                        .setLabel(`${note ? "Modify" : "Create"} note`)
+                        .setLabel(`${note?.note ? "Modify" : "Create"} note`)
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("modify")
                         .setEmoji(getEmojiByName("ICONS.EDIT", "id")),
@@ -364,6 +372,49 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setStyle(ButtonStyle.Primary)
                         .setCustomId("history")
                         .setEmoji(getEmojiByName("ICONS.HISTORY", "id"))
+                ]),
+                new ActionRowBuilder<Discord.StringSelectMenuBuilder>().addComponents([
+                    new StringSelectMenuBuilder()
+                        .setCustomId("flag")
+                        .setPlaceholder("Select a flag")
+                        .addOptions(
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("None")
+                                .setDefault(!note?.flag)
+                                .setValue("none")
+                                .setDescription("Clear")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.NONE", "id")),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Red")
+                                .setDefault(note?.flag === "red")
+                                .setValue("red")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.RED", "id")),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Yellow")
+                                .setDefault(note?.flag === "yellow")
+                                .setValue("yellow")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.YELLOW", "id")),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Green")
+                                .setDefault(note?.flag === "green")
+                                .setValue("green")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.GREEN", "id")),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Blue")
+                                .setDefault(note?.flag === "blue")
+                                .setValue("blue")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.BLUE", "id")),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Purple")
+                                .setDefault(note?.flag === "purple")
+                                .setValue("purple")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.PURPLE", "id")),
+                            new StringSelectMenuOptionBuilder()
+                                .setLabel("Gray")
+                                .setDefault(note?.flag === "gray")
+                                .setValue("gray")
+                                .setEmoji(getEmojiByName("ICONS.FLAGS.GRAY", "id"))
+                        )
                 ])
             ]
         })) as Message;
@@ -383,63 +434,72 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             timedOut = true;
             continue;
         }
-        if (i.customId === "modify") {
-            await i.showModal(
-                new Discord.ModalBuilder()
-                    .setCustomId("modal")
-                    .setTitle("Editing moderator note")
-                    .addComponents(
-                        new ActionRowBuilder<Discord.TextInputBuilder>().addComponents(
-                            new Discord.TextInputBuilder()
-                                .setCustomId("note")
-                                .setLabel("Note")
-                                .setMaxLength(4000)
-                                .setRequired(false)
-                                .setStyle(TextInputStyle.Paragraph)
-                                .setValue(note ? note : " ")
+        if (i.isButton()) {
+            if (i.customId === "modify") {
+                await i.showModal(
+                    new Discord.ModalBuilder()
+                        .setCustomId("modal")
+                        .setTitle("Editing moderator note")
+                        .addComponents(
+                            new ActionRowBuilder<Discord.TextInputBuilder>().addComponents(
+                                new Discord.TextInputBuilder()
+                                    .setCustomId("note")
+                                    .setLabel("Note")
+                                    .setMaxLength(4000)
+                                    .setRequired(false)
+                                    .setStyle(TextInputStyle.Paragraph)
+                                    .setValue(note?.note ? note.note : " ")
+                            )
                         )
-                    )
-            );
-            await interaction.editReply({
-                embeds: [
-                    new EmojiEmbed()
-                        .setTitle("Mod notes for " + member.user.username)
-                        .setDescription("Modal opened. If you can't see it, click back and try again.")
-                        .setStatus("Success")
-                        .setEmoji("GUILD.TICKET.OPEN")
-                ],
-                components: [
-                    new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
-                        new ButtonBuilder()
-                            .setLabel("Back")
-                            .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
-                            .setStyle(ButtonStyle.Primary)
-                            .setCustomId("back")
-                    ])
-                ]
-            });
-            let out;
-            try {
-                out = await modalInteractionCollector(m, interaction.user);
-            } catch (e) {
-                timedOut = true;
-                continue;
+                );
+                await interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed()
+                            .setTitle("Mod notes for " + member.user.username)
+                            .setDescription("Modal opened. If you can't see it, click back and try again.")
+                            .setStatus("Success")
+                            .setEmoji("GUILD.TICKET.OPEN")
+                    ],
+                    components: [
+                        new ActionRowBuilder<Discord.ButtonBuilder>().addComponents([
+                            new ButtonBuilder()
+                                .setLabel("Back")
+                                .setEmoji(getEmojiByName("CONTROL.LEFT", "id"))
+                                .setStyle(ButtonStyle.Primary)
+                                .setCustomId("back")
+                        ])
+                    ]
+                });
+                let out;
+                try {
+                    out = await modalInteractionCollector(m, interaction.user);
+                } catch (e) {
+                    timedOut = true;
+                    continue;
+                }
+                if (out === null || out.isButton()) {
+                    continue;
+                } else {
+                    let toAdd = out.fields.getTextInputValue("note").trim() || null;
+                    if (toAdd === "") toAdd = null;
+                    await client.database.notes.create(member.guild.id, member.id, toAdd);
+                }
+            } else if (i.customId === "history") {
+                await i.deferUpdate();
+                if (!(await showHistory(member, interaction))) return;
             }
-            if (out === null || out.isButton()) {
-                continue;
-            } else if (out instanceof ModalSubmitInteraction) {
-                let toAdd = out.fields.getTextInputValue("note") || null;
-                if (toAdd === " ") toAdd = null;
-                if (toAdd) toAdd = toAdd.trim();
-                await client.database.notes.create(member.guild.id, member.id, toAdd);
-            } else {
-                continue;
-            }
-        } else if (i.customId === "history") {
+        } else if (i.isStringSelectMenu()) {
             await i.deferUpdate();
-            if (!(await showHistory(member, interaction))) return;
+            let flag: string | null = i.values[0]!;
+            if (flag === "none") flag = null;
+            await client.database.notes.flag(member.guild.id, member.id, flag as FlagColors | null);
         }
     }
+};
+
+const callback = async (interaction: CommandInteraction): Promise<void> => {
+    const member = interaction.options.getMember("user") as Discord.GuildMember;
+    await noteMenu(member, interaction);
 };
 
 const check = (interaction: CommandInteraction) => {

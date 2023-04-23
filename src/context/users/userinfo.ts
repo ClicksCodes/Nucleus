@@ -5,12 +5,14 @@ const command = new ContextMenuCommandBuilder().setName("User info");
 
 const callback = async (interaction: UserContextMenuCommandInteraction) => {
     const guild = interaction.guild!;
-    let member = interaction.targetMember;
+    let member = interaction.targetMember as GuildMember | null;
     if (!member) member = await guild.members.fetch(interaction.targetId);
     await userAbout(guild, member as GuildMember, interaction);
 };
 
-const check = async (_interaction: UserContextMenuCommandInteraction) => {
+const check = async (interaction: UserContextMenuCommandInteraction) => {
+    if (!interaction.inGuild()) return "You must be in a server to use this command.";
+
     return true;
 };
 
