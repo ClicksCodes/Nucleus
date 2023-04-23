@@ -179,7 +179,7 @@ export function TestString(
     string: string,
     soft: string[],
     strict: string[],
-    enabled?: boolean
+    enabled: boolean = true
 ): { word: string; type: string } | null {
     if (!enabled) return null;
     for (const word of strict) {
@@ -220,7 +220,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     // Does the nickname contain filtered words
     let nameCheck;
     if (member.nickname) {
-        nameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+        nameCheck = TestString(member.nickname, loose, strict, guildData.filters.wordFilter.enabled);
     } else {
         nameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
     }
