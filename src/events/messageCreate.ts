@@ -8,6 +8,7 @@ import { callback as statsChannelUpdate } from "../reflex/statsChannelUpdate.js"
 import { ChannelType, GuildMember, Message, ThreadChannel } from "discord.js";
 import singleNotify from "../utils/singleNotify.js";
 
+
 export const event = "messageCreate";
 
 function checkUserForExceptions(user: GuildMember, exceptions: { roles: string[]; users: string[] }) {
@@ -50,7 +51,6 @@ export async function callback(_client: NucleusClient, message: Message) {
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderChannel } = client.logger;
 
     const fileNames = await logAttachment(message);
-
     const content = message.content.toLowerCase() || "";
     if (config.filters.clean.channels.includes(message.channel.id)) {
         if (!checkUserForExceptions(message.member!, config.filters.clean.allowed)) return await message.delete();
@@ -58,6 +58,7 @@ export async function callback(_client: NucleusClient, message: Message) {
 
     const filter = getEmojiByName("ICONS.FILTER");
     let attachmentJump = "";
+    console.log(config.logging.attachments.saved)
     if (config.logging.attachments.saved[message.channel.id + message.id]) {
         attachmentJump = ` [[View attachments]](${config.logging.attachments.saved[message.channel.id + message.id]})`;
     }

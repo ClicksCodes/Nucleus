@@ -156,7 +156,13 @@ async function registerContextMenus() {
             context.command.setType(ApplicationCommandType.User);
             commands.push(context.command);
 
-            client.commands["contextCommands/user/" + context.command.name] = context;
+            client.commands["contextCommands/user/" + context.command.name] = [
+                context,
+                {
+                    name: context.name ?? context.command.name,
+                    description: context.description ?? context.command.description
+                }
+            ];
 
             console.log(
                 `${last.replace("└", " ").replace("├", "│")}  └─ ${colors.green}Loaded ${
@@ -181,11 +187,15 @@ async function registerCommandHandler() {
     client.on("interactionCreate", async (interaction: Interaction) => {
         if (interaction.isUserContextMenuCommand()) {
             const commandName = "contextCommands/user/" + interaction.commandName;
-            await execute(
-                client.commands[commandName]![0]?.check,
-                client.commands[commandName]![0]?.callback,
-                interaction
-            );
+            console.log("trying " + commandName)
+            try {
+                console.log(client.commands[commandName])
+                await execute(
+                    client.commands[commandName]![0]?.check,
+                    client.commands[commandName]![0]?.callback,
+                    interaction
+                );
+            } catch (e) { console.log(e) }
             return;
         } else if (interaction.isMessageContextMenuCommand()) {
             const commandName = "contextCommands/message/" + interaction.commandName;
