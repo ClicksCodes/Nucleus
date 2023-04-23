@@ -179,7 +179,7 @@ export function TestString(
     string: string,
     soft: string[],
     strict: string[],
-    enabled?: boolean
+    enabled: boolean = true
 ): { word: string; type: string } | null {
     if (!enabled) return null;
     for (const word of strict) {
