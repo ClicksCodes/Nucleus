@@ -220,7 +220,7 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
     // Does the nickname contain filtered words
     let nameCheck;
     if (member.nickname) {
-        nameCheck = TestString(member.nickname ?? "", loose, strict, guildData.filters.wordFilter.enabled);
+        nameCheck = TestString(member.nickname, loose, strict, guildData.filters.wordFilter.enabled);
     } else {
         nameCheck = TestString(member.user.username, loose, strict, guildData.filters.wordFilter.enabled);
     }
