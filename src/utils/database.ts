@@ -698,7 +698,10 @@ export class ModNotes {
 
     async create(guild: string, user: string, note: string | null) {
         // console.log("ModNotes create");
-        await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, { upsert: true });
+        const modNote = await this.modNotes.findOne({ guild: guild, user: user });
+        modNote
+            ? await this.modNotes.updateOne({ guild: guild, user: user }, { $set: { note: note } }, collectionOptions)
+            : await this.modNotes.insertOne({ guild: guild, user: user, note: note }, collectionOptions);
     }
 
     async read(guild: string, user: string) {

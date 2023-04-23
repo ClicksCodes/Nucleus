@@ -757,8 +757,9 @@ const mentionMenu = async (
                                 .addComponents(
                                     new ActionRowBuilder<TextInputBuilder>().addComponents(
                                         new TextInputBuilder()
+                                            .setLabel("Amount")
                                             .setCustomId("mass")
-                                            .setPlaceholder("Amount")
+                                            .setPlaceholder(current.mass === 5 ? "Amount" : current.mass.toString())
                                             .setMinLength(1)
                                             .setMaxLength(3)
                                             .setStyle(TextInputStyle.Short)

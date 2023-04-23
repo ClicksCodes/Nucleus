@@ -7,7 +7,6 @@ import Discord, {
     ActionRowBuilder,
     ButtonBuilder,
     MessageComponentInteraction,
-    ModalSubmitInteraction,
     ButtonStyle,
     TextInputStyle,
     APIMessageComponentEmoji,
@@ -427,13 +426,10 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
             }
             if (out === null || out.isButton()) {
                 continue;
-            } else if (out instanceof ModalSubmitInteraction) {
-                let toAdd = out.fields.getTextInputValue("note") || null;
-                if (toAdd === " ") toAdd = null;
-                if (toAdd) toAdd = toAdd.trim();
-                await client.database.notes.create(member.guild.id, member.id, toAdd);
             } else {
-                continue;
+                let toAdd = out.fields.getTextInputValue("note").trim() || null;
+                if (toAdd === "") toAdd = null;
+                await client.database.notes.create(member.guild.id, member.id, toAdd);
             }
         } else if (i.customId === "history") {
             await i.deferUpdate();
