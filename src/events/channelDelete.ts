@@ -8,7 +8,7 @@ import {
     ThreadChannel,
     VoiceChannel
 } from "discord.js";
-import client, { NucleusClient } from "../utils/client.js";
+import _client, { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
 
 
@@ -48,7 +48,10 @@ export const event = "channelDelete";
 //     // }
 // };
 
-export async function callback(_client: NucleusClient, channel: GuildBasedChannel) {
+export async function callback(client: NucleusClient, channel: GuildBasedChannel) {
+    // In future, please avoid using client from the outer scope. If you import client separately this
+    // parameter should shadow it.
+
     // await deleteFromGuildConfig(channel)
     const { getAuditLog, log, isLogging, NucleusColors, entry, renderDelta, renderUser } = client.logger;
     if (!(await isLogging(channel.guild.id, "channelUpdate"))) return;
