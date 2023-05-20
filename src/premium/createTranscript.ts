@@ -89,7 +89,7 @@ export default async function (interaction: CommandInteraction | MessageComponen
                 new ButtonBuilder()
                     .setLabel("View")
                     .setStyle(ButtonStyle.Link)
-                    .setURL(`https://testing.coded.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`),
+                    .setURL(`https://clicks.codes/nucleus/transcript/${code}?key=${key}&iv=${iv}`),
                 new ButtonBuilder()
                     .setLabel("Delete")
                     .setStyle(ButtonStyle.Danger)
