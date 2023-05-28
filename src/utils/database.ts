@@ -495,9 +495,7 @@ export class Transcript {
                     out += `> [Crosspost From] ${message.referencedMessage[0]} in ${message.referencedMessage[1]} in ${message.referencedMessage[2]}\n`;
                 } else out += `> [Reply To] ${message.referencedMessage}\n`;
             }
-            out += `${message.author.nickname ?? message.author.username} (${
-                message.author.id
-            }) (${message.id})`;
+            out += `${message.author.nickname ?? message.author.username} (${message.author.id}) (${message.id})`;
             out += ` [${new Date(message.createdTimestamp).toISOString()}]`;
             if (message.editedTimestamp) out += ` [Edited: ${new Date(message.editedTimestamp).toISOString()}]`;
             out += "\n";
