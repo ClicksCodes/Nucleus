@@ -23,7 +23,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setURL(
                         `https://discord.com/api/oauth2/authorize?client_id=${
                             client.user!.id
-                        }&permissions=407900777662&scope=applications.commands`
+                        }&permissions=407900777662&scope=bot%20applications.commands`
                     )
             ])
         ],

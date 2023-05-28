@@ -192,7 +192,6 @@ interface TranscriptComponent {
 
 interface TranscriptAuthor {
     username: string;
-    discriminator: number;
     nickname?: string;
     id: string;
     iconURL?: string;
@@ -390,7 +389,6 @@ export class Transcript {
             type: type,
             for: {
                 username: member!.user.username,
-                discriminator: parseInt(member!.user.discriminator),
                 id: member!.user.id,
                 topRole: {
                     color: member!.roles.highest.color
@@ -404,7 +402,6 @@ export class Transcript {
             createdTimestamp: Date.now(),
             createdBy: {
                 username: interaction.user.username,
-                discriminator: parseInt(interaction.user.discriminator),
                 id: interaction.user.id,
                 topRole: {
                     color: interactionMember?.roles.highest.color ?? 0x000000
@@ -420,7 +417,6 @@ export class Transcript {
                 id: message.id,
                 author: {
                     username: message.author.username,
-                    discriminator: parseInt(message.author.discriminator),
                     id: message.author.id,
                     topRole: {
                         color: message.member ? message.member.roles.highest.color : 0x000000
@@ -499,7 +495,7 @@ export class Transcript {
                     out += `> [Crosspost From] ${message.referencedMessage[0]} in ${message.referencedMessage[1]} in ${message.referencedMessage[2]}\n`;
                 } else out += `> [Reply To] ${message.referencedMessage}\n`;
             }
-            out += `${message.author.nickname ?? message.author.username}#${message.author.discriminator} (${
+            out += `${message.author.nickname ?? message.author.username} (${
                 message.author.id
             }) (${message.id})`;
             out += ` [${new Date(message.createdTimestamp).toISOString()}]`;
