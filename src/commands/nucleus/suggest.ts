@@ -119,9 +119,21 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         ],
         components: [
             new Discord.ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("accept:Suggestion").setLabel("Accept").setStyle(ButtonStyle.Success).setDisabled(disabled),
-                new ButtonBuilder().setCustomId("deny:Suggestion").setLabel("Deny").setStyle(ButtonStyle.Danger).setDisabled(disabled),
-                new ButtonBuilder().setCustomId("close:Suggestion").setLabel("Close").setStyle(ButtonStyle.Secondary).setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("accept:Suggestion")
+                    .setLabel("Accept")
+                    .setStyle(ButtonStyle.Success)
+                    .setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("deny:Suggestion")
+                    .setLabel("Deny")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("close:Suggestion")
+                    .setLabel("Close")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(disabled),
                 new ButtonBuilder()
                     .setCustomId("implemented:Suggestion")
                     .setLabel("Implemented")
@@ -134,8 +146,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setDisabled(disabled)
             ),
             new Discord.ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("lock:Comment").setLabel("Lock").setStyle(ButtonStyle.Danger).setDisabled(disabled),
-                new ButtonBuilder().setCustomId("spam:Suggestion").setLabel("Mark as Spam").setStyle(ButtonStyle.Danger).setDisabled(disabled)
+                new ButtonBuilder()
+                    .setCustomId("lock:Comment")
+                    .setLabel("Lock")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("spam:Suggestion")
+                    .setLabel("Mark as Spam")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(disabled)
             )
         ]
     });

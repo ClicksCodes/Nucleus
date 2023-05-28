@@ -19,21 +19,23 @@ import { Embed } from "../utils/defaults.js";
 export default async (guild: Guild | null, interaction?: CommandInteraction) => {
     let m: Message;
     if (guild) {
-        let c: GuildTextBasedChannel | null = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
+        let c: GuildTextBasedChannel | null = guild.publicUpdatesChannel
+            ? guild.publicUpdatesChannel
+            : guild.systemChannel;
         c = c
             ? c
             : (guild.channels.cache.find(
-                (ch) =>
-                    [
-                        ChannelType.GuildText,
-                        ChannelType.GuildAnnouncement,
-                        ChannelType.PublicThread,
-                        ChannelType.PrivateThread,
-                        ChannelType.AnnouncementThread
-                    ].includes(ch.type) &&
-                    ch.permissionsFor(guild.roles.everyone).has("SendMessages") &&
-                    ch.permissionsFor(guild.members.me!).has("EmbedLinks")
-            ) as GuildTextBasedChannel | undefined) ?? null;
+                  (ch) =>
+                      [
+                          ChannelType.GuildText,
+                          ChannelType.GuildAnnouncement,
+                          ChannelType.PublicThread,
+                          ChannelType.PrivateThread,
+                          ChannelType.AnnouncementThread
+                      ].includes(ch.type) &&
+                      ch.permissionsFor(guild.roles.everyone).has("SendMessages") &&
+                      ch.permissionsFor(guild.members.me!).has("EmbedLinks")
+              ) as GuildTextBasedChannel | undefined) ?? null;
         if (interaction) c = interaction.channel as GuildTextBasedChannel;
         if (!c) {
             return;
