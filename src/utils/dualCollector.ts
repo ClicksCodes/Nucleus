@@ -54,7 +54,7 @@ function defaultInteractionFilter(i: MessageComponentInteraction, user: User, m:
     return i.channel!.id === m.channel!.id && i.user.id === user.id;
 }
 function defaultModalFilter(i: ModalSubmitInteraction, user: User, m: Message) {
-    return i.channel!.id === m.channel!.id && i.user.id === user.id;
+    return (i.channel ? (i.channel!.id === m.channel!.id) : true) && i.user.id === user.id;
 }
 
 export async function modalInteractionCollector(

@@ -16,35 +16,47 @@ import getEmojiByName from "../utils/getEmojiByName.js";
 import createPageIndicator from "../utils/createPageIndicator.js";
 import { Embed } from "../utils/defaults.js";
 
-export default async (guild: Guild, interaction?: CommandInteraction) => {
-    let c: GuildTextBasedChannel | null = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
-    c = c
-        ? c
-        : (guild.channels.cache.find(
-              (ch) =>
-                  [
-                      ChannelType.GuildText,
-                      ChannelType.GuildAnnouncement,
-                      ChannelType.PublicThread,
-                      ChannelType.PrivateThread,
-                      ChannelType.AnnouncementThread
-                  ].includes(ch.type) &&
-                  ch.permissionsFor(guild.roles.everyone).has("SendMessages") &&
-                  ch.permissionsFor(guild.members.me!).has("EmbedLinks")
-          ) as GuildTextBasedChannel | undefined) ?? null;
-    if (interaction) c = interaction.channel as GuildTextBasedChannel;
-    if (!c) {
-        return;
-    }
+export default async (guild: Guild | null, interaction?: CommandInteraction) => {
     let m: Message;
-    if (interaction) {
-        m = (await interaction.reply({
-            embeds: LoadingEmbed,
-            fetchReply: true,
-            ephemeral: true
-        })) as Message;
+    if (guild) {
+        let c: GuildTextBasedChannel | null = guild.publicUpdatesChannel ? guild.publicUpdatesChannel : guild.systemChannel;
+        c = c
+            ? c
+            : (guild.channels.cache.find(
+                (ch) =>
+                    [
+                        ChannelType.GuildText,
+                        ChannelType.GuildAnnouncement,
+                        ChannelType.PublicThread,
+                        ChannelType.PrivateThread,
+                        ChannelType.AnnouncementThread
+                    ].includes(ch.type) &&
+                    ch.permissionsFor(guild.roles.everyone).has("SendMessages") &&
+                    ch.permissionsFor(guild.members.me!).has("EmbedLinks")
+            ) as GuildTextBasedChannel | undefined) ?? null;
+        if (interaction) c = interaction.channel as GuildTextBasedChannel;
+        if (!c) {
+            return;
+        }
+        if (interaction) {
+            m = (await interaction.reply({
+                embeds: LoadingEmbed,
+                fetchReply: true,
+                ephemeral: true
+            })) as Message;
+        } else {
+            m = await c.send({ embeds: LoadingEmbed });
+        }
     } else {
-        m = await c.send({ embeds: LoadingEmbed });
+        if (interaction) {
+            m = (await interaction.reply({
+                embeds: LoadingEmbed,
+                fetchReply: true,
+                ephemeral: true
+            })) as Message;
+        } else {
+            return;
+        }
     }
     let page = 0;
     const pages = [
