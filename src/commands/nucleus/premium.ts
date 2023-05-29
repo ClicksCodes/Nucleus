@@ -165,7 +165,10 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         const gaveUser = await client.users.fetch(hasPremium[1]);
         premiumGuild = `**This server has premium! It was ${
             hasPremium[2] === 3 && hasPremium[3]
-                ? `automatically applied by ` + (gaveUser.discriminator !== "0" ? `${gaveUser.username}#${gaveUser.discriminator}` : `@${gaveUser.username}`)
+                ? `automatically applied by ` +
+                  (gaveUser.discriminator !== "0"
+                      ? `${gaveUser.username}#${gaveUser.discriminator}`
+                      : `@${gaveUser.username}`)
                 : `given by <@${hasPremium[1]}>`
         }**\n\n`;
     }
