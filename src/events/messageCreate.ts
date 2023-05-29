@@ -32,9 +32,10 @@ export async function callback(_client: NucleusClient, message: Message) {
             await message.crosspost();
         } else {
             await singleNotify(
-                `Nucleus does not have Manage Messages in <#${message.channel.id}>`,
+                "crosspost.noManageMessages",
                 message.guild.id,
-                true
+                `Nucleus does not have Manage Messages in <#${message.channel.id}>`,
+                "Warning"
             );
         }
     }
