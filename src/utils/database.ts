@@ -192,7 +192,7 @@ interface TranscriptComponent {
 
 interface TranscriptAuthor {
     username: string;
-    discriminator?: string;
+    discriminator: string | undefined;
     nickname?: string;
     id: string;
     iconURL?: string;
@@ -390,7 +390,7 @@ export class Transcript {
             type: type,
             for: {
                 username: member!.user.username,
-                discriminator: member!.user.discriminator,
+                discriminator: member!.user.discriminator === "0" ? undefined : member!.user.discriminator,
                 id: member!.user.id,
                 topRole: {
                     color: member!.roles.highest.color
@@ -404,7 +404,7 @@ export class Transcript {
             createdTimestamp: Date.now(),
             createdBy: {
                 username: interaction.user.username,
-                discriminator: interaction.user.discriminator,
+                discriminator: interaction.user.discriminator === "0" ? undefined : interaction.user.discriminator,
                 id: interaction.user.id,
                 topRole: {
                     color: interactionMember?.roles.highest.color ?? 0x000000
@@ -420,7 +420,7 @@ export class Transcript {
                 id: message.id,
                 author: {
                     username: message.author.username,
-                    discriminator: message.author.discriminator,
+                    discriminator: message.author.discriminator === "0" ? undefined : message.author.discriminator,
                     id: message.author.id,
                     topRole: {
                         color: message.member ? message.member.roles.highest.color : 0x000000
