@@ -45,7 +45,8 @@ interface ObjectSchema {
 export const configToDropdown = (
     placeholder: string,
     currentPageData: ObjectSchema,
-    selectedRoles?: string[]
+    selectedRoles?: string[],
+    disabled?: boolean
 ): ActionRowBuilder<StringSelectMenuBuilder> => {
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         new StringSelectMenuBuilder()
@@ -53,6 +54,7 @@ export const configToDropdown = (
             .setPlaceholder(placeholder)
             .setMinValues(currentPageData.min)
             .setMaxValues(currentPageData.max)
+            .setDisabled(disabled)
             .addOptions(
                 currentPageData.options.map((option: { name: string; description: string | null; role: string }) => {
                     const builder = new StringSelectMenuOptionBuilder()

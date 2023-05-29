@@ -120,6 +120,7 @@ const editNameDescription = async (
                     .setStyle(TextInputStyle.Short)
                     .setValue(name ?? "")
                     .setRequired(true)
+                    .setMaxLength(100)
             ),
             new ActionRowBuilder<TextInputBuilder>().addComponents(
                 new TextInputBuilder()
@@ -128,6 +129,8 @@ const editNameDescription = async (
                     .setPlaceholder("A short description of the role (e.g. A role for people who code)")
                     .setStyle(TextInputStyle.Short)
                     .setValue(description ?? "")
+                    .setRequired(false)
+                    .setMaxLength(100)
             )
         );
     const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -159,15 +162,15 @@ const editNameDescription = async (
     if (!out) return [name, description];
     if (out.isButton()) return [name, description];
     name = out.fields.fields.find((f) => f.customId === "name")?.value ?? name;
-    description = out.fields.fields.find((f) => f.customId === "description")?.value ?? description;
+    description = out.fields.fields.find((f) => f.customId === "description")?.value ?? "";
     return [name, description];
 };
 
 const defaultRoleMenuData = {
-    name: "Role Menu Page",
-    description: "A new role menu page",
+    name: "New Page",
+    description: "",
     min: 0,
-    max: 0,
+    max: 1,
     options: []
 };
 
@@ -196,17 +199,20 @@ const editRoleMenuPage = async (
     );
 
     let back = false;
-    if (data.options.length === 0) {
-        data.options = [{ name: "Role 1", description: null, role: "No role set" }];
-    }
     do {
-        const previewSelect = configToDropdown("Edit Roles", {
-            name: data.name,
-            description: data.description,
-            min: 1,
-            max: 1,
-            options: data.options
-        });
+        const noRoles = data.options.length === 0;
+        const previewSelect = configToDropdown(
+            "Edit Roles",
+            {
+                name: data.name,
+                description: data.description,
+                min: 1,
+                max: 1,
+                options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
+            },
+            undefined,
+            noRoles
+        );
         const embed = new EmojiEmbed()
             .setTitle(`${data.name}`)
             .setStatus("Success")
@@ -215,7 +221,8 @@ const editRoleMenuPage = async (
                     `**Min:** ${data.min}` +
                     (data.min === 0 ? " (Members will be given a skip button)" : "") +
                     "\n" +
-                    `**Max:** ${data.max}\n`
+                    `**Max:** ${data.max}\n` +
+                    `\n**Roles:** ${data.options.length === 0 ? "*No roles set*" : data.options.length}`
             );
 
         await interaction.editReply({ embeds: [embed], components: [previewSelect, buttons] });
@@ -237,7 +244,8 @@ const editRoleMenuPage = async (
                 await createRoleMenuOptionPage(
                     interaction,
                     m,
-                    data.options.find((o) => o.role === (i as StringSelectMenuInteraction).values[0])
+                    data.options.find((o) => o.role === (i as StringSelectMenuInteraction).values[0]),
+                    false
                 );
             }
         } else if (i.isButton()) {
@@ -255,7 +263,8 @@ const editRoleMenuPage = async (
                 }
                 case "addRole": {
                     await i.deferUpdate();
-                    data.options.push(await createRoleMenuOptionPage(interaction, m));
+                    const out = await createRoleMenuOptionPage(interaction, m, undefined, true);
+                    if (out) data.options.push(out);
                     break;
                 }
             }
@@ -268,8 +277,10 @@ const editRoleMenuPage = async (
 const createRoleMenuOptionPage = async (
     interaction: StringSelectMenuInteraction | ButtonInteraction,
     m: Message,
-    data?: { name: string; description: string | null; role: string }
+    data?: { name: string; description: string | null; role: string },
+    newRole: boolean = false
 ) => {
+    const initialData = _.cloneDeep(data);
     const { renderRole } = client.logger;
     if (!data)
         data = {
@@ -281,19 +292,29 @@ const createRoleMenuOptionPage = async (
     const buttons = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId("back")
-            .setLabel("Back")
-            .setStyle(ButtonStyle.Secondary)
-            .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji),
+            .setLabel(newRole ? "Add" : "Back")
+            .setStyle(newRole ? ButtonStyle.Success : ButtonStyle.Secondary)
+            .setEmoji(getEmojiByName("ICONS.SAVE", "id") as APIMessageComponentEmoji),
         new ButtonBuilder()
             .setCustomId("edit")
             .setLabel("Edit Details")
             .setStyle(ButtonStyle.Primary)
-            .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji)
+            .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
+        new ButtonBuilder()
+            .setCustomId("delete")
+            .setLabel("Delete")
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji(getEmojiByName("TICKETS.ISSUE", "id") as APIMessageComponentEmoji),
+        new ButtonBuilder()
+            .setCustomId("cancel")
+            .setLabel("Cancel")
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji(getEmojiByName("CONTROL.LEFT", "id") as APIMessageComponentEmoji)
     );
     do {
         const roleSelect = new RoleSelectMenuBuilder()
             .setCustomId("role")
-            .setPlaceholder(data.role ? "Set role to" : "Set the role");
+            .setPlaceholder(data.role ? "Change role to" : "Select a role");
         const embed = new EmojiEmbed()
             .setTitle(`${data.name}`)
             .setStatus("Success")
@@ -325,6 +346,12 @@ const createRoleMenuOptionPage = async (
             if (i.customId === "role") {
                 await i.deferUpdate();
                 data.role = (i as RoleSelectMenuInteraction).values[0]!;
+                await interaction.editReply({
+                    embeds: [
+                        new EmojiEmbed().setTitle(`Applying changes`).setStatus("Danger").setEmoji("NUCLEUS.LOADING")
+                    ],
+                    components: []
+                });
             }
         } else if (i.isButton()) {
             switch (i.customId) {
@@ -334,7 +361,6 @@ const createRoleMenuOptionPage = async (
                     break;
                 }
                 case "edit": {
-                    await i.deferUpdate();
                     const [name, description] = await editNameDescription(
                         i,
                         interaction,
@@ -344,6 +370,15 @@ const createRoleMenuOptionPage = async (
                     data.name = name ? name : data.name;
                     data.description = description ? description : data.description;
                     break;
+                }
+                case "delete": {
+                    await i.deferUpdate();
+                    return null;
+                }
+                case "cancel": {
+                    await i.deferUpdate();
+                    if (newRole) return null;
+                    else return initialData;
                 }
             }
         }
@@ -383,6 +418,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setValue("delete")
                     .setEmoji(getEmojiByName("TICKETS.ISSUE", "id") as APIMessageComponentEmoji)
             );
+        console.log(page);
         const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
                 .setCustomId("back")
@@ -422,7 +458,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             actionSelect.setDisabled(true);
             pageSelect.addOptions(new StringSelectMenuOptionBuilder().setLabel("No role menu pages").setValue("none"));
         } else {
-            page = Math.min(page, Object.keys(currentObject).length - 1);
+            page = Math.max(Math.min(page, currentObject.length - 1), 0);
             current = currentObject[page]!;
             embed.setDescription(
                 `**Currently Editing:** ${current.name}\n\n` +

@@ -6,7 +6,7 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("guide").setDescription("Shows the welcome guide for the bot");
 
 const callback = async (interaction: CommandInteraction) => {
-    await guide(interaction.guild!, interaction);
+    await guide(interaction.guild, interaction);
 };
 
 export { command };

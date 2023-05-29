@@ -19,7 +19,6 @@ const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("suggest").setDescription("Sends a suggestion to the developers");
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
-    await interaction.guild?.members.fetch(interaction.member!.user.id);
     await interaction.reply({ embeds: LoadingEmbed, ephemeral: true });
     let closed = false;
     let suggestionTitle: string | null = null;
@@ -90,18 +89,25 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     suggestionTitle = suggestionTitle ? suggestionTitle : `${suggestionDesc.substring(0, 70)}`;
     const channel = client.channels.cache.get(config.suggestionChannel) as Discord.TextChannel;
     const m = await channel.send({ embeds: LoadingEmbed });
-    const issue = await client.GitHub.rest.issues.create({
-        owner: "ClicksMinutePer",
-        repo: "Nucleus",
-        title: suggestionTitle,
-        body: `Linked Suggestion in Private Developer Channel: [Message](${
-            m.url
-        })\n\n**Suggestion:**\n> ${suggestionDesc
-            .replaceAll("@", "@<!-- -->")
-            .replaceAll("/issues", "/issues<!-- -->")
-            .replaceAll("/pull", "/pull<!-- -->")}\n\n`,
-        labels: ["🤖 Auto", "📝 Suggestion"]
-    });
+    let issueNumber: number | null = null;
+    try {
+        const issue = await client.GitHub.rest.issues.create({
+            owner: "ClicksMinutePer",
+            repo: "Nucleus",
+            title: suggestionTitle,
+            body: `Linked Suggestion in Private Developer Channel: [Message](${
+                m.url
+            })\n\n**Suggestion:**\n> ${suggestionDesc
+                .replaceAll("@", "@<!-- -->")
+                .replaceAll("/issues", "/issues<!-- -->")
+                .replaceAll("/pull", "/pull<!-- -->")}\n\n`,
+            labels: ["🤖 Auto", "📝 Suggestion"]
+        });
+        issueNumber = issue.data.number;
+    } catch (_e) {
+        console.log("Could not connect to GitHub");
+    }
+    const disabled = issueNumber ? false : true;
     await m.edit({
         embeds: [
             new EmojiEmbed()
@@ -109,25 +115,47 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setTitle(`Suggestion from ${interaction.user.tag} (${interaction.user.id})`)
                 .setDescription(`**Suggestion:**\n> ${suggestionDesc}\n\n`)
                 .setStatus("Success")
-                .setFooter({ text: `${issue.data.number}` })
+                .setFooter({ text: `${issueNumber ? issueNumber : "Could not connect to GitHub"}` })
         ],
         components: [
             new Discord.ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("accept:Suggestion").setLabel("Accept").setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId("deny:Suggestion").setLabel("Deny").setStyle(ButtonStyle.Danger),
-                new ButtonBuilder().setCustomId("close:Suggestion").setLabel("Close").setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                    .setCustomId("accept:Suggestion")
+                    .setLabel("Accept")
+                    .setStyle(ButtonStyle.Success)
+                    .setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("deny:Suggestion")
+                    .setLabel("Deny")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("close:Suggestion")
+                    .setLabel("Close")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(disabled),
                 new ButtonBuilder()
                     .setCustomId("implemented:Suggestion")
                     .setLabel("Implemented")
-                    .setStyle(ButtonStyle.Secondary),
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(disabled),
                 new ButtonBuilder()
-                    .setLabel(`Open Issue #${issue.data.number}`)
+                    .setLabel(`Open Issue #${issueNumber ? issueNumber : "0"}`)
                     .setStyle(ButtonStyle.Link)
-                    .setURL(`https://github.com/ClicksMinutePer/Nucleus/issues/${issue.data.number}`)
+                    .setURL(`https://github.com/ClicksMinutePer/Nucleus/issues/${issueNumber}`)
+                    .setDisabled(disabled)
             ),
             new Discord.ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder().setCustomId("lock:Suggestion").setLabel("Lock").setStyle(ButtonStyle.Danger),
-                new ButtonBuilder().setCustomId("spam:Suggestion").setLabel("Mark as Spam").setStyle(ButtonStyle.Danger)
+                new ButtonBuilder()
+                    .setCustomId("lock:Comment")
+                    .setLabel("Lock")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(disabled),
+                new ButtonBuilder()
+                    .setCustomId("spam:Suggestion")
+                    .setLabel("Mark as Spam")
+                    .setStyle(ButtonStyle.Danger)
+                    .setDisabled(disabled)
             )
         ]
     });
