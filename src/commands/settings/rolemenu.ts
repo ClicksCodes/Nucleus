@@ -418,7 +418,6 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     .setValue("delete")
                     .setEmoji(getEmojiByName("TICKETS.ISSUE", "id") as APIMessageComponentEmoji)
             );
-        console.log(page);
         const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
                 .setCustomId("back")
@@ -462,7 +461,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             current = currentObject[page]!;
             embed.setDescription(
                 `**Currently Editing:** ${current.name}\n\n` +
-                    `**Description:**\n> ${current.description}\n` +
+                    `**Description:**\n> ${current.description || "*No description set*"}\n` +
                     `\n\n${createPageIndicator(Object.keys(config.roleMenu.options).length, page)}`
             );
 
@@ -470,7 +469,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 currentObject.map((key: ObjectSchema, index) => {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(ellipsis(key.name, 50))
-                        .setDescription(ellipsis(key.description, 50))
+                        .setDescription(ellipsis(key.description || "No description set", 50))
                         .setValue(index.toString());
                 })
             );
@@ -509,9 +508,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "add": {
                     const newPage = await editRoleMenuPage(i, m);
-                    if (_.isEqual(newPage, defaultRoleMenuData)) break;
-                    currentObject.push();
-                    page = currentObject.length - 1;
+                    if (_.isEqual(newPage, defaultRoleMenuData)) { break; }
+                    if (newPage) {
+                        currentObject.push(newPage);
+                        page = currentObject.length - 1;
+                    }
                     break;
                 }
                 case "reorder": {
