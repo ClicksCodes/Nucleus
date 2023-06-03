@@ -508,7 +508,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "add": {
                     const newPage = await editRoleMenuPage(i, m);
-                    if (_.isEqual(newPage, defaultRoleMenuData)) { break; }
+                    if (_.isEqual(newPage, defaultRoleMenuData)) {
+                        break;
+                    }
                     if (newPage) {
                         currentObject.push(newPage);
                         page = currentObject.length - 1;
