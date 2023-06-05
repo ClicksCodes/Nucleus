@@ -218,7 +218,7 @@ const editRoleMenuPage = async (
             .setTitle(`${data.name}`)
             .setStatus("Success")
             .setDescription(
-                `**Description:**\n> ${data.description ?? '*No description set*'}\n\n` +
+                `**Description:**\n> ${data.description ?? "*No description set*"}\n\n` +
                     `**Min:** ${data.min}` +
                     (data.min === 0 ? " (Members will be given a skip button)" : "") +
                     "\n" +
@@ -487,18 +487,29 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                               .join("\n")
                         : "")
             );
-            if(currentObject.options.length > 0) {
+            if (currentObject.options.length > 0) {
                 pageSelect.addOptions(
                     currentObject.options.map((key: ObjectSchema, index) => {
                         return new StringSelectMenuOptionBuilder()
                             .setLabel(ellipsis(key.name, 50))
-                            .setDescription(ellipsis(key.description?.length ? (key.description.length > 0 ? key.description : "No description set") : "No description set", 50))
+                            .setDescription(
+                                ellipsis(
+                                    key.description?.length
+                                        ? key.description.length > 0
+                                            ? key.description
+                                            : "No description set"
+                                        : "No description set",
+                                    50
+                                )
+                            )
                             .setValue(index.toString());
                     })
                 );
             } else {
                 pageSelect.setDisabled(true);
-                pageSelect.addOptions(new StringSelectMenuOptionBuilder().setLabel("No role menu pages").setValue("none"));
+                pageSelect.addOptions(
+                    new StringSelectMenuOptionBuilder().setLabel("No role menu pages").setValue("none")
+                );
             }
         } else {
             page = Math.max(Math.min(page, currentObject.options.length), 0);
@@ -513,7 +524,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 currentObject.options.map((key: ObjectSchema, index) => {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(ellipsis(key.name, 50))
-                        .setDescription(ellipsis(key.description?.length ? (key.description.length > 0 ? key.description : "No description set") : "No description set", 50))
+                        .setDescription(
+                            ellipsis(
+                                key.description?.length
+                                    ? key.description.length > 0
+                                        ? key.description
+                                        : "No description set"
+                                    : "No description set",
+                                50
+                            )
+                        )
                         .setValue(index.toString());
                 })
             );

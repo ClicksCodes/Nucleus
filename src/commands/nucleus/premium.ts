@@ -89,7 +89,7 @@ const dmcallback = async (interaction: CommandInteraction, firstDescription: str
         await i.deferUpdate();
         await client.database.premium.removePremium(interaction.user.id, i.values[0]!);
     } while (!closed);
-    await interaction.deleteReply()
+    await interaction.deleteReply();
 };
 
 const callback = async (interaction: CommandInteraction): Promise<void> => {
