@@ -29,11 +29,12 @@ import _ from "lodash";
 
 const isEqual = _.isEqual;
 
-const command = (builder: SlashCommandSubcommandBuilder) => builder.setName("rolemenu").setDescription("rolemenu");
+const command = (builder: SlashCommandSubcommandBuilder) =>
+    builder.setName("rolemenu").setDescription("Allows you to change settings for the servers rolemenu");
 
 interface ObjectSchema {
     name: string;
-    description: string;
+    description: string | null;
     min: number;
     max: number;
     options: {
@@ -105,7 +106,7 @@ const editNameDescription = async (
     i: ButtonInteraction,
     interaction: StringSelectMenuInteraction | ButtonInteraction,
     m: Message,
-    data: { name?: string; description?: string }
+    data: { name?: string; description?: string | null }
 ) => {
     let { name, description } = data;
     const modal = new ModalBuilder()
@@ -162,7 +163,7 @@ const editNameDescription = async (
     if (!out) return [name, description];
     if (out.isButton()) return [name, description];
     name = out.fields.fields.find((f) => f.customId === "name")?.value ?? name;
-    description = out.fields.fields.find((f) => f.customId === "description")?.value ?? "";
+    description = out.fields.fields.find((f) => f.customId === "description")?.value ?? null;
     return [name, description];
 };
 
@@ -205,7 +206,7 @@ const editRoleMenuPage = async (
             "Edit Roles",
             {
                 name: data.name,
-                description: data.description,
+                description: data.description ?? null,
                 min: 1,
                 max: 1,
                 options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
@@ -217,7 +218,7 @@ const editRoleMenuPage = async (
             .setTitle(`${data.name}`)
             .setStatus("Success")
             .setDescription(
-                `**Description:**\n> ${data.description}\n\n` +
+                `**Description:**\n> ${data.description ?? "*No description set*"}\n\n` +
                     `**Min:** ${data.min}` +
                     (data.min === 0 ? " (Members will be given a skip button)" : "") +
                     "\n" +
@@ -393,31 +394,47 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
     let page = 0;
     let closed = false;
     const config = await client.database.guilds.read(interaction.guild.id);
-    let currentObject: ObjectSchema[] = _.cloneDeep(config.roleMenu.options);
+    const currentObject: typeof config.roleMenu = _.cloneDeep(config.roleMenu);
     let modified = false;
     do {
         const embed = new EmojiEmbed().setTitle("Role Menu").setEmoji("GUILD.GREEN").setStatus("Success");
-        const noRoleMenus = currentObject.length === 0;
+        const noRoleMenus = currentObject.options.length === 0;
         let current: ObjectSchema;
 
         const pageSelect = new StringSelectMenuBuilder()
             .setCustomId("page")
             .setPlaceholder("Select a Role Menu page to manage");
-        const actionSelect = new StringSelectMenuBuilder()
-            .setCustomId("action")
-            .setPlaceholder("Perform an action")
-            .addOptions(
-                new StringSelectMenuOptionBuilder()
-                    .setLabel("Edit")
-                    .setDescription("Edit this page")
-                    .setValue("edit")
-                    .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
-                new StringSelectMenuOptionBuilder()
-                    .setLabel("Delete")
-                    .setDescription("Delete this page")
-                    .setValue("delete")
-                    .setEmoji(getEmojiByName("TICKETS.ISSUE", "id") as APIMessageComponentEmoji)
+        let actionSelect;
+        if (page === 0) {
+            actionSelect = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                new ButtonBuilder()
+                    .setCustomId("switch")
+                    .setLabel(currentObject.enabled ? "Enabled" : "Disabled")
+                    .setStyle(currentObject.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+                    .setEmoji(
+                        getEmojiByName(
+                            currentObject.enabled ? "CONTROL.TICK" : "CONTROL.CROSS",
+                            "id"
+                        ) as APIMessageComponentEmoji
+                    )
             );
+        } else {
+            actionSelect = new StringSelectMenuBuilder()
+                .setCustomId("action")
+                .setPlaceholder("Perform an action")
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel("Edit")
+                        .setDescription("Edit this page")
+                        .setValue("edit")
+                        .setEmoji(getEmojiByName("ICONS.EDIT", "id") as APIMessageComponentEmoji),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel("Delete")
+                        .setDescription("Delete this page")
+                        .setValue("delete")
+                        .setEmoji(getEmojiByName("TICKETS.ISSUE", "id") as APIMessageComponentEmoji)
+                );
+        }
         const buttonRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
                 .setCustomId("back")
@@ -428,19 +445,19 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 .setCustomId("next")
                 .setEmoji(getEmojiByName("CONTROL.RIGHT", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Primary)
-                .setDisabled(page === Object.keys(currentObject).length - 1 || noRoleMenus),
+                .setDisabled(page === Object.keys(currentObject.options).length || noRoleMenus),
             new ButtonBuilder()
                 .setCustomId("add")
                 .setLabel("New Page")
                 .setEmoji(getEmojiByName("TICKETS.SUGGESTION", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Secondary)
-                .setDisabled(Object.keys(currentObject).length >= 24),
+                .setDisabled(Object.keys(currentObject.options).length >= 24),
             new ButtonBuilder()
                 .setCustomId("reorder")
                 .setLabel("Reorder Pages")
                 .setEmoji(getEmojiByName("ICONS.REORDER", "id") as APIMessageComponentEmoji)
                 .setStyle(ButtonStyle.Secondary)
-                .setDisabled(Object.keys(currentObject).length <= 1),
+                .setDisabled(Object.keys(currentObject.options).length <= 1),
             new ButtonBuilder()
                 .setCustomId("save")
                 .setLabel("Save")
@@ -454,22 +471,69 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                     createPageIndicator(1, 1, undefined, true)
             );
             pageSelect.setDisabled(true);
-            actionSelect.setDisabled(true);
+            if (page > 0) (actionSelect as StringSelectMenuBuilder).setDisabled(true);
             pageSelect.addOptions(new StringSelectMenuOptionBuilder().setLabel("No role menu pages").setValue("none"));
+        } else if (page === 0) {
+            const cross = getEmojiByName("CONTROL.CROSS");
+            const tick = getEmojiByName("CONTROL.TICK");
+            embed.setDescription(
+                `**Enabled:** ${config.roleMenu.enabled ? `${tick} Yes` : `${cross} No`}\n\n` +
+                    `**Pages:** ${currentObject.options.length}\n` +
+                    (currentObject.options.length > 0
+                        ? currentObject.options
+                              .map((key: ObjectSchema) => {
+                                  return `> **${key.name}:** ${key.description ?? "*No description set*"}`;
+                              })
+                              .join("\n")
+                        : "")
+            );
+            if (currentObject.options.length > 0) {
+                pageSelect.addOptions(
+                    currentObject.options.map((key: ObjectSchema, index) => {
+                        return new StringSelectMenuOptionBuilder()
+                            .setLabel(ellipsis(key.name, 50))
+                            .setDescription(
+                                ellipsis(
+                                    key.description?.length
+                                        ? key.description.length > 0
+                                            ? key.description
+                                            : "No description set"
+                                        : "No description set",
+                                    50
+                                )
+                            )
+                            .setValue(index.toString());
+                    })
+                );
+            } else {
+                pageSelect.setDisabled(true);
+                pageSelect.addOptions(
+                    new StringSelectMenuOptionBuilder().setLabel("No role menu pages").setValue("none")
+                );
+            }
         } else {
-            page = Math.max(Math.min(page, currentObject.length - 1), 0);
-            current = currentObject[page]!;
+            page = Math.max(Math.min(page, currentObject.options.length), 0);
+            current = currentObject.options[page - 1]!;
             embed.setDescription(
                 `**Currently Editing:** ${current.name}\n\n` +
-                    `**Description:**\n> ${current.description || "*No description set*"}\n` +
+                    `**Description:**\n> ${current.description ?? "*No description set*"}\n` +
                     `\n\n${createPageIndicator(Object.keys(config.roleMenu.options).length, page)}`
             );
 
             pageSelect.addOptions(
-                currentObject.map((key: ObjectSchema, index) => {
+                currentObject.options.map((key: ObjectSchema, index) => {
                     return new StringSelectMenuOptionBuilder()
                         .setLabel(ellipsis(key.name, 50))
-                        .setDescription(ellipsis(key.description || "No description set", 50))
+                        .setDescription(
+                            ellipsis(
+                                key.description?.length
+                                    ? key.description.length > 0
+                                        ? key.description
+                                        : "No description set"
+                                    : "No description set",
+                                50
+                            )
+                        )
                         .setValue(index.toString());
                 })
             );
@@ -478,9 +542,13 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         await interaction.editReply({
             embeds: [embed],
             components: [
-                new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(actionSelect),
+                page === 0
+                    ? (actionSelect as ActionRowBuilder<ButtonBuilder>)
+                    : new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+                          actionSelect as StringSelectMenuBuilder
+                      ),
                 new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(pageSelect),
-                buttonRow
+                buttonRow as ActionRowBuilder<ButtonBuilder>
             ]
         });
         let i: StringSelectMenuInteraction | ButtonInteraction;
@@ -512,21 +580,30 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         break;
                     }
                     if (newPage) {
-                        currentObject.push(newPage);
-                        page = currentObject.length - 1;
+                        currentObject.options.push(newPage);
+                        page = currentObject.options.length;
+                        modified = true;
                     }
                     break;
                 }
                 case "reorder": {
-                    const reordered = await reorderRoleMenuPages(interaction, m, currentObject);
+                    const reordered = await reorderRoleMenuPages(interaction, m, currentObject.options);
                     if (!reordered) break;
-                    currentObject = reordered;
+                    currentObject.options = reordered;
+                    modified = true;
                     break;
                 }
                 case "save": {
-                    await client.database.guilds.write(interaction.guild.id, { "roleMenu.options": currentObject });
+                    await client.database.guilds.write(interaction.guild.id, {
+                        "roleMenu.options": currentObject.options
+                    });
                     modified = false;
                     await client.memory.forceUpdate(interaction.guild.id);
+                    break;
+                }
+                case "switch": {
+                    currentObject.enabled = !currentObject.enabled;
+                    modified = true;
                     break;
                 }
             }
@@ -537,14 +614,15 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         case "edit": {
                             const edited = await editRoleMenuPage(i, m, current!);
                             if (!edited) break;
-                            currentObject[page] = edited;
+                            currentObject.options[page] = edited;
                             modified = true;
                             break;
                         }
                         case "delete": {
-                            if (page === 0 && currentObject.keys.length - 1 > 0) page++;
+                            if (page === 0 && currentObject.options.keys.length - 1 > 0) page++;
                             else page--;
-                            currentObject.splice(page, 1);
+                            currentObject.options.splice(page, 1);
+                            modified = true;
                             break;
                         }
                     }

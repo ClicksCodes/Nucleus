@@ -32,7 +32,7 @@ export interface RoleMenuSchema {
 
 interface ObjectSchema {
     name: string;
-    description: string;
+    description: string | null;
     min: number;
     max: number;
     options: {
@@ -72,6 +72,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
     if (!interaction.member) return;
     if (!interaction.guild) return;
     const config = await client.database.guilds.read(interaction.guild.id);
+    const options = config.roleMenu.options.filter((option) => option.options.length > 0);
     if (!config.roleMenu.enabled) {
         return await interaction.reply({
             embeds: [
@@ -86,7 +87,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             ephemeral: true
         });
     }
-    if (config.roleMenu.options.length === 0)
+    if (options.length === 0) {
         return await interaction.reply({
             embeds: [
                 new EmojiEmbed()
@@ -99,6 +100,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             ],
             ephemeral: true
         });
+    }
     const m = await interaction.reply({ embeds: LoadingEmbed, ephemeral: true, fetchReply: true });
     if (config.roleMenu.allowWebUI) {
         // TODO: Make rolemenu web ui
@@ -180,8 +182,6 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
             await component.deferUpdate();
         }
     }
-
-    const options = config.roleMenu.options;
     const selectedRoles: string[][] = [];
     const maxPage = options.length;
     const completedPages: boolean[] = options.map((option) => option.min === 0);

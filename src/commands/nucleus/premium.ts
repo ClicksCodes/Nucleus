@@ -56,11 +56,8 @@ const dmcallback = async (interaction: CommandInteraction, firstDescription: str
                     })
                 )
         );
-        const cancel = new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder().setCustomId("cancel").setLabel("Close").setStyle(ButtonStyle.Danger)
-        );
 
-        const components: ActionRowBuilder<StringSelectMenuBuilder | ButtonBuilder>[] = [cancel];
+        const components: ActionRowBuilder<StringSelectMenuBuilder>[] = [];
         if (options.length > 0) components.unshift(removeRow);
         await interaction.editReply({
             embeds: [
@@ -77,24 +74,20 @@ const dmcallback = async (interaction: CommandInteraction, firstDescription: str
             components: components
         });
 
-        let i: StringSelectMenuInteraction | ButtonInteraction;
+        let i: StringSelectMenuInteraction;
         try {
-            const filter = (i: StringSelectMenuInteraction | ButtonInteraction) => i.user.id === interaction.user.id;
-            i = await msg.awaitMessageComponent<ComponentType.StringSelect | ComponentType.Button>({
+            const filter = (i: StringSelectMenuInteraction) => i.user.id === interaction.user.id;
+            i = await msg.awaitMessageComponent<ComponentType.StringSelect>({
                 time: 300000,
                 filter
             });
         } catch (e) {
             await interaction.deleteReply();
             closed = true;
-            break;
+            continue;
         }
         await i.deferUpdate();
-        if (i.isButton()) {
-            closed = true;
-        } else {
-            await client.database.premium.removePremium(interaction.user.id, i.values[0]!);
-        }
+        await client.database.premium.removePremium(interaction.user.id, i.values[0]!);
     } while (!closed);
     await interaction.deleteReply();
 };

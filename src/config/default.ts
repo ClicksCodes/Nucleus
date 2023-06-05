@@ -88,7 +88,7 @@ export default {
     },
     moderation: {
         mute: {
-            timeout: false,
+            timeout: true,
             role: null,
             text: null,
             link: null
@@ -121,13 +121,13 @@ export default {
     },
     tracks: [],
     roleMenu: {
-        enabled: false,
+        enabled: true,
         allowWebUI: false,
         options: []
     },
     tags: {},
     autoPublish: {
-        enabled: false,
+        enabled: true,
         channels: []
     }
 } as GuildConfig;
