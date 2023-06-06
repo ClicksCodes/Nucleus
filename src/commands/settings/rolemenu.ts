@@ -111,7 +111,7 @@ const editNameDescription = async (
     m: Message,
     data: { name?: string; description?: string; bounds?: { min: number; max: number } },
     addBounds: boolean = false
-): Promise<[string | undefined, string | undefined, { min: number, max: number } | undefined]> => {
+): Promise<[string | undefined, string | undefined, { min: number; max: number } | undefined]> => {
     let { name, description, bounds } = data;
     const components = [
         new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -134,7 +134,7 @@ const editNameDescription = async (
                 .setRequired(false)
                 .setMaxLength(100)
         )
-    ]
+    ];
     if (addBounds && bounds) {
         components.push(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -157,14 +157,12 @@ const editNameDescription = async (
                     .setRequired(true)
                     .setMaxLength(2)
             )
-        )
+        );
     }
     const modal = new ModalBuilder()
         .setTitle("Edit Name and Description")
         .setCustomId("editNameDescription")
-        .addComponents(
-            ...components
-        );
+        .addComponents(...components);
     const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId("back")
@@ -241,18 +239,20 @@ const editRoleMenuPage = async (
         const noRoles = data.options.length === 0;
         const previewSelect = configToDropdown(
             "Edit Roles",
-            data.description ? {
-                name: data.name,
-                description: data.description,
-                min: 1,
-                max: 1,
-                options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
-            } : {
-                name: data.name,
-                min: 1,
-                max: 1,
-                options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
-            },
+            data.description
+                ? {
+                      name: data.name,
+                      description: data.description,
+                      min: 1,
+                      max: 1,
+                      options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
+                  }
+                : {
+                      name: data.name,
+                      min: 1,
+                      max: 1,
+                      options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
+                  },
             undefined,
             noRoles
         );
@@ -301,7 +301,7 @@ const editRoleMenuPage = async (
                 case "edit": {
                     const [name, description, _bounds] = await editNameDescription(i, interaction, m, data);
                     data.name = name ? name : data.name;
-                    description ? data.description = description : null;
+                    description ? (data.description = description) : null;
                     break;
                 }
                 case "addRole": {
@@ -523,7 +523,9 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         ? currentObject.options
                               .map((key: ObjectSchema) => {
                                   const crossOut = key.enabled ? "" : "~~";
-                                  return `> ${crossOut}**${key.name}:** ${key.description ?? "*No description set*"}${crossOut}`;
+                                  return `> ${crossOut}**${key.name}:** ${
+                                      key.description ?? "*No description set*"
+                                  }${crossOut}`;
                               })
                               .join("\n")
                         : "")
@@ -566,12 +568,17 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             "id"
                         ) as APIMessageComponentEmoji
                     )
-            )
+            );
             embed.setDescription(
                 `**Currently Editing:** ${current.name}\n\n` +
                     `**Visible:** ${current.enabled ? `${tick} Yes` : `${cross} No`}\n\n` +
                     `**Description:**\n> ${current.description ?? "*No description set*"}\n` +
-                    `\n\n${createPageIndicator(Object.keys(currentObject.options).length, page - 1, false, Object.values(currentObject.options).map((o) => !(o.enabled ?? true)))}`
+                    `\n\n${createPageIndicator(
+                        Object.keys(currentObject.options).length,
+                        page - 1,
+                        false,
+                        Object.values(currentObject.options).map((o) => !(o.enabled ?? true))
+                    )}`
             );
 
             pageSelect.addOptions(
@@ -649,7 +656,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "save": {
                     await client.database.guilds.write(interaction.guild.id, {
-                        "roleMenu": currentObject
+                        roleMenu: currentObject
                     });
                     modified = false;
                     await client.memory.forceUpdate(interaction.guild.id);
