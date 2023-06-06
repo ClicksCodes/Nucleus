@@ -185,8 +185,16 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
     const selectedRoles: string[][] = [];
     const maxPage = options.length;
     const completedPages: boolean[] = options.map((option) => option.min === 0);
-    for (let i = 0; i < maxPage; i++) {
-        selectedRoles.push([]);
+    let memberRoleIDs = interaction.member.roles;
+    if (memberRoleIDs instanceof GuildMemberRoleManager) {
+        memberRoleIDs = memberRoleIDs.cache.map((r) => r.id);
+    }
+    for (const page of options) {
+        selectedRoles.push(
+            page.options
+                .filter((option) => (memberRoleIDs as string[]).includes(option.role))
+                .map((option) => option.role)
+        );
     }
 
     let page = 0;
