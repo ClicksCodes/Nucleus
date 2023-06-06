@@ -477,7 +477,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             const cross = getEmojiByName("CONTROL.CROSS");
             const tick = getEmojiByName("CONTROL.TICK");
             embed.setDescription(
-                `**Enabled:** ${config.roleMenu.enabled ? `${tick} Yes` : `${cross} No`}\n\n` +
+                `**Enabled:** ${currentObject.enabled ? `${tick} Yes` : `${cross} No`}\n\n` +
                     `**Pages:** ${currentObject.options.length}\n` +
                     (currentObject.options.length > 0
                         ? currentObject.options
@@ -595,7 +595,8 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "save": {
                     await client.database.guilds.write(interaction.guild.id, {
-                        "roleMenu.options": currentObject.options
+                        "roleMenu.options": currentObject.options,
+                        "rolemenu.enabled": currentObject.enabled
                     });
                     modified = false;
                     await client.memory.forceUpdate(interaction.guild.id);
