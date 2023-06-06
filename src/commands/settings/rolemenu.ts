@@ -27,14 +27,17 @@ import { modalInteractionCollector } from "../../utils/dualCollector.js";
 import ellipsis from "../../utils/ellipsis.js";
 import _ from "lodash";
 
+const cross = getEmojiByName("CONTROL.CROSS");
+const tick = getEmojiByName("CONTROL.TICK");
 const isEqual = _.isEqual;
 
 const command = (builder: SlashCommandSubcommandBuilder) =>
     builder.setName("rolemenu").setDescription("Allows you to change settings for the servers rolemenu");
 
 interface ObjectSchema {
+    enabled?: boolean;
     name: string;
-    description: string | null;
+    description?: string;
     min: number;
     max: number;
     options: {
@@ -106,34 +109,60 @@ const editNameDescription = async (
     i: ButtonInteraction,
     interaction: StringSelectMenuInteraction | ButtonInteraction,
     m: Message,
-    data: { name?: string; description?: string | null }
-) => {
-    let { name, description } = data;
-    const modal = new ModalBuilder()
-        .setTitle("Edit Name and Description")
-        .setCustomId("editNameDescription")
-        .addComponents(
+    data: { name?: string; description?: string; bounds?: { min: number; max: number } },
+    addBounds: boolean = false
+): Promise<[string | undefined, string | undefined, { min: number; max: number } | undefined]> => {
+    let { name, description, bounds } = data;
+    const components = [
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+                .setLabel("Name")
+                .setCustomId("name")
+                .setPlaceholder("The name of the role (e.g. Programmer)")
+                .setStyle(TextInputStyle.Short)
+                .setValue(name ?? "")
+                .setRequired(true)
+                .setMaxLength(100)
+        ),
+        new ActionRowBuilder<TextInputBuilder>().addComponents(
+            new TextInputBuilder()
+                .setLabel("Description")
+                .setCustomId("description")
+                .setPlaceholder("A short description of the role (e.g. A role for people who code)")
+                .setStyle(TextInputStyle.Short)
+                .setValue(description ?? "")
+                .setRequired(false)
+                .setMaxLength(100)
+        )
+    ];
+    if (addBounds && bounds) {
+        components.push(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
                 new TextInputBuilder()
-                    .setLabel("Name")
-                    .setCustomId("name")
-                    .setPlaceholder("The name of the role (e.g. Programmer)")
+                    .setLabel("Minimum")
+                    .setCustomId("min")
+                    .setPlaceholder("The minimum number of roles a user can select")
                     .setStyle(TextInputStyle.Short)
-                    .setValue(name ?? "")
+                    .setValue(bounds.min.toString())
                     .setRequired(true)
-                    .setMaxLength(100)
+                    .setMaxLength(2)
             ),
             new ActionRowBuilder<TextInputBuilder>().addComponents(
                 new TextInputBuilder()
-                    .setLabel("Description")
-                    .setCustomId("description")
-                    .setPlaceholder("A short description of the role (e.g. A role for people who code)")
+                    .setLabel("Maximum")
+                    .setCustomId("max")
+                    .setPlaceholder("The maximum number of roles a user can select (0 for no limit)")
                     .setStyle(TextInputStyle.Short)
-                    .setValue(description ?? "")
-                    .setRequired(false)
-                    .setMaxLength(100)
+                    .setValue(bounds.max.toString())
+                    .setRequired(true)
+                    .setMaxLength(2)
             )
         );
+    }
+    const modal = new ModalBuilder()
+        .setTitle("Edit Name and Description")
+        .setCustomId("editNameDescription")
+        .addComponents(...components);
     const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
             .setCustomId("back")
@@ -160,14 +189,20 @@ const editNameDescription = async (
         console.error(e);
         out = null;
     }
-    if (!out) return [name, description];
-    if (out.isButton()) return [name, description];
+    if (!out) return [name, description, bounds];
+    if (out.isButton()) return [name, description, bounds];
     name = out.fields.fields.find((f) => f.customId === "name")?.value ?? name;
-    description = out.fields.fields.find((f) => f.customId === "description")?.value ?? null;
-    return [name, description];
+    description = out.fields.fields.find((f) => f.customId === "description")?.value;
+    if (addBounds) {
+        const min = parseInt(out.fields.fields.find((f) => f.customId === "min")?.value!);
+        const max = parseInt(out.fields.fields.find((f) => f.customId === "max")?.value!);
+        bounds = { min, max };
+    }
+    return [name, description, bounds];
 };
 
 const defaultRoleMenuData = {
+    enabled: true,
     name: "New Page",
     description: "",
     min: 0,
@@ -204,13 +239,20 @@ const editRoleMenuPage = async (
         const noRoles = data.options.length === 0;
         const previewSelect = configToDropdown(
             "Edit Roles",
-            {
-                name: data.name,
-                description: data.description ?? null,
-                min: 1,
-                max: 1,
-                options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
-            },
+            data.description
+                ? {
+                      name: data.name,
+                      description: data.description,
+                      min: 1,
+                      max: 1,
+                      options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
+                  }
+                : {
+                      name: data.name,
+                      min: 1,
+                      max: 1,
+                      options: noRoles ? [{ name: "Role 1", description: null, role: "No role set" }] : data.options
+                  },
             undefined,
             noRoles
         );
@@ -257,9 +299,9 @@ const editRoleMenuPage = async (
                     break;
                 }
                 case "edit": {
-                    const [name, description] = await editNameDescription(i, interaction, m, data);
+                    const [name, description, _bounds] = await editNameDescription(i, interaction, m, data);
                     data.name = name ? name : data.name;
-                    data.description = description ? description : data.description;
+                    description ? (data.description = description) : null;
                     break;
                 }
                 case "addRole": {
@@ -474,15 +516,16 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
             if (page > 0) (actionSelect as StringSelectMenuBuilder).setDisabled(true);
             pageSelect.addOptions(new StringSelectMenuOptionBuilder().setLabel("No role menu pages").setValue("none"));
         } else if (page === 0) {
-            const cross = getEmojiByName("CONTROL.CROSS");
-            const tick = getEmojiByName("CONTROL.TICK");
             embed.setDescription(
                 `**Enabled:** ${currentObject.enabled ? `${tick} Yes` : `${cross} No`}\n\n` +
                     `**Pages:** ${currentObject.options.length}\n` +
                     (currentObject.options.length > 0
                         ? currentObject.options
                               .map((key: ObjectSchema) => {
-                                  return `> **${key.name}:** ${key.description ?? "*No description set*"}`;
+                                  const crossOut = key.enabled ? "" : "~~";
+                                  return `> ${crossOut}**${key.name}:** ${
+                                      key.description ?? "*No description set*"
+                                  }${crossOut}`;
                               })
                               .join("\n")
                         : "")
@@ -502,7 +545,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                                     50
                                 )
                             )
-                            .setValue(index.toString());
+                            .setValue((index + 1).toString());
                     })
                 );
             } else {
@@ -514,10 +557,28 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
         } else {
             page = Math.max(Math.min(page, currentObject.options.length), 0);
             current = currentObject.options[page - 1]!;
+            (actionSelect as StringSelectMenuBuilder).addOptions(
+                new StringSelectMenuOptionBuilder()
+                    .setLabel(current.enabled ? "Disable" : "Enable")
+                    .setDescription("Enable or disable this page")
+                    .setValue("switch")
+                    .setEmoji(
+                        getEmojiByName(
+                            current.enabled ? "CONTROL.CROSS" : "CONTROL.TICK",
+                            "id"
+                        ) as APIMessageComponentEmoji
+                    )
+            );
             embed.setDescription(
                 `**Currently Editing:** ${current.name}\n\n` +
+                    `**Visible:** ${current.enabled ? `${tick} Yes` : `${cross} No`}\n\n` +
                     `**Description:**\n> ${current.description ?? "*No description set*"}\n` +
-                    `\n\n${createPageIndicator(Object.keys(config.roleMenu.options).length, page)}`
+                    `\n\n${createPageIndicator(
+                        Object.keys(currentObject.options).length,
+                        page - 1,
+                        false,
+                        Object.values(currentObject.options).map((o) => !(o.enabled ?? true))
+                    )}`
             );
 
             pageSelect.addOptions(
@@ -534,7 +595,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                                 50
                             )
                         )
-                        .setValue(index.toString());
+                        .setValue((index + 1).toString());
                 })
             );
         }
@@ -595,8 +656,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                 }
                 case "save": {
                     await client.database.guilds.write(interaction.guild.id, {
-                        "roleMenu.options": currentObject.options,
-                        "rolemenu.enabled": currentObject.enabled
+                        roleMenu: currentObject
                     });
                     modified = false;
                     await client.memory.forceUpdate(interaction.guild.id);
@@ -615,7 +675,7 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                         case "edit": {
                             const edited = await editRoleMenuPage(i, m, current!);
                             if (!edited) break;
-                            currentObject.options[page] = edited;
+                            currentObject.options[page - 1] = edited;
                             modified = true;
                             break;
                         }
@@ -623,6 +683,11 @@ const callback = async (interaction: CommandInteraction): Promise<void> => {
                             if (page === 0 && currentObject.options.keys.length - 1 > 0) page++;
                             else page--;
                             currentObject.options.splice(page, 1);
+                            modified = true;
+                            break;
+                        }
+                        case "switch": {
+                            currentObject.options[page - 1]!.enabled = !currentObject.options[page - 1]!.enabled;
                             modified = true;
                             break;
                         }

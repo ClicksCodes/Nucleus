@@ -1,17 +1,29 @@
 import getEmojiByName from "./getEmojiByName.js";
 
-function pageIndicator(amount: number, selected: number, showDetails?: boolean, disabled?: boolean | string) {
+function pageIndicator(
+    amount: number,
+    selected: number,
+    showDetails?: boolean,
+    disabled?: boolean | string | boolean[]
+) {
     let out = "";
-    disabled = disabled ? "GRAY." : "";
+    // disabled = disabled ? "GRAY." : "";
+    // If disabled is a string, make a list of booleans the same length as amount.
+    if (!Array.isArray(disabled)) disabled = new Array(amount).fill(disabled);
+    // If the length is wrong, fill extra with false
+    if (disabled.length !== amount) {
+        disabled = disabled.concat(new Array(amount).fill(false));
+    }
+    const grey = disabled.map((x) => (x ? "GRAY." : ""));
     if (amount === 1) {
-        out += getEmojiByName("TRACKS.SINGLE." + disabled + (selected === 0 ? "ACTIVE" : "INACTIVE"));
+        out += getEmojiByName("TRACKS.SINGLE." + grey[0] + (selected === 0 ? "ACTIVE" : "INACTIVE"));
     } else {
         for (let i = 0; i < amount; i++) {
             out += getEmojiByName(
                 "TRACKS.HORIZONTAL." +
                     (i === 0 ? "LEFT" : i === amount - 1 ? "RIGHT" : "MIDDLE") +
                     "." +
-                    disabled +
+                    grey[i] +
                     (i === selected ? "ACTIVE" : "INACTIVE")
             );
         }

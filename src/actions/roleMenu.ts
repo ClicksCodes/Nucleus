@@ -32,7 +32,7 @@ export interface RoleMenuSchema {
 
 interface ObjectSchema {
     name: string;
-    description: string | null;
+    description?: string;
     min: number;
     max: number;
     options: {
@@ -46,7 +46,7 @@ export const configToDropdown = (
     placeholder: string,
     currentPageData: ObjectSchema,
     selectedRoles?: string[],
-    disabled?: boolean
+    disabled: boolean = false
 ): ActionRowBuilder<StringSelectMenuBuilder> => {
     return new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
         new StringSelectMenuBuilder()
@@ -72,7 +72,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
     if (!interaction.member) return;
     if (!interaction.guild) return;
     const config = await client.database.guilds.read(interaction.guild.id);
-    const options = config.roleMenu.options.filter((option) => option.options.length > 0);
+    const options = config.roleMenu.options.filter((option) => option.options.length > 0 && option.enabled);
     if (!config.roleMenu.enabled) {
         return await interaction.reply({
             embeds: [
@@ -195,6 +195,7 @@ export async function callback(interaction: CommandInteraction | ButtonInteracti
 
     while (!(complete && done)) {
         const currentPageData = options[page]!;
+        currentPageData.max = currentPageData.max === 0 ? currentPageData.options.length : currentPageData.max;
         const embed = new EmojiEmbed()
             .setTitle("Roles")
             .setDescription(
