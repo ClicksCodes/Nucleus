@@ -1015,8 +1015,9 @@ export interface GuildConfig {
         enabled: boolean;
         allowWebUI: boolean;
         options: {
+            enabled?: boolean;
             name: string;
-            description: string | null;
+            description?: string;
             min: number;
             max: number;
             options: {
