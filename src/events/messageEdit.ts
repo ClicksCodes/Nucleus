@@ -85,7 +85,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
                 if (part.added || part.removed) {
                     part.value = part.value.replaceAll(" ", "▁");
                 }
-                contentEdit += (part.added ? green : part.removed ? red : reset) + part.value;
+                contentEdit += (part.added ? green : part.removed ? red : "") + part.value + reset;
             }
         });
         contentEdit = contentEdit.slice(0, 2000);
