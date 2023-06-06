@@ -1,6 +1,7 @@
 import type { NucleusClient } from "../utils/client.js";
 import type { Message, MessageReference } from "discord.js";
 import type Discord from "discord.js";
+import * as diff from "diff";
 
 export const event = "messageUpdate";
 
@@ -10,10 +11,9 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (!newMessage.guild) return;
     const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } =
         client.logger;
-
     const replyTo: MessageReference | null = newMessage.reference;
-    let newContent = newMessage.cleanContent.replaceAll("`", "‘");
-    let oldContent = oldMessage.cleanContent.replaceAll("`", "‘");
+    const newContent = newMessage.cleanContent.replaceAll("`", "‘");
+    const oldContent = oldMessage.cleanContent.replaceAll("`", "‘");
     let attachmentJump = "";
     const config = (await client.database.guilds.read(newMessage.guild.id)).logging.attachments.saved[
         newMessage.channel.id + newMessage.id
@@ -62,46 +62,69 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (!newMessage.editedTimestamp) {
         return;
     }
-    if (newContent.length > 256) newContent = newContent.substring(0, 253) + "...";
-    if (oldContent.length > 256) oldContent = oldContent.substring(0, 253) + "...";
-    const data = {
-        meta: {
-            type: "messageUpdate",
-            displayName: "Message Edited",
-            calculateType: "messageUpdate",
-            color: NucleusColors.yellow,
-            emoji: "MESSAGE.EDIT",
-            timestamp: newMessage.editedTimestamp
-        },
-        separate: {
-            start:
-                (oldContent
-                    ? `**Before:**\n\`\`\`\n${oldContent}\n\`\`\`\n`
-                    : "**Before:** *Message had no content*\n") +
-                (newContent ? `**After:**\n\`\`\`\n${newContent}\n\`\`\`` : "**After:** *Message had no content*"),
-            end: `[[Jump to message]](${newMessage.url})`
-        },
-        list: {
-            messageId: entry(newMessage.id, `\`${newMessage.id}\``),
-            sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
-            sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel as Discord.GuildBasedChannel)),
-            sent: entry(newMessage.createdTimestamp, renderDelta(newMessage.createdTimestamp)),
-            edited: entry(newMessage.editedTimestamp, renderDelta(newMessage.editedTimestamp)),
-            mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
-            attachments: entry(
-                renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
-                renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size) + attachmentJump
-            ),
-            repliedTo: entry(
-                replyTo ? replyTo.messageId! : null,
-                replyTo
-                    ? `[[Jump to message]](https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${replyTo.messageId})`
-                    : "None"
-            )
-        },
-        hidden: {
-            guild: newMessage.guild.id
-        }
-    };
-    await log(data);
+    const differences = diff.diffChars(oldContent, newContent);
+    console.log(differences);
+    let contentEdit = "";
+    if (differences.map((d) => (d.added || d.removed ? 1 : 0)).filter((f) => f === 1).length > 0) {
+        const green = "\x1B[36m";
+        const red = "\x1B[41m";
+        const skipped = "\x1B[40;33m";
+        const reset = "\x1B[0m";
+        const bold = "\x1B[1m";
+        const cutoff = 20;
+        differences.forEach((part) => {
+            if (!part.added && !part.removed && part.value.length > cutoff) {
+                contentEdit +=
+                    reset +
+                    part.value.slice(0, cutoff / 2) +
+                    skipped +
+                    `(${part.value.length - cutoff} more)` +
+                    reset +
+                    part.value.slice(-(cutoff / 2));
+            } else {
+                if (part.added || part.removed) {
+                    part.value = part.value.replaceAll(" ", "▁");
+                }
+                contentEdit += (part.added ? green : part.removed ? red : reset) + part.value;
+            }
+        });
+        contentEdit = contentEdit.slice(0, 2000);
+        contentEdit += `\n\n${bold}Key:${reset} ${green}Added${reset} | ${red}Removed${reset} | ${skipped}Skipped${reset}`;
+        const data = {
+            meta: {
+                type: "messageUpdate",
+                displayName: "Message Edited",
+                calculateType: "messageUpdate",
+                color: NucleusColors.yellow,
+                emoji: "MESSAGE.EDIT",
+                timestamp: newMessage.editedTimestamp
+            },
+            separate: {
+                start: `\`\`\`ansi\n${contentEdit}\`\`\``,
+                end: `[[Jump to message]](${newMessage.url})`
+            },
+            list: {
+                messageId: entry(newMessage.id, `\`${newMessage.id}\``),
+                sentBy: entry(newMessage.author.id, renderUser(newMessage.author)),
+                sentIn: entry(newMessage.channel.id, renderChannel(newMessage.channel as Discord.GuildBasedChannel)),
+                sent: entry(newMessage.createdTimestamp, renderDelta(newMessage.createdTimestamp)),
+                edited: entry(newMessage.editedTimestamp, renderDelta(newMessage.editedTimestamp)),
+                mentions: renderNumberDelta(oldMessage.mentions.users.size, newMessage.mentions.users.size),
+                attachments: entry(
+                    renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size),
+                    renderNumberDelta(oldMessage.attachments.size, newMessage.attachments.size) + attachmentJump
+                ),
+                repliedTo: entry(
+                    replyTo ? replyTo.messageId! : null,
+                    replyTo
+                        ? `[[Jump to message]](https://discord.com/channels/${newMessage.guild.id}/${newMessage.channel.id}/${replyTo.messageId})`
+                        : "None"
+                )
+            },
+            hidden: {
+                guild: newMessage.guild.id
+            }
+        };
+        await log(data);
+    }
 }

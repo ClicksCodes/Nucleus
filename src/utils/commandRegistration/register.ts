@@ -80,7 +80,13 @@ async function registerEvents() {
         i++;
         try {
             console.log(`${last}─ ${colors.yellow}Loading event ${file.name}${colors.none}`);
-            const event = await import(`../../../${config.eventsFolder}/${file.name}`);
+
+            let event;
+            try {
+                event = await import(`../../../${config.eventsFolder}/${file.name}`);
+            } catch (e) {
+                console.error(colors.red + e + colors.none);
+            }
 
             client.on(event.event, event.callback.bind(null, client));
 
@@ -98,7 +104,7 @@ async function registerEvents() {
             );
         }
     }
-    console.log(`Loaded ${files.length - errors} events (${errors} failed)`);
+    console.log(`${errors ? colors.red : ""}Loaded ${files.length - errors} events (${errors} failed)${colors.none}`);
 }
 
 async function registerContextMenus() {
@@ -179,7 +185,11 @@ async function registerContextMenus() {
         }
     }
 
-    console.log(`Loaded ${messageFiles.length + userFiles.length - errors} context menus (${errors} failed)`);
+    console.log(
+        `${errors ? colors.red : ""}Loaded ${
+            messageFiles.length + userFiles.length - errors
+        } context menus (${errors} failed) ${colors.none}`
+    );
     return commands;
 }
 
