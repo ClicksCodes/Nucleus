@@ -23,10 +23,9 @@
 
       packages.env = lib.pipe {
         src = ./.;
-        packageJSON = ./package.json;
       } [
-        pnpm2nix.mkPnpmPackage
-        pnpm2nix.mkPnpmEnv
+        (pnpm2nix.mkPnpmPackage.${system})
+        (pnpm2nix.mkPnpmEnv.${system})
       ];
 
       packages.default = let
