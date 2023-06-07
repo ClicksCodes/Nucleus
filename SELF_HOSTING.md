@@ -2,9 +2,9 @@
 
 ## Contents:
 
--   [In short](in-short)
--   [How to](how-to)
--   [The legal bit](the-legal-bit)
+-   [In short](#in-short)
+-   [How to](#how-to)
+-   [The legal bit](#the-legal-bit)
 
 ## In Short:
 

@@ -213,11 +213,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1686170768,
-        "narHash": "sha256-obaJ1E5vzrgFsj7aYIR7AHGrKbYFkhoxgzJabAsOycc=",
+        "lastModified": 1686173255,
+        "narHash": "sha256-G9HiMDCnK+YeIb+lpLxsRg+/Kk2pz/PSlEtFe8Yi138=",
         "owner": "clicksminuteper",
         "repo": "pnpm2nix",
-        "rev": "4626cc787d4d8d9b0e74c4039aa0a05100381b44",
+        "rev": "f91bc86c6d2b1c2c3c4f476835b5ec01b750e898",
         "type": "github"
       },
       "original": {
