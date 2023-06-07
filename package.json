@@ -37,20 +37,20 @@
     "description": "Nucleus: The core of your server",
     "main": "dist/index.js",
     "scripts": {
-        "build": "tsc && yarn copy-files",
+        "build": "tsc && pnpm copy-files",
         "copy-files": "copyfiles -u 1 src/reflex/nsfwjs/example/nsfw_demo/public/model/**/* dist/",
         "start": "node --experimental-json-modules --enable-source-maps dist/index.js",
-        "dev": "rm -rf dist && eslint src --fix && yarn build && node --experimental-json-modules --enable-source-maps dist/index.js",
-        "force-dev": "clear; rm -rf dist; tsc-suppress && yarn copy-files && node --experimental-json-modules --enable-source-maps dist/index.js",
-        "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To auto-fix everything possible, please run `yarn lint-fix`'; true",
-        "lint-no-stylecheck": "echo 'Linting...'; eslint src; echo 'A full lint and style check is required for PRs to be accepted. Please run `yarn lint` before committing'; true",
+        "dev": "rm -rf dist && eslint src --fix && pnpm build && node --experimental-json-modules --enable-source-maps dist/index.js",
+        "force-dev": "clear; rm -rf dist; tsc-suppress && pnpm copy-files && node --experimental-json-modules --enable-source-maps dist/index.js",
+        "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To auto-fix everything possible, please run `pnpm lint-fix`'; true",
+        "lint-no-stylecheck": "echo 'Linting...'; eslint src; echo 'A full lint and style check is required for PRs to be accepted. Please run `pnpm lint` before committing'; true",
         "lint-fix": "echo 'Fixing eslint issues...'; eslint src --fix; echo 'Reformatting...'; prettier --write --loglevel warn --cache .; true",
-        "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To view errors in more detail, please run `yarn lint`'; true",
+        "lint-list": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To view errors in more detail, please run `pnpm lint`'; true",
         "lint-ci": "echo 'Style checking...' && prettier --check . && echo 'Linting...' && eslint src",
-        "setup": "node Installer.js",
-        "win-force-build": "clear | rm -r dist | tsc-suppress | yarn copy-files",
-        "audit-fix": "yarn-audit-fix",
-        "versions": "yarn versions && yarn list && node --version",
+        "setup": "npm i -g pnpm | pnpm | pnpm build | node Installer.js",
+        "win-force-build": "clear | rm -r dist | tsc-suppress | pnpm copy-files",
+        "audit-fix": "pnpm audit --fix",
+        "versions": "pnpm versions && pnpm list && node --version",
         "win-lint-fix": "echo 'Fixing eslint issues...' | eslint src --fix | echo 'Reformatting...' | prettier --write --loglevel warn --cache . | true"
     },
     "repository": {
@@ -60,10 +60,10 @@
     "author": "Clicks",
     "contributors": [
         "Minion3665",
-        "PineappleFan",
+        "PineaFan",
         "TheCodedProf"
     ],
-    "license": "SEE LICENSE IN LICENSE",
+    "license": "AGPL-3.0",
     "bugs": {
         "url": "https://github.com/ClicksMinutePer/Nucleus/issues"
     },

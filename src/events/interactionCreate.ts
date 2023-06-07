@@ -24,6 +24,7 @@ import { callback as kickCallback, check as kickCheck } from "../commands/mod/ki
 import { callback as muteCallback, check as muteCheck } from "../commands/mod/mute.js";
 import { callback as nicknameCallback, check as nicknameCheck } from "../commands/mod/nick.js";
 import { callback as warnCallback, check as warnCheck } from "../commands/mod/warn.js";
+import { callback as logDetailsCallback } from "../actions/logs/showDetails.js";
 import client from "../utils/client.js";
 
 export const event = "interactionCreate";
@@ -60,6 +61,9 @@ async function interactionCreate(interaction: Interaction) {
             }
             case "createtranscript": {
                 return await createTranscript(interaction);
+            }
+            case "log:showDetails": {
+                return await logDetailsCallback(interaction);
             }
         }
         // Mod actions
