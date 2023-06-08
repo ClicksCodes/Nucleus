@@ -22,7 +22,7 @@
         "mongodb": "^5.6.0",
         "node-fetch": "^3.3.1",
         "node-tesseract-ocr": "^2.2.1",
-        "nsfwjs": "^2.4.2",
+        "@clicks/nsfwjs": "^3.0.2",
         "octokit": "^2.0.19",
         "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
