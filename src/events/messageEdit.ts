@@ -113,7 +113,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             emoji: "MESSAGE.EDIT",
             timestamp: newMessage.editedTimestamp,
             files: [
-                new AttachmentBuilder(Buffer.from(JSON.stringify(differences), 'base64'), {
+                new AttachmentBuilder(Buffer.from(JSON.stringify(differences), "base64"), {
                     name: "diff.json",
                     description: "A JSON file containing the differences between the two messages."
                 })

@@ -1,39 +1,32 @@
-lockfileVersion: '6.1'
-
-settings:
-  autoInstallPeers: true
-  excludeLinksFromLockfile: false
-
-overrides:
-  discord-api-types: 0.37.23
+lockfileVersion: '6.0'
 
 dependencies:
   '@hokify/agenda':
-    specifier: ^6.2.12
+    specifier: ^6.3.0
     version: 6.3.0
   '@octokit/graphql':
-    specifier: ^5.0.5
+    specifier: ^5.0.6
     version: 5.0.6
   '@tensorflow/tfjs':
-    specifier: ^3.18.0
-    version: 3.21.0(seedrandom@3.0.5)
+    specifier: ^4.7.0
+    version: 4.7.0(seedrandom@3.0.5)
   '@tensorflow/tfjs-node':
-    specifier: ^3.18.0
-    version: 3.21.1(seedrandom@3.0.5)
+    specifier: ^4.7.0
+    version: 4.7.0(seedrandom@3.0.5)
   '@total-typescript/ts-reset':
-    specifier: ^0.3.7
-    version: 0.3.7
+    specifier: ^0.4.2
+    version: 0.4.2
   '@ungap/structured-clone':
-    specifier: ^1.0.1
+    specifier: ^1.2.0
     version: 1.2.0
   agenda:
-    specifier: ^4.3.0
-    version: 4.4.0
+    specifier: ^5.0.0
+    version: 5.0.0
   body-parser:
-    specifier: ^1.20.0
+    specifier: ^1.20.2
     version: 1.20.2
   canvas:
-    specifier: ^2.11.0
+    specifier: ^2.11.2
     version: 2.11.2
   clamscan:
     specifier: ^2.1.2
@@ -42,46 +35,43 @@ dependencies:
     specifier: ^5.1.0
     version: 5.1.0
   discord.js:
-    specifier: ^14.8.0
+    specifier: ^14.11.0
     version: 14.11.0
   eslint:
-    specifier: ^8.21.0
+    specifier: ^8.42.0
     version: 8.42.0
   express:
-    specifier: ^4.18.1
+    specifier: ^4.18.2
     version: 4.18.2
   fuse.js:
     specifier: ^6.6.2
     version: 6.6.2
-  gifencoder:
-    specifier: ^2.0.1
-    version: 2.0.1
   gm:
     specifier: ^1.25.0
     version: 1.25.0
   humanize-duration:
-    specifier: ^3.27.1
+    specifier: ^3.28.0
     version: 3.28.0
   immutable:
-    specifier: ^4.1.0
+    specifier: ^4.3.0
     version: 4.3.0
   lodash:
     specifier: ^4.17.21
     version: 4.17.21
   mongodb:
-    specifier: ^4.7.0
-    version: 4.16.0
+    specifier: ^5.6.0
+    version: 5.6.0
   node-fetch:
-    specifier: ^3.3.0
+    specifier: ^3.3.1
     version: 3.3.1
   node-tesseract-ocr:
     specifier: ^2.2.1
     version: 2.2.1
   nsfwjs:
     specifier: ^2.4.2
-    version: 2.4.2(@tensorflow/tfjs@3.21.0)
+    version: 2.4.2(@tensorflow/tfjs@4.7.0)
   octokit:
-    specifier: ^2.0.14
+    specifier: ^2.0.19
     version: 2.0.19
   seedrandom:
     specifier: ^3.0.5
@@ -90,7 +80,7 @@ dependencies:
     specifier: ^0.2.2
     version: 0.2.2
   systeminformation:
-    specifier: ^5.17.3
+    specifier: ^5.18.2
     version: 5.18.2
 
 devDependencies:
@@ -100,32 +90,29 @@ devDependencies:
   '@types/diff':
     specifier: ^5.0.3
     version: 5.0.3
-  '@types/gifencoder':
-    specifier: ^2.0.1
-    version: 2.0.1
   '@types/gm':
-    specifier: ^1.25.0
+    specifier: ^1.25.1
     version: 1.25.1
   '@types/lodash':
-    specifier: ^4.14.191
+    specifier: ^4.14.195
     version: 4.14.195
   '@types/node':
-    specifier: ^18.14.6
-    version: 18.16.16
+    specifier: ^20.2.5
+    version: 20.2.5
   '@typescript-eslint/eslint-plugin':
-    specifier: ^5.32.0
+    specifier: ^5.59.9
     version: 5.59.9(@typescript-eslint/parser@5.59.9)(eslint@8.42.0)(typescript@5.1.3)
   '@typescript-eslint/parser':
-    specifier: ^5.32.0
+    specifier: ^5.59.9
     version: 5.59.9(eslint@8.42.0)(typescript@5.1.3)
   copyfiles:
     specifier: ^2.4.1
     version: 2.4.1
   eslint-config-prettier:
-    specifier: ^8.5.0
+    specifier: ^8.8.0
     version: 8.8.0(eslint@8.42.0)
   prettier:
-    specifier: ^2.7.1
+    specifier: ^2.8.8
     version: 2.8.8
   prettier-eslint:
     specifier: ^15.0.1
@@ -134,10 +121,10 @@ devDependencies:
     specifier: ^1.0.7
     version: 1.0.7(typescript@5.1.3)
   typescript:
-    specifier: ^5.0.0
+    specifier: ^5.1.3
     version: 5.1.3
   yarn-audit-fix:
-    specifier: ^9.3.9
+    specifier: ^9.3.10
     version: 9.3.10
 
 packages:
@@ -206,15 +193,15 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/client-cognito-identity@3.347.1:
-    resolution: {integrity: sha512-E7hyfLORHmGFXBiN+7/8cg6h6G4b2e7mRaqdMWkAcWAalrNGrxeeNTm17BdOLpxKBfT5u7II9+1fjDOG4LLecQ==}
+  /@aws-sdk/client-cognito-identity@3.348.0:
+    resolution: {integrity: sha512-1fcJFUQTsAXjkaAn/kn9ty790uHbCpukkuqJ/0QNPFYaa6vu93xx7FnzOvRK4XvaojwZ/C+yxp0fNQ+GjXG0vg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
-      '@aws-sdk/client-sts': 3.347.1
+      '@aws-sdk/client-sts': 3.348.0
       '@aws-sdk/config-resolver': 3.347.0
-      '@aws-sdk/credential-provider-node': 3.347.0
+      '@aws-sdk/credential-provider-node': 3.348.0
       '@aws-sdk/fetch-http-handler': 3.347.0
       '@aws-sdk/hash-node': 3.347.0
       '@aws-sdk/invalid-dependency': 3.347.0
@@ -229,7 +216,7 @@ packages:
       '@aws-sdk/middleware-stack': 3.347.0
       '@aws-sdk/middleware-user-agent': 3.347.0
       '@aws-sdk/node-config-provider': 3.347.0
-      '@aws-sdk/node-http-handler': 3.347.0
+      '@aws-sdk/node-http-handler': 3.348.0
       '@aws-sdk/smithy-client': 3.347.0
       '@aws-sdk/types': 3.347.0
       '@aws-sdk/url-parser': 3.347.0
@@ -251,8 +238,8 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/client-sso-oidc@3.347.0:
-    resolution: {integrity: sha512-IBxRfPqb8f9FqpmDbzcRDfoiasj/Y47C4Gj+j3kA5T1XWyGwbDI9QnPW/rnkZTWxLUUG1LSbBNwbPD6TLoff8A==}
+  /@aws-sdk/client-sso-oidc@3.348.0:
+    resolution: {integrity: sha512-tvHpcycx4EALvk38I9rAOdPeHvBDezqIB4lrE7AvnOJljlvCcdQ2gXa9GDrwrM7zuYBIZMBRE/njTMrCwoOdAA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
@@ -271,7 +258,7 @@ packages:
       '@aws-sdk/middleware-stack': 3.347.0
       '@aws-sdk/middleware-user-agent': 3.347.0
       '@aws-sdk/node-config-provider': 3.347.0
-      '@aws-sdk/node-http-handler': 3.347.0
+      '@aws-sdk/node-http-handler': 3.348.0
       '@aws-sdk/smithy-client': 3.347.0
       '@aws-sdk/types': 3.347.0
       '@aws-sdk/url-parser': 3.347.0
@@ -293,8 +280,8 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/client-sso@3.347.0:
-    resolution: {integrity: sha512-AZehWCNLUXTrDavsZYRi7d84Uef20ppYJ2FY0KxqrKB3lx89mO29SfSJSC4woeW5+6ooBokq8HtKxw5ImPfRhA==}
+  /@aws-sdk/client-sso@3.348.0:
+    resolution: {integrity: sha512-5S23gVKBl0fhZ96RD8LdPhMKeh8E5fmebyZxMNZuWliSXz++Q9ZCrwPwQbkks3duPOTcKKobs3IoqP82HoXMvQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
@@ -313,7 +300,7 @@ packages:
       '@aws-sdk/middleware-stack': 3.347.0
       '@aws-sdk/middleware-user-agent': 3.347.0
       '@aws-sdk/node-config-provider': 3.347.0
-      '@aws-sdk/node-http-handler': 3.347.0
+      '@aws-sdk/node-http-handler': 3.348.0
       '@aws-sdk/smithy-client': 3.347.0
       '@aws-sdk/types': 3.347.0
       '@aws-sdk/url-parser': 3.347.0
@@ -335,14 +322,14 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/client-sts@3.347.1:
-    resolution: {integrity: sha512-i7vomVsbZcGD2pzOuEl0RS7yCtFcT6CVfSP1wZLwgcjAssUKTLHi65I/uSAUF0KituChw31aXlxh7EGq1uDqaA==}
+  /@aws-sdk/client-sts@3.348.0:
+    resolution: {integrity: sha512-4iaQlWAOHMEF4xjR/FB/ws3aUjXjJHwbsIcqbdYAxsKijDYYTZYCPc/gM0NE1yi28qlNYNhMzHipe5xTYbU2Eg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-crypto/sha256-browser': 3.0.0
       '@aws-crypto/sha256-js': 3.0.0
       '@aws-sdk/config-resolver': 3.347.0
-      '@aws-sdk/credential-provider-node': 3.347.0
+      '@aws-sdk/credential-provider-node': 3.348.0
       '@aws-sdk/fetch-http-handler': 3.347.0
       '@aws-sdk/hash-node': 3.347.0
       '@aws-sdk/invalid-dependency': 3.347.0
@@ -358,7 +345,7 @@ packages:
       '@aws-sdk/middleware-stack': 3.347.0
       '@aws-sdk/middleware-user-agent': 3.347.0
       '@aws-sdk/node-config-provider': 3.347.0
-      '@aws-sdk/node-http-handler': 3.347.0
+      '@aws-sdk/node-http-handler': 3.348.0
       '@aws-sdk/smithy-client': 3.347.0
       '@aws-sdk/types': 3.347.0
       '@aws-sdk/url-parser': 3.347.0
@@ -392,11 +379,11 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/credential-provider-cognito-identity@3.347.1:
-    resolution: {integrity: sha512-7UQmpX5Xe4OPUgVtMK4+g5yMlYTmlpbYWbJG0RnyXtxLBG2OP4iyc8LGBq9AVY/ljTYGv+LSdVorldvERHUDCA==}
+  /@aws-sdk/credential-provider-cognito-identity@3.348.0:
+    resolution: {integrity: sha512-VQQVEP844mAwn5iEIzc/hBOuSzMGBL61sqEGqqgxhe6Sjnd8NfGNlOjV6fOxlUHhOelumqBMXgn6liIZbfcqFQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-cognito-identity': 3.347.1
+      '@aws-sdk/client-cognito-identity': 3.348.0
       '@aws-sdk/property-provider': 3.347.0
       '@aws-sdk/types': 3.347.0
       tslib: 2.5.3
@@ -427,14 +414,14 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/credential-provider-ini@3.347.0:
-    resolution: {integrity: sha512-84TNF34ryabmVbILOq7f+/Jy8tJaskvHdax3X90qxFtXRU11kX0bf5NYL616KT0epR0VGpy50ThfIqvBwxeJfQ==}
+  /@aws-sdk/credential-provider-ini@3.348.0:
+    resolution: {integrity: sha512-0IEH5mH/cz2iLyr/+pSa3sCsQcGADiLSEn6yivsXdfz1zDqBiv+ffDoL0+Pvnp+TKf8sA6OlX8PgoMoEBvBdKw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/credential-provider-env': 3.347.0
       '@aws-sdk/credential-provider-imds': 3.347.0
       '@aws-sdk/credential-provider-process': 3.347.0
-      '@aws-sdk/credential-provider-sso': 3.347.0
+      '@aws-sdk/credential-provider-sso': 3.348.0
       '@aws-sdk/credential-provider-web-identity': 3.347.0
       '@aws-sdk/property-provider': 3.347.0
       '@aws-sdk/shared-ini-file-loader': 3.347.0
@@ -445,15 +432,15 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/credential-provider-node@3.347.0:
-    resolution: {integrity: sha512-ds2uxE0krl94RdQ7bstwafUXdlMeEOPgedhaheVVlj8kH+XqlZdwUUaUv1uoEI9iBzuSjKftUkIHo0xsTiwtaw==}
+  /@aws-sdk/credential-provider-node@3.348.0:
+    resolution: {integrity: sha512-ngRWphm9e36i58KqVi7Z8WOub+k0cSl+JZaAmgfFm0+dsfBG5uheo598OeiwWV0DqlilvaQZFaMVQgG2SX/tHg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/credential-provider-env': 3.347.0
       '@aws-sdk/credential-provider-imds': 3.347.0
-      '@aws-sdk/credential-provider-ini': 3.347.0
+      '@aws-sdk/credential-provider-ini': 3.348.0
       '@aws-sdk/credential-provider-process': 3.347.0
-      '@aws-sdk/credential-provider-sso': 3.347.0
+      '@aws-sdk/credential-provider-sso': 3.348.0
       '@aws-sdk/credential-provider-web-identity': 3.347.0
       '@aws-sdk/property-provider': 3.347.0
       '@aws-sdk/shared-ini-file-loader': 3.347.0
@@ -475,14 +462,14 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/credential-provider-sso@3.347.0:
-    resolution: {integrity: sha512-M1d7EnUaJbSNCmNalEbINmtFkc9wJufx7UhKtEeFwSq9KEzOMroH1MEOeiqIw9f/zE8NI/iPkVeEhw123vmBrQ==}
+  /@aws-sdk/credential-provider-sso@3.348.0:
+    resolution: {integrity: sha512-5cQao705376KgGkLv9xgkQ3T5H7KdNddWuyoH2wDcrHd1BA2Lnrell3Yyh7R6jQeV7uCQE/z0ugUOKhDqNKIqQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso': 3.347.0
+      '@aws-sdk/client-sso': 3.348.0
       '@aws-sdk/property-provider': 3.347.0
       '@aws-sdk/shared-ini-file-loader': 3.347.0
-      '@aws-sdk/token-providers': 3.347.0
+      '@aws-sdk/token-providers': 3.348.0
       '@aws-sdk/types': 3.347.0
       tslib: 2.5.3
     transitivePeerDependencies:
@@ -500,21 +487,21 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/credential-providers@3.347.1:
-    resolution: {integrity: sha512-2P7krq9w6egQnLxjU7IPp/Q4W8svs/NdWUKe1m17NVscop4GEAo9p26y2Ku23Jlw/lnmIpu8qHTEX+5+XEVSXg==}
+  /@aws-sdk/credential-providers@3.348.0:
+    resolution: {integrity: sha512-lpq1aHjFyExqD/6L8BK0OaROpCJuhnexGrABYljGI6yaLsyHbQpdE2+Y/WaxuRAK9wyP5s+7KNJ1ZK1ktrk5uQ==}
     engines: {node: '>=14.0.0'}
     requiresBuild: true
     dependencies:
-      '@aws-sdk/client-cognito-identity': 3.347.1
-      '@aws-sdk/client-sso': 3.347.0
-      '@aws-sdk/client-sts': 3.347.1
-      '@aws-sdk/credential-provider-cognito-identity': 3.347.1
+      '@aws-sdk/client-cognito-identity': 3.348.0
+      '@aws-sdk/client-sso': 3.348.0
+      '@aws-sdk/client-sts': 3.348.0
+      '@aws-sdk/credential-provider-cognito-identity': 3.348.0
       '@aws-sdk/credential-provider-env': 3.347.0
       '@aws-sdk/credential-provider-imds': 3.347.0
-      '@aws-sdk/credential-provider-ini': 3.347.0
-      '@aws-sdk/credential-provider-node': 3.347.0
+      '@aws-sdk/credential-provider-ini': 3.348.0
+      '@aws-sdk/credential-provider-node': 3.348.0
       '@aws-sdk/credential-provider-process': 3.347.0
-      '@aws-sdk/credential-provider-sso': 3.347.0
+      '@aws-sdk/credential-provider-sso': 3.348.0
       '@aws-sdk/credential-provider-web-identity': 3.347.0
       '@aws-sdk/property-provider': 3.347.0
       '@aws-sdk/types': 3.347.0
@@ -699,8 +686,8 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/node-http-handler@3.347.0:
-    resolution: {integrity: sha512-eluPf3CeeEaPbETsPw7ee0Rb0FP79amu8vdLMrQmkrD+KP4owupUXOEI4drxWJgBSd+3PRowPWCDA8wUtraHKg==}
+  /@aws-sdk/node-http-handler@3.348.0:
+    resolution: {integrity: sha512-wxdgc4tO5F6lN4wHr0CZ4TyIjDW/ORp4SJZdWYNs2L5J7+/SwqgJY2lxRlGi0i7Md+apAdE3sT3ukVQ/9pVfPg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@aws-sdk/abort-controller': 3.347.0
@@ -788,11 +775,11 @@ packages:
     dev: false
     optional: true
 
-  /@aws-sdk/token-providers@3.347.0:
-    resolution: {integrity: sha512-DZS9UWEy105zsaBJTgcvv1U+0jl7j1OzfMpnLf/lEYjEvx/4FqY2Ue/OZUACJorZgm/dWNqrhY17tZXtS/S3ew==}
+  /@aws-sdk/token-providers@3.348.0:
+    resolution: {integrity: sha512-nTjoJkUsJUrJTZuqaeMD9PW2//Rdg2HgfDjiyC4jmAXtayWYCi11mqauurMaUHJ3p5qJ8f5xzxm6vBTbrftPag==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@aws-sdk/client-sso-oidc': 3.347.0
+      '@aws-sdk/client-sso-oidc': 3.348.0
       '@aws-sdk/property-provider': 3.347.0
       '@aws-sdk/shared-ini-file-loader': 3.347.0
       '@aws-sdk/types': 3.347.0
@@ -981,7 +968,7 @@ packages:
       '@discordjs/formatters': 0.3.1
       '@discordjs/util': 0.3.1
       '@sapphire/shapeshift': 3.9.2
-      discord-api-types: 0.37.23
+      discord-api-types: 0.37.43
       fast-deep-equal: 3.1.3
       ts-mixer: 6.0.3
       tslib: 2.5.3
@@ -996,7 +983,7 @@ packages:
     resolution: {integrity: sha512-M7X4IGiSeh4znwcRGcs+49B5tBkNDn4k5bmhxJDAUhRxRHTiFAOTVUNQ6yAKySu5jZTnCbSvTYHW3w0rAzV1MA==}
     engines: {node: '>=16.9.0'}
     dependencies:
-      discord-api-types: 0.37.23
+      discord-api-types: 0.37.43
     dev: false
 
   /@discordjs/rest@1.7.1:
@@ -1007,7 +994,7 @@ packages:
       '@discordjs/util': 0.3.1
       '@sapphire/async-queue': 1.5.0
       '@sapphire/snowflake': 3.5.1
-      discord-api-types: 0.37.23
+      discord-api-types: 0.37.43
       file-type: 18.5.0
       tslib: 2.5.3
       undici: 5.22.1
@@ -1026,9 +1013,9 @@ packages:
       '@discordjs/rest': 1.7.1
       '@discordjs/util': 0.3.1
       '@sapphire/async-queue': 1.5.0
-      '@types/ws': 8.5.4
+      '@types/ws': 8.5.5
       '@vladfrangu/async_event_emitter': 2.2.2
-      discord-api-types: 0.37.23
+      discord-api-types: 0.37.43
       tslib: 2.5.3
       ws: 8.13.0
     transitivePeerDependencies:
@@ -1304,7 +1291,7 @@ packages:
       '@octokit/core': 4.2.1
       '@octokit/oauth-authorization-url': 5.0.0
       '@octokit/oauth-methods': 2.0.5
-      '@types/aws-lambda': 8.10.116
+      '@types/aws-lambda': 8.10.117
       fromentries: 1.3.2
       universal-user-agent: 6.0.0
     transitivePeerDependencies:
@@ -1344,15 +1331,14 @@ packages:
       '@octokit/types': 9.2.3
     dev: false
 
-  /@octokit/plugin-rest-endpoint-methods@7.1.2(@octokit/core@4.2.1):
-    resolution: {integrity: sha512-R0oJ7j6f/AdqPLtB9qRXLO+wjI9pctUn8Ka8UGfGaFCcCv3Otx14CshQ89K4E88pmyYZS8p0rNTiprML/81jig==}
+  /@octokit/plugin-rest-endpoint-methods@7.1.3(@octokit/core@4.2.1):
+    resolution: {integrity: sha512-0aoPd4f1k/KXPTGSX0NbxcBrShBHArgcW3pujEvLa6wUfcfA1BehxQ2Ifwa6CbJ4SfzaO79FvGgaUipoxDsgjA==}
     engines: {node: '>= 14'}
     peerDependencies:
       '@octokit/core': '>=3'
     dependencies:
       '@octokit/core': 4.2.1
       '@octokit/types': 9.2.3
-      deprecation: 2.3.1
     dev: false
 
   /@octokit/plugin-retry@4.1.6(@octokit/core@4.2.1):
@@ -1464,49 +1450,48 @@ packages:
     dev: false
     optional: true
 
-  /@tensorflow/tfjs-backend-cpu@3.21.0(@tensorflow/tfjs-core@3.21.0):
-    resolution: {integrity: sha512-88S21UAdzyK0CsLUrH17GPTD+26E85OP9CqmLZslaWjWUmBkeTQ5Zqyp6iK+gELnLxPx6q7JsNEeFuPv4254lQ==}
+  /@tensorflow/tfjs-backend-cpu@4.7.0(@tensorflow/tfjs-core@4.7.0):
+    resolution: {integrity: sha512-jHtDUWTjNGhExbm4OKzSOBrbntlcHKU9VJV+EBcqqWR4fZpD3NhyqXrxFMgtyAJ4c5/z1KvYMwiliyKQPJVK9w==}
     engines: {yarn: '>= 1.3.2'}
     peerDependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
     dependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
       '@types/seedrandom': 2.4.30
       seedrandom: 3.0.5
     dev: false
 
-  /@tensorflow/tfjs-backend-webgl@3.21.0(@tensorflow/tfjs-core@3.21.0):
-    resolution: {integrity: sha512-N4zitIAT9IX8B8oe489qM3f3VcESxGZIZvHmVP8varOQakTvTX859aaPo1s8hK1qCy4BjSGbweooZe4U8D4kTQ==}
+  /@tensorflow/tfjs-backend-webgl@4.7.0(@tensorflow/tfjs-core@4.7.0):
+    resolution: {integrity: sha512-rxzR04peEqM4jWa+micRqyoMkUeg6FtIBkjyUAGaDg5G27QZ0NYrQzeWo+cMTXSjNeS9EgrYj3hlpuWjazyWbg==}
     engines: {yarn: '>= 1.3.2'}
     peerDependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
     dependencies:
-      '@tensorflow/tfjs-backend-cpu': 3.21.0(@tensorflow/tfjs-core@3.21.0)
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-backend-cpu': 4.7.0(@tensorflow/tfjs-core@4.7.0)
+      '@tensorflow/tfjs-core': 4.7.0
       '@types/offscreencanvas': 2019.3.0
       '@types/seedrandom': 2.4.30
       '@types/webgl-ext': 0.0.30
-      '@types/webgl2': 0.0.6
       seedrandom: 3.0.5
     dev: false
 
-  /@tensorflow/tfjs-converter@3.21.0(@tensorflow/tfjs-core@3.21.0):
-    resolution: {integrity: sha512-12Y4zVDq3yW+wSjSDpSv4HnpL2sDZrNiGSg8XNiDE4HQBdjdA+a+Q3sZF/8NV9y2yoBhL5L7V4mMLDdbZBd9/Q==}
+  /@tensorflow/tfjs-converter@4.7.0(@tensorflow/tfjs-core@4.7.0):
+    resolution: {integrity: sha512-UpNWjNl8/TrP57HpA9CuDWuQ4FHByVGVmgQQCibDqnNLExLjydWxjskiwDETg/JLm31H+SH2FcSBoPgAcP0vEA==}
     peerDependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
     dependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
     dev: false
 
-  /@tensorflow/tfjs-core@3.21.0:
-    resolution: {integrity: sha512-YSfsswOqWfd+M4bXIhT3hwtAb+IV8+ODwIxwdFR/7jTAPZP1wMVnSlpKnXHAN64HFOiP+Tm3HmKusEZ0+09A0w==}
+  /@tensorflow/tfjs-core@4.7.0:
+    resolution: {integrity: sha512-Yxxo7iJQ+UJyOzL+b32vmrYMgQPTqGyL+wM7kLrLSCBg7e2pmp3s6Uvm7HvQYyEM7yY7gcP0a0gAE20JDh69RA==}
     engines: {yarn: '>= 1.3.2'}
     dependencies:
       '@types/long': 4.0.2
-      '@types/offscreencanvas': 2019.3.0
+      '@types/offscreencanvas': 2019.7.0
       '@types/seedrandom': 2.4.30
       '@types/webgl-ext': 0.0.30
-      '@webgpu/types': 0.1.16
+      '@webgpu/types': 0.1.30
       long: 4.0.0
       node-fetch: 2.6.11
       seedrandom: 3.0.5
@@ -1514,13 +1499,13 @@ packages:
       - encoding
     dev: false
 
-  /@tensorflow/tfjs-data@3.21.0(@tensorflow/tfjs-core@3.21.0)(seedrandom@3.0.5):
-    resolution: {integrity: sha512-eFLfw2wIcFNxnP2Iv/SnVlihehzKMumk1b5Prcx1ixk/SbkCo5u0Lt7OVOWaEOKVqvB2sT+dJcTjAh6lrCC/QA==}
+  /@tensorflow/tfjs-data@4.7.0(@tensorflow/tfjs-core@4.7.0)(seedrandom@3.0.5):
+    resolution: {integrity: sha512-0gpYn0BuuvI4/ELBIbtwqSmRM6tWrl3949jOJBOFrgDfu8mihFYpAZdXP6zUZViu4neoKgId7+44HlbHFIQFPA==}
     peerDependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
       seedrandom: ^3.0.5
     dependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
       '@types/node-fetch': 2.6.4
       node-fetch: 2.6.11
       seedrandom: 3.0.5
@@ -1529,21 +1514,21 @@ packages:
       - encoding
     dev: false
 
-  /@tensorflow/tfjs-layers@3.21.0(@tensorflow/tfjs-core@3.21.0):
-    resolution: {integrity: sha512-CMVXsraakXgnXEnqD9QbtResA7nvV7Jz20pGmjFIodcQkClgmFFhdCG5N+zlVRHEz7VKG2OyfhltZ0dBq/OAhA==}
+  /@tensorflow/tfjs-layers@4.7.0(@tensorflow/tfjs-core@4.7.0):
+    resolution: {integrity: sha512-BAkWhX70g75R1QXuIpZXgV/BPvZQMp0HsyQTYwWAWYVwLBMhN2QHJV7jbhacZ5Y5ostCFpHX0WZm7Ex3JPNi5A==}
     peerDependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
     dependencies:
-      '@tensorflow/tfjs-core': 3.21.0
+      '@tensorflow/tfjs-core': 4.7.0
     dev: false
 
-  /@tensorflow/tfjs-node@3.21.1(seedrandom@3.0.5):
-    resolution: {integrity: sha512-WV77fiuux6E5RR7FRD8RL3yCruhoHjZMI9yybztGLItJwco2YVjHr6h4TOjaZcIMnxu9748iV118MN2ZeLXbdQ==}
+  /@tensorflow/tfjs-node@4.7.0(seedrandom@3.0.5):
+    resolution: {integrity: sha512-eQo8EM24kX+esR0GnWLhMWsmNDLyoEEVeWedWJx39EE5V/bVTpFSNUaRrbIBcSkcuQ1HnaEBmZ5xGNS11qw1dw==}
     engines: {node: '>=8.11.0'}
     requiresBuild: true
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.9
-      '@tensorflow/tfjs': 3.21.0(seedrandom@3.0.5)
+      '@tensorflow/tfjs': 4.7.0(seedrandom@3.0.5)
       adm-zip: 0.5.10
       google-protobuf: 3.21.2
       https-proxy-agent: 2.2.4
@@ -1556,19 +1541,19 @@ packages:
       - supports-color
     dev: false
 
-  /@tensorflow/tfjs@3.21.0(seedrandom@3.0.5):
-    resolution: {integrity: sha512-khcARd3/872llL/oF4ouR40qlT71mylU66PGT8kHP/GJ5YKj44sv8lDRjU7lOVlJK7jsJFWEsNVHI3eMc/GWNQ==}
+  /@tensorflow/tfjs@4.7.0(seedrandom@3.0.5):
+    resolution: {integrity: sha512-IkkEhmjGxlpZIX0jTQQoWprFuc4DY/4JgKk4cL+8FiaWOPP9nIP7pINWDf+5jHquy4tF5AsxpnWbSMWWBs2IiA==}
     hasBin: true
     dependencies:
-      '@tensorflow/tfjs-backend-cpu': 3.21.0(@tensorflow/tfjs-core@3.21.0)
-      '@tensorflow/tfjs-backend-webgl': 3.21.0(@tensorflow/tfjs-core@3.21.0)
-      '@tensorflow/tfjs-converter': 3.21.0(@tensorflow/tfjs-core@3.21.0)
-      '@tensorflow/tfjs-core': 3.21.0
-      '@tensorflow/tfjs-data': 3.21.0(@tensorflow/tfjs-core@3.21.0)(seedrandom@3.0.5)
-      '@tensorflow/tfjs-layers': 3.21.0(@tensorflow/tfjs-core@3.21.0)
+      '@tensorflow/tfjs-backend-cpu': 4.7.0(@tensorflow/tfjs-core@4.7.0)
+      '@tensorflow/tfjs-backend-webgl': 4.7.0(@tensorflow/tfjs-core@4.7.0)
+      '@tensorflow/tfjs-converter': 4.7.0(@tensorflow/tfjs-core@4.7.0)
+      '@tensorflow/tfjs-core': 4.7.0
+      '@tensorflow/tfjs-data': 4.7.0(@tensorflow/tfjs-core@4.7.0)(seedrandom@3.0.5)
+      '@tensorflow/tfjs-layers': 4.7.0(@tensorflow/tfjs-core@4.7.0)
       argparse: 1.0.10
       chalk: 4.1.2
-      core-js: 3.30.2
+      core-js: 3.29.1
       regenerator-runtime: 0.13.11
       yargs: 16.2.0
     transitivePeerDependencies:
@@ -1580,12 +1565,12 @@ packages:
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
     dev: false
 
-  /@total-typescript/ts-reset@0.3.7:
-    resolution: {integrity: sha512-yXt2BRRVCJVvzWaxac5n0nCXzIrQEBE/MeYlNQ8/Iq7UeelNmm/AdnUAu18ilSS893mbEQ4u6whPt/HvOPc4rw==}
+  /@total-typescript/ts-reset@0.4.2:
+    resolution: {integrity: sha512-vqd7ZUDSrXFVT1n8b2kc3LnklncDQFPvR58yUS1kEP23/nHPAO9l1lMjUfnPrXYYk4Hj54rrLKMW5ipwk7k09A==}
     dev: false
 
-  /@types/aws-lambda@8.10.116:
-    resolution: {integrity: sha512-LSvIyxYCsIMOiBnb5D6HTf7JXLCh3KPiZWL6Pkn1MqV/v5OoP42GDqn5H4wHKGGKN0mJB+4y1r0oat1dLBAkuA==}
+  /@types/aws-lambda@8.10.117:
+    resolution: {integrity: sha512-6T1aHTSSK4l8+67ANKHha/CRVxyk/bAl6OGCOxsKVsHaSxWpqsqgupc8rPw8vQGjtIgIZ+EaHqMz8gA4d6xZhQ==}
     dev: false
 
   /@types/btoa-lite@1.0.0:
@@ -1595,7 +1580,7 @@ packages:
   /@types/clamscan@2.0.4:
     resolution: {integrity: sha512-NpD+EmE+ZK5WRJOAmeDuSYJIv15BUnc4PxQA+m3QNkutaPBZ7bmLDTvqBu2iDchs7YKQjiEQEwEMvsdwtdtImA==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
       axios: 0.24.0
     transitivePeerDependencies:
       - debug
@@ -1605,8 +1590,8 @@ packages:
     resolution: {integrity: sha512-amrLbRqTU9bXMCc6uX0sWpxsQzRIo9z6MJPkH1pkez/qOxuqSZVuryJAWoBRq94CeG8JxY+VK4Le9HtjQR5T9A==}
     dev: true
 
-  /@types/eslint@8.40.0:
-    resolution: {integrity: sha512-nbq2mvc/tBrK9zQQuItvjJl++GTN5j06DaPtp3hZCpngmG6Q3xoyEmd0TwZI0gAy/G1X0zhGBbr2imsGFdFV0g==}
+  /@types/eslint@8.40.1:
+    resolution: {integrity: sha512-vRb792M4mF1FBT+eoLecmkpLXwxsBHvWWRGJjzbYANBM6DtiJc6yETyv4rqDA6QNjF1pkj1U7LMA6dGb3VYlHw==}
     dependencies:
       '@types/estree': 1.0.1
       '@types/json-schema': 7.0.12
@@ -1624,19 +1609,13 @@ packages:
     resolution: {integrity: sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==}
     dependencies:
       '@types/jsonfile': 6.1.1
-      '@types/node': 18.16.16
-    dev: true
-
-  /@types/gifencoder@2.0.1:
-    resolution: {integrity: sha512-Ls78JLiLPHA1ytIXMWv/7/71a2Cz7BBnjgi9R/LFcIS531PEFYxPPGHNmBBnLekQ7/VpO+n1fgaJ6XD3ZkpApg==}
-    dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
     dev: true
 
   /@types/gm@1.25.1:
     resolution: {integrity: sha512-WLqlPvjot5jxpt1AFxaWm0fgWZUBGXOPJC3ZrQgRpvpHYjwYbvr/4GwRzd0mXFfxzX+TrvXaow+/WbmWFHomlQ==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
     dev: true
 
   /@types/json-schema@7.0.12:
@@ -1646,13 +1625,13 @@ packages:
   /@types/jsonfile@6.1.1:
     resolution: {integrity: sha512-GSgiRCVeapDN+3pqA35IkQwasaCh/0YFH5dEF6S88iDvEn901DjOeH3/QPY+XYP1DFzDZPvIvfeEgk+7br5png==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
     dev: true
 
   /@types/jsonwebtoken@9.0.2:
     resolution: {integrity: sha512-drE6uz7QBKq1fYqqoFKTDRdFCPHd5TCub75BM+D+cMx7NU9hUz7SESLfC2fSCXVFMO5Yj8sOWHuGqPgjc+fz0Q==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
     dev: false
 
   /@types/lodash-es@4.17.7:
@@ -1672,15 +1651,19 @@ packages:
   /@types/node-fetch@2.6.4:
     resolution: {integrity: sha512-1ZX9fcN4Rvkvgv4E6PAY5WXUFWFcRWxZa3EW83UjycOB9ljJCedb2CupIP4RZMEwF/M3eTcCihbBRgwtGbg5Rg==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
       form-data: 3.0.1
     dev: false
 
-  /@types/node@18.16.16:
-    resolution: {integrity: sha512-NpaM49IGQQAUlBhHMF82QH80J08os4ZmyF9MkpCzWAGuOHqE4gTEbhzd7L3l5LmWuZ6E0OiC1FweQ4tsiW35+g==}
+  /@types/node@20.2.5:
+    resolution: {integrity: sha512-JJulVEQXmiY9Px5axXHeYGLSjhkZEnD+MDPDGbCbIAbMslkKwmygtZFy1X6s/075Yo94sf8GuSlFfPzysQrWZQ==}
 
   /@types/offscreencanvas@2019.3.0:
     resolution: {integrity: sha512-esIJx9bQg+QYF0ra8GnvfianIY8qWB0GBx54PK5Eps6m+xTj86KLavHv6qDhzKcu5UUOgNfJ2pWaIIV7TRUd9Q==}
+    dev: false
+
+  /@types/offscreencanvas@2019.7.0:
+    resolution: {integrity: sha512-PGcyveRIpL1XIqK8eBsmRBt76eFgtzuPiSTyKHZxnGemp2yzGzWpjYKAfK3wIMiU7eH+851yEpiuP8JZerTmWg==}
     dev: false
 
   /@types/prettier@2.7.3:
@@ -1699,10 +1682,6 @@ packages:
     resolution: {integrity: sha512-LKVgNmBxN0BbljJrVUwkxwRYqzsAEPcZOe6S2T6ZaBDIrFp0qu4FNlpc5sM1tGbXUYFgdVQIoeLk1Y1UoblyEg==}
     dev: false
 
-  /@types/webgl2@0.0.6:
-    resolution: {integrity: sha512-50GQhDVTq/herLMiqSQkdtRu+d5q/cWHn4VvKJtrj4DJAjo1MNkWYa2MA41BaBO1q1HgsUjuQvEOk0QHvlnAaQ==}
-    dev: false
-
   /@types/webidl-conversions@7.0.0:
     resolution: {integrity: sha512-xTE1E+YF4aWPJJeUzaZI5DRntlkY3+BCVJi0axFptnjGmAoWxkyREIh/XMrfxVLejwQxMCfDXdICo0VLxThrog==}
     dev: false
@@ -1710,14 +1689,14 @@ packages:
   /@types/whatwg-url@8.2.2:
     resolution: {integrity: sha512-FtQu10RWgn3D9U4aazdwIE2yzphmTJREDqNdODHrbrZmmMqI0vMheC/6NE/J1Yveaj8H+ela+YwWTjq5PGmuhA==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
       '@types/webidl-conversions': 7.0.0
     dev: false
 
-  /@types/ws@8.5.4:
-    resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
+  /@types/ws@8.5.5:
+    resolution: {integrity: sha512-lwhs8hktwxSjf9UaZ9tG5M03PGogvFaH8gUgLNbN9HKIg0dvv6q+gkSuJ8HN4/VbyxkuLzCjlN7GquQ0gUJfIg==}
     dependencies:
-      '@types/node': 18.16.16
+      '@types/node': 20.2.5
     dev: false
 
   /@types/yarnpkg__lockfile@1.1.6:
@@ -1904,8 +1883,8 @@ packages:
     engines: {node: '>=v14.0.0', npm: '>=7.0.0'}
     dev: false
 
-  /@webgpu/types@0.1.16:
-    resolution: {integrity: sha512-9E61voMP4+Rze02jlTXud++Htpjyyk8vw5Hyw9FGRrmhHQg2GqbuOfwf5Klrb8vTxc2XWI3EfO7RUHMpxTj26A==}
+  /@webgpu/types@0.1.30:
+    resolution: {integrity: sha512-9AXJSmL3MzY8ZL//JjudA//q+2kBRGhLBFpkdGksWIuxrMy81nFrCzj2Am+mbh8WoU6rXmv7cY5E3rdlyru2Qg==}
     dev: false
 
   /@yarnpkg/lockfile@1.1.0:
@@ -1941,8 +1920,8 @@ packages:
     engines: {node: '>=6.0'}
     dev: false
 
-  /agenda@4.4.0:
-    resolution: {integrity: sha512-7fIO4indmmrtkDmj2woOBJnhHIM7jPtkdGR4VOApB46eeBrPGUnO28RFrmjHebc3PMDnKJI0PWFyu9L9VotgJg==}
+  /agenda@5.0.0:
+    resolution: {integrity: sha512-jOoa7PvARpst/y2PI8h0wph4NmcjYJ/4wzFhQcHUbNgN+Hte/9h/MzKE0ZmHfIwdsSlnv3rhbBQ3Zd/gwFkThg==}
     engines: {node: '>=12.9.0'}
     dependencies:
       cron-parser: 3.5.0
@@ -2201,6 +2180,11 @@ packages:
       buffer: 5.7.1
     dev: false
 
+  /bson@5.3.0:
+    resolution: {integrity: sha512-ukmCZMneMlaC5ebPHXIkP8YJzNl5DC41N5MAIvKDqLggdao342t4McltoJBQfQya/nHBWAcSsYRqlXPoQkTJag==}
+    engines: {node: '>=14.20.1'}
+    dev: false
+
   /btoa-lite@1.0.0:
     resolution: {integrity: sha512-gvW7InbIyF8AicrqWoptdW08pUxuhq8BEgowNajy9RhiE86fmGAGl+bLKo6oB8QP0CkqHLowfN0oJdKC/J6LbA==}
     dev: false
@@ -2409,8 +2393,8 @@ packages:
       yargs: 16.2.0
     dev: true
 
-  /core-js@3.30.2:
-    resolution: {integrity: sha512-uBJiDmwqsbJCWHAwjrx3cvjbMXP7xD72Dmsn5LOJpiRmE3WbBbN5rCqQ2Qh6Ek6/eOrjlWngEynBWo4VxerQhg==}
+  /core-js@3.29.1:
+    resolution: {integrity: sha512-+jwgnhg6cQxKYIIjGtAHq2nwUOolo9eoFZ4sHfUH09BLXBgxnH4gA0zEd+t+BO2cNB8idaBtZFcFTRjQJRJmAw==}
     requiresBuild: true
     dev: false
 
@@ -2591,8 +2575,8 @@ packages:
       path-type: 4.0.0
     dev: true
 
-  /discord-api-types@0.37.23:
-    resolution: {integrity: sha512-IixodMf9PjOSrsPorbti5aGv6sJVSPJybAlFMYsYDQXFS7zJyhSmA/ofpPTR9ZYqL1KEDY+xU74oZgBQa52eSQ==}
+  /discord-api-types@0.37.43:
+    resolution: {integrity: sha512-bBhDWU3TF9KADxR/mHp1K4Bvu/LRtFQdGyBjADu4e66F3ZnD4kp12W/SJCttIaCcMXzPV3sfty6eDGRNRph51Q==}
     dev: false
 
   /discord.js@14.11.0:
@@ -2606,8 +2590,8 @@ packages:
       '@discordjs/util': 0.3.1
       '@discordjs/ws': 0.8.3
       '@sapphire/snowflake': 3.5.1
-      '@types/ws': 8.5.4
-      discord-api-types: 0.37.23
+      '@types/ws': 8.5.5
+      discord-api-types: 0.37.43
       fast-deep-equal: 3.1.3
       lodash.snakecase: 4.1.1
       tslib: 2.5.3
@@ -3110,15 +3094,6 @@ packages:
     engines: {node: '>= 0.8.0'}
     dependencies:
       readable-stream: 1.1.14
-    dev: false
-
-  /gifencoder@2.0.1:
-    resolution: {integrity: sha512-x19DcyWY10SkshBpokqFOo/HBht9GB75evRYvaLMbez9p+yB/o+kt0fK9AwW59nFiAMs2UUQsjv1lX/hvu9Ong==}
-    dependencies:
-      canvas: 2.11.2
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
     dev: false
 
   /glob-parent@5.1.2:
@@ -3713,10 +3688,32 @@ packages:
       mongodb-connection-string-url: 2.6.0
       socks: 2.7.1
     optionalDependencies:
-      '@aws-sdk/credential-providers': 3.347.1
+      '@aws-sdk/credential-providers': 3.348.0
       saslprep: 1.0.3
     transitivePeerDependencies:
       - aws-crt
+    dev: false
+
+  /mongodb@5.6.0:
+    resolution: {integrity: sha512-z8qVs9NfobHJm6uzK56XBZF8XwM9H294iRnB7wNjF0SnY93si5HPziIJn+qqvUR5QOff/4L0gCD6SShdR/GtVQ==}
+    engines: {node: '>=14.20.1'}
+    peerDependencies:
+      '@aws-sdk/credential-providers': ^3.201.0
+      mongodb-client-encryption: '>=2.3.0 <3'
+      snappy: ^7.2.2
+    peerDependenciesMeta:
+      '@aws-sdk/credential-providers':
+        optional: true
+      mongodb-client-encryption:
+        optional: true
+      snappy:
+        optional: true
+    dependencies:
+      bson: 5.3.0
+      mongodb-connection-string-url: 2.6.0
+      socks: 2.7.1
+    optionalDependencies:
+      saslprep: 1.0.3
     dev: false
 
   /ms@2.0.0:
@@ -3844,13 +3841,13 @@ packages:
       set-blocking: 2.0.0
     dev: false
 
-  /nsfwjs@2.4.2(@tensorflow/tfjs@3.21.0):
+  /nsfwjs@2.4.2(@tensorflow/tfjs@4.7.0):
     resolution: {integrity: sha512-i4Pp2yt59qPQgeZFyg3wXFBX52uSeu/hkDoqdZfe+sILRxNBUu0VDogj7Lmqak0GlrXviS/wLiVeIx40IDUu7A==}
     peerDependencies:
       '@tensorflow/tfjs': ^3.18.0
     dependencies:
       '@nsfw-filter/gif-frames': 1.0.2
-      '@tensorflow/tfjs': 3.21.0(seedrandom@3.0.5)
+      '@tensorflow/tfjs': 4.7.0(seedrandom@3.0.5)
     dev: false
 
   /numbered@1.1.0:
@@ -3883,7 +3880,7 @@ packages:
       '@octokit/core': 4.2.1
       '@octokit/oauth-app': 4.2.2
       '@octokit/plugin-paginate-rest': 6.1.2(@octokit/core@4.2.1)
-      '@octokit/plugin-rest-endpoint-methods': 7.1.2(@octokit/core@4.2.1)
+      '@octokit/plugin-rest-endpoint-methods': 7.1.3(@octokit/core@4.2.1)
       '@octokit/plugin-retry': 4.1.6(@octokit/core@4.2.1)
       '@octokit/plugin-throttling': 5.2.3(@octokit/core@4.2.1)
       '@octokit/types': 9.2.3
@@ -4026,7 +4023,7 @@ packages:
     resolution: {integrity: sha512-mGOWVHixSvpZWARqSDXbdtTL54mMBxc5oQYQ6RAqy8jecuNJBgN3t9E5a81G66F8x8fsKNiR1HWaBV66MJDOpg==}
     engines: {node: '>=10.0.0'}
     dependencies:
-      '@types/eslint': 8.40.0
+      '@types/eslint': 8.40.1
       '@types/prettier': 2.7.3
       '@typescript-eslint/parser': 5.59.9(eslint@8.42.0)(typescript@4.9.5)
       common-tags: 1.8.2

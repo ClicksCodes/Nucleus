@@ -27,7 +27,7 @@ export interface LoggerOptions {
         )[];
         showDetails?: boolean;
     };
-    list: Record<string, unknown>;
+    list: Record<string | symbol | number, unknown>;
     hidden: {
         guild: string;
     };

@@ -10,14 +10,23 @@
   outputs = { self, nixpkgs, flake-utils, clicks-server, pnpm2nix }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-      nodejs = pkgs.nodejs-19_x;
+      nodejs = pkgs.nodejs_20;
       nodePackages = pkgs.nodePackages_latest;
       lib = pkgs.lib;
     in rec {
       devShells.default = pkgs.mkShell {
-        packages = [ nodejs nodePackages.pnpm ];
+        packages = [ nodejs nodePackages.pnpm pkgs.pkg-config pkgs.fontconfig.dev ];
         shellHook = ''
           unset name
+          export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${lib.makeSearchPath "/lib/pkgconfig" [
+            pkgs.pixman
+            pkgs.cairo.dev
+            pkgs.libpng.dev
+            pkgs.gnome2.pango.dev
+            pkgs.glib.dev
+            pkgs.harfbuzz.dev
+            pkgs.freetype.dev
+          ]}
         '';
       };
 

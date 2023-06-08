@@ -18,7 +18,7 @@ function getEmojiPaths(obj: EmojisIndex, path: string[] = []) {
 }
 getEmojiPaths(emojis);
 
-function getEmojiByName(name: (typeof EMOJIPATHS)[number], format?: string): string {
+function getEmojiByName(name: typeof EMOJIPATHS[number], format?: string): string {
     const parts = name.split(".");
     let id: string | EmojisIndex | EmojisIndex[] | undefined = emojis;
     for (const part of parts) {
