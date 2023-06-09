@@ -12,15 +12,15 @@
       "locked": {
         "lastModified": 1686252801,
         "narHash": "sha256-ASguQr5onfE7HzawjAvhck2y7NDZ3bdhqFC8O3/XrXU=",
-        "owner": "clicksminuteper",
-        "repo": "nixfiles",
+        "ref": "refs/heads/production",
         "rev": "7f3559f9a56d28b8f5352040f18305082a6dacc0",
-        "type": "github"
+        "revCount": 53,
+        "type": "git",
+        "url": "ssh://git@github.com/clicksminuteper/nixfiles"
       },
       "original": {
-        "owner": "clicksminuteper",
-        "repo": "nixfiles",
-        "type": "github"
+        "type": "git",
+        "url": "ssh://git@github.com/clicksminuteper/nixfiles"
       }
     },
     "deploy-rs": {
@@ -193,15 +193,15 @@
       "locked": {
         "lastModified": 1686173255,
         "narHash": "sha256-G9HiMDCnK+YeIb+lpLxsRg+/Kk2pz/PSlEtFe8Yi138=",
-        "owner": "clicksminuteper",
-        "repo": "pnpm2nix",
+        "ref": "refs/heads/master",
         "rev": "f91bc86c6d2b1c2c3c4f476835b5ec01b750e898",
-        "type": "github"
+        "revCount": 98,
+        "type": "git",
+        "url": "ssh://git@github.com/clicksminuteper/pnpm2nix"
       },
       "original": {
-        "owner": "clicksminuteper",
-        "repo": "pnpm2nix",
-        "type": "github"
+        "type": "git",
+        "url": "ssh://git@github.com/clicksminuteper/pnpm2nix"
       }
     },
     "root": {

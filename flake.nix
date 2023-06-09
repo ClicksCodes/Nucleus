@@ -2,8 +2,8 @@
   description = "A basic flake with a shell";
   inputs.nixpkgs.follows = "clicks-server/nixpkgs";
   inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.clicks-server.url = "github:clicksminuteper/nixfiles";
-  inputs.pnpm2nix.url = "github:clicksminuteper/pnpm2nix";
+  inputs.clicks-server.url = "git+ssh://git@github.com/clicksminuteper/nixfiles";
+  inputs.pnpm2nix.url = "git+ssh://git@github.com/clicksminuteper/pnpm2nix";
 
   inputs.pnpm2nix.inputs.nixpkgs.follows = "nixpkgs";
 
