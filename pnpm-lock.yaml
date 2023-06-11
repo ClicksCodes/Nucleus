@@ -40,6 +40,9 @@ dependencies:
   discord.js:
     specifier: ^14.11.0
     version: 14.11.0
+  dotenv:
+    specifier: ^16.1.4
+    version: 16.1.4
   eslint:
     specifier: ^8.42.0
     version: 8.42.0
@@ -2595,6 +2598,11 @@ packages:
     engines: {node: '>=6.0.0'}
     dependencies:
       esutils: 2.0.3
+
+  /dotenv@16.1.4:
+    resolution: {integrity: sha512-m55RtE8AsPeJBpOIFKihEmqUcoVncQIwo7x9U8ZwLEZw9ZpXboz2c+rvog+jUaJvVrZ5kBOeYQBX5+8Aa/OZQw==}
+    engines: {node: '>=12'}
+    dev: false
 
   /each-parallel-async@1.0.0:
     resolution: {integrity: sha512-P/9kLQiQj0vZNzphvKKTgRgMnlqs5cJsxeAiuog1jrUnwv0Z3hVUwJDQiP7MnLb2I9S15nR9SRUceFT9IxtqRg==}
