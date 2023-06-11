@@ -1,9 +1,12 @@
 lockfileVersion: '6.0'
 
+overrides:
+  '@hokify/agenda>mongodb': ^5.6.0
+
 dependencies:
   '@clicks/nsfwjs':
-    specifier: ^3.0.2
-    version: 3.0.2(@tensorflow/tfjs@4.7.0)
+    specifier: ^3.0.3
+    version: 3.0.3(@tensorflow/tfjs@4.7.0)
   '@hokify/agenda':
     specifier: ^6.3.0
     version: 6.3.0
@@ -987,8 +990,8 @@ packages:
       multi-integer-range: 3.0.0
     dev: false
 
-  /@clicks/nsfwjs@3.0.2(@tensorflow/tfjs@4.7.0):
-    resolution: {integrity: sha512-noih81vGmar/HJ89fHfKbcFSLchfiXuASCUlNp+fidzLtoxCBRbcTNoYe3JpNPnpn9dl6ktD0m16P8DcAnWWsg==}
+  /@clicks/nsfwjs@3.0.3(@tensorflow/tfjs@4.7.0):
+    resolution: {integrity: sha512-sQicaEck0PfxgDTukGCAiL0naS5XpxMbFFhQwOaLiGQSfzcLia720GIYc3NK3KlVoctsJ/2t+QeRDveAc0Ukmw==}
     peerDependencies:
       '@tensorflow/tfjs': ^4.6.0
     dependencies:
@@ -1100,9 +1103,11 @@ packages:
       debug: 4.3.4
       human-interval: 2.0.1
       luxon: 3.3.0
-      mongodb: 4.16.0
+      mongodb: 5.6.0
     transitivePeerDependencies:
-      - aws-crt
+      - '@aws-sdk/credential-providers'
+      - mongodb-client-encryption
+      - snappy
       - supports-color
     dev: false
 

@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "@clicks/nsfwjs": "^3.0.2",
+        "@clicks/nsfwjs": "^3.0.3",
         "@hokify/agenda": "^6.3.0",
         "@octokit/graphql": "^5.0.6",
         "@tensorflow/tfjs": "^4.7.0",
@@ -28,6 +28,11 @@
         "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
         "systeminformation": "^5.18.2"
+    },
+    "pnpm": {
+        "overrides": {
+            "@hokify/agenda>mongodb": "$mongodb"
+        }
     },
     "name": "nucleus",
     "version": "1.1.0",

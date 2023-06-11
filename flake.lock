@@ -191,11 +191,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1686173255,
-        "narHash": "sha256-G9HiMDCnK+YeIb+lpLxsRg+/Kk2pz/PSlEtFe8Yi138=",
+        "lastModified": 1686323589,
+        "narHash": "sha256-XADn6eWl3670Oj38p0GiN1PaPKvTmDQRQErGLXYjZQU=",
         "ref": "refs/heads/master",
-        "rev": "f91bc86c6d2b1c2c3c4f476835b5ec01b750e898",
-        "revCount": 98,
+        "rev": "aa1dc4ff5759f04cc383a5b38a163b3a7b6ac601",
+        "revCount": 102,
         "type": "git",
         "url": "ssh://git@github.com/clicksminuteper/pnpm2nix"
       },
