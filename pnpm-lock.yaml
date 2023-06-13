@@ -2,6 +2,7 @@ lockfileVersion: '6.0'
 
 overrides:
   '@hokify/agenda>mongodb': ^5.6.0
+  octokit>node-fetch: 3.3.0
 
 dependencies:
   '@clicks/nsfwjs':
