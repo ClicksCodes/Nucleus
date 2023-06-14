@@ -48,19 +48,21 @@
                   ];
                 };
 
-                processes.clamav.exec = let
+                processes.clamav.exec =
+                  let
                     clamd_config = pkgs.writeText "clamd.conf" ''
-                        TCPSocket 3310
-                        PidFile /tmp/clamav-nucleus.pid
-                        DatabaseDirectory ${config.env.DEVENV_STATE}/clamav/db
-                        TemporaryDirectory /tmp
-                        Foreground true
+                      TCPSocket 3310
+                      PidFile /tmp/clamav-nucleus.pid
+                      DatabaseDirectory ${config.env.DEVENV_STATE}/clamav/db
+                      TemporaryDirectory /tmp
+                      Foreground true
                     '';
                     freshclam_config = pkgs.writeText "freshclam.conf" ''
-                        DatabaseDirectory ${config.env.DEVENV_STATE}/clamav/db
-                        DatabaseMirror database.clamav.net
+                      DatabaseDirectory ${config.env.DEVENV_STATE}/clamav/db
+                      DatabaseMirror database.clamav.net
                     '';
-                in "mkdir -p $DEVENV_STATE/clamav/db && ${pkgs.clamav}/bin/freshclam --config ${freshclam_config} || true; ${pkgs.clamav}/bin/clamd -c ${clamd_config}";
+                  in
+                  "mkdir -p $DEVENV_STATE/clamav/db && ${pkgs.clamav}/bin/freshclam --config ${freshclam_config} || true; ${pkgs.clamav}/bin/clamd -c ${clamd_config}";
               })
             ];
           };
@@ -73,44 +75,44 @@
           lib = pkgs.lib;
         in
         rec {
-          node_modules = lib.pipe
-            {
-              src = ./.;
-              linkDevDependencies = true;
-              overrides = pnpm2nix.defaultPnpmOverrides.x86_64-linux // {
-                canvas = (drv: drv.overrideAttrs (oldAttrs: {
-                  nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [ pkgs.pkg-config ];
-                  buildInputs = oldAttrs.buildInputs ++ [
-                    pkgs.pixman
-                    pkgs.cairo.dev
-                    pkgs.libpng.dev
-                    pkgs.gnome2.pango.dev
-                    pkgs.glib.dev
-                    pkgs.harfbuzz.dev
-                    pkgs.freetype.dev
-                  ];
-                }));
-
-                "@tensorflow/tfjs-node" = (drv: drv.overrideAttrs (oldAttrs: {
-                  buildInputs = oldAttrs.buildInputs ++ [
-                    pkgs.libtensorflow
-                  ];
-
-                  preBuild = ''
-                    mkdir -p node_modules/@tensorflow/tfjs-node/deps/lib
-                    ln -s ${pkgs.libtensorflow}/lib/libtensorflow.so.2 node_modules/@tensorflow/tfjs-node/deps/lib/libtensorflow.so.2.9.1
-                  '';
-                }));
-              };
-            } [
-            (pnpm2nix.mkPnpmPackage.x86_64-linux)
-            (drv: builtins.readFile "${drv}/nix-support/propagated-build-inputs")
-            (path: "${path}/node_modules")
-          ];
-
           nucleus =
             let
               packageJSON = (builtins.fromJSON (builtins.readFile ./package.json));
+              node_modules = lib.pipe
+                {
+                  src = ./.;
+                  linkDevDependencies = true;
+                  overrides = pnpm2nix.defaultPnpmOverrides.x86_64-linux // {
+                    canvas = (drv: drv.overrideAttrs (oldAttrs: {
+                      nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [ pkgs.pkg-config ];
+                      buildInputs = oldAttrs.buildInputs ++ [
+                        pkgs.pixman
+                        pkgs.cairo.dev
+                        pkgs.libpng.dev
+                        pkgs.gnome2.pango.dev
+                        pkgs.glib.dev
+                        pkgs.harfbuzz.dev
+                        pkgs.freetype.dev
+                      ];
+                    }));
+
+                    "@tensorflow/tfjs-node" = (drv: drv.overrideAttrs (oldAttrs: {
+                      buildInputs = oldAttrs.buildInputs ++ [
+                        pkgs.libtensorflow
+                      ];
+
+                      preBuild = ''
+                        mkdir -p node_modules/@tensorflow/tfjs-node/deps/lib
+                        ln -s ${pkgs.libtensorflow}/lib/libtensorflow.so.2 node_modules/@tensorflow/tfjs-node/deps/lib/libtensorflow.so.2.9.1
+                      '';
+                    }));
+                  };
+                } [
+                (pnpm2nix.mkPnpmPackage.x86_64-linux)
+                (drv: builtins.readFile "${drv}/nix-support/propagated-build-inputs")
+                (path: "${path}/node_modules")
+              ];
+
             in
             pkgs.stdenv.mkDerivation {
               pname = "nucleus";
