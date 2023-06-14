@@ -4,10 +4,11 @@
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.clicks-server.url = "git+ssh://git@github.com/clicksminuteper/nixfiles";
   inputs.pnpm2nix.url = "git+ssh://git@github.com/clicksminuteper/pnpm2nix";
+  inputs.devenv.url = "github:cachix/devenv";
 
   inputs.pnpm2nix.inputs.nixpkgs.follows = "nixpkgs";
 
-  outputs = { self, nixpkgs, flake-utils, clicks-server, pnpm2nix }:
+  outputs = { self, devenv, nixpkgs, flake-utils, clicks-server, pnpm2nix, ... }@inputs:
     flake-utils.lib.eachDefaultSystem
       (system:
         let
@@ -17,20 +18,51 @@
           lib = pkgs.lib;
         in
         rec {
-          devShells.default = pkgs.mkShell {
-            packages = [ nodejs nodePackages.pnpm pkgs.pkg-config pkgs.fontconfig.dev ];
-            shellHook = ''
-              unset name
-              export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${lib.makeSearchPath "/lib/pkgconfig" [
-                pkgs.pixman
-                pkgs.cairo.dev
-                pkgs.libpng.dev
-                pkgs.gnome2.pango.dev
-                pkgs.glib.dev
-                pkgs.harfbuzz.dev
-                pkgs.freetype.dev
-              ]}
-            '';
+          devShells.default = devenv.lib.mkShell {
+            inherit inputs pkgs;
+            modules = [
+              ({ pkgs, config, ... }: {
+                # This is your devenv configuration
+                packages = [ nodejs nodePackages.pnpm pkgs.pkg-config pkgs.fontconfig.dev pkgs.clamav ];
+
+                enterShell = ''
+                  unset name
+                  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${lib.makeSearchPath "/lib/pkgconfig" [
+                    pkgs.pixman
+                    pkgs.cairo.dev
+                    pkgs.libpng.dev
+                    pkgs.gnome2.pango.dev
+                    pkgs.glib.dev
+                    pkgs.harfbuzz.dev
+                    pkgs.freetype.dev
+                  ]}
+                '';
+
+                services.mongodb = {
+                  enable = true;
+                  package = pkgs.mongodb-6_0;
+                  additionalArgs = [
+                    "--port"
+                    "27017"
+                    "--noauth"
+                  ];
+                };
+
+                processes.clamav.exec = let
+                    clamd_config = pkgs.writeText "clamd.conf" ''
+                        TCPSocket 3310
+                        PidFile /tmp/clamav-nucleus.pid
+                        DatabaseDirectory ${config.env.DEVENV_STATE}/clamav/db
+                        TemporaryDirectory /tmp
+                        Foreground true
+                    '';
+                    freshclam_config = pkgs.writeText "freshclam.conf" ''
+                        DatabaseDirectory ${config.env.DEVENV_STATE}/clamav/db
+                        DatabaseMirror database.clamav.net
+                    '';
+                in "mkdir -p $DEVENV_STATE/clamav/db && ${pkgs.clamav}/bin/freshclam --config ${freshclam_config} || true; ${pkgs.clamav}/bin/clamd -c ${clamd_config}";
+              })
+            ];
           };
         }) // {
       packages.x86_64-linux =

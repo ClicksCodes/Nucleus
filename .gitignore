@@ -15,6 +15,7 @@ ClicksMigratingProblems/oldData/
 ClicksMigratingProblems/oldData copy/
 
 .direnv/
+.devenv/
 
 # Logs
 logs
