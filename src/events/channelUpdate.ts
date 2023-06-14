@@ -4,10 +4,10 @@ import type { GuildAuditLogsEntry } from "discord.js";
 import humanizeDuration from "humanize-duration";
 import type { NucleusClient } from "../utils/client.js";
 import getEmojiByName from "../utils/getEmojiByName.js";
-import c from "../utils/client.js";
+import client from "../utils/client.js";
 import { capitalize } from "../utils/generateKeyValueList.js";
 
-let entry = c.logger.entry;
+let entry = client.logger.entry;
 
 const channelTypeEmoji: Record<number, string> = {
     0: "Text", // Text channel
@@ -18,7 +18,10 @@ const channelTypeEmoji: Record<number, string> = {
     99: "Rules" // Rules channel
 };
 
-interface channelChanges {
+// this eslint rule is invalid here, as the type definition is actually incorrect
+// if you make it an interface due to the [key: string]: unknown line. Try it if you like :)
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type channelChanges = {
     channelId: ReturnType<typeof entry>;
     channel: ReturnType<typeof entry>;
     edited: ReturnType<typeof entry>;
@@ -37,11 +40,12 @@ interface channelChanges {
     region?: ReturnType<typeof entry>;
     maxUsers?: ReturnType<typeof entry>;
     autoArchiveDuration?: ReturnType<typeof entry>;
-}
+    [key: string]: unknown;
+};
 
 export const event = "channelUpdate";
 
-export async function callback(client: NucleusClient, oldChannel: GuildChannel, newChannel: GuildChannel) {
+export async function callback(_client: NucleusClient, oldChannel: GuildChannel, newChannel: GuildChannel) {
     const { getAuditLog, log, isLogging, NucleusColors, renderDelta, renderUser, renderChannel } = client.logger;
     if (!(await isLogging(newChannel.guild.id, "channelUpdate"))) return;
     const config = await client.memory.readGuildInfo(newChannel.guild.id);

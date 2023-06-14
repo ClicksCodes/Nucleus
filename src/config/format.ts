@@ -2,7 +2,6 @@ import fs from "fs";
 import * as readLine from "node:readline/promises";
 
 const defaultDict: Record<string, string | string[] | boolean | Record<string, string | number | undefined>> = {
-    developmentToken: "Your development bot token (Used for testing in one server, rather than production)",
     developmentGuildID: "Your development guild ID",
     enableDevelopment: true,
     token: "Your bot token",
@@ -78,7 +77,7 @@ export default async function (walkthrough = false) {
     }
 
     if (Object.keys(json).length) {
-        if (json["token"] === defaultDict["token"] || json["developmentToken"] === defaultDict["developmentToken"]) {
+        if (json["token"] === defaultDict["token"]) {
             console.log("\x1b[31m⚠ No main.ts found, creating one.");
             console.log(
                 "  \x1b[2mYou can edit src/config/main.ts directly using template written to the file.\x1b[0m\n"

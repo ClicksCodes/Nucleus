@@ -21,10 +21,10 @@ jobs:
             - uses: cachix/install-nix-action@v19
               with:
                   github_access_token: ${{ secrets.GITHUB_TOKEN }}
-            - run: nix develop --command yarn install --immutable --immutable-cache --check-cache
+            - run: nix develop .#pure --command pnpm install --frozen-lockfile
             - name: Show versions
-              run: nix develop --command yarn run versions
+              run: nix develop .#pure --command pnpm run versions
             - name: Compile
-              run: nix develop --command yarn build
+              run: nix develop .#pure --command pnpm run build build
             - name: Run prettier and eslint
-              run: nix develop --command yarn lint-ci
+              run: nix develop .#pure --command pnpm run lint-ci

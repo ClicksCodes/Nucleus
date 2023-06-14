@@ -25,7 +25,7 @@ class NucleusClient extends Client {
         scanCache: ScanCache;
         transcripts: Transcript;
     };
-    GitHub = new Octokit({ auth: config.githubPAT });
+    GitHub: Octokit = new Octokit({ auth: config.githubPAT });
     preloadPage: Record<string, { command: string; argument: string }> = {}; // e.g. { channelID: { command: privacy, page: 3}}
     commands: Record<
         string,

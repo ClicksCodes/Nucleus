@@ -1,10 +1,11 @@
 import * as Discord from "discord.js";
-import getEmojiByName from "./getEmojiByName.js";
 import { toHexArray } from "./calculate.js";
 import { promisify } from "util";
 import generateKeyValueList from "./generateKeyValueList.js";
 import client from "./client.js";
 import { DiscordAPIError } from "discord.js";
+import { Stream } from "node:stream";
+import EmojiEmbed from "./generateEmojiEmbed.js";
 
 const wait = promisify(setTimeout);
 
@@ -16,9 +17,17 @@ export interface LoggerOptions {
         color: number;
         emoji: string;
         timestamp: number;
+        files?: (
+            | Discord.BufferResolvable
+            | Stream
+            | Discord.JSONEncodable<Discord.APIAttachment>
+            | Discord.Attachment
+            | Discord.AttachmentBuilder
+            | Discord.AttachmentPayload
+        )[];
+        showDetails?: boolean;
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    list: any;
+    list: Record<string | symbol | number, unknown>;
     hidden: {
         guild: string;
     };
@@ -116,16 +125,31 @@ export const Logger = {
             });
             if (channel) {
                 log.separate = log.separate ?? {};
-                const embed = new Discord.EmbedBuilder()
-                    .setTitle(`${getEmojiByName(log.meta.emoji)} ${log.meta.displayName}`)
-                    .setDescription(
-                        (log.separate.start ? log.separate.start + "\n" : "") +
-                            generateKeyValueList(description) +
-                            (log.separate.end ? "\n" + log.separate.end : "")
-                    )
-                    .setTimestamp(log.meta.timestamp)
-                    .setColor(log.meta.color);
-                await channel.send({ embeds: [embed] });
+                const messageOptions: Parameters<Discord.TextChannel["send"]>[0] = {};
+                const components: Discord.ActionRowBuilder<Discord.ButtonBuilder> = new Discord.ActionRowBuilder();
+                messageOptions.embeds = [
+                    new EmojiEmbed()
+                        .setEmoji(log.meta.emoji)
+                        .setTitle(log.meta.displayName)
+                        .setDescription(
+                            (log.separate.start ? log.separate.start + "\n" : "") +
+                                generateKeyValueList(description) +
+                                (log.separate.end ? "\n" + log.separate.end : "")
+                        )
+                        .setTimestamp(log.meta.timestamp)
+                        .setColor(log.meta.color)
+                ];
+                if (log.meta.files) messageOptions.files = log.meta.files;
+                if (log.meta.showDetails) {
+                    components.addComponents(
+                        new Discord.ButtonBuilder()
+                            .setCustomId("log:showDetails")
+                            .setLabel("Show Details")
+                            .setStyle(Discord.ButtonStyle.Primary)
+                    );
+                    messageOptions.components = [components];
+                }
+                await channel.send(messageOptions);
             }
         }
     },

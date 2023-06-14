@@ -5,7 +5,7 @@ import Tesseract from "node-tesseract-ocr";
 import type Discord from "discord.js";
 import client from "../utils/client.js";
 import { createHash } from "crypto";
-import * as nsfwjs from "nsfwjs";
+import * as nsfwjs from "@clicks/nsfwjs";
 import ClamScan from "clamscan";
 import * as tf from "@tensorflow/tfjs-node";
 import EmojiEmbed from "../utils/generateEmojiEmbed.js";

@@ -3,7 +3,7 @@ module.exports = {
         {
             name: "Nucleus",
             script: "/run/current-system/sw/bin/nix",
-            args: "develop --command yarn start --update-commands"
+            args: "develop --command pnpm start --update-commands"
         }
     ]
 };
