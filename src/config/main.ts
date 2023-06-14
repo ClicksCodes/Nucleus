@@ -1,5 +1,4 @@
 interface config {
-    developmentToken: string;
     developmentGuildID: string;
     enableDevelopment: boolean;
     token: string;
@@ -29,7 +28,6 @@ interface config {
 
 export default {
     "token": process.env["TOKEN"]!,
-    "developmentToken": process.env["DEV_TOKEN"]!,
     "managementGuildID": process.env["MANAGEMENT_GUILD_ID"]!,
     "developmentGuildID": process.env["DEV_GUILD_ID"]!,
     "enableDevelopment": process.env["ENABLE_DEV"] === "true",
