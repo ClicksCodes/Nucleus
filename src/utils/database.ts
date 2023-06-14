@@ -470,7 +470,8 @@ export class Transcript {
                         if (child.type === ComponentType.Button) {
                             obj.style = child.style;
                             obj.label = child.label ?? "";
-                        } else if (child.type > 2) { // FIXME: Can we write this more clearly to make it obvious what we mean by 2 here?
+                        } else if (child.type > 2) {
+                            // FIXME: Can we write this more clearly to make it obvious what we mean by 2 here?
                             obj.placeholder = child.placeholder ?? "";
                         }
                         return obj;

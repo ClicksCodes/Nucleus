@@ -41,7 +41,7 @@ type channelChanges = {
     maxUsers?: ReturnType<typeof entry>;
     autoArchiveDuration?: ReturnType<typeof entry>;
     [key: string]: unknown;
-}
+};
 
 export const event = "channelUpdate";
 
