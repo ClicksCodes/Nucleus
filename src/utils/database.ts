@@ -21,8 +21,8 @@ if ("password" in config.mongoOptions) password = encodeURIComponent(config.mong
 
 const mongoClient = new MongoClient(
     username
-        ? `mongodb://${username}:${password}@${config.mongoOptions.host}/${config.mongoOptions.database}`
-            + `?authMechanism=DEFAULT&authSource=${config.mongoOptions.authSource}`
+        ? `mongodb://${username}:${password}@${config.mongoOptions.host}/${config.mongoOptions.database}` +
+          `?authMechanism=DEFAULT&authSource=${config.mongoOptions.authSource}`
         : `mongodb://${config.mongoOptions.host}`
 );
 await mongoClient.connect();
