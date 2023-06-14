@@ -16,27 +16,36 @@
           nodejs = pkgs.nodejs_20;
           nodePackages = pkgs.nodePackages_latest;
           lib = pkgs.lib;
+
+          shellPackages = [ nodejs nodePackages.pnpm pkgs.pkg-config pkgs.fontconfig.dev pkgs.clamav ];
+
+          enterShellHook = ''
+            unset name
+            export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${lib.makeSearchPath "/lib/pkgconfig" [
+              pkgs.pixman
+              pkgs.cairo.dev
+              pkgs.libpng.dev
+              pkgs.gnome2.pango.dev
+              pkgs.glib.dev
+              pkgs.harfbuzz.dev
+              pkgs.freetype.dev
+            ]}
+          '';
         in
         rec {
+          devShells.pure = pkgs.mkShell {
+            packages = shellPackages;
+            shellHook = enterShellHook;
+          };
           devShells.default = devenv.lib.mkShell {
             inherit inputs pkgs;
+
+
             modules = [
               ({ pkgs, config, ... }: {
                 # This is your devenv configuration
-                packages = [ nodejs nodePackages.pnpm pkgs.pkg-config pkgs.fontconfig.dev pkgs.clamav ];
-
-                enterShell = ''
-                  unset name
-                  export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${lib.makeSearchPath "/lib/pkgconfig" [
-                    pkgs.pixman
-                    pkgs.cairo.dev
-                    pkgs.libpng.dev
-                    pkgs.gnome2.pango.dev
-                    pkgs.glib.dev
-                    pkgs.harfbuzz.dev
-                    pkgs.freetype.dev
-                  ]}
-                '';
+                packages = shellPackages;
+                enterShell = enterShellHook;
 
                 services.mongodb = {
                   enable = true;
