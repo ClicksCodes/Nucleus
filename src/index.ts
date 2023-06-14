@@ -26,6 +26,6 @@ process.on("uncaughtException", (err) => {
     console.error(err);
 });
 
-await client.login(config.enableDevelopment ? config.developmentToken : config.token);
+await client.login(config.token);
 
 await recordPerformance();

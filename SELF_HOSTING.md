@@ -29,7 +29,6 @@ Alternatively, you can run `Installer.js` to generate it for you.
 ```json
 {
     "token": "your-token-here",
-    "developmentToken": "dev-token-here",
     "managementGuildID": "your-management-guild-id-here",
     "developmentGuildID": "your-development-guild-id-here",
     "enableDevelopment": true,

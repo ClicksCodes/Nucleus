@@ -18,6 +18,9 @@ const channelTypeEmoji: Record<number, string> = {
     99: "Rules" // Rules channel
 };
 
+// this eslint rule is invalid here, as the type definition is actually incorrect
+// if you make it an interface due to the [key: string]: unknown line. Try it if you like :)
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type channelChanges = {
     channelId: ReturnType<typeof entry>;
     channel: ReturnType<typeof entry>;
@@ -38,7 +41,7 @@ type channelChanges = {
     maxUsers?: ReturnType<typeof entry>;
     autoArchiveDuration?: ReturnType<typeof entry>;
     [key: string]: unknown;
-}
+};
 
 export const event = "channelUpdate";
 

@@ -1,5 +1,6 @@
 {
     "dependencies": {
+        "@clicks/nsfwjs": "^3.0.3",
         "@hokify/agenda": "^6.3.0",
         "@octokit/graphql": "^5.0.6",
         "@tensorflow/tfjs": "^4.7.0",
@@ -12,6 +13,7 @@
         "clamscan": "^2.1.2",
         "diff": "^5.1.0",
         "discord.js": "^14.11.0",
+        "dotenv": "^16.1.4",
         "eslint": "^8.42.0",
         "express": "^4.18.2",
         "fuse.js": "^6.6.2",
@@ -22,11 +24,15 @@
         "mongodb": "^5.6.0",
         "node-fetch": "^3.3.1",
         "node-tesseract-ocr": "^2.2.1",
-        "@clicks/nsfwjs": "^3.0.2",
         "octokit": "^2.0.19",
         "seedrandom": "^3.0.5",
         "structured-clone": "^0.2.2",
         "systeminformation": "^5.18.2"
+    },
+    "pnpm": {
+        "overrides": {
+            "@hokify/agenda>mongodb": "$mongodb"
+        }
     },
     "name": "nucleus",
     "version": "1.1.0",
@@ -35,7 +41,7 @@
     "scripts": {
         "build": "tsc && pnpm copy-files",
         "copy-files": "copyfiles -u 1 src/reflex/nsfwjs/example/nsfw_demo/public/model/**/* dist/",
-        "start": "node --experimental-json-modules --enable-source-maps dist/index.js",
+        "start": "node --experimental-json-modules --enable-source-maps -r dotenv/config dist/index.js",
         "dev": "rm -rf dist && eslint src --fix && pnpm build && node --experimental-json-modules --enable-source-maps dist/index.js",
         "force-dev": "clear; rm -rf dist; tsc-suppress && pnpm copy-files && node --experimental-json-modules --enable-source-maps dist/index.js",
         "lint": "echo 'Style checking...'; prettier --check .; echo 'Linting...'; eslint src; echo 'To auto-fix everything possible, please run `pnpm lint-fix`'; true",
@@ -46,7 +52,7 @@
         "setup": "npm i -g pnpm | pnpm | pnpm build | node Installer.js",
         "win-force-build": "clear | rm -r dist | tsc-suppress | pnpm copy-files",
         "audit-fix": "pnpm audit --fix",
-        "versions": "pnpm versions && pnpm list && node --version",
+        "versions": "pnpm --version && pnpm list && node --version",
         "win-lint-fix": "echo 'Fixing eslint issues...' | eslint src --fix | echo 'Reformatting...' | prettier --write --loglevel warn --cache . | true"
     },
     "repository": {
@@ -79,7 +85,6 @@
         "prettier": "^2.8.8",
         "prettier-eslint": "^15.0.1",
         "tsc-suppress": "^1.0.7",
-        "typescript": "^5.1.3",
-        "yarn-audit-fix": "^9.3.10"
+        "typescript": "^5.1.3"
     }
 }
