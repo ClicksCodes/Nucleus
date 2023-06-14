@@ -52,7 +52,7 @@
         "setup": "npm i -g pnpm | pnpm | pnpm build | node Installer.js",
         "win-force-build": "clear | rm -r dist | tsc-suppress | pnpm copy-files",
         "audit-fix": "pnpm audit --fix",
-        "versions": "pnpm versions && pnpm list && node --version",
+        "versions": "pnpm --version && pnpm list && node --version",
         "win-lint-fix": "echo 'Fixing eslint issues...' | eslint src --fix | echo 'Reformatting...' | prettier --write --loglevel warn --cache . | true"
     },
     "repository": {
