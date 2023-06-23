@@ -10,11 +10,11 @@
         "sops-nix": "sops-nix"
       },
       "locked": {
-        "lastModified": 1686252801,
-        "narHash": "sha256-ASguQr5onfE7HzawjAvhck2y7NDZ3bdhqFC8O3/XrXU=",
+        "lastModified": 1687544653,
+        "narHash": "sha256-mZV1qMUBfZHfucHWEMvyuNZHxggaGEDafMDmMq4aQJQ=",
         "ref": "refs/heads/production",
-        "rev": "7f3559f9a56d28b8f5352040f18305082a6dacc0",
-        "revCount": 53,
+        "rev": "18e02e77cc828ec39fb6667d54d02d176e352c1a",
+        "revCount": 70,
         "type": "git",
         "url": "ssh://git@github.com/clicksminuteper/nixfiles"
       },
@@ -51,11 +51,11 @@
         "pre-commit-hooks": "pre-commit-hooks"
       },
       "locked": {
-        "lastModified": 1686642933,
-        "narHash": "sha256-5Z4uitx27QtZIrG9sOSJlZRNcVQn/TI36nj7o70n5Dw=",
+        "lastModified": 1687378457,
+        "narHash": "sha256-EkRX4S60BGFlQuEYJegk/9aCODPdMV6XLI+2C2HTBEI=",
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "f5278b5d56e39f86a299a2e1889906933a26f762",
+        "rev": "c6ac4dbf501edafe0d6860e821b9e9fff0828921",
         "type": "github"
       },
       "original": {
@@ -134,11 +134,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1685518550,
-        "narHash": "sha256-o2d0KcvaXzTrPRIo0kOLV0/QXHhDQ5DTi+OxcjO8xqY=",
+        "lastModified": 1687171271,
+        "narHash": "sha256-BJlq+ozK2B1sJDQXS3tzJM5a+oVZmi1q0FlBK/Xqv7M=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "a1720a10a6cfe8234c0e93907ffe81be440f4cef",
+        "rev": "abfb11bd1aec8ced1c9bb9adfe68018230f4fb3c",
         "type": "github"
       },
       "original": {
@@ -152,11 +152,11 @@
         "systems": "systems_3"
       },
       "locked": {
-        "lastModified": 1685518550,
-        "narHash": "sha256-o2d0KcvaXzTrPRIo0kOLV0/QXHhDQ5DTi+OxcjO8xqY=",
+        "lastModified": 1687171271,
+        "narHash": "sha256-BJlq+ozK2B1sJDQXS3tzJM5a+oVZmi1q0FlBK/Xqv7M=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "a1720a10a6cfe8234c0e93907ffe81be440f4cef",
+        "rev": "abfb11bd1aec8ced1c9bb9adfe68018230f4fb3c",
         "type": "github"
       },
       "original": {
