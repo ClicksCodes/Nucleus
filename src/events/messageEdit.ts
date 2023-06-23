@@ -1,7 +1,8 @@
 import type { NucleusClient } from "../utils/client.js";
-import { AttachmentBuilder, Message, MessageReference } from "discord.js";
+import { Message, MessageReference, ButtonStyle } from "discord.js";
 import type Discord from "discord.js";
 import * as diff from "diff";
+import addPlural from "../utils/plurals.js";
 
 export const event = "messageUpdate";
 
@@ -9,8 +10,17 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
     if (newMessage.author.id === client.user!.id) return;
     if (newMessage.author.bot) return;
     if (!newMessage.guild) return;
-    const { log, isLogging, NucleusColors, entry, renderUser, renderDelta, renderNumberDelta, renderChannel } =
-        client.logger;
+    const {
+        log,
+        isLogging,
+        NucleusColors,
+        entry,
+        renderUser,
+        renderDelta,
+        renderNumberDelta,
+        renderChannel,
+        preLog
+    } = client.logger;
     const replyTo: MessageReference | null = newMessage.reference;
     const newContent = newMessage.cleanContent.replaceAll("`", "‘");
     const oldContent = oldMessage.cleanContent.replaceAll("`", "‘");
@@ -63,47 +73,10 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
         return;
     }
     const differences = diff.diffChars(oldContent, newContent);
-    const green = "\x1B[36m";
-    const red = "\x1B[41m";
-    const skipped = "\x1B[40;33m";
-    const reset = "\x1B[0m";
-    const bold = "\x1B[1m";
-    // console.log(differences);
-    // let contentAdd = "";
-    // let contentRemove = "";
-    // if (differences.map((d) => (d.added || d.removed ? 1 : 0)).filter((f) => f === 1).length > 0) {
-    //     const cutoff = 20;
-    //     differences.forEach((part) => {
-    //         if (!part.added && !part.removed && part.value.length > cutoff) {
-    //             contentAdd +=
-    //                 reset +
-    //                 part.value.slice(0, cutoff / 2) +
-    //                 skipped +
-    //                 `(${part.value.length - cutoff} more)` +
-    //                 reset +
-    //                 part.value.slice(-(cutoff / 2));
-    //             contentRemove +=
-    //                 reset +
-    //                 part.value.slice(0, cutoff / 2) +
-    //                 skipped +
-    //                 `(${part.value.length - cutoff} more)` +
-    //                 reset +
-    //                 part.value.slice(-(cutoff / 2));
-    //         } else {
-    //             if (part.added || part.removed) {
-    //                 part.value = part.value.replaceAll(" ", "▁");
-    //             }
-    //             if (part.added) {
-    //                 contentAdd += green + part.value + reset;
-    //             } else if (part.removed) {
-    //                 contentRemove += red + part.value + reset;
-    //             } else {
-    //                 contentAdd += part.value;
-    //                 contentRemove += part.value;
-    //             }
-    //         }
-    //     });
-    const key = `\n\n${bold}Key:${reset} ${green}Added${reset} | ${red}Removed${reset} | ${skipped}Skipped${reset}`;
+    const charsAdded = differences.filter((x) => x.added).length;
+    const charsRemoved = differences.filter((x) => x.removed).length;
+    const preLogMessage = await preLog(newMessage.guild.id, JSON.stringify(differences, null, 2));
+    if (!preLogMessage) return;
     const data = {
         meta: {
             type: "messageUpdate",
@@ -112,16 +85,10 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             color: NucleusColors.yellow,
             emoji: "MESSAGE.EDIT",
             timestamp: newMessage.editedTimestamp,
-            files: [
-                new AttachmentBuilder(Buffer.from(JSON.stringify(differences), "base64"), {
-                    name: "diff.json",
-                    description: "A JSON file containing the differences between the two messages."
-                })
-            ],
-            showDetails: true
+            changes: { messageId: `${preLogMessage.id}`, buttonText: "View Changes", buttonStyle: ButtonStyle.Secondary, buttonId: `log:edit:${preLogMessage.id}` }
         },
         separate: {
-            start: `To read the full log press the button below.\n\`\`\`ansi\n${key}\`\`\``,
+            start: `${charsAdded} ${addPlural(charsAdded, "character")} added, ${charsRemoved} ${addPlural(charsRemoved, "character")} removed`,
             end: `[[Jump to message]](${newMessage.url})`
         },
         list: {

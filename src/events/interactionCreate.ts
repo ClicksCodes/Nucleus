@@ -46,6 +46,14 @@ async function interactionCreate(interaction: Interaction) {
                     : false;
             return await modifySuggestion(interaction, value);
         }
+        if (interaction.customId.startsWith("log:edit:")) {
+            const messageId = interaction.customId.split(":")[2];
+            const message = await interaction.channel?.messages.fetch(messageId!);
+            const attachment = message?.attachments.find((a) => a.name === "log.json");
+            if (!attachment) return;
+            const log = JSON.parse(Buffer.from(await (await fetch(attachment.url)).text(), 'base64').toString('binary'));
+            console.log(log);
+        }
         switch (interaction.customId) {
             case "rolemenu": {
                 return await roleMenu(interaction);

@@ -106,6 +106,22 @@ export const Logger = {
             throw e;
         }
     },
+    async preLog(guild: string, file: string): Promise<Discord.Message | void> {
+        const config = await client.database.guilds.read(guild);
+        if (!config.logging.logs.channel) return;
+        const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
+        if (!channel) return;
+        const message = await channel.send({
+            files: [
+                {
+                    attachment: Buffer.from(file, "base64"),
+                    name: "log.json"
+                }
+            ],
+            flags: ["SuppressEmbeds"]
+        });
+        return message;
+    },
     async log(log: LoggerOptions): Promise<void> {
         if (!(await isLogging(log.hidden.guild, log.meta.calculateType))) return;
         const config = await client.database.guilds.read(log.hidden.guild);
