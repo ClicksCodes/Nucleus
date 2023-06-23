@@ -46,13 +46,16 @@ async function interactionCreate(interaction: Interaction) {
                     : false;
             return await modifySuggestion(interaction, value);
         }
-        if (interaction.customId.startsWith("log:edit:")) {
-            const messageId = interaction.customId.split(":")[2];
-            const message = await interaction.channel?.messages.fetch(messageId!);
-            const attachment = message?.attachments.find((a) => a.name === "log.json");
+        if (interaction.customId === "log:edit") {
+            const attachment = interaction.message.embeds[0]?.image;
+            console.log(attachment)
             if (!attachment) return;
-            const log = JSON.parse(Buffer.from(await (await fetch(attachment.url)).text(), 'base64').toString('binary'));
-            console.log(log);
+            const attachmentData = await (await fetch(attachment.url)).text()
+            console.log(attachmentData)
+            const decoded = atob(attachmentData);
+            console.log("decoded", decoded)
+            const json = JSON.parse(decoded);
+            console.log("json", json)
         }
         switch (interaction.customId) {
             case "rolemenu": {

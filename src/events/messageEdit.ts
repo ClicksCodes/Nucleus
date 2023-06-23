@@ -18,8 +18,7 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
         renderUser,
         renderDelta,
         renderNumberDelta,
-        renderChannel,
-        preLog
+        renderChannel
     } = client.logger;
     const replyTo: MessageReference | null = newMessage.reference;
     const newContent = newMessage.cleanContent.replaceAll("`", "‘");
@@ -73,10 +72,14 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
         return;
     }
     const differences = diff.diffChars(oldContent, newContent);
-    const charsAdded = differences.filter((x) => x.added).length;
-    const charsRemoved = differences.filter((x) => x.removed).length;
-    const preLogMessage = await preLog(newMessage.guild.id, JSON.stringify(differences, null, 2));
-    if (!preLogMessage) return;
+    const charsAdded = (differences.filter((d) => d.added).map((d) => d.count)).reduce((a, b) => a! + b!, 0)!;
+    const charsRemoved = (differences.filter((d) => d.removed).map((d) => d.count)).reduce((a, b) => a! + b!, 0)!;
+    const imageData = JSON.stringify({data: differences, extra: "The image in this embed contains data about the below log.\n" +
+                        "It isn't designed to be read by humans, but you can decode " +
+                        "it with any base64 decoder, and then read it as JSON.\n" +
+                        "We use base 64 to get around people using virus tests and the file being blocked, and an image to have the embed hidden (files can't be suppressed)\n" +
+                        "If you've got to this point and are reading this hidden message, you should come and work with us " +
+                        "at https://discord.gg/w35pXdrxKW (Internal development server) and let us know how you got here."}, null, 2)
     const data = {
         meta: {
             type: "messageUpdate",
@@ -85,10 +88,11 @@ export async function callback(client: NucleusClient, oldMessage: Message, newMe
             color: NucleusColors.yellow,
             emoji: "MESSAGE.EDIT",
             timestamp: newMessage.editedTimestamp,
-            changes: { messageId: `${preLogMessage.id}`, buttonText: "View Changes", buttonStyle: ButtonStyle.Secondary, buttonId: `log:edit:${preLogMessage.id}` }
+            buttons: [{ buttonText: "View Changes", buttonStyle: ButtonStyle.Secondary, buttonId: `log:edit` }],
+            imageData: imageData
         },
         separate: {
-            start: `${charsAdded} ${addPlural(charsAdded, "character")} added, ${charsRemoved} ${addPlural(charsRemoved, "character")} removed`,
+            start: `${addPlural(charsAdded, "character")} added, ${addPlural(charsRemoved, "character")} removed`,
             end: `[[Jump to message]](${newMessage.url})`
         },
         list: {

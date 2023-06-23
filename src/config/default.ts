@@ -61,7 +61,7 @@ export default {
     stats: {},
     logging: {
         logs: {
-            enabled: false,
+            enabled: true,
             channel: null,
             toLog: "3fffff"
         },

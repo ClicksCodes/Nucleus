@@ -4,7 +4,6 @@ import { promisify } from "util";
 import generateKeyValueList from "./generateKeyValueList.js";
 import client from "./client.js";
 import { DiscordAPIError } from "discord.js";
-import { Stream } from "node:stream";
 import EmojiEmbed from "./generateEmojiEmbed.js";
 
 const wait = promisify(setTimeout);
@@ -17,15 +16,8 @@ export interface LoggerOptions {
         color: number;
         emoji: string;
         timestamp: number;
-        files?: (
-            | Discord.BufferResolvable
-            | Stream
-            | Discord.JSONEncodable<Discord.APIAttachment>
-            | Discord.Attachment
-            | Discord.AttachmentBuilder
-            | Discord.AttachmentPayload
-        )[];
-        showDetails?: boolean;
+        buttons?: { buttonText: string, buttonId: string, buttonStyle: Discord.ButtonStyle }[];
+        imageData?: string;
     };
     list: Record<string | symbol | number, unknown>;
     hidden: {
@@ -46,6 +38,13 @@ async function isLogging(guild: string, type: string): Promise<boolean> {
     }
     return true;
 }
+
+const NucleusColors = {
+    red: 0xf27878,
+    yellow: 0xf2d478,
+    green: 0x68d49e,
+    blue: 0x72aef5,
+};
 
 export const Logger = {
     renderUser(user: Discord.User | string) {
@@ -86,11 +85,7 @@ export const Logger = {
     renderEmoji(emoji: Discord.GuildEmoji) {
         return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}> [\`:${emoji.name}:\`]`;
     },
-    NucleusColors: {
-        red: 0xf27878,
-        yellow: 0xf2d478,
-        green: 0x68d49e
-    },
+    NucleusColors,
     async getAuditLog(
         guild: Discord.Guild,
         event: Discord.GuildAuditLogsResolvable,
@@ -106,22 +101,7 @@ export const Logger = {
             throw e;
         }
     },
-    async preLog(guild: string, file: string): Promise<Discord.Message | void> {
-        const config = await client.database.guilds.read(guild);
-        if (!config.logging.logs.channel) return;
-        const channel = (await client.channels.fetch(config.logging.logs.channel)) as Discord.TextChannel | null;
-        if (!channel) return;
-        const message = await channel.send({
-            files: [
-                {
-                    attachment: Buffer.from(file, "base64"),
-                    name: "log.json"
-                }
-            ],
-            flags: ["SuppressEmbeds"]
-        });
-        return message;
-    },
+
     async log(log: LoggerOptions): Promise<void> {
         if (!(await isLogging(log.hidden.guild, log.meta.calculateType))) return;
         const config = await client.database.guilds.read(log.hidden.guild);
@@ -139,6 +119,7 @@ export const Logger = {
                     description[key] = value;
                 }
             });
+            console.log("imageData", log.meta.imageData)
             if (channel) {
                 log.separate = log.separate ?? {};
                 const messageOptions: Parameters<Discord.TextChannel["send"]>[0] = {};
@@ -154,16 +135,28 @@ export const Logger = {
                         )
                         .setTimestamp(log.meta.timestamp)
                         .setColor(log.meta.color)
+                        .setImage(log.meta.imageData ? "attachment://extra_log_data.json.base64" : null)
                 ];
-                if (log.meta.files) messageOptions.files = log.meta.files;
-                if (log.meta.showDetails) {
-                    components.addComponents(
-                        new Discord.ButtonBuilder()
-                            .setCustomId("log:showDetails")
-                            .setLabel("Show Details")
-                            .setStyle(Discord.ButtonStyle.Primary)
-                    );
+                if (log.meta.buttons) {
+                    const buttons = []
+                    for (const button of log.meta.buttons) {
+                        buttons.push(
+                            new Discord.ButtonBuilder()
+                                .setCustomId(button.buttonId)
+                                .setLabel(button.buttonText)
+                                .setStyle(button.buttonStyle)
+                        )
+                    }
+                    components.addComponents(buttons);
                     messageOptions.components = [components];
+                }
+                if (log.meta.imageData) {
+                    messageOptions.files = [
+                        {
+                            attachment: Buffer.from(btoa(log.meta.imageData), "utf-8"),  // Use base 64 to prevent virus scanning (EICAR)Buffer.from(log.meta.imageData, "base64"),
+                            name: "extra_log_data.json.base64"
+                        }
+                    ];
                 }
                 await channel.send(messageOptions);
             }
