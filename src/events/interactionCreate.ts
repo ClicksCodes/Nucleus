@@ -46,6 +46,61 @@ async function interactionCreate(interaction: Interaction) {
                     : false;
             return await modifySuggestion(interaction, value);
         }
+        if (interaction.customId === "log:message.edit") {
+            await interaction.channel?.messages.fetch({ message: interaction.message.id, force: true });
+            const attachment = interaction.message.embeds[0]?.image ?? interaction.message.attachments.first();
+            if (!attachment) return;
+            const attachmentData = await (await fetch(attachment.url)).text();
+            const decoded = atob(attachmentData);
+            const json = (
+                JSON.parse(decoded) as { data: { count: number; value: string; added?: boolean; removed?: boolean }[] }
+            ).data;
+            // "Before" is everything where added is false
+            // "After" is everything where removed is false
+            const before: string = json
+                .filter((d) => !d.added)
+                .map((d) => d.value)
+                .join("");
+            const after: string = json
+                .filter((d) => !d.removed)
+                .map((d) => d.value)
+                .join("");
+            const { renderDateFooter } = client.logger;
+            await interaction.reply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setTitle("Before")
+                        .setDescription(before)
+                        .setStatus("Danger")
+                        .setEmoji("ICONS.OPP.ADD"),
+                    new EmojiEmbed()
+                        .setTitle("After")
+                        .setDescription(after)
+                        .setStatus("Success")
+                        .setEmoji("ICONS.ADD")
+                        .setFooter({ text: `Edited at ${renderDateFooter(interaction.message.createdTimestamp!)}` }) // Created timestamp of the log is when the edit was made
+                ],
+                ephemeral: true
+            });
+        } else if (interaction.customId === "log:message.delete") {
+            await interaction.channel?.messages.fetch({ message: interaction.message.id, force: true });
+            const attachment = interaction.message.embeds[0]?.image ?? interaction.message.attachments.first();
+            if (!attachment) return;
+            const attachmentData = await (await fetch(attachment.url)).text();
+            const decoded = atob(attachmentData);
+            const json = JSON.parse(decoded) as { data: string };
+            await interaction.reply({
+                embeds: [
+                    new EmojiEmbed()
+                        .setTitle("Message")
+                        .setDescription(json.data)
+                        .setStatus("Danger")
+                        .setEmoji("MESSAGE.DELETE")
+                        .setFooter({ text: `Deleted at ${client.logger.renderDateFooter(Date.now())}` })
+                ],
+                ephemeral: true
+            });
+        }
         switch (interaction.customId) {
             case "rolemenu": {
                 return await roleMenu(interaction);

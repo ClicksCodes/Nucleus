@@ -43,3 +43,10 @@ class Embed {
 export { Embed };
 
 export const unknownServerIcon = "";
+
+export const imageDataEasterEgg =
+    "The image in this embed contains data about the below log.\n" +
+    "It isn't designed to be read by humans, but you can decode it with any base64 decoder, and then read it as JSON.\n" +
+    "We use base 64 to get around people using virus tests and the file being blocked, and an image to have the embed hidden (files can't be suppressed)\n" +
+    "If you've got to this point and are reading this hidden message, you should come and work with us " +
+    "at https://discord.gg/w35pXdrxKW (Internal development server) and let us know how you got here!";

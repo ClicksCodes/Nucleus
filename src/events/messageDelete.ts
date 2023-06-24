@@ -1,5 +1,6 @@
 import type { NucleusClient } from "../utils/client.js";
-import Discord, { AuditLogEvent, GuildAuditLogsEntry, Message, User } from "discord.js";
+import Discord, { AuditLogEvent, ButtonStyle, GuildAuditLogsEntry, Message, User } from "discord.js";
+import { imageDataEasterEgg } from "../utils/defaults.js";
 
 export const event = "messageDelete";
 
@@ -33,6 +34,7 @@ export async function callback(client: NucleusClient, message: Message) {
     if (config) {
         attachmentJump = ` [[View attachments]](${config})`;
     }
+    const imageData = JSON.stringify({ data: message.content, extra: imageDataEasterEgg }, null, 2);
     const data = {
         meta: {
             type: "messageDelete",
@@ -40,7 +42,9 @@ export async function callback(client: NucleusClient, message: Message) {
             calculateType: "messageDelete",
             color: NucleusColors.red,
             emoji: "MESSAGE.DELETE",
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            imageData: imageData,
+            buttons: [{ buttonText: "View text", buttonId: "log:message.delete", buttonStyle: ButtonStyle.Secondary }]
         },
         separate: {
             start: content ? `**Message:**\n\`\`\`${content}\`\`\`` : "**Message:** *Message had no content*"
