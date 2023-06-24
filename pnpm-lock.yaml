@@ -1,8 +1,4 @@
-lockfileVersion: "6.1"
-
-settings:
-    autoInstallPeers: true
-    excludeLinksFromLockfile: false
+lockfileVersion: "6.0"
 
 overrides:
     "@hokify/agenda>mongodb": ^5.6.0
