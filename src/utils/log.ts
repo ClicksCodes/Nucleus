@@ -16,7 +16,7 @@ export interface LoggerOptions {
         color: number;
         emoji: string;
         timestamp: number;
-        buttons?: { buttonText: string, buttonId: string, buttonStyle: Discord.ButtonStyle }[];
+        buttons?: { buttonText: string; buttonId: string; buttonStyle: Discord.ButtonStyle }[];
         imageData?: string;
     };
     list: Record<string | symbol | number, unknown>;
@@ -43,7 +43,7 @@ const NucleusColors = {
     red: 0xf27878,
     yellow: 0xf2d478,
     green: 0x68d49e,
-    blue: 0x72aef5,
+    blue: 0x72aef5
 };
 
 export const Logger = {
@@ -60,6 +60,13 @@ export const Logger = {
         if (isNaN(t)) return "Unknown";
         t = Math.floor((t /= 1000));
         return `<t:${t}:R> (<t:${t}:D> at <t:${t}:T>)`;
+    },
+    renderDateFooter(t: number) {
+        if (isNaN(t)) return "Unknown";
+        const date = new Date(t);
+        return `${date.getUTCFullYear()}-${
+            date.getUTCMonth() + 1
+        }-${date.getUTCDate()} at ${date.getUTCHours()}:${date.getUTCMinutes()}:${date.getUTCSeconds()} UTC`;
     },
     renderNumberDelta(num1: number, num2: number) {
         const delta = num2 - num1;
@@ -119,7 +126,6 @@ export const Logger = {
                     description[key] = value;
                 }
             });
-            console.log("imageData", log.meta.imageData)
             if (channel) {
                 log.separate = log.separate ?? {};
                 const messageOptions: Parameters<Discord.TextChannel["send"]>[0] = {};
@@ -138,14 +144,14 @@ export const Logger = {
                         .setImage(log.meta.imageData ? "attachment://extra_log_data.json.base64" : null)
                 ];
                 if (log.meta.buttons) {
-                    const buttons = []
+                    const buttons = [];
                     for (const button of log.meta.buttons) {
                         buttons.push(
                             new Discord.ButtonBuilder()
                                 .setCustomId(button.buttonId)
                                 .setLabel(button.buttonText)
                                 .setStyle(button.buttonStyle)
-                        )
+                        );
                     }
                     components.addComponents(buttons);
                     messageOptions.components = [components];
@@ -153,7 +159,7 @@ export const Logger = {
                 if (log.meta.imageData) {
                     messageOptions.files = [
                         {
-                            attachment: Buffer.from(btoa(log.meta.imageData), "utf-8"),  // Use base 64 to prevent virus scanning (EICAR)Buffer.from(log.meta.imageData, "base64"),
+                            attachment: Buffer.from(btoa(log.meta.imageData), "utf-8"), // Use base 64 to prevent virus scanning (EICAR)
                             name: "extra_log_data.json.base64"
                         }
                     ];
