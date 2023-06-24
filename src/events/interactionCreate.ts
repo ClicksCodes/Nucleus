@@ -72,7 +72,12 @@ async function interactionCreate(interaction: Interaction) {
                         .setTitle("Before")
                         .setDescription(before)
                         .setStatus("Danger")
-                        .setEmoji("ICONS.OPP.ADD"),
+                        .setEmoji("ICONS.OPP.ADD")
+                ],
+                ephemeral: true
+            });
+            await interaction.followUp({
+                embeds: [
                     new EmojiEmbed()
                         .setTitle("After")
                         .setDescription(after)
