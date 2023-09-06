@@ -282,17 +282,19 @@ export async function doMemberChecks(member: Discord.GuildMember): Promise<void>
             new ButtonBuilder().setCustomId(`mod:kick:${member.user.id}`).setLabel("Kick").setStyle(ButtonStyle.Danger),
             new ButtonBuilder().setCustomId(`mod:ban:${member.user.id}`).setLabel("Ban").setStyle(ButtonStyle.Danger)
         ];
-        if (nameCheck !== null)
-            buttons.concat([
+        if (nameCheck !== null) {
+            buttons.push(
                 new ButtonBuilder()
                     .setCustomId(`mod:nickname:${member.user.id}`)
                     .setLabel("Change Name")
                     .setStyle(ButtonStyle.Primary)
-            ]);
-        if (avatarCheck || avatarTextCheck !== null)
-            buttons.concat([
+            );
+        }
+        if (avatarCheck || avatarTextCheck !== null) {
+            buttons.push(
                 new ButtonBuilder().setURL(member.displayAvatarURL()).setLabel("View Avatar").setStyle(ButtonStyle.Link)
-            ]);
+            );
+        }
         const components: ActionRowBuilder<ButtonBuilder>[] = [];
 
         for (let i = 0; i < buttons.length; i += 5) {
