@@ -84,8 +84,9 @@ const callback = async (
     const config = await client.database.guilds.read(interaction.guild.id);
     try {
         if (notify) {
+            let formattedReason: string | null = null;
             if (reason) {
-                reason = reason
+                formattedReason = reason
                     .split("\n")
                     .map((line) => "> " + line)
                     .join("\n");
@@ -100,7 +101,7 @@ const callback = async (
                         .setTitle("Warned")
                         .setDescription(
                             `You have been warned in ${interaction.guild.name}` +
-                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") +
+                                (formattedReason ? ` for:\n${formattedReason}` : ".\n*No reason was provided*") +
                                 "\n\n" +
                                 (createAppealTicket
                                     ? `You can appeal this in the ticket created in <#${
