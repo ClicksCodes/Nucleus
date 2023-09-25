@@ -57,6 +57,13 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
     let dmMessage;
     try {
         if (notify) {
+            let formattedReason: string | null = null;
+            if (reason) {
+                formattedReason = reason
+                    .split("\n")
+                    .map((line) => "> " + line)
+                    .join("\n");
+            }
             dmMessage = await (interaction.options.getMember("user") as GuildMember).send({
                 embeds: [
                     new EmojiEmbed()
@@ -64,7 +71,7 @@ const callback = async (interaction: CommandInteraction): Promise<unknown> => {
                         .setTitle("Unmuted")
                         .setDescription(
                             `You have been unmuted in ${interaction.guild.name}` +
-                                (reason ? ` for:\n> ${reason}` : " with no reason provided.")
+                                (formattedReason ? ` for:\n> ${formattedReason}` : " with no reason provided.")
                         )
                         .setStatus("Success")
                 ]

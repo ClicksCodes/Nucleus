@@ -250,8 +250,9 @@ const callback = async (
     let dmMessage;
     try {
         if (notify) {
+            let formattedReason: string | null = null;
             if (reason) {
-                reason = reason
+                formattedReason = reason
                     .split("\n")
                     .map((line) => "> " + line)
                     .join("\n");
@@ -266,7 +267,7 @@ const callback = async (
                         .setTitle("Muted")
                         .setDescription(
                             `You have been muted in ${interaction.guild.name}` +
-                                (reason ? ` for:\n${reason}` : ".\n*No reason was provided*") +
+                                (formattedReason ? ` for:\n${formattedReason}` : ".\n*No reason was provided*") +
                                 "\n\n" +
                                 `You will be unmuted at: <t:${Math.round(Date.now() / 1000) + muteTime}:D> at ` +
                                 `<t:${Math.round(Date.now() / 1000) + muteTime}:T> (<t:${
